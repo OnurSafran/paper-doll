@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_picnic_blanket">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M90 300 L910 300 L820 760 L180 760 Z" fill="#fdf0ed"/>
+    <path d="M220 300 L340 760 M460 300 L500 760 M700 300 L660 760 M90 450 L850 450 M120 610 L850 610" fill="none" stroke="#f06c5c" stroke-width="24"/>
+    <path d="M90 300 L910 300" fill="none" stroke="#457b9d" stroke-width="24"/>
+  </g>
+</svg>

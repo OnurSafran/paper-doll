@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_cat">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Cozy Round Cushion Bed -->
+    <ellipse cx="500" cy="740" rx="380" ry="160" fill="#ede0d4"/>
+    <ellipse cx="500" cy="735" rx="350" ry="140" fill="#fcf6ec" stroke="#e3d5ca" stroke-width="8"/>
+
+    <!-- Curled Up Cat Body -->
+    <ellipse cx="500" cy="680" rx="260" ry="150" fill="#f4a261"/>
+
+    <!-- Tabby Tiger Stripes on Back -->
+    <path d="M420 540 Q460 590 410 630" fill="none" stroke="#e76f51" stroke-width="14"/>
+    <path d="M500 535 Q530 590 490 635" fill="none" stroke="#e76f51" stroke-width="14"/>
+    <path d="M580 540 Q600 590 570 630" fill="none" stroke="#e76f51" stroke-width="14"/>
+
+    <!-- Fluffy Curved Tail -->
+    <path d="M720 680 C820 660 840 540 760 500 C720 480 690 520 730 550 C770 580 750 670 660 690 Z" fill="#f4a261"/>
+
+    <!-- Cat Head (Sleeping, Tucked) -->
+    <circle cx="340" cy="650" r="110" fill="#f4a261"/>
+    
+    <!-- Cat Ears -->
+    <polygon points="260,570 230,460 320,530" fill="#f4a261"/>
+    <polygon points="255,550 240,480 300,530" fill="#ffd166" stroke="none"/>
+    <polygon points="350,535 410,450 420,560" fill="#f4a261"/>
+    <polygon points="365,530 405,475 410,550" fill="#ffd166" stroke="none"/>
+
+    <!-- Peaceful Sleeping Face Details -->
+    <!-- Eyes (Curved happy closed lines) -->
+    <path d="M280 645 Q295 660 310 645" fill="none" stroke="#2d261e" stroke-width="12"/>
+    <path d="M345 645 Q360 660 375 645" fill="none" stroke="#2d261e" stroke-width="12"/>
+    
+    <!-- Tiny Pink Nose & Whiskers -->
+    <polygon points="325,670 335,670 330,678" fill="#ef476f" stroke="none"/>
+    <path d="M330 678 Q325 688 318 684" fill="none" stroke="#2d261e" stroke-width="8"/>
+    <path d="M330 678 Q335 688 342 684" fill="none" stroke="#2d261e" stroke-width="8"/>
+    <line x1="250" y1="665" x2="295" y2="670" stroke="#2d261e" stroke-width="8"/>
+    <line x1="250" y1="685" x2="295" y2="680" stroke="#2d261e" stroke-width="8"/>
+    <line x1="365" y1="670" x2="410" y2="665" stroke="#2d261e" stroke-width="8"/>
+    <line x1="365" y1="680" x2="410" y2="685" stroke="#2d261e" stroke-width="8"/>
+
+    <!-- Cute Paw Tucked -->
+    <ellipse cx="440" cy="730" rx="45" ry="30" fill="#ffffff"/>
+    <line x1="430" y1="735" x2="430" y2="755" stroke="#2d261e" stroke-width="8"/>
+    <line x1="450" y1="735" x2="450" y2="755" stroke="#2d261e" stroke-width="8"/>
+  </g>
+</svg>

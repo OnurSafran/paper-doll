@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_party">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Shoulder Straps with Little Ruffles -->
+    <path class="tint-primary" d="M128 112 C124 120 124 130 128 135" fill="none" stroke="var(--asset-color-primary, #ef7f72)" stroke-width="6"/>
+    <path class="tint-primary" d="M172 112 C176 120 176 130 172 135" fill="none" stroke="var(--asset-color-primary, #ef7f72)" stroke-width="6"/>
+
+    <!-- Bodice with Sweetheart Neckline -->
+    <path class="tint-primary" d="M128 130 C136 124 144 134 150 134 C156 134 164 124 172 130 L176 182 L124 182 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+
+    <!-- Waist Sash Ribbon -->
+    <rect x="123" y="178" width="54" height="10" rx="3" fill="#fffdf7"/>
+    <!-- Big Waist Bow -->
+    <g transform="translate(150, 183)">
+      <polygon points="0,0 -15,-8 -15,8" fill="#ffd166"/>
+      <polygon points="0,0 15,-8 15,8" fill="#ffd166"/>
+      <circle cx="0" cy="0" r="4" fill="#ef7f72"/>
+    </g>
+
+    <!-- Tier 1 Ruffle Skirt -->
+    <path class="tint-primary" d="M124 188 L176 188 L192 235 L108 235 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <path d="M108 235 Q122 245 136 235 Q150 245 164 235 Q178 245 192 235" fill="none" stroke="#2d261e" stroke-width="2.5"/>
+
+    <!-- Tier 2 Flounce Skirt (Scalloped) -->
+    <path class="tint-primary" d="M112 235 L188 235 L204 285 L96 285 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <path d="M96 285 Q114 298 132 285 Q150 298 168 285 Q186 298 204 285" fill="none" stroke="#2d261e" stroke-width="2.5"/>
+
+    <!-- Sparkle / White Lace Trim -->
+    <path d="M98 280 Q116 292 134 280 Q150 292 166 280 Q184 292 202 280" fill="none" stroke="#ffffff" stroke-width="3"/>
+  </g>
+</svg>

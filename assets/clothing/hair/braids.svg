@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_braids">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Low Braided Bun -->
+    <ellipse class="hair-fill" cx="150" cy="85" rx="34" ry="25" fill="var(--hair-color, #73513d)"/>
+    <!-- Left Tendril -->
+    <path class="hair-fill" d="M116 75 C108 100 108 135 116 160 C120 160 122 155 120 135 C116 115 120 95 122 75 Z" fill="var(--hair-color, #73513d)"/>
+    <!-- Right Tendril -->
+    <path class="hair-fill" d="M184 75 C192 100 192 135 184 160 C180 160 178 155 180 135 C184 115 180 95 178 75 Z" fill="var(--hair-color, #73513d)"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Parted Bangs -->
+    <path class="hair-fill" d="M116 62 C114 36 128 22 150 22 C172 22 186 36 184 62 C174 46 160 48 150 56 C140 48 126 46 116 62 Z" fill="var(--hair-color, #73513d)"/>
+    
+    <!-- Crown Braid Band Across Top -->
+    <path d="M118 38 Q150 22 182 38" fill="none" stroke="#2d261e" stroke-width="6"/>
+    <path d="M118 38 Q150 22 182 38" fill="none" stroke="#ffd166" stroke-width="4"/>
+    <!-- Little Flower Accent in Braid -->
+    <circle cx="172" cy="35" r="4.5" fill="#ef7f72" stroke="#2d261e" stroke-width="1.5"/>
+    <circle cx="172" cy="35" r="2" fill="#ffffff" stroke="none"/>
+  </g>
+</svg>

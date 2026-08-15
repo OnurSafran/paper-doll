@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_picnic_basket">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Basket Handle Loop -->
+    <path d="M300 480 C300 180 700 180 700 480" fill="none" stroke="#8b5e34" stroke-width="32"/>
+
+    <!-- Woven Wicker Hamper Lower Body -->
+    <polygon points="220,520 270,880 730,880 780,520" fill="#d4a373"/>
+
+    <!-- Basket Cross-Weave Texture Lines -->
+    <g stroke="#bc8a5f" stroke-width="10">
+      <line x1="235" y1="600" x2="765" y2="600"/>
+      <line x1="248" y1="690" x2="752" y2="690"/>
+      <line x1="260" y1="780" x2="740" y2="780"/>
+      <line x1="380" y1="520" x2="400" y2="880"/>
+      <line x1="500" y1="520" x2="500" y2="880"/>
+      <line x1="620" y1="520" x2="600" y2="880"/>
+    </g>
+
+    <!-- Checkered Gingham Red & White Napkin Draped Over Rim -->
+    <path d="M320 500 L300 680 L420 620 L480 660 L450 500 Z" fill="#ef476f"/>
+    <polygon points="300,560 420,560 420,620 300,620" fill="#ffffff" opacity="0.4"/>
+    <polygon points="340,500 340,660 400,660 400,500" fill="#ffffff" opacity="0.4"/>
+
+    <!-- Split Woven Lids -->
+    <polygon points="180,500 500,480 480,540 190,540" fill="#c68b59"/>
+    <polygon points="820,500 500,480 520,540 810,540" fill="#c68b59"/>
+
+    <!-- Baguette & Apple Peeking Out -->
+    <!-- Apple -->
+    <circle cx="560" cy="450" r="45" fill="#e63946"/>
+    <path d="M560 405 Q575 385 590 395" fill="none" stroke="#588157" stroke-width="8"/>
+    <!-- Baguette -->
+    <path d="M620 460 L720 300 C745 260 780 280 760 320 L660 480 Z" fill="#e9c46a"/>
+    <line x1="680" y1="360" x2="705" y2="345" stroke="#73513d" stroke-width="8"/>
+    <line x1="655" y1="405" x2="680" y2="390" stroke="#73513d" stroke-width="8"/>
+  </g>
+</svg>

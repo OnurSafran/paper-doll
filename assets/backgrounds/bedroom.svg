@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice" data-asset-id="bg_bedroom">
+  <g id="background" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="800" height="340" fill="#fdf0ed" stroke="none"/>
+    <!-- Wallpaper Subtle Stripe Pattern -->
+    <g stroke="#fae1dc" stroke-width="24">
+      <line x1="40" y1="0" x2="40" y2="340"/><line x1="120" y1="0" x2="120" y2="340"/><line x1="200" y1="0" x2="200" y2="340"/>
+      <line x1="280" y1="0" x2="280" y2="340"/><line x1="360" y1="0" x2="360" y2="340"/><line x1="440" y1="0" x2="440" y2="340"/>
+      <line x1="520" y1="0" x2="520" y2="340"/><line x1="600" y1="0" x2="600" y2="340"/><line x1="680" y1="0" x2="680" y2="340"/><line x1="760" y1="0" x2="760" y2="340"/>
+    </g>
+    <!-- Arched Window with Sunbeams -->
+    <g transform="translate(320, 40)">
+      <path d="M0 80 A80 80 0 0 1 160 80 L160 200 L0 200 Z" fill="#cbe3ef" stroke="#ffffff" stroke-width="8"/>
+      <path d="M80 0 L80 200 M0 80 L160 80" stroke="#ffffff" stroke-width="6"/>
+      <ellipse cx="120" cy="60" rx="20" ry="10" fill="#ffffff" opacity="0.8" stroke="none"/>
+    </g>
+    <!-- Baseboard & Wooden Floorboards -->
+    <rect y="332" width="800" height="16" fill="#e2d5c3" stroke="#2d261e" stroke-width="2"/>
+    <rect y="348" width="800" height="152" fill="#d5bdaf" stroke="none"/>
+    <g stroke="#b89b88" stroke-width="2">
+      <line x1="0" y1="390" x2="800" y2="390"/>
+      <line x1="0" y1="440" x2="800" y2="440"/>
+      <line x1="140" y1="348" x2="140" y2="390"/><line x1="420" y1="348" x2="420" y2="390"/><line x1="680" y1="348" x2="680" y2="390"/>
+      <line x1="280" y1="390" x2="280" y2="440"/><line x1="560" y1="390" x2="560" y2="440"/>
+      <line x1="190" y1="440" x2="190" y2="500"/><line x1="490" y1="440" x2="490" y2="500"/><line x1="730" y1="440" x2="730" y2="500"/>
+    </g>
+    <!-- String Bunting Flags -->
+    <path d="M20 30 Q120 70 240 35 Q360 70 480 35 Q600 70 780 25" fill="none" stroke="#2d261e" stroke-width="2"/>
+    <polygon points="60,46 75,75 90,49" fill="#e76f51"/>
+    <polygon points="140,54 155,83 170,55" fill="#2a9d8f"/>
+    <polygon points="210,42 225,71 240,43" fill="#e9c46a"/>
+    <polygon points="520,44 535,73 550,45" fill="#b56576"/>
+    <polygon points="650,48 665,77 680,49" fill="#457b9d"/>
+  </g>
+</svg>

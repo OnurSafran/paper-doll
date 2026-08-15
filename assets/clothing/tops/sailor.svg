@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_sailor">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Puffy Short Sleeves -->
+    <ellipse class="tint-primary" cx="118" cy="128" rx="14" ry="16" fill="var(--asset-color-primary, #78add2)"/>
+    <ellipse class="tint-primary" cx="182" cy="128" rx="14" ry="16" fill="var(--asset-color-primary, #78add2)"/>
+    <path d="M106 138 C114 144 124 144 130 138" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <path d="M170 138 C176 144 186 144 194 138" fill="none" stroke="#ffffff" stroke-width="3"/>
+
+    <!-- Blouse Torso -->
+    <path class="tint-primary" d="M126 112 C134 118 166 118 174 112 L177 185 C160 188 140 188 123 185 Z" fill="var(--asset-color-primary, #78add2)"/>
+
+    <!-- White Sailor Flap Collar -->
+    <path d="M124 112 L112 145 L136 145 L150 148 L164 145 L188 145 L176 112 Z" fill="#fffdf7"/>
+    <!-- Navy Stripes on Collar -->
+    <path d="M115 140 L134 140 L150 144 L166 140 L185 140" fill="none" stroke="#2d261e" stroke-width="2"/>
+
+    <!-- Red Silk Bowtie / Ribbon -->
+    <g transform="translate(150, 142)">
+      <polygon points="0,0 -12,-8 -12,8" fill="#ef476f"/>
+      <polygon points="0,0 12,-8 12,8" fill="#ef476f"/>
+      <circle cx="0" cy="0" r="3.5" fill="#ffd166"/>
+      <path d="M-4 3 L-8 20 L-2 18 L0 6" fill="#ef476f"/>
+      <path d="M4 3 L8 20 L2 18 L0 6" fill="#ef476f"/>
+    </g>
+  </g>
+</svg>

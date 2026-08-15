@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_shorts">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Shorts Main Shape -->
+    <path class="tint-primary" d="M123 182 L177 182 L182 250 L156 250 L150 220 L144 250 L118 250 Z" fill="var(--asset-color-primary, #86a873)"/>
+    
+    <!-- Belt with Buckle -->
+    <rect x="123" y="182" width="54" height="10" fill="#73513d" stroke="#2d261e" stroke-width="2"/>
+    <rect x="144" y="180" width="12" height="14" rx="2" fill="#ffd166" stroke="#2d261e" stroke-width="2"/>
+
+    <!-- Pleats & Pockets -->
+    <line x1="135" y1="192" x2="132" y2="245" stroke="#2d261e" stroke-width="1.8"/>
+    <line x1="165" y1="192" x2="168" y2="245" stroke="#2d261e" stroke-width="1.8"/>
+    <path d="M124 200 Q130 205 130 216" fill="none" stroke="#2d261e" stroke-width="2"/>
+    <path d="M176 200 Q170 205 170 216" fill="none" stroke="#2d261e" stroke-width="2"/>
+
+    <!-- Rolled Cuffs -->
+    <rect x="117" y="244" width="28" height="8" rx="2" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+    <rect x="155" y="244" width="28" height="8" rx="2" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+  </g>
+</svg>

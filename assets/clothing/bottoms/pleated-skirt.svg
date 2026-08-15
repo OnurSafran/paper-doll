@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_pleated_skirt">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Waistband -->
+    <rect class="tint-primary" x="124" y="180" width="52" height="10" fill="var(--asset-color-primary, #c94c5c)"/>
+    
+    <!-- Flared Pleated Skirt Body -->
+    <path class="tint-primary" d="M124 190 L176 190 L195 260 L105 260 Z" fill="var(--asset-color-primary, #c94c5c)"/>
+
+    <!-- Sharp Pleat Lines & Shadows -->
+    <g stroke="#2d261e" stroke-width="2">
+      <line x1="130" y1="190" x2="116" y2="260"/>
+      <line x1="138" y1="190" x2="130" y2="260"/>
+      <line x1="146" y1="190" x2="144" y2="260"/>
+      <line x1="154" y1="190" x2="156" y2="260"/>
+      <line x1="162" y1="190" x2="170" y2="260"/>
+      <line x1="170" y1="190" x2="184" y2="260"/>
+    </g>
+
+    <!-- Plaid Grid Accent Stripe -->
+    <path d="M110 240 Q150 244 190 240" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <path d="M107 252 Q150 256 193 252" fill="none" stroke="#ffd166" stroke-width="2"/>
+  </g>
+</svg>

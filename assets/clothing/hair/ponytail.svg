@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_ponytail">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <!-- High Side Ponytail -->
+    <path class="hair-fill" d="M175 35 C200 20 225 35 220 85 C215 120 195 145 185 155 C190 130 195 95 180 55 Z" fill="var(--hair-color, #1c1c1c)"/>
+    <circle cx="178" cy="40" r="5" fill="#e76f51" stroke="#2d261e" stroke-width="2"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M116 60 C114 36 128 24 150 24 C172 24 186 36 184 60 C174 46 160 45 150 48 C140 45 126 46 116 60 Z" fill="var(--hair-color, #1c1c1c)"/>
+  </g>
+</svg>

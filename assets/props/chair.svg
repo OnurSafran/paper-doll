@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_chair">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Wooden Legs -->
+    <line x1="220" y1="780" x2="160" y2="940" stroke="#8b5e34" stroke-width="26"/>
+    <line x1="780" y1="780" x2="840" y2="940" stroke="#8b5e34" stroke-width="26"/>
+    <!-- Back Cushion -->
+    <path d="M220 280 C220 120 780 120 780 280 L780 700 L220 700 Z" fill="#2a9d8f"/>
+    <!-- Tufting Buttons -->
+    <circle cx="370" cy="340" r="18" fill="#1b635a" stroke="none"/>
+    <circle cx="630" cy="340" r="18" fill="#1b635a" stroke="none"/>
+    <circle cx="500" cy="490" r="18" fill="#1b635a" stroke="none"/>
+    <!-- Seat Cushion -->
+    <rect x="160" y="640" width="680" height="180" rx="70" fill="#32b5a5"/>
+    <!-- Armrests -->
+    <rect x="110" y="460" width="140" height="280" rx="50" fill="#238276"/>
+    <rect x="750" y="460" width="140" height="280" rx="50" fill="#238276"/>
+  </g>
+</svg>

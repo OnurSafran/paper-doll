@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_bicycle">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="245" cy="720" r="145" stroke="#457b9d"/>
+    <circle cx="755" cy="720" r="145" stroke="#457b9d"/>
+    <path d="M245 720 L410 420 L570 720 L245 720 L500 720 L410 420 L650 420 L755 720" stroke="#f06c5c"/>
+    <path d="M410 420 L370 350 L300 350 M650 420 L700 350 L770 350" stroke="#2a9d8f"/>
+    <path d="M570 720 L650 420" stroke="#f2aa35"/>
+  </g>
+</svg>

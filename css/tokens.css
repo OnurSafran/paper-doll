@@ -1,0 +1,36 @@
+:root {
+  color-scheme: light;
+  --paper: #fffdf9;
+  --paper-warm: #f7f0e4;
+  --paper-deep: #ecddc8;
+  --paper-card: #ffffff;
+  --ink: #2e261f;
+  --ink-soft: #594d43;
+  --muted: #796d63;
+  --coral: #f06c5c;
+  --coral-dark: #b8433b;
+  --coral-soft: #fdf0ee;
+  --sage: #709f5e;
+  --sage-soft: #f0f7ed;
+  --sky: #5e9ec9;
+  --sky-soft: #edf5fa;
+  --lavender: #9e82c7;
+  --lavender-soft: #f5f0fb;
+  --gold: #f2aa35;
+  --gold-soft: #fef7e9;
+  --line: rgba(46, 38, 31, 0.12);
+  --line-strong: rgba(46, 38, 31, 0.22);
+  --shadow-sm: 0 2px 4px rgba(46, 38, 31, 0.05), 0 1px 2px rgba(46, 38, 31, 0.04);
+  --shadow-md: 0 6px 18px -2px rgba(46, 38, 31, 0.08), 0 2px 6px rgba(46, 38, 31, 0.04);
+  --shadow-lg: 0 16px 36px -6px rgba(46, 38, 31, 0.14), 0 4px 12px rgba(46, 38, 31, 0.06);
+  --shadow-float: 0 10px 28px -4px rgba(46, 38, 31, 0.18);
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-ui: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --app-header-height: 58px;
+}
+

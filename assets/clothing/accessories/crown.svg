@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_crown">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Tiara Base Band -->
+    <path class="tint-primary" d="M125 32 Q150 26 175 32 L175 28 Q150 22 125 28 Z" fill="var(--asset-color-primary, #e9aa3a)"/>
+    
+    <!-- Crown Peaks -->
+    <polygon class="tint-primary" points="125,28 135,10 142,24 150,4 158,24 165,10 175,28" fill="var(--asset-color-primary, #e9aa3a)"/>
+    
+    <!-- Shiny Gemstones -->
+    <circle cx="150" cy="14" r="3" fill="#ef476f" stroke="#2d261e" stroke-width="1.5"/>
+    <circle cx="135" cy="18" r="2.5" fill="#4ea8de" stroke="#2d261e" stroke-width="1.5"/>
+    <circle cx="165" cy="18" r="2.5" fill="#4ea8de" stroke="#2d261e" stroke-width="1.5"/>
+  </g>
+</svg>

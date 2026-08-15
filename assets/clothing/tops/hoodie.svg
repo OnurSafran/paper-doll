@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_hoodie">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Hood in back -->
+    <path class="tint-primary" d="M120 102 C132 94 168 94 180 102 L176 118 C160 122 140 122 124 118 Z" fill="var(--asset-color-primary, #2a9d8f)" opacity="0.9"/>
+    <!-- Long Sleeves -->
+    <path class="tint-primary" d="M126 112 L102 162 L114 166 L130 126 Z" fill="var(--asset-color-primary, #2a9d8f)"/>
+    <path class="tint-primary" d="M174 112 L198 162 L186 166 L170 126 Z" fill="var(--asset-color-primary, #2a9d8f)"/>
+    <!-- Torso -->
+    <path class="tint-primary" d="M124 114 C135 118 165 118 176 114 L180 195 C160 198 140 198 120 195 Z" fill="var(--asset-color-primary, #2a9d8f)"/>
+    <!-- Kangaroo Pocket -->
+    <path d="M132 160 L168 160 L172 185 L128 185 Z" fill="rgba(0,0,0,0.08)"/>
+    <!-- Drawstrings -->
+    <path d="M142 122 L142 145" stroke="#ffffff" stroke-width="2"/>
+    <path d="M158 122 L158 145" stroke="#ffffff" stroke-width="2"/>
+  </g>
+</svg>

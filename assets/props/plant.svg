@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_plant">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Terracotta Pot -->
+    <polygon points="340,650 660,650 620,930 380,930" fill="#e76f51"/>
+    <rect x="310" y="600" width="380" height="80" rx="20" fill="#d65d3f"/>
+    <!-- Monstera Leaves -->
+    <path d="M500 620 Q390 390 250 320 Q350 190 500 350 Q650 190 750 320 Q610 390 500 620" fill="#2a9d8f"/>
+    <path d="M500 620 Q330 490 200 550 Q220 420 360 450" fill="#238276"/>
+    <path d="M500 620 Q670 490 800 550 Q780 420 640 450" fill="#238276"/>
+    <path d="M500 390 Q500 160 500 80 Q430 130 500 260" stroke="#1d685e" stroke-width="12"/>
+  </g>
+</svg>

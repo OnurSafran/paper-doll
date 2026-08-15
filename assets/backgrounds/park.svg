@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice" data-asset-id="bg_park">
+  <g id="background" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Sky -->
+    <rect width="800" height="500" fill="#d8f3dc" stroke="none"/>
+    <rect width="800" height="300" fill="#b7e4c7" opacity="0.6" stroke="none"/>
+    <!-- Soft Clouds -->
+    <path d="M100 80 Q120 50 150 60 Q180 40 210 65 Q240 70 230 95 Q100 100 100 80 Z" fill="#ffffff" opacity="0.85" stroke="none"/>
+    <path d="M520 60 Q540 30 570 40 Q600 20 630 45 Q660 50 650 75 Q520 80 520 60 Z" fill="#ffffff" opacity="0.85" stroke="none"/>
+    <!-- Distant Hills -->
+    <path d="M0 320 Q200 200 450 280 Q650 220 800 290 L800 500 L0 500 Z" fill="#95d5b2" stroke="none"/>
+    <!-- Lush Foreground Lawn -->
+    <path d="M0 360 Q300 300 580 350 Q700 330 800 360 L800 500 L0 500 Z" fill="#74c69d" stroke="#2d261e" stroke-width="2.5"/>
+    <!-- Cute Trees -->
+    <g transform="translate(60, 160)" stroke="#2d261e" stroke-width="2.5">
+      <rect x="35" y="100" width="16" height="110" fill="#8b5e34"/>
+      <circle cx="43" cy="80" r="55" fill="#52b788"/>
+      <circle cx="20" cy="90" r="35" fill="#40916c"/>
+      <circle cx="65" cy="90" r="35" fill="#40916c"/>
+    </g>
+    <g transform="translate(680, 180)" stroke="#2d261e" stroke-width="2.5">
+      <rect x="25" y="90" width="14" height="100" fill="#8b5e34"/>
+      <circle cx="32" cy="70" r="45" fill="#52b788"/>
+    </g>
+    <!-- Little Flowers -->
+    <circle cx="150" cy="420" r="5" fill="#ffb703" stroke="none"/><circle cx="150" cy="420" r="2" fill="#ffffff" stroke="none"/>
+    <circle cx="280" cy="450" r="5" fill="#e76f51" stroke="none"/><circle cx="280" cy="450" r="2" fill="#ffffff" stroke="none"/>
+    <circle cx="480" cy="430" r="5" fill="#ffb703" stroke="none"/><circle cx="480" cy="430" r="2" fill="#ffffff" stroke="none"/>
+    <circle cx="640" cy="460" r="5" fill="#b56576" stroke="none"/><circle cx="640" cy="460" r="2" fill="#ffffff" stroke="none"/>
+  </g>
+</svg>

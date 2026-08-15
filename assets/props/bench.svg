@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_bench">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Cast Iron Bench Leg Frames -->
+    <!-- Left Leg Frame -->
+    <path d="M220 540 C180 640 180 780 200 920 M200 700 C240 780 260 840 280 920" fill="none" stroke="#3c342d" stroke-width="24"/>
+    <!-- Right Leg Frame -->
+    <path d="M780 540 C820 640 820 780 800 920 M800 700 C760 780 740 840 720 920" fill="none" stroke="#3c342d" stroke-width="24"/>
+
+    <!-- Slatted Wooden Backrest -->
+    <rect x="140" y="380" width="720" height="40" rx="12" fill="#d4a373" stroke="#2d261e" stroke-width="16"/>
+    <rect x="140" y="445" width="720" height="40" rx="12" fill="#d4a373" stroke="#2d261e" stroke-width="16"/>
+    <rect x="140" y="510" width="720" height="40" rx="12" fill="#d4a373" stroke="#2d261e" stroke-width="16"/>
+
+    <!-- Wooden Seat Slats -->
+    <polygon points="120,620 880,620 860,670 140,670" fill="#bc8a5f" stroke="#2d261e" stroke-width="16"/>
+    <polygon points="135,670 865,670 845,710 155,710" fill="#a47148" stroke="#2d261e" stroke-width="16"/>
+
+    <!-- Cast Iron Armrests -->
+    <path d="M150 630 C120 520 180 480 220 540" fill="none" stroke="#3c342d" stroke-width="24"/>
+    <path d="M850 630 C880 520 820 480 780 540" fill="none" stroke="#3c342d" stroke-width="24"/>
+  </g>
+</svg>

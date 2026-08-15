@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_mailbox">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M300 420 Q300 250 500 250 Q700 250 700 420 L700 680 L300 680 Z" fill="#5e9ec9"/>
+    <path d="M500 250 L500 680" fill="none"/>
+    <path d="M500 250 Q700 250 700 420" fill="none"/>
+    <path d="M500 360 L500 500" stroke="#e76f51"/>
+    <path d="M360 680 L360 900 M640 680 L640 900" stroke="#8b5e34"/>
+    <rect x="420" y="510" width="160" height="90" rx="12" fill="#f2aa35"/>
+  </g>
+</svg>

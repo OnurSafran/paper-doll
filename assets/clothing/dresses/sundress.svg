@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_sundress">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Straps -->
+    <rect class="tint-primary" x="132" y="112" width="6" height="24" rx="2" fill="var(--asset-color-primary, #e76f51)"/>
+    <rect class="tint-primary" x="162" y="112" width="6" height="24" rx="2" fill="var(--asset-color-primary, #e76f51)"/>
+    <!-- Bodice & Flared Skirt -->
+    <path class="tint-primary" d="M126 130 C138 135 162 135 174 130 L180 190 L204 310 C165 325 135 325 96 310 L120 190 Z" fill="var(--asset-color-primary, #e76f51)"/>
+    <!-- Sweet Floral Dots Details -->
+    <circle cx="135" cy="240" r="3" fill="#ffffff" stroke="none"/>
+    <circle cx="165" cy="240" r="3" fill="#ffffff" stroke="none"/>
+    <circle cx="150" cy="270" r="3" fill="#ffffff" stroke="none"/>
+    <circle cx="120" cy="285" r="3" fill="#ffffff" stroke="none"/>
+    <circle cx="180" cy="285" r="3" fill="#ffffff" stroke="none"/>
+  </g>
+</svg>

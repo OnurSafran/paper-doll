@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_skirt">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M125 182 C140 185 160 185 175 182 L192 250 C165 258 135 258 108 250 Z" fill="var(--asset-color-primary, #e9c46a)"/>
+    <!-- Pleat lines -->
+    <line x1="130" y1="184" x2="122" y2="252" stroke="#2d261e" stroke-width="1.8"/>
+    <line x1="142" y1="185" x2="140" y2="256" stroke="#2d261e" stroke-width="1.8"/>
+    <line x1="158" y1="185" x2="160" y2="256" stroke="#2d261e" stroke-width="1.8"/>
+    <line x1="170" y1="184" x2="178" y2="252" stroke="#2d261e" stroke-width="1.8"/>
+  </g>
+</svg>

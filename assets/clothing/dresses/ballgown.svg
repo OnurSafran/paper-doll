@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_ballgown">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Off-shoulder Fluffy Frills -->
+    <ellipse class="tint-primary" cx="112" cy="120" rx="16" ry="12" fill="var(--asset-color-primary, #a78bc4)"/>
+    <ellipse class="tint-primary" cx="188" cy="120" rx="16" ry="12" fill="var(--asset-color-primary, #a78bc4)"/>
+    <path d="M124 116 Q150 125 176 116" fill="none" stroke="#fffdf7" stroke-width="6"/>
+
+    <!-- Fitted Corset Bodice -->
+    <path class="tint-primary" d="M126 122 L174 122 L172 185 L150 196 L128 185 Z" fill="var(--asset-color-primary, #a78bc4)"/>
+    <!-- Bodice Boning Lines -->
+    <line x1="142" y1="124" x2="144" y2="188" stroke="#2d261e" stroke-width="1.5"/>
+    <line x1="158" y1="124" x2="156" y2="188" stroke="#2d261e" stroke-width="1.5"/>
+
+    <!-- Big Flared Princess Gown Skirt -->
+    <path class="tint-primary" d="M128 185 L150 196 L172 185 C210 230 230 290 234 370 L66 370 C70 290 90 230 128 185 Z" fill="var(--asset-color-primary, #a78bc4)"/>
+
+    <!-- Side Pannier Drapes -->
+    <path d="M128 185 Q90 240 135 270 Q110 210 128 185" fill="#fffdf7" opacity="0.8"/>
+    <path d="M172 185 Q210 240 165 270 Q190 210 172 185" fill="#fffdf7" opacity="0.8"/>
+
+    <!-- Gold Ribbon Scallops on Hem -->
+    <path d="M68 368 Q100 340 135 368 Q150 340 165 368 Q200 340 232 368" fill="none" stroke="#ffd166" stroke-width="3.5"/>
+  </g>
+</svg>

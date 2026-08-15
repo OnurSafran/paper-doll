@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_tea_set">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Teapot -->
+    <path d="M360 400 C360 240 640 240 640 400 C740 560 720 840 500 880 C280 840 260 560 360 400 Z" fill="#b56576"/>
+    <circle cx="500" cy="280" r="40" fill="#e9c46a"/>
+    <path d="M630 520 C740 520 740 720 630 760" fill="none" stroke-width="18"/>
+    <path d="M320 560 L200 440" fill="none" stroke-width="24"/>
+    <!-- Teacup -->
+    <path d="M740 640 C740 840 920 840 920 640 Z" fill="#ffffff"/>
+    <line x1="720" y1="840" x2="940" y2="840" stroke-width="18"/>
+  </g>
+</svg>

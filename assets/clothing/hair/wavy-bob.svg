@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_wavy_bob">
+  <g id="hairBack" class="hair-fill" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M105 87 Q92 40 118 18 Q150 -4 182 18 Q208 40 195 87 L184 118 L116 118 Z"/>
+  </g>
+  <g id="hairFront" class="hair-fill" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M110 68 Q108 20 150 12 Q192 20 190 68 Q180 51 168 48 Q150 60 132 48 Q120 51 110 68 Z"/>
+    <path fill="none" d="M113 61 Q122 81 113 101 M187 61 Q178 81 187 101"/>
+  </g>
+</svg>

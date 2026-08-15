@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_lamp">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Brass Base & Pole -->
+    <ellipse cx="500" cy="920" rx="200" ry="50" fill="#e9c46a"/>
+    <line x1="500" y1="340" x2="500" y2="920" stroke="#e9c46a" stroke-width="28"/>
+    <!-- Warm Shade Glow -->
+    <polygon points="360,340 640,340 710,100 290,100" fill="#ffe5ec"/>
+    <ellipse cx="500" cy="100" rx="210" ry="55" fill="#ffd166"/>
+    <ellipse cx="500" cy="340" rx="140" ry="35" fill="#fde2e4"/>
+  </g>
+</svg>

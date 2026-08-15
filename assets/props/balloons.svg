@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_balloons">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Balloon Ribbons / Strings -->
+    <path d="M500 880 Q480 720 320 460" fill="none" stroke="#2d261e" stroke-width="10"/>
+    <path d="M500 880 Q520 700 680 440" fill="none" stroke="#2d261e" stroke-width="10"/>
+    <path d="M500 880 Q460 620 420 360" fill="none" stroke="#2d261e" stroke-width="10"/>
+    <path d="M500 880 Q540 600 580 340" fill="none" stroke="#2d261e" stroke-width="10"/>
+    <path d="M500 880 Q500 580 500 240" fill="none" stroke="#2d261e" stroke-width="10"/>
+
+    <!-- Bottom Bow Tie Holding Balloons -->
+    <g transform="translate(500, 880)">
+      <polygon points="0,0 -40,-25 -40,25" fill="#ffd166"/>
+      <polygon points="0,0 40,-25 40,25" fill="#ffd166"/>
+      <circle cx="0" cy="0" r="14" fill="#ef476f"/>
+      <path d="M-10 15 L-25 60 L-10 55 L0 20" fill="#ffd166"/>
+      <path d="M10 15 L25 60 L10 55 L0 20" fill="#ffd166"/>
+    </g>
+
+    <!-- Balloon 1: Coral Pink (Left) -->
+    <g transform="translate(320, 420)">
+      <polygon points="0,0 -16,22 16,22" fill="#ef7f72"/>
+      <ellipse cx="0" cy="-110" rx="110" ry="135" fill="#ef7f72"/>
+      <!-- Glossy Reflection -->
+      <path d="M-40 -180 Q-70 -130 -60 -70" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" opacity="0.6"/>
+    </g>
+
+    <!-- Balloon 2: Sky Blue (Right) -->
+    <g transform="translate(680, 400)">
+      <polygon points="0,0 -16,22 16,22" fill="#78add2"/>
+      <ellipse cx="0" cy="-110" rx="110" ry="135" fill="#78add2"/>
+      <path d="M-40 -180 Q-70 -130 -60 -70" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" opacity="0.6"/>
+    </g>
+
+    <!-- Balloon 3: Mint Green (Center Left) -->
+    <g transform="translate(420, 320)">
+      <polygon points="0,0 -16,22 16,22" fill="#8fcfbd"/>
+      <ellipse cx="0" cy="-110" rx="110" ry="135" fill="#8fcfbd"/>
+      <path d="M-40 -180 Q-70 -130 -60 -70" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" opacity="0.6"/>
+    </g>
+
+    <!-- Balloon 4: Lavender (Center Right) -->
+    <g transform="translate(580, 300)">
+      <polygon points="0,0 -16,22 16,22" fill="#a78bc4"/>
+      <ellipse cx="0" cy="-110" rx="110" ry="135" fill="#a78bc4"/>
+      <path d="M-40 -180 Q-70 -130 -60 -70" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" opacity="0.6"/>
+    </g>
+
+    <!-- Balloon 5: Sunny Yellow (Top Star) -->
+    <g transform="translate(500, 200)">
+      <polygon points="0,0 -18,24 18,24" fill="#ffd166"/>
+      <ellipse cx="0" cy="-120" rx="120" ry="145" fill="#ffd166"/>
+      <path d="M-45 -200 Q-75 -150 -65 -80" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity="0.7"/>
+    </g>
+  </g>
+</svg>

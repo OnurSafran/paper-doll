@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_overall">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path class="tint-primary" d="M124 113 L176 113 L181 190 L193 365 Q150 382 107 365 L119 190 Z"/>
+    <path fill="#fff4d6" d="M124 113 L137 108 L141 153 L159 153 L163 108 L176 113 L170 181 L130 181 Z"/>
+    <path fill="none" d="M130 181 Q150 190 170 181"/>
+    <rect fill="#f2aa35" x="137" y="195" width="26" height="25" rx="4"/>
+    <path fill="none" d="M150 196 L150 216"/>
+  </g>
+</svg>

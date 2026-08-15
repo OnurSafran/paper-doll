@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_glasses">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="var(--asset-color-primary, #1c1c1c)">
+    <path class="tint-primary" d="M124 56 L144 56 L140 68 L124 64 Z"/>
+    <path class="tint-primary" d="M156 56 L176 56 L176 64 L160 68 Z"/>
+    <line x1="144" y1="58" x2="156" y2="58" stroke="#2d261e" stroke-width="2.5"/>
+  </g>
+</svg>

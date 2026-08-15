@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_table">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Table Legs -->
+    <line x1="280" y1="440" x2="200" y2="920" stroke="#8b5e34" stroke-width="26"/>
+    <line x1="720" y1="440" x2="800" y2="920" stroke="#8b5e34" stroke-width="26"/>
+    <line x1="500" y1="440" x2="500" y2="920" stroke="#684524" stroke-width="26"/>
+    <!-- Table Top -->
+    <ellipse cx="500" cy="420" rx="380" ry="120" fill="#e9c46a"/>
+    <ellipse cx="500" cy="390" rx="380" ry="120" fill="#f4d07d"/>
+  </g>
+</svg>

@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7efe1">
+    <meta name="description" content="Create paper dolls and arrange them in a playful scene.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Paper Doll">
+    <link rel="manifest" href="manifest.webmanifest">
+    <title>Paper Doll Studio</title>
+    <link rel="stylesheet" href="css/tokens.css?v=3">
+    <link rel="stylesheet" href="css/app.css?v=3">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to the studio</a>
+    <header class="app-header">
+      <a class="brand" href="#designer" aria-label="Paper Doll Studio, Designer">
+        <span class="brand-mark" aria-hidden="true">✿</span>
+        <div class="brand-titles">
+          <strong>Paper Doll</strong>
+          <small class="brand-subtitle">Studio</small>
+        </div>
+      </a>
+      <nav class="mode-nav" aria-label="Studio sections">
+        <a href="#designer" data-mode-link="designer">Designer</a>
+        <a href="#play" data-mode-link="play">Play <span id="dollbox-count" class="nav-count" aria-label="0 saved dolls">0</span></a>
+      </nav>
+      <div class="header-actions">
+        <button id="guide-menu-btn" class="button secondary compact-action" type="button" title="Türkçe kullanım rehberini aç">📖 <span class="header-btn-text">Rehber</span></button>
+        <button id="project-menu-btn" class="button secondary compact-action project-btn" type="button" title="Project Backup & Portability (Export, Import, Backups)">📦 <span class="header-btn-text">Project</span></button>
+        <div class="history-controls" role="group" aria-label="History actions">
+          <button id="undo-button" class="history-btn" type="button" title="Undo (Ctrl+Z or ⌘Z)" aria-label="Undo" disabled>↺ <span class="history-btn-text">Undo</span></button>
+          <button id="redo-button" class="history-btn" type="button" title="Redo (Ctrl+Shift+Z, ⌘⇧Z, or Ctrl+Y)" aria-label="Redo" disabled>↻ <span class="history-btn-text">Redo</span></button>
+        </div>
+        <div id="save-status" class="save-status" aria-live="polite" title="Saved on this device">Saved</div>
+      </div>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+      <section id="designer-screen" class="screen" aria-labelledby="designer-title">
+        <div class="designer-grid">
+          <div class="designer-stage-wrap">
+            <div class="designer-topbar">
+              <div class="designer-title-row">
+                <h1 id="designer-title">Doll Designer</h1>
+                <span id="outfit-count" class="outfit-count">0 pieces</span>
+              </div>
+              <div id="designer-status" class="designer-inline-status" role="status" aria-live="polite"></div>
+              <div class="designer-top-actions">
+                <button id="reset-doll" class="button secondary compact-action" type="button">Reset</button>
+              </div>
+            </div>
+            <div class="designer-stage paper-stage">
+              <div id="snap-target" class="snap-target" aria-hidden="true"><span>✨ Drop onto Paper Doll</span></div>
+              <div id="doll-stage" class="doll-canvas" role="img" aria-label="Your paper doll"></div>
+              <span class="paper-stand" aria-hidden="true"></span>
+            </div>
+          </div>
+
+          <aside class="designer-sidebar" aria-label="Designer controls">
+            <section class="paper-panel wardrobe-panel" aria-labelledby="wardrobe-title">
+              <div class="panel-heading compact-panel-heading">
+                <div>
+                  <h2 id="wardrobe-title">Wardrobe</h2>
+                  <p class="panel-copy">Click or drag a piece onto the doll.</p>
+                </div>
+              </div>
+              <div id="wardrobe-tabs" class="tab-list" role="tablist" aria-label="Wardrobe categories"></div>
+              <div id="wardrobe-items" class="asset-grid" role="tabpanel"></div>
+              <div class="wardrobe-actions">
+                <button id="shuffle-outfit" class="button playful" type="button">Shuffle</button>
+                <button id="clear-outfit" class="button secondary" type="button">Take off</button>
+              </div>
+            </section>
+
+            <section class="stage-style-bar paper-panel" aria-labelledby="doll-colors-title">
+              <h2 id="doll-colors-title">Doll style & colors</h2>
+              <div class="stage-style-groups">
+                <div class="style-group">
+                  <strong>Model</strong>
+                  <div id="doll-model-palette" class="model-picker-list compact"></div>
+                </div>
+                <div class="style-group">
+                  <strong>Skin</strong>
+                  <div id="skin-palette" class="swatch-list compact"></div>
+                </div>
+                <div class="style-group">
+                  <strong>Hair</strong>
+                  <div id="hair-palette" class="swatch-list compact"></div>
+                </div>
+              </div>
+            </section>
+
+            <div class="designer-tools">
+              <section class="paper-panel tool-card" aria-labelledby="color-title">
+                <div class="panel-heading"><h2 id="color-title">Selected piece</h2><button id="remove-piece" class="text-button" type="button">Remove</button></div>
+                <div id="piece-palette" class="swatch-list"></div>
+                <label class="custom-color" for="custom-color"><span>Custom color</span><input id="custom-color" type="color" value="#ef7f72"></label>
+              </section>
+              <section class="paper-panel tool-card dollbox-card" aria-labelledby="dollbox-title">
+                <h2 id="dollbox-title">Dollbox</h2>
+                <form id="save-preset-form" class="save-form">
+                  <label for="doll-name">Doll name</label>
+                  <input id="doll-name" name="dollName" maxlength="30" placeholder="Sunny day doll" required>
+                  <div class="button-row">
+                    <button class="button primary" type="submit">Save new</button>
+                    <button id="update-preset" class="button secondary" type="button">Update</button>
+                  </div>
+                </form>
+                <div id="dollbox-list" class="dollbox-list"></div>
+              </section>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="play-screen" class="screen" aria-labelledby="play-title" hidden>
+        <div class="screen-heading play-heading">
+          <div class="play-title-group">
+            <h1 id="play-title">Play Sandbox</h1>
+            <div class="scene-picker-group">
+              <label for="background-select">🎨 Background:</label>
+              <select id="background-select"></select>
+            </div>
+          </div>
+          <div class="scene-meta-actions">
+            <div class="meta-action-group story-meta-group">
+              <button id="scene-templates-btn" class="button secondary compact-action" type="button" title="Browse storytelling scene templates">✦ Templates</button>
+              <button id="scene-outline-btn" class="button secondary compact-action" type="button" title="Open accessible scene outline list (Hotkey: O)">📋 Outline</button>
+              <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" title="Live Voice Puppetry: speak into your mic to flap doll mouth">🎙️ Voice Mic</button>
+            </div>
+            <div class="meta-action-group library-meta-group">
+              <button id="scene-library-btn" class="button secondary compact-action" type="button" title="Open Scene Book Library">📚 Scenes (<span id="scene-library-count">0</span>)</button>
+              <button id="save-scene-copy-btn" class="button secondary compact-action" type="button" title="Save a copy of this scene to Scene Book">⧉ Save Copy</button>
+              <button id="save-scene-btn" class="button primary compact-action" type="button" title="Save this scene to Scene Book">💾 Save Scene</button>
+              <button id="export-scene-png" class="button secondary compact-action" type="button" title="Download current scene as a PNG image">📸 Export</button>
+              <button id="new-scene" class="button secondary compact-action clear-scene-btn" type="button" title="Clear all items on stage">🗑️ Clear Scene</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="entity-actions" class="entity-actions top-entity-actions" role="toolbar" aria-label="Selected item controls">
+          <div class="selection-pill">
+            <span class="selection-dot" aria-hidden="true"></span>
+            <span id="selected-label" class="selected-label">No item selected</span>
+          </div>
+          <div id="character-expression-controls" class="expression-buttons" role="group" aria-label="Doll expression" hidden>
+            <button data-expression="neutral" type="button" title="Neutral face" aria-label="Neutral face" aria-pressed="false">😐</button>
+            <button data-expression="smile" type="button" title="Gentle smile" aria-label="Gentle smile" aria-pressed="false">😊</button>
+            <button data-expression="happy" type="button" title="Happy laugh" aria-label="Happy laugh" aria-pressed="false">😄</button>
+            <button data-expression="surprised" type="button" title="Surprised" aria-label="Surprised" aria-pressed="false">😲</button>
+            <button data-expression="o_mouth" type="button" title="O-shape mouth (vowels: O / U)" aria-label="O-shape mouth" aria-pressed="false">😮</button>
+            <button data-expression="talking" type="button" title="Talking mouth (vowels: A / E)" aria-label="Talking mouth" aria-pressed="false">🗣️</button>
+            <button data-expression="wide_open" type="button" title="Wide open shout/sing" aria-label="Wide open shout/sing" aria-pressed="false">📢</button>
+          </div>
+          <div id="bubble-controls" class="bubble-controls" role="group" aria-label="Speech bubble controls" hidden>
+            <button id="edit-bubble-text-btn" data-action="editBubbleText" type="button" title="Edit bubble text">✏️ Text</button>
+            <div class="bubble-style-buttons" role="group" aria-label="Bubble style">
+              <button data-bubble-style="speech" type="button" title="Speech bubble" aria-label="Speech bubble" aria-pressed="false">💬</button>
+              <button data-bubble-style="thought" type="button" title="Thought cloud" aria-label="Thought cloud" aria-pressed="false">💭</button>
+              <button data-bubble-style="shout" type="button" title="Shout balloon" aria-label="Shout balloon" aria-pressed="false">💥</button>
+              <button data-bubble-style="caption" type="button" title="Story caption" aria-label="Story caption" aria-pressed="false">📜</button>
+            </div>
+          </div>
+          <div id="alignment-controls" class="alignment-buttons" role="group" aria-label="Align selected items" hidden>
+            <button data-action="alignLeft" type="button" title="Align left edges">⇤ Left</button>
+            <button data-action="alignCenter" type="button" title="Align horizontal centers">⇥⇤ Center</button>
+            <button data-action="alignRight" type="button" title="Align right edges">⇥ Right</button>
+            <button data-action="alignTop" type="button" title="Align top edges">⤒ Top</button>
+            <button data-action="alignMiddle" type="button" title="Align vertical middle">⤓ Middle</button>
+            <button data-action="alignBottom" type="button" title="Align bottom edges">⤓ Bottom</button>
+            <button data-action="distributeH" type="button" title="Distribute horizontally">⋯ Distribute H</button>
+            <button data-action="distributeV" type="button" title="Distribute vertically">⋮ Distribute V</button>
+          </div>
+          <button data-action="flip" type="button" title="Flip horizontal">↔ Flip</button>
+          <button data-action="smaller" type="button" title="Make smaller">− Smaller</button>
+          <button data-action="larger" type="button" title="Make larger">+ Larger</button>
+          <button data-action="back" type="button" title="Send backward">↓ Back</button>
+          <button data-action="front" type="button" title="Bring forward">↑ Front</button>
+          <button data-action="duplicate" type="button" title="Duplicate item">⧉ Duplicate</button>
+          <button id="pin-item-btn" data-action="togglePin" type="button" title="Pin item to scene background">📍 Pin</button>
+          <button id="detach-item-btn" data-action="detach" type="button" title="Detach from host entity" hidden>⛓️ Detach</button>
+          <button data-action="delete" class="danger" type="button" title="Delete item">✕ Delete</button>
+        </div>
+        <div class="play-grid">
+          <div id="play-stage-viewport" class="play-stage-viewport">
+            <div id="play-stage" class="play-stage" tabindex="0" aria-label="Play scene. Select an item, then use arrow keys to move it.">
+              <div id="scene-background" class="scene-background" aria-hidden="true"></div>
+              <div class="scene-hud" aria-hidden="true"><span id="scene-name-chip">Cozy bedroom</span><span id="scene-count-chip">0 items</span></div>
+              <div id="scene-entities" class="scene-entities"></div>
+              <div id="empty-scene" class="empty-scene"><strong>Your scene is ready.</strong><span>Click or drag a doll or prop from the tray to place it here.</span></div>
+              <div class="scene-help" aria-hidden="true">Drag to arrange · tap for quick tools · arrows nudge</div>
+            </div>
+          </div>
+
+          <aside class="paper-panel spawn-panel" aria-labelledby="tray-title">
+            <div class="panel-heading"><div><span class="eyebrow">Scene Tray</span><h2 id="tray-title">Scene spawner</h2><p class="panel-copy">Click or drag items onto stage.</p></div><span class="panel-sticker" aria-hidden="true">✦</span></div>
+            <div id="spawn-tabs" class="tab-list" role="tablist" aria-label="Scene tray categories"></div>
+            <div id="spawn-items" class="spawn-list"></div>
+          </aside>
+        </div>
+        <div id="play-status" class="visible-status" role="status" aria-live="polite"></div>
+      </section>
+
+    </main>
+
+    <dialog id="confirm-dialog" class="confirm-dialog">
+      <form method="dialog">
+        <span class="eyebrow">Please confirm</span>
+        <h2 id="confirm-title">Continue?</h2>
+        <p id="confirm-message"></p>
+        <div class="button-row end">
+          <button id="confirm-cancel" value="cancel" class="button secondary">Cancel</button>
+          <button id="confirm-ok" value="ok" class="button danger-fill">Continue</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="project-dialog" class="library-dialog project-dialog">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Studio Portability</span>
+          <h2 id="project-dialog-title">Project & Backups</h2>
+        </div>
+        <button id="close-project-dialog" class="icon-close-btn" type="button" aria-label="Close Project dialog">✕</button>
+      </div>
+      <div class="project-dialog-body">
+        <section class="project-section export-section">
+          <div class="section-title-wrap">
+            <h3>Export Project Backup</h3>
+            <p class="panel-copy">Download your complete studio (dolls, scenes, and current stage) as a portable <code>.json</code> file.</p>
+          </div>
+          <div class="export-meta-row">
+            <div id="project-export-stats" class="project-stats-chips"></div>
+            <button id="export-project-btn" class="button primary" type="button">⬇ Download Project JSON</button>
+          </div>
+        </section>
+
+        <section class="project-section import-section">
+          <div class="section-title-wrap">
+            <h3>Import Project</h3>
+            <p class="panel-copy">Load a saved <code>.json</code> project file. You can choose to merge items or replace your studio.</p>
+          </div>
+          <div id="import-dropzone" class="import-dropzone">
+            <input type="file" id="project-file-input" accept=".json,application/json" class="visually-hidden">
+            <div class="dropzone-inner">
+              <span class="dropzone-icon" aria-hidden="true">📂</span>
+              <p><strong>Choose a project file</strong> or drag & drop it here</p>
+              <button id="browse-project-file-btn" class="button secondary" type="button">Browse JSON File</button>
+            </div>
+          </div>
+
+          <div id="import-preview-card" class="import-preview-card" hidden>
+            <div class="preview-card-header">
+              <span class="eyebrow">Import Preview</span>
+              <h4 id="import-filename">project.json</h4>
+            </div>
+            <div id="import-summary-badges" class="import-summary-badges"></div>
+            <div id="import-warnings-box" class="import-warnings-box" hidden></div>
+            <div class="import-decision-actions">
+              <button id="import-merge-btn" class="button primary" type="button" title="Add imported dolls and scenes to your current studio">✦ Add to Studio (Merge)</button>
+              <button id="import-replace-btn" class="button danger-fill" type="button" title="Replace entire studio. Creates an automatic backup first">↺ Replace Entire Studio</button>
+              <button id="import-cancel-btn" class="button secondary" type="button">Cancel</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="project-backup-section" class="project-section backup-section" hidden>
+          <div class="section-title-wrap">
+            <h3>Recoverable Backups</h3>
+            <p class="panel-copy">A safety snapshot was saved before your last studio replacement.</p>
+          </div>
+          <div class="backup-card">
+            <div class="backup-info">
+              <strong id="backup-timestamp">Backup</strong>
+              <span id="backup-details" class="panel-copy">Saved snapshot</span>
+            </div>
+            <div class="backup-actions">
+              <button id="restore-backup-btn" class="button secondary" type="button">↺ Restore Previous Studio</button>
+              <button id="dismiss-backup-btn" class="text-button" type="button">Dismiss</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </dialog>
+
+    <dialog id="guide-dialog" class="library-dialog guide-dialog" aria-labelledby="guide-dialog-title">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Türkçe Kullanım Rehberi</span>
+          <h2 id="guide-dialog-title">Paper Doll Studio nasıl oynanır?</h2>
+        </div>
+        <button id="close-guide-dialog" class="icon-close-btn" type="button" aria-label="Rehberi kapat">✕</button>
+      </div>
+      <div class="guide-dialog-body">
+        <section class="guide-section">
+          <h3>1. Bebek tasarla</h3>
+          <p><strong>Designer</strong> bölümünde saç, kıyafet, ayakkabı ve aksesuar seç. Bir parçaya dokunarak giydir, renk paletinden rengini değiştir.</p>
+          <p><strong>Save new</strong> ile bebeğini Dollbox'a kaydet. Daha sonra kaydettiğin bebeği açıp güncelleyebilirsin.</p>
+        </section>
+        <section class="guide-section">
+          <h3>2. Sahne kur</h3>
+          <p><strong>Play</strong> bölümünde bebekleri ve eşyaları sahneye ekle. Dokunarak seç; sürükleyerek taşı. Seçili öğeyi büyüt, küçült, çevir, öne veya arkaya al.</p>
+          <p>Birden fazla öğe seçmek için klavyede <strong>Shift</strong> tuşunu kullanabilirsin. Konuşma balonları ve sahne şablonları da Play bölümündedir.</p>
+        </section>
+        <section class="guide-section">
+          <h3>3. Kaydetme ve geri alma</h3>
+          <p>Değişiklikler bu cihazda otomatik olarak kaydedilir. <strong>Undo</strong> ve <strong>Redo</strong> ile son işlemleri geri alıp tekrarlayabilirsin.</p>
+          <p>Project menüsünden projeyi JSON dosyası olarak dışa aktar. Bu dosya, bebeği ve sahneleri yedeklemek veya başka bir cihaza taşımak içindir.</p>
+        </section>
+        <section class="guide-section">
+          <h3>4. İnternetsiz oynama</h3>
+          <p>Uygulamayı Safari'de bir kez internet varken açtıktan sonra iPad ana ekranına ekleyebilirsin. İlk açılıştan sonra oyun internetsiz çalışır.</p>
+          <p>Veriler iPad'de saklanır. Safari site verileri temizlenirse kayıtlar silinebilir; önemli projeleri Project menüsünden dışa aktar.</p>
+        </section>
+        <section class="guide-section guide-tip">
+          <h3>İpucu</h3>
+          <p>Bir şey kaybolmuş gibi görünürse önce <strong>Undo</strong>'yu dene. Sahneyi tamamen değiştirmeden önce Project menüsünden yedek almak güvenlidir.</p>
+        </section>
+      </div>
+    </dialog>
+
+    <dialog id="scene-templates-dialog" class="library-dialog">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Storytelling Starters</span>
+          <h2 id="templates-dialog-title">Scene Templates</h2>
+        </div>
+        <button id="close-scene-templates" class="icon-close-btn" type="button" aria-label="Close Templates dialog">✕</button>
+      </div>
+      <div id="scene-templates-grid" class="scene-library-grid"></div>
+    </dialog>
+
+    <dialog id="scene-outline-dialog" class="library-dialog outline-dialog">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Accessibility & Layers</span>
+          <h2 id="outline-dialog-title">Scene Outline</h2>
+        </div>
+        <button id="close-scene-outline" class="icon-close-btn" type="button" aria-label="Close Outline dialog">✕</button>
+      </div>
+      <div class="outline-dialog-body">
+        <div class="outline-header-row">
+          <span id="scene-outline-summary" class="outline-summary">0 items</span>
+          <div class="outline-bulk-actions">
+            <button id="outline-select-all-btn" class="button secondary compact-action" type="button">Select All</button>
+            <button id="outline-deselect-btn" class="button secondary compact-action" type="button">Clear</button>
+          </div>
+        </div>
+        <div id="scene-outline-list" class="outline-list" role="list"></div>
+      </div>
+    </dialog>
+
+    <dialog id="scene-library-dialog" class="library-dialog">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Scene Book</span>
+          <h2 id="library-title">Saved Scenes</h2>
+        </div>
+        <button id="close-scene-library" class="icon-close-btn" type="button" aria-label="Close Scene Book">✕</button>
+      </div>
+      <div id="scene-library-grid" class="scene-library-grid"></div>
+    </dialog>
+
+    <dialog id="save-scene-dialog" class="confirm-dialog">
+      <form id="save-scene-form">
+        <span class="eyebrow">Scene Book</span>
+        <h2>Save Scene</h2>
+        <p>Give this scene a title to save it to your Scene Book.</p>
+        <label for="scene-title-input">Scene Title</label>
+        <input id="scene-title-input" name="sceneTitle" maxlength="40" placeholder="Afternoon Tea Story" required>
+        <div class="button-row end">
+          <button id="cancel-save-scene" type="button" class="button secondary">Cancel</button>
+          <button id="update-existing-scene" type="button" class="button secondary" disabled>Update Current</button>
+          <button id="confirm-save-scene" type="submit" class="button primary">Save as New</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="bubble-text-dialog" class="confirm-dialog">
+      <form id="bubble-text-form">
+        <span class="eyebrow">Speech Bubble</span>
+        <h2>Edit Bubble Text</h2>
+        <p>Type the message or story text for this bubble.</p>
+        <label for="bubble-text-input">Bubble Message</label>
+        <textarea id="bubble-text-input" name="bubbleText" maxlength="120" rows="3" placeholder="Hello!" required></textarea>
+        <div class="character-count-row"><span id="bubble-char-count">0/120</span></div>
+        <div class="button-row end">
+          <button id="cancel-bubble-text" type="button" class="button secondary">Cancel</button>
+          <button id="confirm-bubble-text" type="submit" class="button primary">Save Text</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="error-boundary-dialog" class="confirm-dialog error-boundary-dialog" role="alertdialog" aria-labelledby="error-boundary-title" aria-describedby="error-boundary-message">
+      <div class="error-dialog-content">
+        <span class="eyebrow danger-eyebrow">Studio Recovery</span>
+        <h2 id="error-boundary-title">Something went wrong</h2>
+        <p id="error-boundary-message">An unexpected runtime error occurred. Unsafe tasks were stopped and your previously saved project data is preserved on this device.</p>
+        <p class="error-code-label">Error Code: <code id="error-boundary-code">ERR_RUNTIME</code></p>
+        <div class="button-row end">
+          <button id="dismiss-error-btn" type="button" class="button secondary">Dismiss</button>
+          <button id="reload-error-btn" type="button" class="button primary">Reload Studio</button>
+        </div>
+      </div>
+    </dialog>
+
+    <div id="toast-region" class="toast-region" aria-hidden="true"></div>
+
+    <noscript><p class="noscript">Paper Doll Studio needs JavaScript to create and save dolls.</p></noscript>
+    <script type="module" src="js/app.js?v=2"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_bow">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="var(--asset-color-primary, #b56576)">
+    <!-- Left Wing -->
+    <path class="tint-primary" d="M138 28 L118 18 L120 38 Z"/>
+    <!-- Right Wing -->
+    <path class="tint-primary" d="M142 28 L162 18 L160 38 Z"/>
+    <!-- Center knot -->
+    <circle cx="140" cy="28" r="4" fill="#ffffff" stroke="#2d261e" stroke-width="2"/>
+  </g>
+</svg>

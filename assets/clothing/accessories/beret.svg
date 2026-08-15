@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_beret">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Chic Tilted Artist Wool Beret -->
+    <ellipse class="tint-primary" cx="156" cy="24" rx="42" ry="18" transform="rotate(8 156 24)" fill="var(--asset-color-primary, #c94c5c)"/>
+    <!-- Top Stalk / Stem -->
+    <path d="M158 8 Q162 0 166 4" fill="none" stroke="#2d261e" stroke-width="2.5"/>
+    <!-- Beret Rim Shadow -->
+    <ellipse cx="152" cy="32" rx="30" ry="8" fill="#ffffff" opacity="0.2" stroke="none"/>
+  </g>
+</svg>

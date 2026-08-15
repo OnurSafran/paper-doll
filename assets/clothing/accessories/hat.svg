@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_hat">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Crown -->
+    <path class="tint-primary" d="M125 35 C125 15 175 15 175 35 Z" fill="var(--asset-color-primary, #e9c46a)"/>
+    <!-- Ribbon -->
+    <rect x="125" y="32" width="50" height="6" fill="#e76f51" stroke="#2d261e" stroke-width="1.5"/>
+    <!-- Wide Brim -->
+    <ellipse class="tint-primary" cx="150" cy="38" rx="55" ry="12" fill="var(--asset-color-primary, #e9c46a)"/>
+  </g>
+</svg>

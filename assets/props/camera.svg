@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_camera">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M190 350 L330 350 L390 285 L610 285 L670 350 L810 350 L810 700 L190 700 Z" fill="#9e82c7"/>
+    <circle cx="500" cy="515" r="145" fill="#cbe3ef"/>
+    <circle cx="500" cy="515" r="78" fill="#457b9d"/>
+    <circle cx="710" cy="420" r="22" fill="#f2aa35" stroke="none"/>
+  </g>
+</svg>

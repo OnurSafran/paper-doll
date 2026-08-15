@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_sneakers">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Left Sneaker -->
+    <path class="tint-primary" d="M128 370 C124 380 118 392 114 398 C120 403 140 403 146 398 L146 370 Z" fill="var(--asset-color-primary, #e76f51)"/>
+    <path d="M114 396 C124 402 142 402 146 396 L146 401 C140 405 120 405 114 401 Z" fill="#ffffff"/>
+    <!-- Right Sneaker -->
+    <path class="tint-primary" d="M154 370 L154 398 C160 403 180 403 186 398 C182 392 176 380 172 370 Z" fill="var(--asset-color-primary, #e76f51)"/>
+    <path d="M154 396 C158 402 176 402 186 396 L186 401 C180 405 160 405 154 401 Z" fill="#ffffff"/>
+  </g>
+</svg>

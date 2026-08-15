@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_pinafore">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Inner Blouse Sleeves & Collar -->
+    <ellipse cx="118" cy="128" rx="14" ry="16" fill="#fffdf7"/>
+    <ellipse cx="182" cy="128" rx="14" ry="16" fill="#fffdf7"/>
+    <path d="M136 112 C142 120 158 120 164 112" fill="none" stroke="#2d261e" stroke-width="2"/>
+
+    <!-- Pinafore Frilly Straps -->
+    <path class="tint-primary" d="M128 112 L134 175 L124 175 L118 112 Z" fill="var(--asset-color-primary, #e9aa3a)"/>
+    <path class="tint-primary" d="M172 112 L166 175 L176 175 L182 112 Z" fill="var(--asset-color-primary, #e9aa3a)"/>
+    <!-- Shoulder Frills -->
+    <path d="M116 116 Q112 135 120 155" fill="none" stroke="#2d261e" stroke-width="2"/>
+    <path d="M184 116 Q188 135 180 155" fill="none" stroke="#2d261e" stroke-width="2"/>
+
+    <!-- Pinafore Square Bib -->
+    <rect class="tint-primary" x="134" y="138" width="32" height="38" rx="2" fill="var(--asset-color-primary, #e9aa3a)"/>
+    <!-- Little Heart Patch -->
+    <path d="M150 152 C148 147 142 147 142 153 C142 158 150 163 150 163 C150 163 158 158 158 153 C158 147 152 147 150 152 Z" fill="#ef476f" stroke="none"/>
+
+    <!-- Waistband -->
+    <rect class="tint-primary" x="122" y="174" width="56" height="10" rx="2" fill="var(--asset-color-primary, #e9aa3a)"/>
+
+    <!-- A-Line Apron Skirt -->
+    <path class="tint-primary" d="M122 184 L178 184 L196 280 L104 280 Z" fill="var(--asset-color-primary, #e9aa3a)"/>
+
+    <!-- Big Front Apron Pockets -->
+    <path d="M118 215 L138 215 L136 245 L114 242 Z" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+    <path d="M182 215 L162 215 L164 245 L186 242 Z" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+
+    <!-- Bottom Hem Lace Trim -->
+    <path d="M104 278 Q150 285 196 278" fill="none" stroke="#ffffff" stroke-width="3.5"/>
+  </g>
+</svg>

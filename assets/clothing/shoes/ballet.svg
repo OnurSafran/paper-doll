@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_ballet">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Left Ankle Ribbon Crisscross -->
+    <line x1="128" y1="365" x2="145" y2="380" stroke="var(--asset-color-primary, #ef7f72)" stroke-width="3"/>
+    <line x1="145" y1="365" x2="128" y2="380" stroke="var(--asset-color-primary, #ef7f72)" stroke-width="3"/>
+    <!-- Left Slipper -->
+    <path class="tint-primary" d="M128 386 C124 392 118 396 114 398 C120 403 140 403 146 398 C144 392 140 386 138 386 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <circle cx="132" cy="392" r="2" fill="#ffd166" stroke="none"/>
+
+    <!-- Right Ankle Ribbon Crisscross -->
+    <line x1="155" y1="365" x2="172" y2="380" stroke="var(--asset-color-primary, #ef7f72)" stroke-width="3"/>
+    <line x1="172" y1="365" x2="155" y2="380" stroke="var(--asset-color-primary, #ef7f72)" stroke-width="3"/>
+    <!-- Right Slipper -->
+    <path class="tint-primary" d="M162 386 C160 386 156 392 154 398 C160 403 180 403 186 398 C182 396 176 392 172 386 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <circle cx="168" cy="392" r="2" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

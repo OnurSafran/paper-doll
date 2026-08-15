@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_crop_jacket">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Inner Top Layer -->
+    <path d="M136 108 L164 108 L164 165 L136 165 Z" fill="#fffdf7"/>
+    
+    <!-- Sleeves -->
+    <!-- Left Sleeve -->
+    <path class="tint-primary" d="M126 112 L104 158 L118 162 L132 124 Z" fill="var(--asset-color-primary, #567da3)"/>
+    <!-- Right Sleeve -->
+    <path class="tint-primary" d="M174 112 L196 158 L182 162 L168 124 Z" fill="var(--asset-color-primary, #567da3)"/>
+    <!-- Rolled Cuffs -->
+    <rect x="102" y="152" width="16" height="10" rx="3" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+    <rect x="182" y="152" width="16" height="10" rx="3" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+
+    <!-- Jacket Body -->
+    <path class="tint-primary" d="M126 112 L174 112 L176 162 L124 162 Z" fill="var(--asset-color-primary, #567da3)"/>
+
+    <!-- Turned Denim Collar -->
+    <polygon points="126,112 142,126 132,132 124,116" fill="#436585"/>
+    <polygon points="174,112 158,126 168,132 176,116" fill="#436585"/>
+
+    <!-- Front Zipper / Placket -->
+    <line x1="150" y1="126" x2="150" y2="162" stroke="#2d261e" stroke-width="2.5"/>
+
+    <!-- Chest Pockets with Studs -->
+    <rect x="129" y="134" width="16" height="14" rx="2" fill="#436585" stroke="#2d261e" stroke-width="1.8"/>
+    <rect x="155" y="134" width="16" height="14" rx="2" fill="#436585" stroke="#2d261e" stroke-width="1.8"/>
+    <circle cx="137" cy="137" r="1.5" fill="#ffd166" stroke="none"/>
+    <circle cx="163" cy="137" r="1.5" fill="#ffd166" stroke="none"/>
+
+    <!-- Bottom Hem Band -->
+    <rect x="124" y="156" width="52" height="6" fill="#436585" stroke="#2d261e" stroke-width="2"/>
+  </g>
+</svg>

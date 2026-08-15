@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_sweater">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Cozy Oversized Sleeves -->
+    <path class="tint-primary" d="M126 112 C108 140 96 175 94 200 C98 206 110 206 114 198 C120 170 128 145 136 122 Z" fill="var(--asset-color-primary, #fff4d6)"/>
+    <path class="tint-primary" d="M174 112 C192 140 204 175 206 200 C202 206 190 206 186 198 C180 170 172 145 164 122 Z" fill="var(--asset-color-primary, #fff4d6)"/>
+    
+    <!-- Ribbed Cuffs -->
+    <rect x="94" y="196" width="18" height="8" rx="2" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+    <rect x="188" y="196" width="18" height="8" rx="2" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+
+    <!-- Slouchy Torso -->
+    <path class="tint-primary" d="M126 112 C116 140 114 170 118 195 C136 198 164 198 182 195 C186 170 184 140 174 112 Z" fill="var(--asset-color-primary, #fff4d6)"/>
+
+    <!-- Turtleneck Collar -->
+    <rect class="tint-primary" x="135" y="88" width="30" height="24" rx="4" fill="var(--asset-color-primary, #fff4d6)"/>
+    <line x1="135" y1="100" x2="165" y2="100" stroke="#2d261e" stroke-width="2"/>
+    
+    <!-- Knit Cable Texture Lines -->
+    <g stroke="#2d261e" stroke-width="1.8" stroke-dasharray="3 4" opacity="0.5">
+      <line x1="138" y1="116" x2="138" y2="190"/>
+      <line x1="150" y1="116" x2="150" y2="190"/>
+      <line x1="162" y1="116" x2="162" y2="190"/>
+    </g>
+
+    <!-- Bottom Ribbed Hem -->
+    <rect x="118" y="190" width="64" height="8" rx="2" fill="#ffffff" opacity="0.3" stroke="#2d261e" stroke-width="2"/>
+  </g>
+</svg>

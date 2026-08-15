@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_long">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M116 55 C90 85 85 140 88 190 C90 220 102 240 112 245 C118 200 115 150 120 100 L180 100 C185 150 182 200 188 245 C198 240 210 220 212 190 C215 140 210 85 184 55 Z" fill="var(--hair-color, #4a2e18)"/>
+  </g>
+  <g id="hairFront" fill="var(--hair-color, #4a2e18)" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M118 60 C116 35 130 22 150 22 C170 22 184 35 182 60 C175 48 165 44 150 44 C135 44 125 48 118 60 Z"/>
+    <path class="hair-fill" d="M120 48 C128 58 136 60 148 52 C155 62 170 60 180 48 C185 68 186 90 190 110 C184 105 180 90 178 70 C165 80 135 80 122 70 C120 90 116 105 110 110 C114 90 115 68 120 48 Z"/>
+  </g>
+</svg>

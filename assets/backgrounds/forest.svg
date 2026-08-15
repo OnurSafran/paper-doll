@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice" data-asset-id="bg_forest">
+  <g id="background" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Starry Twilight Sky -->
+    <rect width="800" height="340" fill="#2b3a4a" stroke="none"/>
+    
+    <!-- Crescent Paper Moon -->
+    <g transform="translate(640, 50)">
+      <path d="M40 0 C65 20 65 60 40 80 C20 80 0 65 0 40 C0 15 20 0 40 0 Z" fill="#ffd166"/>
+      <path d="M48 5 C68 25 68 55 48 75 C35 65 25 50 25 40 C25 25 35 15 48 5 Z" fill="#ffeaa7" stroke="none"/>
+    </g>
+
+    <!-- Star Clusters -->
+    <g fill="#ffffff" stroke="none">
+      <polygon points="120,40 123,47 130,47 124,51 126,58 120,54 114,58 116,51 110,47 117,47"/>
+      <polygon points="310,70 312,75 317,75 313,78 314,83 310,80 306,83 307,78 303,75 308,75"/>
+      <polygon points="480,45 482,50 487,50 483,53 484,58 480,55 476,58 477,53 473,50 478,50"/>
+      <circle cx="200" cy="90" r="2"/>
+      <circle cx="260" cy="40" r="2.5"/>
+      <circle cx="410" cy="90" r="2"/>
+      <circle cx="560" cy="65" r="2.5"/>
+      <circle cx="730" cy="120" r="2"/>
+      <circle cx="90" cy="110" r="1.5"/>
+    </g>
+
+    <!-- Distant Forest Silhouettes -->
+    <g fill="#3d5a56">
+      <polygon points="40,240 80,140 120,240"/>
+      <polygon points="100,240 140,150 180,240"/>
+      <polygon points="260,240 300,130 340,240"/>
+      <polygon points="320,240 370,160 420,240"/>
+      <polygon points="500,240 550,140 600,240"/>
+      <polygon points="580,240 620,155 660,240"/>
+      <polygon points="680,240 730,135 780,240"/>
+    </g>
+
+    <!-- Midground Enchanted Trees -->
+    <g fill="#4a7c59">
+      <!-- Tree 1 -->
+      <polygon points="170,290 230,160 290,290"/>
+      <polygon points="185,240 230,140 275,240"/>
+      <polygon points="200,190 230,110 260,190"/>
+      <!-- Tree 2 -->
+      <polygon points="410,290 470,170 530,290"/>
+      <polygon points="425,240 470,145 515,240"/>
+      <polygon points="440,190 470,120 500,190"/>
+    </g>
+
+    <!-- Rolling Green Fairy Hills -->
+    <path d="M-20 280 Q180 230 400 270 T820 250 L820 500 L-20 500 Z" fill="#588157"/>
+    <path d="M-20 330 Q220 300 500 340 T820 310 L820 500 L-20 500 Z" fill="#609966"/>
+    <path d="M-20 380 Q260 350 560 390 T820 360 L820 500 L-20 500 Z" fill="#73a97b"/>
+
+    <!-- Enchanted Glowing Toadstools & Flora -->
+    <!-- Mushroom 1 -->
+    <g transform="translate(100, 390)">
+      <path d="M16 35 L12 65 L28 65 L24 35 Z" fill="#ede0d4"/>
+      <path d="M-5 35 C-5 10 45 10 45 35 Z" fill="#ef476f"/>
+      <circle cx="10" cy="22" r="3.5" fill="#ffffff" stroke="none"/>
+      <circle cx="28" cy="20" r="4.5" fill="#ffffff" stroke="none"/>
+      <circle cx="20" cy="30" r="2.5" fill="#ffffff" stroke="none"/>
+    </g>
+
+    <!-- Mushroom 2 (Small) -->
+    <g transform="translate(145, 415)">
+      <path d="M10 25 L8 45 L18 45 L16 25 Z" fill="#ede0d4"/>
+      <path d="M-2 25 C-2 8 30 8 30 25 Z" fill="#ffd166"/>
+      <circle cx="14" cy="16" r="3" fill="#ffffff" stroke="none"/>
+    </g>
+
+    <!-- Mushroom 3 (Right side) -->
+    <g transform="translate(660, 400)">
+      <path d="M18 35 L14 65 L32 65 L28 35 Z" fill="#ede0d4"/>
+      <path d="M-4 35 C-4 12 50 12 50 35 Z" fill="#9d4edd"/>
+      <circle cx="12" cy="22" r="3.5" fill="#ffffff" stroke="none"/>
+      <circle cx="32" cy="20" r="4" fill="#ffffff" stroke="none"/>
+    </g>
+
+    <!-- Glowing Firefly Specks -->
+    <circle cx="260" cy="360" r="4" fill="#ffff3f" stroke="#2d261e" stroke-width="1"/>
+    <circle cx="380" cy="330" r="4.5" fill="#ffff3f" stroke="#2d261e" stroke-width="1"/>
+    <circle cx="580" cy="370" r="3.5" fill="#ffff3f" stroke="#2d261e" stroke-width="1"/>
+    <circle cx="620" cy="330" r="4" fill="#ffff3f" stroke="#2d261e" stroke-width="1"/>
+  </g>
+</svg>

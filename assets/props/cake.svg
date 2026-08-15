@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_cake">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Porcelain Cake Stand -->
+    <ellipse cx="500" cy="880" rx="360" ry="70" fill="#fffdf7"/>
+    <path d="M430 880 L440 950 L560 950 L570 880 Z" fill="#fffdf7"/>
+    <ellipse cx="500" cy="950" rx="180" ry="30" fill="#e0f2fe"/>
+
+    <!-- Bottom Cake Tier -->
+    <path d="M220 640 L220 830 C220 900 780 900 780 830 L780 640 Z" fill="#ffd166"/>
+    <ellipse cx="500" cy="640" rx="280" ry="80" fill="#ffe082"/>
+    <!-- Strawberry Cream Frosting Drips -->
+    <path d="M220 640 Q260 720 300 660 Q340 740 380 660 Q420 750 460 670 Q500 750 540 670 Q580 750 620 670 Q660 740 700 660 Q740 720 780 640" fill="none" stroke="#ef7f72" stroke-width="30"/>
+
+    <!-- Top Cake Tier -->
+    <path d="M300 440 L300 610 C300 670 700 670 700 610 L700 440 Z" fill="#ffb4a2"/>
+    <ellipse cx="500" cy="440" rx="200" ry="60" fill="#ffd8cc"/>
+    <!-- Vanilla Cream Frosting Drips -->
+    <path d="M300 440 Q340 500 380 460 Q420 520 460 460 Q500 520 540 460 Q580 520 620 460 Q660 500 700 440" fill="none" stroke="#fffdf7" stroke-width="26"/>
+
+    <!-- Strawberries & Cherries on Top Tier -->
+    <circle cx="360" cy="420" r="24" fill="#e63946"/>
+    <circle cx="430" cy="450" r="24" fill="#e63946"/>
+    <circle cx="570" cy="450" r="24" fill="#e63946"/>
+    <circle cx="640" cy="420" r="24" fill="#e63946"/>
+
+    <!-- Birthday Candles -->
+    <!-- Candle 1 (Left) -->
+    <rect x="420" y="300" width="22" height="120" rx="6" fill="#78add2"/>
+    <line x1="420" y1="330" x2="442" y2="345" stroke="#ffffff" stroke-width="6"/>
+    <line x1="431" y1="285" x2="431" y2="300" stroke="#2d261e" stroke-width="8"/>
+    <!-- Flame 1 -->
+    <path d="M431 240 C410 270 415 285 431 285 C447 285 452 270 431 240 Z" fill="#ffb703"/>
+    <ellipse cx="431" cy="275" rx="6" ry="8" fill="#ffffff" stroke="none"/>
+
+    <!-- Candle 2 (Center) -->
+    <rect x="489" y="270" width="22" height="140" rx="6" fill="#a78bc4"/>
+    <line x1="489" y1="300" x2="511" y2="315" stroke="#ffffff" stroke-width="6"/>
+    <line x1="500" y1="255" x2="500" y2="270" stroke="#2d261e" stroke-width="8"/>
+    <!-- Flame 2 -->
+    <path d="M500 210 C479 240 484 255 500 255 C516 255 521 240 500 210 Z" fill="#ffb703"/>
+    <ellipse cx="500" cy="245" rx="6" ry="8" fill="#ffffff" stroke="none"/>
+
+    <!-- Candle 3 (Right) -->
+    <rect x="558" y="300" width="22" height="120" rx="6" fill="#8fcfbd"/>
+    <line x1="558" y1="330" x2="580" y2="345" stroke="#ffffff" stroke-width="6"/>
+    <line x1="569" y1="285" x2="569" y2="300" stroke="#2d261e" stroke-width="8"/>
+    <!-- Flame 3 -->
+    <path d="M569 240 C548 270 553 285 569 285 C585 285 590 270 569 240 Z" fill="#ffb703"/>
+    <ellipse cx="569" cy="275" rx="6" ry="8" fill="#ffffff" stroke="none"/>
+  </g>
+</svg>

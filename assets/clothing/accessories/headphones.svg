@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_headphones">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Headband Arc Across Top -->
+    <path d="M116 62 C116 20 184 20 184 62" fill="none" stroke="#2d261e" stroke-width="5"/>
+    <path d="M125 36 C136 28 164 28 175 36" fill="none" stroke="var(--asset-color-primary, #8fcfbd)" stroke-width="4"/>
+
+    <!-- Left Ear Cup -->
+    <rect class="tint-primary" x="110" y="52" width="12" height="24" rx="6" fill="var(--asset-color-primary, #8fcfbd)"/>
+    <ellipse cx="116" cy="64" rx="3" ry="8" fill="#ffffff" opacity="0.4" stroke="none"/>
+
+    <!-- Right Ear Cup -->
+    <rect class="tint-primary" x="178" y="52" width="12" height="24" rx="6" fill="var(--asset-color-primary, #8fcfbd)"/>
+    <ellipse cx="184" cy="64" rx="3" ry="8" fill="#ffffff" opacity="0.4" stroke="none"/>
+  </g>
+</svg>

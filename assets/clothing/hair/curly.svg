@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_curly">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Voluminous Back Curls -->
+    <path class="hair-fill" d="M110 60 C90 70 85 110 95 140 C105 165 130 170 150 170 C170 170 195 165 205 140 C215 110 210 70 190 60 Z" fill="var(--hair-color, #654735)"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Bubbly Front Curls / Bangs -->
+    <path class="hair-fill" d="M112 60 C110 32 125 18 150 18 C175 18 190 32 188 60 C182 45 174 40 162 44 C152 38 140 40 134 46 C124 40 116 46 112 60 Z" fill="var(--hair-color, #654735)"/>
+    <!-- Side Curly Locks -->
+    <circle class="hair-fill" cx="114" cy="75" r="14" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="112" cy="100" r="15" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="118" cy="122" r="12" fill="var(--hair-color, #654735)"/>
+
+    <circle class="hair-fill" cx="186" cy="75" r="14" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="188" cy="100" r="15" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="182" cy="122" r="12" fill="var(--hair-color, #654735)"/>
+  </g>
+</svg>

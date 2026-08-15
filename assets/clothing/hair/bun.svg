@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_bun">
+  <g id="hairBack" class="hair-fill" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="150" cy="20" r="27"/>
+    <path d="M112 82 Q105 42 120 25 Q150 2 180 25 Q195 42 188 82 L177 110 L123 110 Z"/>
+  </g>
+  <g id="hairFront" class="hair-fill" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M116 61 Q119 18 150 14 Q181 18 184 61 L174 50 Q166 38 150 40 Q134 38 126 50 Z"/>
+    <path fill="none" d="M121 47 Q128 30 143 27 M179 47 Q172 30 157 27"/>
+  </g>
+</svg>

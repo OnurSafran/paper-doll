@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_boots">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Left Boot -->
+    <path class="tint-primary" d="M127 350 L146 350 L146 398 C140 403 120 403 114 398 C118 390 124 375 127 350 Z" fill="var(--asset-color-primary, #73513d)"/>
+    <!-- Sole & Heel -->
+    <path d="M113 398 C120 404 140 404 147 398 L147 403 C140 408 120 408 113 403 Z" fill="#3c342d"/>
+    <!-- Laces -->
+    <line x1="130" y1="360" x2="142" y2="360" stroke="#ffd166" stroke-width="1.8"/>
+    <line x1="130" y1="370" x2="142" y2="370" stroke="#ffd166" stroke-width="1.8"/>
+    <line x1="128" y1="380" x2="142" y2="380" stroke="#ffd166" stroke-width="1.8"/>
+
+    <!-- Right Boot -->
+    <path class="tint-primary" d="M154 350 L173 350 C176 375 182 390 186 398 C180 403 160 403 154 398 Z" fill="var(--asset-color-primary, #73513d)"/>
+    <!-- Sole & Heel -->
+    <path d="M153 398 C160 404 180 404 187 398 L187 403 C180 408 160 408 153 403 Z" fill="#3c342d"/>
+    <!-- Laces -->
+    <line x1="158" y1="360" x2="170" y2="360" stroke="#ffd166" stroke-width="1.8"/>
+    <line x1="158" y1="370" x2="170" y2="370" stroke="#ffd166" stroke-width="1.8"/>
+    <line x1="158" y1="380" x2="172" y2="380" stroke="#ffd166" stroke-width="1.8"/>
+  </g>
+</svg>

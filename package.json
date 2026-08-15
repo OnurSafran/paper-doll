@@ -1,0 +1,12 @@
+{
+  "name": "paper-doll-studio",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "validate:docs": "node scripts/validate-docs.mjs",
+    "validate:assets": "node scripts/validate-assets.mjs",
+    "check": "node scripts/validate-docs.mjs && node scripts/validate-assets.mjs && node --test"
+  }
+}

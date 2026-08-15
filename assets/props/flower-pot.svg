@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_flower_pot">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M400 500 Q430 250 350 130 M500 500 Q500 220 500 100 M600 500 Q570 250 650 130" fill="none" stroke="#2a9d8f"/>
+    <circle cx="350" cy="120" r="55" fill="#709f5e"/>
+    <circle cx="500" cy="90" r="62" fill="#8fb27d"/>
+    <circle cx="650" cy="120" r="55" fill="#709f5e"/>
+    <path d="M300 500 L700 500 L635 850 L365 850 Z" fill="#e76f51"/>
+    <path d="M280 500 L720 500 L700 570 L300 570 Z" fill="#f2aa35"/>
+  </g>
+</svg>

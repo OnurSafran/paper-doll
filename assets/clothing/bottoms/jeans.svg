@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_jeans">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M124 182 C140 185 160 185 176 182 L174 235 L170 370 L154 370 L150 240 L146 370 L130 370 L126 235 Z" fill="var(--asset-color-primary, #457b9d)"/>
+    <!-- Pockets & Stitches -->
+    <path d="M128 195 C136 195 142 205 142 215" fill="none" stroke="#e9c46a" stroke-width="1.8"/>
+    <path d="M172 195 C164 195 158 205 158 215" fill="none" stroke="#e9c46a" stroke-width="1.8"/>
+    <path d="M150 184 L150 220" fill="none" stroke="#e9c46a" stroke-width="1.8"/>
+  </g>
+</svg>

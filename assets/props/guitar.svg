@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_guitar">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Guitar Stand Base (Slight lean) -->
+    <line x1="360" y1="880" x2="640" y2="880" stroke="#3c342d" stroke-width="24"/>
+    <line x1="500" y1="650" x2="420" y2="880" stroke="#3c342d" stroke-width="20"/>
+    <line x1="500" y1="650" x2="580" y2="880" stroke="#3c342d" stroke-width="20"/>
+
+    <!-- Acoustic Guitar (slanted / centered) -->
+    <!-- Headstock & Tuning Pegs -->
+    <polygon points="460,80 540,80 530,220 470,220" fill="#8b5e34"/>
+    <circle cx="435" cy="115" r="14" fill="#ffd166"/>
+    <circle cx="435" cy="155" r="14" fill="#ffd166"/>
+    <circle cx="435" cy="195" r="14" fill="#ffd166"/>
+    <circle cx="565" cy="115" r="14" fill="#ffd166"/>
+    <circle cx="565" cy="155" r="14" fill="#ffd166"/>
+    <circle cx="565" cy="195" r="14" fill="#ffd166"/>
+
+    <!-- Guitar Neck & Frets -->
+    <rect x="475" y="220" width="50" height="260" fill="#583e2e"/>
+    <line x1="475" y1="260" x2="525" y2="260" stroke="#d4a373" stroke-width="6"/>
+    <line x1="475" y1="310" x2="525" y2="310" stroke="#d4a373" stroke-width="6"/>
+    <line x1="475" y1="360" x2="525" y2="360" stroke="#d4a373" stroke-width="6"/>
+    <line x1="475" y1="410" x2="525" y2="410" stroke="#d4a373" stroke-width="6"/>
+    <line x1="475" y1="460" x2="525" y2="460" stroke="#d4a373" stroke-width="6"/>
+
+    <!-- Guitar Body (Figure-8 Hourglass) -->
+    <!-- Upper Bout & Lower Bout -->
+    <path d="M470 480 C360 480 340 600 420 660 C320 720 300 890 500 890 C700 890 680 720 580 660 C660 600 640 480 530 480 Z" fill="#e9aa3a"/>
+
+    <!-- Pickguard -->
+    <path d="M510 570 C570 580 580 660 520 680 Z" fill="#8b5e34" stroke="none"/>
+
+    <!-- Soundhole Rosette -->
+    <circle cx="500" cy="620" r="50" fill="#2d261e"/>
+    <circle cx="500" cy="620" r="58" fill="none" stroke="#fffdf7" stroke-width="6"/>
+
+    <!-- Bridge & Saddle -->
+    <rect x="440" y="740" width="120" height="30" rx="8" fill="#583e2e"/>
+    <circle cx="460" cy="755" r="5" fill="#fffdf7" stroke="none"/>
+    <circle cx="480" cy="755" r="5" fill="#fffdf7" stroke="none"/>
+    <circle cx="500" cy="755" r="5" fill="#fffdf7" stroke="none"/>
+    <circle cx="520" cy="755" r="5" fill="#fffdf7" stroke="none"/>
+    <circle cx="540" cy="755" r="5" fill="#fffdf7" stroke="none"/>
+
+    <!-- Strings -->
+    <line x1="485" y1="100" x2="485" y2="745" stroke="#ffffff" stroke-width="4"/>
+    <line x1="495" y1="100" x2="495" y2="745" stroke="#ffffff" stroke-width="4"/>
+    <line x1="505" y1="100" x2="505" y2="745" stroke="#ffffff" stroke-width="4"/>
+    <line x1="515" y1="100" x2="515" y2="745" stroke="#ffffff" stroke-width="4"/>
+  </g>
+</svg>

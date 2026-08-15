@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_ribbon">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path class="tint-primary" d="M145 45 Q124 25 110 39 Q116 59 143 59 Z"/>
+    <path class="tint-primary" d="M155 45 Q176 25 190 39 Q184 59 157 59 Z"/>
+    <circle fill="#f2aa35" cx="150" cy="47" r="8"/>
+  </g>
+</svg>

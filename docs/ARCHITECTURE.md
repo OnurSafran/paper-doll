@@ -1,0 +1,219 @@
+# System Architecture
+
+## Principles
+
+1. `AppStore` owns serializable domain state; DOM is derived output.
+2. Commands express intent and are the only mutation path; subscriptions report completed changes.
+3. Domain rules remain browser-independent and testable.
+4. Pointer and keyboard actions commit the same logical commands.
+5. Persistence, export, and rendering consume validated state.
+6. Storage, asset, audio, and export failure is explicit and recoverable.
+7. Major features extend stable boundaries instead of enlarging `app.js`.
+
+## Current topology
+
+```text
+index.html
+└── js/app.js
+    ├── core/app-store.js
+    ├── core/state-schema.js
+    ├── core/storage-adapter.js
+    ├── core/asset-catalog.js
+    ├── core/svg-loader.js
+    ├── core/coordinate-space.js
+    ├── core/pointer-controller.js
+    └── domain/
+        ├── outfit-rules.js
+        └── scene-rules.js
+```
+
+The store/domain split is sound. The browser layer is too concentrated: `app.js` currently combines bootstrap, Designer, Play, Scene Book, dialogs, export, voice analysis, focus, and cross-tab coordination.
+
+## Target topology
+
+Adopt this as behavior-preserving extractions, not a rewrite:
+
+```text
+js/app.js                          bootstrap and routes
+js/features/designer/             Designer view and Dollbox
+js/features/play/                 stage, tray, selection, actions
+js/features/scene-book/           dialogs and derived previews
+js/services/project-repository.js load/save/revision/recovery/conflicts
+js/services/export-service.js     immutable-snapshot PNG export
+js/services/voice-puppetry.js     microphone/AudioContext lifecycle
+js/domain/vocabulary.js           expressions, slots, limits, enums
+js/core/app-store.js              commands, subscriptions, history
+js/core/state-schema.js           validation and migration
+```
+
+### Dependency rules
+
+- Feature views dispatch commands; they do not mutate state or write storage.
+- Services accept plain data and injected browser capabilities; they do not query feature DOM.
+- Persisted enums have one definition in `domain/vocabulary.js`.
+- The repository is the only owner of serialized envelope revisions and conflict checks.
+- Export snapshots state once; later edits cannot affect the in-flight result.
+- Voice frames are ephemeral DOM previews. Only explicit static-expression commands persist.
+
+## State ownership
+
+```javascript
+{
+  schemaVersion: 2,
+  settings: {},
+  designer: { draft: {}, selectedSlot: 'top', editingPresetId: null, dirty: false },
+  presets: [],
+  scenes: [],
+  currentScene: {},
+  ui: {
+    mode: 'designer',
+    selectedEntityId: null,
+    activeSceneLibraryId: null,
+    storageStatus: 'saved',
+    voicePuppetryActive: false
+  }
+}
+```
+
+Persist `settings`, `presets`, `scenes`, and `currentScene`. Do not persist UI selection, voice-active state, drag previews, render tokens, object URLs, audio frames, or history stacks.
+
+### Command contract
+
+A handler validates payload and IDs, applies pure rules, returns a new state, and marks whether persisted fields changed. Invalid/no-op commands do not announce success or schedule storage.
+
+History snapshots only domain state. A pointer drag updates transient preview coordinates and commits one move command on successful release.
+
+## Rendering
+
+- Monotonic tokens prevent stale async SVG rendering from replacing newer output.
+- Parsed SVG templates are cached; every use receives an independent clone.
+- Collections render from stable IDs and restore focus when the focused item remains.
+- Unknown assets render labeled placeholders and remain selectable/removable.
+- Scene Book and export derive from state; thumbnails are never persisted.
+
+### Outfit composition
+
+All doll-space assets share `0 0 300 450`. The renderer orders semantic layers. A hair choice may provide `hairBack` and `hairFront`, but state stores one hair slot.
+
+### Scene transforms
+
+Scene state stores ground anchor `(x, y)`, scalar `scale`, boolean `flipped`, and normalized integer `order`.
+
+```html
+<button class="scene-entity-positioner">
+  <span class="scene-entity-visual">…</span>
+</button>
+```
+
+- Positioner owns translation.
+- Visual owns scale/flip.
+- Selection UI is outside the flipped visual.
+- Temporary drag elevation never mutates persisted order.
+
+Clamping uses entity dimensions, scale, and catalog ground anchor to keep all items within the `1600 × 900` logical stage.
+
+## Coordinate and pointer lifecycle
+
+The stage is `1600 × 900`; its viewport letterboxes.
+
+```text
+scale = min(containerWidth / 1600, containerHeight / 900)
+logicalX = (clientX - stageLeft) / scale
+logicalY = (clientY - stageTop) / scale
+```
+
+A pointer session records pointer identity, subject, start/latest positions, threshold state, and cancellation. It captures after threshold, previews at animation-frame cadence, commits once on pointerup, and cancels on pointercancel, capture loss, route change, resize policy, deletion, visibility loss, or teardown.
+
+## Object stickiness, attachment, and compound transform lifecycle
+
+Scene entities support two stickiness mechanisms: **Scene Fixture Pinning** and **Hierarchical Entity Attachment**.
+
+1. **Scene Fixture Pinning (`pinned: boolean`)**:
+   - Pinned entities (e.g. wall frames, rugs, ceiling lights) are anchored to the background stage.
+   - Pointer drag passes through or selects without movement; transforms are locked until unpinned via HUD or keyboard.
+
+2. **Entity Attachment (`attachedTo: string | null`, `attachOffset: { dx: number, dy: number } | null`)**:
+   - An entity (accessory, held prop, speech bubble) may declare a parent host `attachedTo: parentInstanceId`.
+   - `attachOffset` stores relative logical coordinates `(child.x - parent.x, child.y - parent.y)`.
+   - Moving a parent entity propagates the coordinate delta `(dx, dy)` synchronously to all attached descendants.
+   - **Compound Bounding Clamping**: Parent movement is bounded by the union bounding box of the parent and all its attached children, guaranteeing no attached child clips past stage edges.
+   - **DAG Invariant**: Circular attachments (`A -> B -> A`) and self-attachments are rejected by sanitization.
+   - **Deletion Policy**: Deleting a parent automatically detaches all children in place (retaining their current absolute `(x, y)`), preventing dangling references.
+   - **Export Parity**: Because absolute `(x, y)` is stored for every entity, PNG export renders attached entities identically without requiring hierarchy traversal during rasterization.
+
+## Offline PWA and browser storage
+
+The application is served as an installable PWA. `manifest.webmanifest` defines the standalone Home Screen experience, while `sw.js` caches the HTML shell, JavaScript modules, styles, icon, and cataloged SVG assets. The service worker is cache-first for app resources and uses the cached `index.html` as the navigation fallback when offline. Future hosted releases must increment `CACHE_NAME` so installed iPads activate a new cache.
+
+Current project state uses guarded `localStorage` persistence. A future Custom Paint Studio may use IndexedDB for larger origin-local artwork records, but it must remain separate from the small validated project envelope. Project portability must explicitly export/import custom artwork before that feature is considered complete.
+
+## Persistence and recovery
+
+Current keys:
+
+| Key | Role |
+|:--|:--|
+| `paperDollStudio.state` | authoritative last-known-good envelope |
+| `paperDollStudio.state.tmp` | current write guard; not a recovery candidate |
+| `paperDollStudio.quarantine.<timestamp>` | best-effort invalid raw data retention |
+
+Each `localStorage.setItem` is synchronous and atomic at the single-key level; the two-key sequence is a guarded sequential write, not an ACID multi-key transaction. Cross-tab revision protection operates sequentially on a best-effort basis: the repository compares the disk revision to the in-memory base revision on every save attempt, rejecting stale writes with `REVISION_CONFLICT` unless explicitly forced.
+
+### Read
+
+1. Read the main key.
+2. Clear stale temporary data.
+3. Parse, migrate, validate, and bound the envelope.
+4. Preserve valid children and drop invalid children with warnings.
+5. Quarantine corrupt or unsupported raw data to `paperDollStudio.quarantine.<timestamp>`.
+6. Report data recovery separately from storage availability (`recovered: boolean`).
+
+### Write
+
+1. Build a persisted projection from committed state.
+2. Serialize/validate before touching main storage;
+3. Check storage revision against base revision for cross-tab conflicts;
+4. Write the temporary key;
+5. Write the main key;
+6. Clear the temporary key;
+7. Increment base revision and report success only after the main write.
+
+### Target revision model
+
+The repository maintains monotonic sequential revisions (`revision: integer >= 1`). The repository tracks the base revision loaded by the tab. If disk storage advances beyond base revision, cross-tab conflict handling blocks auto-save and prompts Reload vs Keep. Future saves require explicit confirmation to overwrite newer disk changes.
+
+Custom artwork bytes use IndexedDB transactions behind a separate repository; the small localStorage envelope stores references and metadata.
+
+## SVG security
+
+Only cataloged `assets/` paths are fetched. The loader rejects malformed XML, prohibited elements, event attributes, unexpected namespaces, embedded raster/data URLs, and external references; verifies root ID/viewBox/groups; imports a clone; and falls back to a labeled placeholder. See [ASSETS.md](ASSETS.md).
+
+## Export service contract
+
+- Capture one immutable validated state snapshot.
+- Render background and ordered entities with stage-equivalent position, scale, flip, color, layer, and expression.
+- Define missing-asset behavior explicitly.
+- Disable duplicate starts, expose progress/failure, and support teardown cancellation.
+- Revoke object URLs in all outcomes and normalize the filename.
+
+## Voice service contract
+
+- Request microphone only after explicit activation.
+- Stop stream tracks, animation frames, and AudioContext on stop, route change, visibility loss, pagehide, denial, or stale request completion.
+- Analyze locally; never record, serialize, or upload audio.
+- Restore each character’s static expression when voice mode stops.
+- Inject browser APIs for lifecycle tests.
+
+## Error boundary and observability
+
+Add top-level `error` and `unhandledrejection` handling that records stable privacy-safe codes without player content, stops unsafe follow-on work, keeps prior persisted state, and offers retry/reload. Local asset/export fallbacks do not replace this boundary.
+
+## Architecture migration order
+
+1. Centralize expressions, limits, and other persisted enums.
+2. Fix expression round trips and asset-aware clamping.
+3. Extract project repository; then migrate revisions.
+4. Extract export and voice services.
+5. Split Designer, Play, and Scene Book feature modules.
+6. Add project portability and story tools.
+7. Begin panoramic stages or custom paint only after the prior boundaries are stable.

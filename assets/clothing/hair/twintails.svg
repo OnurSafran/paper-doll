@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_twintails">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Left Bouncy Pigtail -->
+    <path class="hair-fill" d="M125 45 C100 20 75 40 80 85 C84 125 105 155 116 168 C110 140 102 100 118 60 Z" fill="var(--hair-color, #d8aa52)"/>
+    <circle cx="122" cy="50" r="5" fill="#ef476f" stroke="#2d261e" stroke-width="2"/>
+    <!-- Right Bouncy Pigtail -->
+    <path class="hair-fill" d="M175 45 C200 20 225 40 220 85 C216 125 195 155 184 168 C190 140 198 100 182 60 Z" fill="var(--hair-color, #d8aa52)"/>
+    <circle cx="178" cy="50" r="5" fill="#ef476f" stroke="#2d261e" stroke-width="2"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Center Sweet Bangs -->
+    <path class="hair-fill" d="M116 62 C114 36 128 22 150 22 C172 22 186 36 184 62 C178 48 168 44 150 44 C132 44 122 48 116 62 Z" fill="var(--hair-color, #d8aa52)"/>
+    <!-- Little Center Tuft -->
+    <path class="hair-fill" d="M142 44 Q150 54 158 44 Z" fill="var(--hair-color, #d8aa52)"/>
+  </g>
+</svg>

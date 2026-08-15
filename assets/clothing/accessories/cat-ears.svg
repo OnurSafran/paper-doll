@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_cat_ears">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Thin Headband -->
+    <path d="M120 45 Q150 26 180 45" fill="none" stroke="#2d261e" stroke-width="2.5"/>
+
+    <!-- Left Cat Ear Outer -->
+    <polygon class="tint-primary" points="122,40 120,10 142,32" fill="var(--asset-color-primary, #ef7f72)"/>
+    <!-- Left Inner Pink Ear -->
+    <polygon points="125,35 124,18 138,30" fill="#ffd166" stroke="none"/>
+
+    <!-- Right Cat Ear Outer -->
+    <polygon class="tint-primary" points="178,40 180,10 158,32" fill="var(--asset-color-primary, #ef7f72)"/>
+    <!-- Right Inner Pink Ear -->
+    <polygon points="175,35 176,18 162,30" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

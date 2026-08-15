@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_tshirt">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Sleeves -->
+    <path class="tint-primary" d="M126 112 L106 142 L120 148 L132 124 Z" fill="var(--asset-color-primary, #e76f51)"/>
+    <path class="tint-primary" d="M174 112 L194 142 L180 148 L168 124 Z" fill="var(--asset-color-primary, #e76f51)"/>
+    <!-- Main Torso -->
+    <path class="tint-primary" d="M126 112 C134 118 166 118 174 112 L178 185 C160 188 140 188 122 185 Z" fill="var(--asset-color-primary, #e76f51)"/>
+    <!-- White Sailor Stripes -->
+    <path d="M123 132 C140 135 160 135 177 132" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <path d="M123 148 C140 151 160 151 177 148" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <path d="M123 164 C140 167 160 167 177 164" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <!-- Collar Trim -->
+    <path d="M136 114 C142 120 158 120 164 114" fill="none" stroke="#ffffff" stroke-width="3.5"/>
+  </g>
+</svg>

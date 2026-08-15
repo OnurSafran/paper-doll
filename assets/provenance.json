@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 2,
+  "reviewedAt": "2026-08-16",
+  "distributionStatus": "project-original",
+  "metadataContract": {
+    "added_date": "ISO calendar date when the asset entered the catalog",
+    "creator": "Person or project team responsible for the SVG",
+    "concept": "Creative concept label used for grouping",
+    "dlc": "Content-pack identifier; core is the shipped catalog",
+    "source": "Production method and provenance note"
+  },
+  "notes": "All SVG assets in this package were authored specifically for Paper Doll Studio during implementation. They contain no copied third-party artwork, external fonts, embedded raster images, or remote references.",
+  "assets": [
+    {
+      "scope": "assets/characters",
+      "method": "project-authored SVG primitives and paths",
+      "creator": "Paper Doll Studio",
+      "concept": "core",
+      "dlc": "core",
+      "added_date": "2026-08-14"
+    },
+    {
+      "scope": "assets/clothing",
+      "method": "project-authored SVG primitives and paths",
+      "creator": "Paper Doll Studio",
+      "concept": "core",
+      "dlc": "core",
+      "added_date": "2026-08-14"
+    },
+    {
+      "scope": "assets/backgrounds",
+      "method": "project-authored SVG primitives and paths",
+      "creator": "Paper Doll Studio",
+      "concept": "core",
+      "dlc": "core",
+      "added_date": "2026-08-14"
+    },
+    {
+      "scope": "assets/props",
+      "method": "project-authored SVG primitives and paths",
+      "creator": "Paper Doll Studio",
+      "concept": "core",
+      "dlc": "core",
+      "added_date": "2026-08-14"
+    },
+    {
+      "scope": "new weekend/garden expansion",
+      "paths": [
+        "assets/clothing/tops/raincoat.svg",
+        "assets/clothing/tops/vest.svg",
+        "assets/clothing/bottoms/culottes.svg",
+        "assets/clothing/bottoms/cargo.svg",
+        "assets/clothing/dresses/overall.svg",
+        "assets/clothing/shoes/rainboots.svg",
+        "assets/clothing/hair/bun.svg",
+        "assets/clothing/hair/wavy-bob.svg",
+        "assets/clothing/accessories/ribbon.svg",
+        "assets/clothing/accessories/hairclip.svg",
+        "assets/clothing/accessories/flower.svg",
+        "assets/props/bicycle.svg",
+        "assets/props/kite.svg",
+        "assets/props/camera.svg",
+        "assets/props/flower-pot.svg",
+        "assets/props/mailbox.svg",
+        "assets/props/picnic-blanket.svg"
+      ],
+      "method": "project-authored SVG primitives and paths",
+      "creator": "5.6 Luna",
+      "concept": "weekend garden",
+      "dlc": "core",
+      "added_date": "2026-08-16"
+    }
+  ]
+}

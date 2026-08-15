@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_painting">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Hanging String Wire & Wall Nail Pin -->
+    <line x1="500" y1="120" x2="300" y2="280" stroke="#73513d" stroke-width="12"/>
+    <line x1="500" y1="120" x2="700" y2="280" stroke="#73513d" stroke-width="12"/>
+    <circle cx="500" cy="120" r="16" fill="#ffd166"/>
+
+    <!-- Ornate Golden Wooden Picture Frame -->
+    <rect x="160" y="260" width="680" height="560" rx="20" fill="#e9c46a" stroke="#2d261e" stroke-width="20"/>
+    <rect x="210" y="310" width="580" height="460" rx="10" fill="#f4a261" stroke="#2d261e" stroke-width="10"/>
+
+    <!-- Inner Canvas / Picture Matting -->
+    <rect x="250" y="350" width="500" height="380" rx="6" fill="#fcf6ec" stroke="none"/>
+
+    <!-- Landscape Artwork Inside Frame -->
+    <!-- Sunny Sky -->
+    <rect x="270" y="370" width="460" height="340" fill="#cbe3ef" stroke="none"/>
+    <circle cx="640" cy="430" r="30" fill="#ffd166" stroke="none"/>
+
+    <!-- Lavender Mountains -->
+    <polygon points="270,600 380,450 490,600" fill="#a78bc4" stroke="none"/>
+    <polygon points="420,600 560,420 680,600" fill="#9172b0" stroke="none"/>
+    <!-- Snowcaps -->
+    <polygon points="380,450 360,480 400,480" fill="#ffffff" stroke="none"/>
+    <polygon points="560,420 535,460 585,460" fill="#ffffff" stroke="none"/>
+
+    <!-- Rolling Sunlit Fields -->
+    <path d="M270 580 Q400 520 530 570 T730 550 L730 710 L270 710 Z" fill="#81b29a" stroke="none"/>
+    <path d="M270 630 Q450 580 730 630 L730 710 L270 710 Z" fill="#52796f" stroke="none"/>
+
+    <!-- Tiny Cottage & Paper Trees -->
+    <polygon points="340,640 370,610 400,640" fill="#ef7f72" stroke="none"/>
+    <rect x="350" y="640" width="40" height="30" fill="#fffdf7" stroke="none"/>
+    <circle cx="440" cy="635" r="16" fill="#2d6a4f" stroke="none"/>
+    <circle cx="465" cy="645" r="14" fill="#40916c" stroke="none"/>
+  </g>
+</svg>
