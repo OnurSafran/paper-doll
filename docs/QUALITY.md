@@ -1,13 +1,44 @@
 # Quality and Release Plan
 
+Updated: 2026-08-16
+
+Gate 4 status: **in progress**. Automated and source-contract evidence is green. Hosted-device evidence is still required before family release.
+
 ## Current evidence
 
 | Check | Current result | What it proves |
 |:--|:--|:--|
-| `node --test` | 186 pass, 0 fail | Domain rules, store/storage doubles, monotonic revision guards, error boundaries, pointer lifecycle, SVG parser, limits, domain vocabulary, project repository, export service, voice puppetry lifecycle, feature modules, UI contracts, project portability, JSON export/import validation, collision rewriting, backup recovery, scene stickiness & pinning, hierarchical entity attachment, compound clamping, speech bubbles & captions, high-fidelity composite Scene Book thumbnails, multi-selection & compound drag, visual alignment algebra, interactive Scene Outline modal, storytelling Scene Templates, panoramic stages & camera navigation, minimap & slider controls, edge auto-pan, wide canvas export, expanded catalog inventory, asset provenance metadata, base doll model switching, export cancellation locks, missing-asset placeholders, and comprehensive selection/deselection pathways. |
+| `node --test` | 237 pass, 0 fail | Existing domain, storage, portability, rendering, painter, and library coverage plus Gate 3B non-destructive slot metadata, generated-name behavior, trusted cutout contracts, reference preference bounds, keyboard modifier safety, and all 15 supported slot/model guide combinations. |
 | Asset validator | 77 pass | All cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata. |
-| Documentation validator | 8 pass, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
-| PWA shell validation | Pass | Manifest, service-worker syntax, and all 106 cached app-shell files validate. |
+| Documentation validator | 9 pass, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
+| PWA shell validation | Pass | Manifest, service-worker syntax, and all 107 cached app-shell files validate. |
+
+## Custom Paint Studio Gate 4 evidence
+
+| Evidence | Result | Notes |
+|:--|:--|:--|
+| `npm run check` | Pass | 237 tests, documentation validation, and 77 cataloged SVG assets passed on 2026-08-16. |
+| Gate 3B local browser QA | Pass | Cutout discovery/Add/Undo, slot/history retention, reference controls, exact overlay alignment, console cleanliness, and `768 × 1024` zero-overflow layout passed on 2026-08-16. |
+| Custom-art storage and recovery contracts | Pass | IndexedDB repository, PNG integrity, staging, backups, trash, restore, orphan safety, and object-URL lifecycle are covered by automated tests. |
+| Painter and accessibility contracts | Pass | Raster operations, bounded history, keyboard cursor, dirty/draft recovery, semantic controls, 44px targets, dark/checkerboard UI, and narrow responsive layout are covered by tests. |
+| Project transfer contracts | Pass | Package validation, SHA-256 artwork integrity, Replace/Merge, collision rewriting, and missing/corrupt artwork behavior are covered by tests. |
+| Browser/device manual matrix | Open | Must be run against hosted Chrome, Safari, Firefox, Edge, and the target iPad; source tests do not substitute for this evidence. |
+| Hosted iPad Home Screen offline journey | Blocked | No hosted URL and target iPad evidence is present in this workspace. Follow the smoke test in [OFFLINE-PWA.md](OFFLINE-PWA.md) and record the result here. |
+
+### Custom Paint required journeys
+
+CP-01–CP-15 are covered by the current feature, domain, storage, portability, and UI contract suites. They still need dated browser-session evidence for release sign-off. CP-16 is hardware-only and remains blocked until the hosted iPad run is recorded.
+
+| ID | Evidence status | Release note |
+|:--|:--|:--|
+| CP-01–CP-05 | Automated pass; browser evidence open | Create/use wearable, prop, history, draft recovery, and dirty-route protection. |
+| CP-06, CP-11 | Automated pass; browser evidence open | Quota and corrupt/over-limit import preserve the last known-good project. |
+| CP-07–CP-10 | Automated pass; cross-browser evidence open | Render parity, export/import, Replace, Merge, and collision rewriting. |
+| CP-12–CP-15 | Automated pass; browser evidence open | Placeholder-safe removal, restore, delete-with-uses undo, and keyboard creation. |
+| CP-16 | Blocked | Hosted iPad: paint, save, reload, use, and export without network. |
+| CP-17–CP-18 | Automated and local browser pass | Slot/history retention and reference-only cutout selection. |
+| CP-19 | Automated pass; Replace browser matrix open | Add/Undo passed locally; explicit Replace confirmation remains in the Gate 4 browser matrix. |
+| CP-20–CP-21 | Automated and local browser pass | Guide controls preserve history, remain keyboard reachable, align with the canvas, and do not overflow tablet portrait. |
 
 ## Automated coverage requirements
 
@@ -57,7 +88,7 @@
 | J-15 | Multi-select & visual alignment | Shift+click stage items to select multiple; drag moves entire group simultaneously; align Left/Center/Right/Top/Middle/Bottom and Distribute Horizontally/Vertically with single undo/redo. | Pass |
 | J-16 | Scene Outline accessible inspector | Open outline via button or `O` hotkey; browse entities in z-order; toggle selections, bring forward/backward, toggle pins, delete items with keyboard navigation. | Pass |
 | J-17 | Scene templates & duplicate current scene | Browse 5 curated storytelling starter templates in modal showcase; load onto stage with fresh ID generation; click "Save as Copy" to duplicate active layout directly into Scene Book. | Pass |
-| J-18 | Install and play offline on iPad | Open the HTTPS site once in Safari, add it to the Home Screen, reload without network, and create/save a doll and scene. | Planned manual smoke test |
+| J-18 | Install and play offline on iPad | Open the HTTPS site once in Safari, add it to the Home Screen, reload without network, and create/save a doll and scene. | Blocked — hosted device evidence required |
 | J-19 | Panoramic stages & camera navigation | Switch to 3200px or 4800px wide stage; navigate camera with slider, steppers, minimap, trackpad, and keyboard; drag entities across edge with live edge-pan; export wide PNG. | Pass |
 
 ## Failure matrix

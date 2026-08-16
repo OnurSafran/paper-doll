@@ -11,6 +11,14 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 
 ## Coordinate contracts
 
+### Custom Paint Studio raster assets
+
+- Wearables use a `300 × 450` logical canvas and a `600 × 900` transparent PNG bitmap.
+- Props use a `500 × 500` logical canvas and a `1000 × 1000` transparent PNG bitmap.
+- PNG bytes are player-created, same-origin, and stored in IndexedDB; they never enter the SVG catalog or service-worker cache.
+- Custom metadata keeps logical dimensions, pixel dimensions, digest, display bounds, and anchor. Derived thumbnails and object URLs are runtime-only.
+- Project import validates PNG signature, dimensions, byte limit, digest, and browser decode before metadata is committed.
+
 ### Doll, hair, and wearables
 
 - `viewBox="0 0 300 450"`

@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <title>Paper Doll Studio</title>
     <link rel="stylesheet" href="css/tokens.css?v=3">
-    <link rel="stylesheet" href="css/app.css?v=3">
+    <link rel="stylesheet" href="css/app.css?v=4">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to the studio</a>
@@ -25,6 +25,7 @@
       </a>
       <nav class="mode-nav" aria-label="Studio sections">
         <a href="#designer" data-mode-link="designer">Designer</a>
+        <a href="#paint" data-mode-link="paint">Paint</a>
         <a href="#play" data-mode-link="play">Play <span id="dollbox-count" class="nav-count" aria-label="0 saved dolls">0</span></a>
       </nav>
       <div class="header-actions">
@@ -231,6 +232,171 @@
         <div id="play-status" class="visible-status" role="status" aria-live="polite"></div>
       </section>
 
+      <section id="paint-screen" class="screen" aria-labelledby="paint-title" hidden>
+        <div class="screen-heading paint-heading">
+          <div class="paint-heading-primary">
+            <button id="paint-back-btn" class="button secondary compact-action" type="button" title="Back to previous screen">◀ Back</button>
+            <div class="paint-title-group">
+              <h1 id="paint-title">Paint Studio</h1>
+              <span id="paint-item-label" class="paint-item-badge">Top Cutout</span>
+            </div>
+            <div class="paint-history-controls" role="group" aria-label="Paint history">
+              <button id="paint-undo-btn" class="history-btn" type="button" title="Undo stroke (Ctrl+Z or ⌘Z)" aria-label="Undo paint stroke" disabled>↺</button>
+              <button id="paint-redo-btn" class="history-btn" type="button" title="Redo stroke (Ctrl+Y or ⌘⇧Z)" aria-label="Redo paint stroke" disabled>↻</button>
+            </div>
+            <button id="paint-save-btn" class="button primary compact-action" type="button" title="Save artwork">💾 Save Art</button>
+          </div>
+          <div class="paint-heading-secondary">
+            <button id="paint-new-btn" class="button secondary compact-action" type="button" title="Start new artwork">✦ New</button>
+            <button id="paint-myart-btn" class="button secondary compact-action" type="button" title="View saved custom artwork library and trash">🎨 My Art</button>
+            <button id="paint-mirror-btn" class="button secondary compact-action" type="button" aria-pressed="false" title="Toggle horizontal mirror drawing (Hotkey: M)">🪞 Mirror</button>
+            <button id="paint-zoom-btn" class="button secondary compact-action" type="button" title="Toggle canvas zoom (Hotkey: Z)">🔍 1×</button>
+            <button id="paint-clear-btn" class="button secondary compact-action" type="button" title="Clear canvas">🗑️ Clear</button>
+          </div>
+        </div>
+
+        <div class="paint-grid">
+          <div class="paint-stage-column">
+            <div id="paint-canvas-viewport" class="paint-canvas-viewport">
+              <div id="paint-canvas-stage" class="paint-canvas-stage">
+                <div id="paint-guide-layer" class="paint-guide-layer" aria-hidden="true"></div>
+                <div class="paint-canvas-wrapper">
+                  <canvas id="paint-canvas" tabindex="0" role="img" aria-label="Artwork drawing canvas. Use mouse/stylus/touch to paint, or Arrow keys and Space to draw with keyboard."></canvas>
+                  <div id="paint-selection-outline" class="paint-selection-outline" aria-hidden="true"></div>
+                  <div id="paint-cursor" class="paint-virtual-cursor" aria-hidden="true"></div>
+                </div>
+              </div>
+              <div id="paint-preview-card" class="paint-floating-preview" aria-label="Live preview">
+                <div id="paint-preview-stage" class="paint-preview-stage"></div>
+                <div id="paint-preview-variants" class="preview-variant-chips"></div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="paper-panel paint-sidebar" aria-label="Painting tools and properties">
+            <div class="paint-sidebar-tabs" role="tablist" aria-label="Sidebar panels">
+              <button id="paint-tab-draw" class="paint-tab-btn active" role="tab" aria-selected="true" aria-controls="paint-panel-draw" data-tab="draw" type="button">🖌️ Draw</button>
+              <button id="paint-tab-setup" class="paint-tab-btn" role="tab" aria-selected="false" aria-controls="paint-panel-setup" data-tab="setup" type="button">⚙️ Setup</button>
+            </div>
+
+            <div id="paint-panel-draw" class="paint-tab-panel" role="tabpanel" aria-labelledby="paint-tab-draw">
+              <div id="paint-tools-toolbar" class="paint-tools-grid" role="toolbar" aria-label="Drawing tools">
+                <button id="tool-brush" class="tool-btn active" data-tool="brush" type="button" title="Round Brush (Hotkey: B)" aria-pressed="true">🖌️ <span>Brush</span></button>
+                <button id="tool-eraser" class="tool-btn" data-tool="eraser" type="button" title="Eraser (Hotkey: E)" aria-pressed="false">🧹 <span>Eraser</span></button>
+                <button id="tool-fill" class="tool-btn" data-tool="fill" type="button" title="Flood Fill (Hotkey: G)" aria-pressed="false">🪣 <span>Fill</span></button>
+                <button id="tool-shape" class="tool-btn" data-tool="shape" type="button" title="Shapes (Hotkey: R)" aria-pressed="false">⭕ <span>Shapes</span></button>
+                <button id="tool-select" class="tool-btn" data-tool="select" type="button" title="Select and move pixels (Hotkey: S)" aria-pressed="false">▣ <span>Select</span></button>
+                <button id="tool-eyedropper" class="tool-btn" data-tool="eyedropper" type="button" title="Eyedropper (Hotkey: I)" aria-pressed="false">💉 <span>Picker</span></button>
+              </div>
+
+              <div id="paint-brush-size-group" class="tool-prop-group">
+                <label><strong>Brush Size</strong></label>
+                <div id="paint-brush-sizes" class="size-chips-grid" role="radiogroup" aria-label="Brush size">
+                  <button data-size="4" class="size-chip" type="button" role="radio" aria-checked="false">4px</button>
+                  <button data-size="10" class="size-chip active" type="button" role="radio" aria-checked="true">10px</button>
+                  <button data-size="20" class="size-chip" type="button" role="radio" aria-checked="false">20px</button>
+                  <button data-size="40" class="size-chip" type="button" role="radio" aria-checked="false">40px</button>
+                </div>
+              </div>
+
+              <div id="paint-shape-options" class="tool-prop-group" hidden>
+                <label><strong>Shape Type</strong></label>
+                <div class="shape-type-grid" role="radiogroup" aria-label="Shape geometry">
+                  <button data-shape="rect" class="shape-chip active" type="button" role="radio" aria-checked="true">Rectangle</button>
+                  <button data-shape="ellipse" class="shape-chip" type="button" role="radio" aria-checked="false">Ellipse</button>
+                  <button data-shape="line" class="shape-chip" type="button" role="radio" aria-checked="false">Line</button>
+                </div>
+                <label class="checkbox-label" for="paint-shape-filled">
+                  <input id="paint-shape-filled" type="checkbox">
+                  <span>Filled shape</span>
+                </label>
+              </div>
+
+              <div class="paint-color-bar">
+                <div class="paint-color-bar-row">
+                  <div id="paint-active-color" class="paint-active-color-swatch" title="Active color"></div>
+                  <div id="paint-palette-grid" class="paint-palette-grid"></div>
+                  <label class="paint-color-picker-label" for="paint-color-picker" title="Custom color">
+                    <input id="paint-color-picker" type="color" value="#e76f51">
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div id="paint-panel-setup" class="paint-tab-panel" role="tabpanel" aria-labelledby="paint-tab-setup" hidden>
+              <div class="paint-type-toggle" role="group" aria-label="Item kind">
+                <button id="paint-type-wearable" class="button type-toggle-btn active" type="button">👗 Clothing</button>
+                <button id="paint-type-prop" class="button type-toggle-btn" type="button">🧸 Prop</button>
+              </div>
+
+              <div id="paint-wearable-config" class="paint-config-group">
+                <label for="paint-slot-select"><strong>Clothing Slot</strong></label>
+                <select id="paint-slot-select">
+                  <option value="top">Top</option>
+                  <option value="bottom">Bottom</option>
+                  <option value="dress">Dress</option>
+                  <option value="shoes">Shoes</option>
+                  <option value="accessory">Accessory</option>
+                </select>
+                <div class="cutout-picker-wrap">
+                  <label><strong>Starting Cutout</strong></label>
+                  <div id="paint-cutout-grid" class="cutout-grid" role="listbox" aria-label="Starting cutout references"></div>
+                  <p id="paint-cutout-status" class="panel-copy cutout-status" role="status">Choose a cutout to use as a non-saving reference.</p>
+                  <div class="cutout-action-row">
+                    <button id="paint-cutout-add-btn" class="button secondary" type="button" disabled>Add Cutout Pixels</button>
+                    <button id="paint-cutout-replace-btn" class="button secondary" type="button" disabled>Replace Artwork</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="paint-prop-config" class="paint-config-group" hidden>
+                <label for="paint-prop-size-select"><strong>Prop Size</strong></label>
+                <select id="paint-prop-size-select">
+                  <option value="small">Small (Max 140px)</option>
+                  <option value="medium" selected>Medium (Max 240px)</option>
+                  <option value="large">Large (Max 360px)</option>
+                </select>
+                <label for="paint-prop-placement-select"><strong>Prop Placement</strong></label>
+                <select id="paint-prop-placement-select">
+                  <option value="surface" selected>Sits on a surface (Bottom anchor)</option>
+                  <option value="hang">Hangs / Floats (Center anchor)</option>
+                </select>
+              </div>
+
+              <details id="paint-reference-controls" class="paint-reference-disclosure">
+                <summary class="paint-reference-summary">⚙️ Reference Overlay</summary>
+                <div class="paint-reference-content">
+                  <label class="reference-toggle" for="paint-reference-visible">
+                    <input id="paint-reference-visible" type="checkbox" checked>
+                    <span>Body reference</span>
+                  </label>
+                  <label for="paint-reference-model"><strong>Reference Model</strong></label>
+                  <select id="paint-reference-model">
+                    <option value="doll_classic_a">Classic</option>
+                    <option value="doll_classic_b">Joy</option>
+                    <option value="doll_chibi_a">Chibi</option>
+                  </select>
+                  <div class="reference-opacity-row">
+                    <label for="paint-reference-opacity"><strong>Opacity</strong></label>
+                    <output id="paint-reference-opacity-value" for="paint-reference-opacity">50%</output>
+                  </div>
+                  <input id="paint-reference-opacity" class="reference-opacity-slider" type="range" min="20" max="80" step="10" value="50" aria-label="Reference overlay opacity">
+                  <label class="reference-toggle" for="paint-guides-visible">
+                    <input id="paint-guides-visible" type="checkbox" checked>
+                    <span>Alignment guides</span>
+                  </label>
+                  <label class="reference-toggle" for="paint-cutout-reference-visible">
+                    <input id="paint-cutout-reference-visible" type="checkbox" checked>
+                    <span>Selected cutout reference</span>
+                  </label>
+                </div>
+              </details>
+            </div>
+          </aside>
+        </div>
+        <div id="paint-status" class="visible-status" role="status" aria-live="polite"></div>
+      </section>
+
     </main>
 
     <dialog id="confirm-dialog" class="confirm-dialog">
@@ -257,7 +423,7 @@
         <section class="project-section export-section">
           <div class="section-title-wrap">
             <h3>Export Project Backup</h3>
-            <p class="panel-copy">Download your complete studio (dolls, scenes, and current stage) as a portable <code>.json</code> file.</p>
+          <p class="panel-copy">Download your complete studio (dolls, scenes, current stage, and My Art PNGs) as a portable <code>.json</code> file.</p>
           </div>
           <div class="export-meta-row">
             <div id="project-export-stats" class="project-stats-chips"></div>
@@ -268,7 +434,7 @@
         <section class="project-section import-section">
           <div class="section-title-wrap">
             <h3>Import Project</h3>
-            <p class="panel-copy">Load a saved <code>.json</code> project file. You can choose to merge items or replace your studio.</p>
+          <p class="panel-copy">Load a saved <code>.json</code> project file. Custom clothing and props are validated before import; you can merge items or replace your studio.</p>
           </div>
           <div id="import-dropzone" class="import-dropzone">
             <input type="file" id="project-file-input" accept=".json,application/json" class="visually-hidden">
@@ -335,7 +501,8 @@
         <section class="guide-section">
           <h3>3. Kaydetme ve geri alma</h3>
           <p>Değişiklikler bu cihazda otomatik olarak kaydedilir. <strong>Undo</strong> ve <strong>Redo</strong> ile son işlemleri geri alıp tekrarlayabilirsin.</p>
-          <p>Project menüsünden projeyi JSON dosyası olarak dışa aktar. Bu dosya, bebeği ve sahneleri yedeklemek veya başka bir cihaza taşımak içindir.</p>
+          <p><strong>Paint</strong> bölümünde kıyafet veya eşya çizip hemen kullanabilirsin. Çizimler cihazda IndexedDB'de saklanır; Project menüsündeki JSON yedeği çizimleri de içerir ve başka bir cihaza taşınabilir.</p>
+          <p>Bir resmi My Art'tan kaldırmak mevcut bebek ve sahne kullanımlarını silmez; bunlar geri getirilebilir bir yer tutucu olarak kalır.</p>
         </section>
         <section class="guide-section">
           <h3>4. İnternetsiz oynama</h3>
@@ -406,6 +573,107 @@
       </form>
     </dialog>
 
+    <dialog id="paint-save-dialog" class="confirm-dialog">
+      <form id="paint-save-form">
+        <span class="eyebrow">Paint Studio</span>
+        <h2>Save Custom Artwork</h2>
+        <p>Give your artwork a name to save it to My Art.</p>
+        <div class="paint-save-preview-wrap">
+          <div id="paint-save-thumb" class="paint-save-thumb" role="img" aria-label="Artwork thumbnail preview"></div>
+        </div>
+        <label for="paint-artwork-name">Artwork Name</label>
+        <input id="paint-artwork-name" name="artworkName" maxlength="30" placeholder="My Custom Shirt" required>
+        <div class="button-row end">
+          <button id="paint-cancel-save-btn" type="button" class="button secondary">Cancel</button>
+          <button id="paint-save-myart-btn" type="button" class="button secondary">Save to My Art</button>
+          <button id="paint-save-context-btn" type="submit" class="button primary">Save & Use</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="paint-dirty-dialog" class="confirm-dialog">
+      <div class="dialog-content">
+        <span class="eyebrow">Unsaved Changes</span>
+        <h2>Keep Painting?</h2>
+        <p>You have unsaved artwork changes in Paint Studio.</p>
+        <div class="button-row end">
+          <button id="paint-dirty-keep-btn" type="button" class="button primary">Keep Painting</button>
+          <button id="paint-dirty-discard-btn" type="button" class="button secondary">Discard Draft</button>
+          <button id="paint-dirty-save-btn" type="button" class="button secondary">Save Artwork</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="paint-draft-recovery-dialog" class="confirm-dialog">
+      <div class="dialog-content">
+        <span class="eyebrow">Draft Recovery</span>
+        <h2>Recover Unsaved Artwork?</h2>
+        <p>An unsaved artwork draft was found on this device from your previous painting session.</p>
+        <div class="button-row end">
+          <button id="paint-recover-discard-btn" type="button" class="button secondary">Discard Draft</button>
+          <button id="paint-recover-continue-btn" type="button" class="button primary">Continue Draft</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="paint-myart-dialog" class="library-dialog myart-dialog" aria-labelledby="myart-dialog-title">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Custom Studio Collection</span>
+          <h2 id="myart-dialog-title">My Art Library</h2>
+        </div>
+        <button id="close-myart-dialog" class="icon-close-btn" type="button" aria-label="Close My Art dialog">✕</button>
+      </div>
+      <div class="myart-dialog-body">
+        <div class="myart-header-row">
+          <div class="myart-tabs" role="tablist" aria-label="My Art categories">
+            <button id="myart-tab-all" class="myart-tab-btn active" role="tab" aria-selected="true" data-tab="all" type="button">All Art</button>
+            <button id="myart-tab-wearable" class="myart-tab-btn" role="tab" aria-selected="false" data-tab="wearable" type="button">👗 Clothing</button>
+            <button id="myart-tab-prop" class="myart-tab-btn" role="tab" aria-selected="false" data-tab="prop" type="button">🧸 Props</button>
+            <button id="myart-tab-trash" class="myart-tab-btn" role="tab" aria-selected="false" data-tab="trash" type="button">🗑️ Trash</button>
+          </div>
+          <div id="myart-trash-actions" class="myart-trash-actions" hidden>
+            <button id="myart-empty-trash-btn" class="button danger-fill compact-action" type="button">Empty Trash</button>
+          </div>
+        </div>
+        <div id="paint-myart-grid" class="scene-library-grid myart-grid" role="list"></div>
+      </div>
+    </dialog>
+
+    <dialog id="paint-impact-dialog" class="confirm-dialog impact-dialog" aria-labelledby="impact-dialog-title">
+      <div class="dialog-content">
+        <span class="eyebrow">Artwork Usage & Removal</span>
+        <h2 id="impact-dialog-title">Artwork Impact</h2>
+        <div class="impact-art-preview">
+          <div id="impact-art-thumb" class="impact-thumb" role="img" aria-label="Artwork thumbnail"></div>
+          <div class="impact-art-meta">
+            <strong id="impact-art-name">Artwork Name</strong>
+            <span id="impact-art-summary" class="panel-copy">Used in 0 places</span>
+          </div>
+        </div>
+        <div id="impact-details-box" class="impact-details-box"></div>
+        <p id="impact-warning-text" class="impact-warning-text">Removing hides this item from your library. Dolls and scenes currently using it will show a labeled placeholder. You can restore it from Trash anytime.</p>
+        <div class="button-row end">
+          <button id="paint-impact-cancel-btn" type="button" class="button secondary">Cancel</button>
+          <button id="paint-impact-remove-btn" type="button" class="button secondary" title="Hide artwork from library; preserves safe placeholders">Remove from My Art</button>
+          <button id="paint-impact-delete-all-btn" type="button" class="button danger-fill" title="Remove artwork and all uses across dolls and scenes">Delete Artwork & All Uses</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="paint-rename-dialog" class="confirm-dialog" aria-labelledby="rename-dialog-title">
+      <form id="paint-rename-form">
+        <span class="eyebrow">Rename Artwork</span>
+        <h2 id="rename-dialog-title">Edit Artwork Name</h2>
+        <label for="paint-rename-input">Artwork Name</label>
+        <input id="paint-rename-input" name="artworkName" maxlength="30" required>
+        <div class="button-row end">
+          <button id="paint-rename-cancel-btn" type="button" class="button secondary">Cancel</button>
+          <button id="paint-rename-save-btn" type="submit" class="button primary">Save Name</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="bubble-text-dialog" class="confirm-dialog">
       <form id="bubble-text-form">
         <span class="eyebrow">Speech Bubble</span>
@@ -437,7 +705,7 @@
     <div id="toast-region" class="toast-region" aria-hidden="true"></div>
 
     <noscript><p class="noscript">Paper Doll Studio needs JavaScript to create and save dolls.</p></noscript>
-    <script type="module" src="js/app.js?v=2"></script>
+    <script type="module" src="js/app.js?v=4"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));

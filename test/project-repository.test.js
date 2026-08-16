@@ -18,7 +18,7 @@ test('project repository load handles null and unavailable storage', () => {
   const nullResult = loadProject(null, getAsset);
   assert.equal(nullResult.available, false);
   assert.equal(nullResult.recovered, false);
-  assert.equal(nullResult.envelope.schemaVersion, 2);
+  assert.equal(nullResult.envelope.schemaVersion, 3);
 
   const throwingStorage = {
     getItem: () => { throw new Error('SecurityError: access denied'); }

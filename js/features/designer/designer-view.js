@@ -3,10 +3,11 @@
  * Owns wardrobe palettes, dress-up layers, swatch picking, and Dollbox presets.
  */
 
-import { assetsByKind, wearablesBySlot, getAsset } from '../../core/asset-catalog.js';
+import { assetsByKind, wearablesBySlot, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { GARMENT_COLORS, HAIR_COLORS, PALETTE, paletteValue, SKIN_COLORS } from '../../core/palette.js';
 import { loadAssetSvg, makeAssetPlaceholder } from '../../core/svg-loader.js';
-import { DEFAULT_EXPRESSION } from '../../domain/vocabulary.js';
+import { DEFAULT_EXPRESSION, isCustomAssetId } from '../../domain/vocabulary.js';
+import { customAssetToDescriptor } from '../../core/asset-registry.js';
 import { applyMouthExpression } from '../../services/export-service.js';
 
 export const WARDROBE_SLOTS = [
@@ -18,7 +19,7 @@ export const WARDROBE_SLOTS = [
   ['accessory', 'Accessories']
 ];
 
-export function describeOutfit(draft) {
+export function describeOutfit(draft, getAsset = getBuiltinAsset) {
   const names = Object.values(draft.slots).filter(Boolean).map((item) => getAsset(item.assetId)?.name).filter(Boolean);
   return names.length ? `Paper doll wearing ${names.join(', ')}.` : 'Paper doll with no outfit pieces.';
 }
@@ -32,8 +33,36 @@ export const SLOT_PREVIEW_VIEWBOX = Object.freeze({
   accessory: '90 0 120 80'
 });
 
-export async function appendAsset(container, assetId, { color, isPreview = false } = {}) {
+export async function appendAsset(container, assetId, { color, isPreview = false, customArtRepo, getAsset = getBuiltinAsset } = {}) {
   try {
+    if (isCustomAssetId(assetId)) {
+      const url = await customArtRepo?.getTrackedObjectUrl?.(assetId);
+      if (url) {
+        if (isPreview) {
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = getAsset(assetId)?.name ?? 'Custom art';
+          img.className = 'custom-art-card-thumb';
+          container.append(img);
+          return;
+        }
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 300 450');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        img.setAttribute('href', url);
+        img.setAttribute('x', '0');
+        img.setAttribute('y', '0');
+        img.setAttribute('width', '300');
+        img.setAttribute('height', '450');
+        img.setAttribute('preserveAspectRatio', 'none');
+        svg.appendChild(img);
+        container.append(svg);
+        return;
+      }
+    }
     const svg = await loadAssetSvg(assetId);
     const asset = getAsset(assetId);
     container.style.setProperty('--asset-color-primary', paletteValue(color ?? asset?.defaultColors?.primary, 'coral'));
@@ -47,9 +76,14 @@ export async function appendAsset(container, assetId, { color, isPreview = false
   }
 }
 
-export async function renderAssetPreview(container, asset) {
+export async function renderAssetPreview(container, asset, options = {}) {
   container.replaceChildren();
-  await appendAsset(container, asset.id, { color: asset.defaultColors?.primary, isPreview: true });
+  await appendAsset(container, asset.id, {
+    color: asset.defaultColors?.primary,
+    isPreview: true,
+    customArtRepo: options.customArtRepo,
+    getAsset: options.getAsset
+  });
 }
 
 export async function renderDollInto(container, draft, options = {}) {
@@ -66,6 +100,8 @@ export async function renderDollInto(container, draft, options = {}) {
   if (accessory) layers.push([80, accessory.assetId, accessory.color, null, 'accessory']);
 
   const expression = options.expression || draft.expression || DEFAULT_EXPRESSION;
+  const customArtRepo = options.customArtRepo;
+  const getAsset = options.getAsset ?? getBuiltinAsset;
 
   const nodes = await Promise.all(layers.map(async ([order, id, color, group, slot]) => {
     const layer = document.createElement('span');
@@ -76,6 +112,26 @@ export async function renderDollInto(container, draft, options = {}) {
     layer.style.setProperty('--hair-color', paletteValue(color, 'brown'));
     layer.style.setProperty('--asset-color-primary', paletteValue(color, 'coral'));
     try {
+      if (isCustomAssetId(id)) {
+        const url = await customArtRepo?.getTrackedObjectUrl?.(id) || await options.getCustomArtUrl?.(id);
+        if (url) {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 300 450');
+          svg.setAttribute('width', '100%');
+          svg.setAttribute('height', '100%');
+          svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+          const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          image.setAttribute('href', url);
+          image.setAttribute('x', '0');
+          image.setAttribute('y', '0');
+          image.setAttribute('width', '300');
+          image.setAttribute('height', '450');
+          image.setAttribute('preserveAspectRatio', 'none');
+          svg.appendChild(image);
+          layer.append(svg);
+          return layer;
+        }
+      }
       const svg = await loadAssetSvg(id);
       if (group) {
         for (const candidate of ['hairBack', 'hairFront']) {
@@ -108,7 +164,10 @@ export function createDesignerView({
   $,
   $$,
   askConfirm,
-  miniButton
+  miniButton,
+  customArtRepo,
+  openPaintStudio,
+  getAsset = getBuiltinAsset
 }) {
   let designerRenderToken = 0;
 
@@ -146,19 +205,34 @@ export function createDesignerView({
       if (token === designerRenderToken) $(`#${focusedTabId}`)?.focus();
     });
     items.setAttribute('aria-labelledby', `wardrobe-tab-${state.designer.selectedSlot}`);
-    items.replaceChildren(...wearablesBySlot(state.designer.selectedSlot).map((asset) => {
+
+    const builtins = wearablesBySlot(state.designer.selectedSlot);
+    const customs = (state.customAssets || [])
+      .filter((a) => a.kind === 'wearable' && a.slot === state.designer.selectedSlot && a.status === 'available' && a.libraryVisible !== false)
+      .map(customAssetToDescriptor);
+    const allWearables = [...builtins, ...customs];
+
+    const cards = allWearables.map((asset) => {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'asset-card';
+      button.className = `asset-card${asset.custom ? ' is-custom-asset' : ''}`;
       button.draggable = true;
       button.dataset.assetId = asset.id;
       button.setAttribute('aria-pressed', String(state.designer.draft.slots[asset.slot]?.assetId === asset.id));
-      button.setAttribute('aria-label', `Equip ${asset.name}`);
+      button.setAttribute('aria-label', `Equip ${asset.name}${asset.custom ? ' (Custom Art)' : ''}`);
       const preview = document.createElement('span');
       preview.className = 'asset-card-preview';
       const label = document.createElement('span');
       label.textContent = asset.name;
       button.append(preview, label);
+      if (asset.custom) {
+        const badge = document.createElement('span');
+        badge.className = 'custom-art-badge';
+        badge.textContent = '🎨';
+        badge.title = 'Hand-painted custom art';
+        badge.setAttribute('aria-hidden', 'true');
+        button.append(badge);
+      }
       button.addEventListener('click', () => store.dispatch({ type: 'designer/equip', assetId: asset.id }));
       button.addEventListener('dragstart', (event) => {
         event.dataTransfer.effectAllowed = 'copy';
@@ -166,9 +240,36 @@ export function createDesignerView({
         button.classList.add('is-dragging');
       });
       button.addEventListener('dragend', () => button.classList.remove('is-dragging'));
-      void renderAssetPreview(preview, asset);
+      void renderAssetPreview(preview, asset, { customArtRepo, getAsset });
       return button;
-    }));
+    });
+
+    if (['top', 'bottom', 'dress', 'shoes', 'accessory'].includes(state.designer.selectedSlot)) {
+      const paintBtn = document.createElement('button');
+      paintBtn.type = 'button';
+      paintBtn.className = 'asset-card paint-item-action-card';
+      paintBtn.setAttribute('aria-label', `Paint a custom ${state.designer.selectedSlot}`);
+      const preview = document.createElement('span');
+      preview.className = 'asset-card-preview';
+      preview.textContent = '🎨';
+      const label = document.createElement('span');
+      label.textContent = `+ Paint ${state.designer.selectedSlot}`;
+      paintBtn.append(preview, label);
+      paintBtn.addEventListener('click', () => {
+        if (openPaintStudio) {
+          openPaintStudio({
+            itemType: 'wearable',
+            slot: state.designer.selectedSlot,
+            originContext: 'designer'
+          });
+        } else {
+          window.location.hash = '#paint';
+        }
+      });
+      cards.push(paintBtn);
+    }
+
+    items.replaceChildren(...cards);
   }
 
   function renderDollModels(container, selectedDollId) {
@@ -198,15 +299,21 @@ export function createDesignerView({
     }
     const slot = state.designer.selectedSlot;
     const selectedItem = draft.slots[slot];
+    const isCustom = selectedItem && isCustomAssetId(selectedItem.assetId);
     const colors = slot === 'hair' ? HAIR_COLORS : GARMENT_COLORS;
     const container = $('#piece-palette');
     if (!selectedItem) {
       container.replaceChildren(Object.assign(document.createElement('p'), { textContent: 'Choose or equip a piece first.', className: 'empty-note' }));
+    } else if (isCustom) {
+      container.replaceChildren(Object.assign(document.createElement('p'), {
+        textContent: '🎨 Custom hand-painted artwork preserves its original colors.',
+        className: 'empty-note custom-art-note'
+      }));
     } else {
       renderSwatches(container, colors, selectedItem.color, (color) => store.dispatch({ type: 'designer/setColor', slot, color }));
     }
     const custom = $('#custom-color');
-    custom.disabled = !selectedItem;
+    custom.disabled = !selectedItem || isCustom;
     custom.value = paletteValue(selectedItem?.color, slot === 'hair' ? 'brown' : 'coral');
   }
 
@@ -243,7 +350,7 @@ export function createDesignerView({
         })
       );
       row.append(preview, name, actions);
-      void renderDollInto(preview, preset).then(() => {
+      void renderDollInto(preview, preset, { customArtRepo, getAsset }).then(() => {
         if (token !== designerRenderToken) preview.replaceChildren();
       });
       return row;
@@ -266,10 +373,10 @@ export function createDesignerView({
 
     const stage = $('#doll-stage');
     const stagedDoll = document.createElement('div');
-    await renderDollInto(stagedDoll, draft);
+    await renderDollInto(stagedDoll, draft, { customArtRepo, getAsset });
     if (token !== designerRenderToken) return;
     stage.replaceChildren(...stagedDoll.childNodes);
-    stage.setAttribute('aria-label', describeOutfit(draft));
+    stage.setAttribute('aria-label', describeOutfit(draft, getAsset));
   }
 
   function bumpToken() {
@@ -279,8 +386,8 @@ export function createDesignerView({
   return {
     render,
     bumpToken,
-    renderDollInto,
-    describeOutfit,
+    renderDollInto: (container, draft, options = {}) => renderDollInto(container, draft, { customArtRepo, getAsset, ...options }),
+    describeOutfit: (draft) => describeOutfit(draft, getAsset),
     previewCustomColor
   };
 }

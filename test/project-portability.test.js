@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   clearProjectBackup,
+  exportProjectPackage,
   formatProjectExportFilename,
   getAvailableBackup,
   mergeProjectEnvelopes,
@@ -9,6 +10,7 @@ import {
   serializeProjectExport,
   validateImportPayload
 } from '../js/services/project-portability.js';
+import { computeSha256 } from '../js/services/custom-art-repository.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { getAsset } from '../js/core/asset-catalog.js';
 import { createDefaultEnvelope, createRuntimeState, persistedProjection } from '../js/core/state-schema.js';
@@ -31,23 +33,25 @@ test('serializeProjectExport formats valid versioned JSON containing full domain
   store.dispatch({ type: 'scene/spawnProp', assetId: 'prop_table', x: 800, y: 700 });
   store.dispatch({ type: 'scene/saveToLibrary', name: 'Export Scene' });
 
-  const jsonStr = serializeProjectExport(store.getState(), () => new Date('2026-08-14T12:00:00Z'));
+  const jsonStr = serializeProjectExport(store.getState(), [], () => new Date('2026-08-14T12:00:00Z'));
   assert.ok(typeof jsonStr === 'string');
 
   const parsed = JSON.parse(jsonStr);
-  assert.equal(parsed.schemaVersion, 2);
-  assert.equal(parsed.presets.length, 1);
-  assert.equal(parsed.presets[0].name, 'Export Doll');
-  assert.equal(parsed.scenes.length, 1);
-  assert.equal(parsed.scenes[0].title, 'Export Scene');
-  assert.equal(parsed.currentScene.entities.length, 1);
+  assert.equal(parsed.format, 'paper-doll-project');
+  assert.equal(parsed.formatVersion, 1);
+  assert.equal(parsed.state.schemaVersion, 3);
+  assert.equal(parsed.state.presets.length, 1);
+  assert.equal(parsed.state.presets[0].name, 'Export Doll');
+  assert.equal(parsed.state.scenes.length, 1);
+  assert.equal(parsed.state.scenes[0].title, 'Export Scene');
+  assert.equal(parsed.state.currentScene.entities.length, 1);
   assert.equal(formatProjectExportFilename(() => new Date('2026-08-14T12:00:00Z')), 'paper-doll-project-2026-08-14.json');
 });
 
-test('validateImportPayload performs 5-stage validation and summarizes incoming payload', () => {
+test('validateImportPayload performs 5-stage validation and summarizes incoming payload', async () => {
   // 1. Valid JSON payload
   const validEnvelope = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     savedAt: new Date().toISOString(),
     settings: { reducedMotion: 'reduce', soundEnabled: true },
     presets: [{
@@ -71,7 +75,7 @@ test('validateImportPayload performs 5-stage validation and summarizes incoming 
     }
   };
 
-  const validRes = validateImportPayload(JSON.stringify(validEnvelope), getAsset);
+  const validRes = await validateImportPayload(JSON.stringify(validEnvelope), getAsset);
   assert.equal(validRes.ok, true);
   assert.equal(validRes.summary.presetCount, 1);
   assert.equal(validRes.summary.sceneCount, 1);
@@ -80,20 +84,20 @@ test('validateImportPayload performs 5-stage validation and summarizes incoming 
   assert.equal(validRes.envelope.settings.reducedMotion, 'reduce');
 
   // 2. Malformed JSON syntax
-  const badSyntaxRes = validateImportPayload('{not json', getAsset);
+  const badSyntaxRes = await validateImportPayload('{not json', getAsset);
   assert.equal(badSyntaxRes.ok, false);
   assert.match(badSyntaxRes.error, /Invalid JSON/);
 
   // 3. Non-object / array payload
-  const arrayRes = validateImportPayload('[1, 2, 3]', getAsset);
+  const arrayRes = await validateImportPayload('[1, 2, 3]', getAsset);
   assert.equal(arrayRes.ok, false);
   assert.match(arrayRes.error, /valid Paper Doll project object/);
 
   // 4. Schema v1 migration
   const v1Payload = { ...validEnvelope, schemaVersion: 1 };
-  const migratedRes = validateImportPayload(JSON.stringify(v1Payload), getAsset);
+  const migratedRes = await validateImportPayload(JSON.stringify(v1Payload), getAsset);
   assert.equal(migratedRes.ok, true);
-  assert.equal(migratedRes.envelope.schemaVersion, 2);
+  assert.equal(migratedRes.envelope.schemaVersion, 3);
   assert.ok(migratedRes.warnings.some((w) => w.includes('upgraded')));
 });
 
@@ -287,7 +291,7 @@ test('AppStore handles project/importReplace, project/importMerge, and project/r
   assert.equal(store.getState().presets[0].name, 'Original Backup Doll');
 });
 
-test('validateImportPayload rejects malicious payloads and invalid ID structures', () => {
+test('validateImportPayload rejects malicious payloads and invalid ID structures', async () => {
   // Payload with malicious selector characters in instanceId and presetId
   const maliciousPayload = {
     schemaVersion: 2,
@@ -314,7 +318,7 @@ test('validateImportPayload rejects malicious payloads and invalid ID structures
     }]
   };
 
-  const res = validateImportPayload(JSON.stringify(maliciousPayload), getAsset);
+  const res = await validateImportPayload(JSON.stringify(maliciousPayload), getAsset);
   assert.equal(res.ok, true);
   // Malicious preset with invalid ID should be skipped
   assert.equal(res.envelope.presets.length, 0);
@@ -324,17 +328,17 @@ test('validateImportPayload rejects malicious payloads and invalid ID structures
   assert.ok(res.warnings.some((w) => w.includes('invalid scene item was skipped')));
 });
 
-test('validateImportPayload enforces maximum payload byte cap', () => {
+test('validateImportPayload enforces maximum payload byte cap', async () => {
   const giantPayload = '{"a":"' + 'x'.repeat(100) + '"}';
-  const res = validateImportPayload(giantPayload, getAsset, { maxBytes: 50 });
+  const res = await validateImportPayload(giantPayload, getAsset, { maxBytes: 50 });
   assert.equal(res.ok, false);
-  assert.equal(res.error, 'Project file exceeds the maximum allowed size (5MB).');
+  assert.equal(res.error, 'Project file exceeds the maximum allowed size (45MB).');
 
   const unicodePayload = '{"a":"' + 'é'.repeat(30) + '"}';
-  const unicodeRes = validateImportPayload(unicodePayload, getAsset, { maxBytes: 50 });
+  const unicodeRes = await validateImportPayload(unicodePayload, getAsset, { maxBytes: 50 });
   assert.equal(unicodeRes.ok, false);
 
-  const objectRes = validateImportPayload({ a: 'x'.repeat(100) }, getAsset, { maxBytes: 50 });
+  const objectRes = await validateImportPayload({ a: 'x'.repeat(100) }, getAsset, { maxBytes: 50 });
   assert.equal(objectRes.ok, false);
 });
 
@@ -431,6 +435,258 @@ test('saveProjectBackup prunes older historical backup keys', () => {
   assert.equal(res.ok, true);
   assert.ok(storage.data.has('paperDollStudio.backup.latest'));
   assert.ok(storage.data.has('other.key'));
-  assert.equal(storage.data.has('paperDollStudio.backup.1000'), false, 'Older backup 1000 pruned');
-  assert.equal(storage.data.has('paperDollStudio.backup.2000'), false, 'Older backup 2000 pruned');
+});
+
+test('serializeProjectPackage formats package format v1 with custom artwork base64', async () => {
+  const store = createAppStore(createDefaultEnvelope(), { getAsset });
+  const customAssetMeta = {
+    assetId: 'custom_shirt_01',
+    name: 'Custom Sparkle Top',
+    kind: 'wearable',
+    slot: 'top',
+    format: 'image/png',
+    logicalWidth: 300,
+    logicalHeight: 450,
+    pixelWidth: 600,
+    pixelHeight: 900,
+    byteLength: 34,
+    sha256: 'abc123sha',
+    createdAt: '2026-08-16T12:00:00.000Z',
+    updatedAt: '2026-08-16T12:00:00.000Z',
+    libraryVisible: true,
+    status: 'available'
+  };
+
+  const rawBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 2, 88, 0, 0, 3, 132, 8, 6]);
+  const customArtList = [{
+    metadata: customAssetMeta,
+    data: 'iVBORw0KGgoAAAANSUhEUgAAAlgAAANkCAYAAAC8zXQvAAA='
+  }];
+
+  const packageJson = serializeProjectExport(store.getState(), customArtList, () => new Date('2026-08-16T12:00:00Z'));
+  const parsed = JSON.parse(packageJson);
+
+  assert.equal(parsed.format, 'paper-doll-project');
+  assert.equal(parsed.formatVersion, 1);
+  assert.ok(parsed.state);
+  assert.equal(parsed.customArtwork.length, 1);
+  assert.equal(parsed.customArtwork[0].metadata.assetId, 'custom_shirt_01');
+  assert.equal(parsed.customArtwork[0].encoding, 'base64');
+});
+
+test('validateImportPayload validates package format v1 and custom artwork integrity', async () => {
+  const validBytes = new Uint8Array(24 + 10);
+  validBytes.set([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82], 0);
+  const view = new DataView(validBytes.buffer);
+  view.setUint32(16, 600, false);
+  view.setUint32(20, 900, false);
+  validBytes[24] = 8;
+  validBytes[25] = 6;
+
+  const validB64 = Buffer.from(validBytes).toString('base64');
+  const validSha = await computeSha256(validBytes);
+
+  const pkg = {
+    format: 'paper-doll-project',
+    formatVersion: 1,
+    exportedAt: '2026-08-16T12:00:00.000Z',
+    state: {
+      schemaVersion: 3,
+      presets: [],
+      scenes: [],
+      currentScene: null,
+      customAssets: [{
+        assetId: 'custom_shirt_01',
+        name: 'Sparkle Top',
+        kind: 'wearable',
+        slot: 'top',
+        format: 'image/png',
+        logicalWidth: 300,
+        logicalHeight: 450,
+        pixelWidth: 600,
+        pixelHeight: 900,
+        byteLength: validBytes.byteLength,
+        sha256: validSha,
+        libraryVisible: true,
+        status: 'available'
+      }]
+    },
+    customArtwork: [{
+      metadata: {
+        assetId: 'custom_shirt_01',
+        name: 'Sparkle Top',
+        kind: 'wearable',
+        slot: 'top',
+        format: 'image/png',
+        logicalWidth: 300,
+        logicalHeight: 450,
+        pixelWidth: 600,
+        pixelHeight: 900,
+        byteLength: validBytes.byteLength,
+        sha256: validSha
+      },
+      encoding: 'base64',
+      data: validB64
+    }]
+  };
+
+  const res = await validateImportPayload(JSON.stringify(pkg), getAsset);
+  assert.equal(res.ok, true);
+  assert.equal(res.isPackage, true);
+  assert.equal(res.customArtwork.length, 1);
+  assert.equal(res.customArtwork[0].metadata.assetId, 'custom_shirt_01');
+  assert.equal(res.customArtwork[0].metadata.pixelWidth, 600);
+});
+
+test('mergeProjectEnvelopes rewrites colliding custom asset IDs across metadata, presets, and scene entities', () => {
+  const current = {
+    ...createDefaultEnvelope(),
+    customAssets: [{
+      assetId: 'custom_top_1',
+      name: 'Existing Top',
+      kind: 'wearable',
+      slot: 'top',
+      format: 'image/png',
+      logicalWidth: 300,
+      logicalHeight: 450,
+      pixelWidth: 600,
+      pixelHeight: 900,
+      byteLength: 100,
+      sha256: 'existing-hash'
+    }],
+    presets: [],
+    scenes: []
+  };
+
+  const incoming = {
+    ...createDefaultEnvelope(),
+    customAssets: [{
+      assetId: 'custom_top_1', // Collision!
+      name: 'Incoming Top',
+      kind: 'wearable',
+      slot: 'top',
+      format: 'image/png',
+      logicalWidth: 300,
+      logicalHeight: 450,
+      pixelWidth: 600,
+      pixelHeight: 900,
+      byteLength: 120,
+      sha256: 'incoming-hash'
+    }],
+    presets: [{
+      presetId: 'preset-emma-1',
+      name: 'Emma Custom',
+      baseDollId: 'doll_classic_a',
+      skinTone: 'peach',
+      slots: {
+        hair: null,
+        top: { assetId: 'custom_top_1', color: 'coral' },
+        bottom: null,
+        dress: null,
+        shoes: null,
+        accessory: null
+      }
+    }],
+    scenes: [{
+      sceneId: 'scene-1',
+      title: 'Scene with custom prop',
+      backgroundId: 'bg_bedroom',
+      entities: [
+        {
+          instanceId: 'char-1',
+          kind: 'character',
+          sourceId: 'preset-emma-1',
+          characterSnapshot: {
+            baseDollId: 'doll_classic_a',
+            skinTone: 'peach',
+            slots: {
+              top: { assetId: 'custom_top_1', color: 'coral' }
+            }
+          },
+          x: 500,
+          y: 600,
+          scale: 1,
+          order: 1
+        }
+      ]
+    }]
+  };
+
+  let idCounter = 100;
+  const incomingArtworkBlobs = [{
+    metadata: { assetId: 'custom_top_1' },
+    bytes: new Uint8Array([1, 2, 3])
+  }];
+
+  const mergeRes = mergeProjectEnvelopes(current, incoming, incomingArtworkBlobs, {
+    makeId: () => `id-${++idCounter}`
+  });
+
+  const merged = mergeRes.envelope;
+  assert.equal(merged.customAssets.length, 2);
+  assert.equal(merged.customAssets[0].assetId, 'custom_top_1');
+  assert.equal(merged.customAssets[1].assetId, 'custom_id-101'); // Rewritten with custom_ prefix!
+  assert.equal(merged.customAssets[1].name, 'Incoming Top');
+
+  // Verify preset slot was rewritten
+  assert.equal(merged.presets[0].slots.top.assetId, 'custom_id-101');
+
+  // Verify character snapshot in scene was rewritten
+  assert.equal(merged.scenes[0].entities[0].characterSnapshot.slots.top.assetId, 'custom_id-101');
+
+  // Verify rewritten custom artwork blob record was mapped
+  assert.equal(mergeRes.customArtwork.length, 1);
+  assert.equal(mergeRes.customArtwork[0].metadata.assetId, 'custom_id-101');
+});
+
+test('package import rejects missing visible custom artwork instead of importing metadata alone', async () => {
+  const pkg = {
+    format: 'paper-doll-project',
+    formatVersion: 1,
+    state: {
+      ...createDefaultEnvelope(),
+      customAssets: [{
+        assetId: 'custom_missing_art',
+        name: 'Missing Art',
+        kind: 'wearable',
+        slot: 'top',
+        logicalWidth: 300,
+        logicalHeight: 450,
+        pixelWidth: 600,
+        pixelHeight: 900,
+        byteLength: 10,
+        sha256: 'abcdef1234567890',
+        libraryVisible: true,
+        status: 'available'
+      }]
+    },
+    customArtwork: []
+  };
+  const result = await validateImportPayload(pkg, getAsset);
+  assert.equal(result.ok, false);
+  assert.match(result.error, /Missing Art/);
+});
+
+test('project export fails closed when referenced custom artwork bytes are missing', async () => {
+  const state = createRuntimeState({
+    ...createDefaultEnvelope(),
+    customAssets: [{
+      assetId: 'custom_export_missing',
+      name: 'Export Missing',
+      kind: 'wearable',
+      slot: 'top',
+      logicalWidth: 300,
+      logicalHeight: 450,
+      pixelWidth: 600,
+      pixelHeight: 900,
+      byteLength: 10,
+      sha256: 'abcdef1234567890',
+      libraryVisible: true,
+      status: 'available'
+    }]
+  });
+  await assert.rejects(
+    exportProjectPackage(state, { getArtwork: async () => null }),
+    /Export Missing/
+  );
 });

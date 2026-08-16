@@ -17,7 +17,19 @@ Saved dolls, scenes, settings, and backups remain in that iPad's browser storage
 
 ## Custom paint and IndexedDB
 
-The hosted PWA can use IndexedDB for a future Custom Paint Studio. IndexedDB is origin-scoped browser storage, so custom artwork can remain available offline on the iPad after the first load. It does not synchronize between devices. The feature is not implemented yet; when it is added, the project-portability export/import flow must include custom artwork metadata and bytes so paintings can be backed up and moved safely.
+The hosted PWA uses IndexedDB for Custom Paint Studio artwork storage. IndexedDB is origin-scoped browser storage, so custom artwork remains available offline on the iPad after the first load without uploading to any remote server. Project-portability export/import bundles custom artwork PNG payloads with SHA-256 validation so paintings and all doll/scene uses can be backed up and moved between devices safely. The JSON project file is the portable backup; service-worker Cache Storage contains the app shell, not player artwork.
+
+### Offline custom-art smoke test
+
+Run this on the installed Home Screen app, after one successful online load:
+
+1. Open **Paint**, create and save one top and one prop, and use each in Designer/Play.
+2. Export the project JSON and keep it outside the app.
+3. Enable Airplane Mode, force-close the Home Screen app, reopen it, and confirm My Art, the equipped top, and the scene prop render.
+4. Refresh/reopen once more, then export the project again. The export must complete without network access.
+5. Restore connectivity before testing a service-worker update. After changing `CACHE_NAME`, load once online, reopen, and repeat the offline check.
+
+Record device model, iPadOS/Safari version, host URL, date, cache version, and pass/fail notes in `docs/QUALITY.md`. Do not mark this journey passed from a desktop browser run.
 
 ## Updating the hosted app
 

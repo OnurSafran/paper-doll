@@ -21,16 +21,17 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-015 | Combine contextual and persistent scene controls. | Implemented | Efficient pointer use plus accessible fallback. |
 | D-016 | Show sample scene only for pristine storage. | Implemented | Avoids blank first run without replacing work. |
 | D-017 | Panoramic stages use persisted virtual camera state. | Implemented | Wide stories should not distort entity coordinates. |
-| D-018 | Custom items retain placeholders by default; destructive cleanup is explicit. | Accepted future | Prevents silent story loss. |
+| D-018 | Custom items retain placeholders by default; destructive cleanup is explicit. | Implemented | Prevents silent story loss. |
 | D-019 | Extract feature modules and browser services before another major feature. | Implemented | Current browser orchestration is too concentrated. |
 | D-020 | Add revision-aware repository persistence. | Implemented | Informational cross-tab prompts do not stop stale writes without monotonic revisions. |
-| D-021 | Store custom artwork bytes in IndexedDB, not the localStorage envelope. | Accepted future | Large assets need transactional object storage and quotas. |
+| D-021 | Store custom artwork bytes in IndexedDB, not the localStorage envelope. | Implemented | Large assets need transactional object storage and quotas. |
 | D-022 | Pre-release development does not maintain backward compatibility or legacy migrations. | Implemented | Early project iterations prioritize clean domain contracts and safe default resets over historical schema migrations. |
 | D-023 | Scene fixture pinning and entity attachment preserve absolute coordinates and compound clamping. | Implemented | Ensures export parity, cycle safety, and keeps attached items inside stage bounds. |
 | D-024 | Speech bubbles and story captions model as first-class scene entities with SVG rendering parity. | Implemented | Provides comic speech, thought, shout, and captions with full export parity, grapheme limits, and attachment. |
 | D-025 | Scene Book composite vector SVG previews for character outfits, props, and bubbles. | Implemented | Delivers full entity visual fidelity in thumbnails without raster latency or memory leaks. |
 | D-026 | Multi-selection, compound batch movement, and visual alignment domain rules. | Implemented | Pure geometric alignment and multi-select drag with single undo/redo atomicity and accessible outline. |
 | D-027 | Curated storytelling scene templates with fresh ID remapping. | Implemented | Inspires user storytelling with 5 themed starters that instantiate cleanly without ID collisions. |
+| D-029 | Gate 4 evidence separates automated contracts from hosted-device proof. | Implemented | Desktop checks cannot substitute for an installed iPad offline run or cross-browser transfer evidence. |
 
 ## Decision details
 
@@ -78,3 +79,10 @@ Multi-selection state (`selectedEntityIds: []`) is managed in runtime UI state w
 
 Curated storytelling templates are defined as immutable domain schemas (`SCENE_TEMPLATES`). When loaded onto the active stage via `instantiateSceneTemplate`, entity reference IDs are mapped to fresh, independent instance IDs while preserving internal DAG attachment relationships (`attachedTo` and `attachOffset`), applying the player's active character snapshot, and maintaining full single-step undo/redo capability.
 
+### D-028 — Custom Art IndexedDB binary layer and unified registry
+
+Binary custom PNG artwork is stored strictly in client-side IndexedDB (`paperDollStudio` database with 5 distinct stores: `artwork`, `drafts`, `staging`, `backups`, `trash`) while lightweight metadata descriptors live in the project envelope (`state.customAssets`). Unified asset resolution is managed via `createAssetRegistry`, allowing built-in SVG catalog items and custom PNG artwork descriptors to share identical layout contracts. Stage entities and designer overlays render custom PNG items via tracked Blob URLs with explicit lifecycle and revocation management (`customArtRepository.getTrackedObjectUrl`). Project exports bundle custom artwork using SHA-256 verified Base64 encoding with merge-collision rewriting.
+
+### D-029 — Release evidence boundary
+
+Automated tests and source validators prove deterministic contracts, but browser and device journeys remain separate evidence. Gate 4 can close only after the dated quality matrix records the hosted iPad Home Screen offline run, service-worker update check, and export/import across two browsers. A missing target host or device is an explicit release blocker, not a pass by inference.

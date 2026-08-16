@@ -4,11 +4,11 @@
  * template showcase, open/save/update/duplicate/delete dialogs.
  */
 
-import { getAsset } from '../../core/asset-catalog.js';
+import { getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { loadAssetSvg } from '../../core/svg-loader.js';
 import { createBubbleSvg, createExportDollSvg } from '../../services/export-service.js';
 import { getEntityBounds } from '../../domain/scene-rules.js';
-import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION, defaultMakeId } from '../../domain/vocabulary.js';
+import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION, defaultMakeId, isCustomAssetId } from '../../domain/vocabulary.js';
 import { createStarterDraft } from '../../domain/outfit-rules.js';
 import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../../domain/scene-templates.js';
 
@@ -17,7 +17,8 @@ import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../../domain/scene-te
  */
 export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
-  const getAssetFn = options.getAsset ?? getAsset;
+  const getAssetFn = options.getAsset ?? getBuiltinAsset;
+  const customArtRepo = options.customArtRepo;
   const stageWidth = Number(scene?.stageWidth) || 1600;
 
   const rootSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -70,7 +71,7 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
         const dollSvg = await createExportDollSvg(
           entity.characterSnapshot || {},
           entity.expression || DEFAULT_EXPRESSION,
-          { loadAssetSvg: loadSvg }
+          { loadAssetSvg: loadSvg, customArtRepo }
         );
         const dollG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const scaleX = CHARACTER_DIMENSIONS.BASE_WIDTH / 300;
@@ -102,7 +103,20 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
       const renderH = bounds.height / entityScale;
       const asset = getAssetFn(entity.sourceId);
       let rendered = false;
-      if (asset) {
+      if (isCustomAssetId(entity.sourceId)) {
+        const url = await customArtRepo?.getTrackedObjectUrl?.(entity.sourceId);
+        if (url) {
+          const propImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          propImg.setAttribute('href', url);
+          propImg.setAttribute('x', String(-renderW * bounds.anchorX));
+          propImg.setAttribute('y', String(-renderH * bounds.anchorY));
+          propImg.setAttribute('width', String(renderW));
+          propImg.setAttribute('height', String(renderH));
+          propImg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+          entityG.appendChild(propImg);
+          rendered = true;
+        }
+      } else if (asset) {
         try {
           const propSvg = await loadSvg(asset.id);
           const propG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -178,7 +192,9 @@ export function createSceneBookView({
   $,
   $$,
   askConfirm,
-  miniButton
+  miniButton,
+  customArtRepo,
+  getAsset = getBuiltinAsset
 }) {
   let libraryRenderToken = 0;
 
@@ -205,7 +221,7 @@ export function createSceneBookView({
       const thumb = document.createElement('div');
       thumb.className = 'scene-card-thumb';
       thumb.setAttribute('aria-hidden', 'true');
-      void renderSceneThumbnail(thumb, scene).then(() => {
+      void renderSceneThumbnail(thumb, scene, { customArtRepo, getAsset }).then(() => {
         if (token !== libraryRenderToken) thumb.replaceChildren();
       });
 

@@ -4,12 +4,15 @@
 
 import { ASSETS, getAsset } from './core/asset-catalog.js';
 import { createAppStore } from './core/app-store.js';
+import { createAssetRegistry } from './core/asset-registry.js';
 import { clientToLogical } from './core/coordinate-space.js';
 import { loadAssetSvg } from './core/svg-loader.js';
 import { createProjectRepository, loadProject, STORAGE_KEY } from './services/project-repository.js';
+import { createCustomArtRepository } from './services/custom-art-repository.js';
 import { applyMouthExpression, createExportService } from './services/export-service.js';
 import { createVoicePuppetryService } from './services/voice-puppetry.js';
 import { createDesignerView, previewCustomColor } from './features/designer/designer-view.js';
+import { createPaintView } from './features/paint/paint-view.js';
 import { createPlayView, findSceneSkinSvg } from './features/play/play-view.js';
 import { createSceneOutlineView } from './features/play/scene-outline-view.js';
 import { createSceneBookView } from './features/scene-book/scene-book-view.js';
@@ -18,11 +21,11 @@ import { classifyError, executeSafeTeardown } from './core/error-boundary.js';
 import { DEFAULT_EXPRESSION, LIMITS } from './domain/vocabulary.js';
 import {
   clearProjectBackup,
+  exportProjectPackage,
   formatProjectExportFilename,
   getAvailableBackup,
   mergeProjectEnvelopes,
   saveProjectBackup,
-  serializeProjectExport,
   validateImportPayload
 } from './services/project-portability.js';
 
@@ -32,7 +35,9 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 let storageRef = null;
 try { storageRef = window.localStorage; } catch { /* handled as unavailable */ }
 const loaded = loadProject(storageRef, getAsset);
+const customArtRepo = createCustomArtRepository();
 const store = createAppStore(loaded.envelope, { getAsset, assets: ASSETS });
+const getEffectiveAsset = (id) => createAssetRegistry(store ? store.getState().customAssets : loaded.envelope.customAssets).getAsset(id);
 const storage = createProjectRepository({
   storage: storageRef,
   initialRevision: loaded.envelope?.revision ?? 1,
@@ -40,7 +45,7 @@ const storage = createProjectRepository({
     store.dispatch({ type: 'ui/storageStatus', status, message });
   }
 });
-const exportService = createExportService({ getAsset, loadAssetSvg });
+const exportService = createExportService({ getAsset: getEffectiveAsset, loadAssetSvg, customArtRepo });
 
 let confirmQueue = Promise.resolve();
 
@@ -93,12 +98,22 @@ function askConfirm(title, message) {
   return result;
 }
 
+let pendingPaintContext = null;
+
+function openPaintStudio(options = {}) {
+  pendingPaintContext = options;
+  location.hash = '#paint';
+}
+
 const designerView = createDesignerView({
   store,
   $,
   $$,
   askConfirm,
-  miniButton
+  miniButton,
+  customArtRepo,
+  openPaintStudio,
+  getAsset: getEffectiveAsset
 });
 
 const sceneOutlineView = createSceneOutlineView({
@@ -115,7 +130,10 @@ const playView = createPlayView({
   $$,
   renderDollInto: designerView.renderDollInto,
   askConfirm,
-  openSceneOutlineDialog: () => sceneOutlineView.openSceneOutlineDialog()
+  openSceneOutlineDialog: () => sceneOutlineView.openSceneOutlineDialog(),
+  customArtRepo,
+  openPaintStudio,
+  getAsset: getEffectiveAsset
 });
 
 const sceneBookView = createSceneBookView({
@@ -123,7 +141,30 @@ const sceneBookView = createSceneBookView({
   $,
   $$,
   askConfirm,
-  miniButton
+  miniButton,
+  customArtRepo,
+  getAsset: getEffectiveAsset
+});
+
+const paintView = createPaintView({
+  rootElement: document,
+  store,
+  customArtRepo,
+  assetRegistry: {
+    getAsset: (id) => getEffectiveAsset(id),
+    getCategoryAssets: (category, slot) => {
+      if (category !== 'wardrobe') return [];
+      // Starting cutouts are catalog SVGs. Custom PNGs are already artwork,
+      // and do not have an SVG loader path suitable for rasterization here.
+      return ASSETS.filter((asset) => asset.kind === 'wearable' && asset.slot === slot);
+    },
+    wearablesBySlot: (slot) => ASSETS.filter((asset) => asset.kind === 'wearable' && asset.slot === slot),
+    getAllCustomAssets: () => store.getState().customAssets || []
+  },
+  svgLoader: { load: async (assetId) => loadAssetSvg(assetId) },
+  onNavigate(targetMode) {
+    location.hash = `#${targetMode}`;
+  }
 });
 
 const voiceService = createVoicePuppetryService({
@@ -228,6 +269,13 @@ wireStaticEvents();
 playView.initPointerController();
 const initialMode = modeFromHash();
 store.dispatch({ type: 'ui/setMode', mode: initialMode });
+if (initialMode === 'paint') {
+  paintView.openSession({
+    itemType: 'wearable',
+    slot: store.getState().designer?.selectedSlot || 'top',
+    originContext: 'designer'
+  });
+}
 if (!loaded.available || loaded.recovered === false) {
   store.dispatch({
     type: 'ui/storageStatus',
@@ -242,9 +290,14 @@ renderApp();
 function renderApp() {
   const state = store.getState();
   const designerActive = state.ui.mode === 'designer';
+  const paintActive = state.ui.mode === 'paint';
+  const playActive = state.ui.mode === 'play';
+
   $('#designer-screen').hidden = !designerActive;
-  $('#play-screen').hidden = designerActive;
-  document.title = `${designerActive ? 'Doll Designer' : 'Play Sandbox'} · Paper Doll Studio`;
+  $('#paint-screen').hidden = !paintActive;
+  $('#play-screen').hidden = !playActive;
+
+  document.title = `${paintActive ? 'Paint Studio' : designerActive ? 'Doll Designer' : 'Play Sandbox'} · Paper Doll Studio`;
   for (const link of $$('[data-mode-link]')) {
     if (link.dataset.modeLink === state.ui.mode) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
@@ -266,7 +319,10 @@ function renderApp() {
   if (voiceBtn) voiceBtn.classList.toggle('voice-puppetry-active', Boolean(state.ui.voicePuppetryActive));
   $('#designer-status').textContent = state.ui.message;
   $('#play-status').textContent = state.ui.message;
-  if (designerActive) {
+  if (paintActive) {
+    designerView.bumpToken();
+    playView.bumpToken();
+  } else if (designerActive) {
     playView.bumpToken();
     void designerView.render(state);
   } else {
@@ -276,6 +332,7 @@ function renderApp() {
 }
 
 function modeFromHash() {
+  if (location.hash === '#paint') return 'paint';
   return location.hash === '#designer' ? 'designer' : 'play';
 }
 
@@ -286,7 +343,17 @@ function wireStaticEvents() {
       store.dispatch({ type: 'ui/setVoicePuppetry', active: false });
       stopVoicePuppetry();
     }
-    store.dispatch({ type: 'ui/setMode', mode: modeFromHash() });
+    const nextMode = modeFromHash();
+    store.dispatch({ type: 'ui/setMode', mode: nextMode });
+    if (nextMode === 'paint') {
+      const options = pendingPaintContext || {
+        itemType: 'wearable',
+        slot: store.getState().designer?.selectedSlot || 'top',
+        originContext: 'designer'
+      };
+      pendingPaintContext = null;
+      paintView.openSession(options);
+    }
     $('#main-content').focus({ preventScroll: true });
   });
 
@@ -480,7 +547,10 @@ function wireStaticEvents() {
 
   const handleTeardownFlush = () => {
     cancelPointerController();
+    paintView.cancelAsyncOperations?.();
+    void paintView.flushDraftCheckpoint?.();
     exportService.cancel();
+    customArtRepo.revokeAllTrackedUrls();
     if (store.getState().ui.voicePuppetryActive) {
       store.dispatch({ type: 'ui/setVoicePuppetry', active: false });
       stopVoicePuppetry();
@@ -602,6 +672,7 @@ async function exportSceneAsPng() {
 }
 
 let pendingImportEnvelope = null;
+let pendingImportArtwork = [];
 
 function openProjectDialog() {
   const state = store.getState();
@@ -610,10 +681,12 @@ function openProjectDialog() {
     const dollCount = state.presets.length;
     const sceneCount = state.scenes.length;
     const entityCount = state.currentScene?.entities?.length ?? 0;
+    const customCount = state.customAssets?.length ?? 0;
     statsContainer.replaceChildren(
       Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `👗 ${dollCount} Doll${dollCount === 1 ? '' : 's'}` }),
       Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `📚 ${sceneCount} Scene${sceneCount === 1 ? '' : 's'}` }),
-      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `🎭 ${entityCount} Stage item${entityCount === 1 ? '' : 's'}` })
+      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `🎭 ${entityCount} Stage item${entityCount === 1 ? '' : 's'}` }),
+      ...(customCount > 0 ? [Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `🎨 ${customCount} Custom Art` })] : [])
     );
   }
 
@@ -636,14 +709,15 @@ function openProjectDialog() {
   const fileInput = $('#project-file-input');
   if (fileInput) fileInput.value = '';
   pendingImportEnvelope = null;
+  pendingImportArtwork = [];
 
   $('#project-dialog')?.showModal();
 }
 
-function exportProjectJsonFile() {
+async function exportProjectJsonFile() {
   try {
     const state = store.getState();
-    const jsonStr = serializeProjectExport(state);
+    const jsonStr = await exportProjectPackage(state, customArtRepo);
     const filename = formatProjectExportFilename();
     const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -652,26 +726,27 @@ function exportProjectJsonFile() {
     link.download = filename;
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 6000);
-    showToast('📦 Project downloaded as JSON!');
+    showToast('📦 Project package downloaded with custom art!');
   } catch {
-    showToast('Could not export project JSON.');
+    showToast('Could not export project package.');
   }
 }
 
 async function handleProjectFile(file) {
   if (!file) return;
-  if (file.size > LIMITS.MAX_IMPORT_BYTES) {
-    showToast('Project file exceeds the maximum allowed size (5MB).');
+  if (file.size > LIMITS.MAX_PACKAGE_BYTES) {
+    showToast('Project package exceeds the maximum allowed size (45MB).');
     return;
   }
   try {
     const text = await file.text();
-    const res = validateImportPayload(text, getAsset);
+    const res = await validateImportPayload(text, getAsset);
     if (!res.ok) {
       showToast(res.error || 'Could not parse project file.');
       return;
     }
     pendingImportEnvelope = res.envelope;
+    pendingImportArtwork = res.customArtwork || [];
 
     const previewCard = $('#import-preview-card');
     const filenameEl = $('#import-filename');
@@ -683,7 +758,8 @@ async function handleProjectFile(file) {
       badgesEl.replaceChildren(
         Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `👗 ${res.summary.presetCount} Dolls` }),
         Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `📚 ${res.summary.sceneCount} Scenes` }),
-        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: res.summary.hasCurrentScene ? `🎭 Active Stage (${res.summary.currentSceneEntityCount} items)` : '🎭 Empty stage' })
+        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: res.summary.hasCurrentScene ? `🎭 Active Stage (${res.summary.currentSceneEntityCount} items)` : '🎭 Empty stage' }),
+        ...(res.summary.customAssetCount > 0 ? [Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `🎨 ${res.summary.customAssetCount} Custom Art` })] : [])
       );
     }
 
@@ -705,11 +781,25 @@ async function handleProjectFile(file) {
 async function executeImportMerge() {
   if (!pendingImportEnvelope) return;
   const currentEnv = persistedProjection(store.getState());
-  const merged = mergeProjectEnvelopes(currentEnv, pendingImportEnvelope);
+  const merged = mergeProjectEnvelopes(currentEnv, pendingImportEnvelope, pendingImportArtwork);
+
+  const sessionId = 'merge_' + Date.now();
+  const staged = await customArtRepo.stageArtworkBatch(sessionId, merged.customArtwork || []);
+  if (!staged.ok) {
+    showToast(`Merge blocked: imported artwork could not be staged (${staged.error || 'storage issue'}).`);
+    return;
+  }
+  const committed = await customArtRepo.commitStagedArtwork(sessionId);
+  if (!committed.ok) {
+    await customArtRepo.pruneStaging(sessionId);
+    showToast(`Merge blocked: imported artwork could not be committed (${committed.error || 'storage issue'}).`);
+    return;
+  }
+
   store.dispatch({
     type: 'project/importMerge',
     envelope: merged.envelope,
-    message: `Merged ${merged.stats.addedPresets} dolls and ${merged.stats.addedScenes} scenes into studio.`
+    message: `Merged ${merged.stats.addedPresets} dolls, ${merged.stats.addedScenes} scenes, and ${merged.stats.addedCustomAssets ?? 0} custom artwork items into studio.`
   });
   $('#project-dialog')?.close();
 }
@@ -718,18 +808,32 @@ async function executeImportReplace() {
   if (!pendingImportEnvelope) return;
   const confirmed = await askConfirm(
     'Replace entire studio?',
-    'All current dolls and scenes will be replaced by the imported project. An automatic backup will be created so you can restore at any time.'
+    'All current dolls, scenes, and custom artwork will be replaced by the imported project. An automatic backup will be created so you can restore at any time.'
   );
   if (!confirmed) return;
 
   const currentEnv = persistedProjection(store.getState());
   const backupResult = saveProjectBackup(storageRef, currentEnv);
-  if (!backupResult.ok) {
-    const proceedAnyway = await askConfirm(
-      'Backup creation failed',
-      `Could not create an automatic safety backup (${backupResult.error || 'Storage issue'}). If you proceed, your current studio cannot be restored. Do you still want to replace everything?`
-    );
-    if (!proceedAnyway) return;
+  const currentArtwork = await customArtRepo.getAllArtwork();
+  const customBackupResult = await customArtRepo.saveBackup('latest', currentEnv, currentArtwork);
+  if (!backupResult.ok || !customBackupResult.ok) {
+    clearProjectBackup(storageRef);
+    showToast(`Replace blocked: could not create a complete backup (${backupResult.error || customBackupResult.error || 'storage issue'}).`);
+    return;
+  }
+
+  const sessionId = 'import_' + Date.now();
+  const staged = await customArtRepo.stageArtworkBatch(sessionId, pendingImportArtwork);
+  if (!staged.ok) {
+    await customArtRepo.pruneStaging(sessionId);
+    showToast(`Replace blocked: imported artwork could not be staged (${staged.error || 'storage issue'}).`);
+    return;
+  }
+  const committed = await customArtRepo.commitStagedArtwork(sessionId);
+  if (!committed.ok) {
+    await customArtRepo.pruneStaging(sessionId);
+    showToast(`Replace blocked: imported artwork could not be committed (${committed.error || 'storage issue'}).`);
+    return;
   }
 
   store.dispatch({
@@ -737,7 +841,7 @@ async function executeImportReplace() {
     envelope: pendingImportEnvelope,
     message: backupResult.ok
       ? 'Project loaded successfully. Previous studio was backed up.'
-      : 'Project loaded successfully without backup.'
+      : 'Project loaded successfully.'
   });
   $('#project-dialog')?.close();
 }
@@ -753,6 +857,19 @@ async function executeRestoreBackup() {
     'This will replace your active studio with the backed-up project snapshot.'
   );
   if (!confirmed) return;
+
+  const latestArtBackup = await customArtRepo.getLatestBackup();
+  if (backup.envelope.customAssets?.length && !latestArtBackup) {
+    showToast('Backup restore blocked: the custom artwork backup is unavailable.');
+    return;
+  }
+  if (latestArtBackup) {
+    const restored = await customArtRepo.restoreBackup(latestArtBackup.backupId);
+    if (!restored.ok) {
+      showToast(`Backup restore blocked: ${restored.error || 'custom artwork could not be restored.'}`);
+      return;
+    }
+  }
 
   store.dispatch({
     type: 'project/restoreBackup',

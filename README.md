@@ -36,6 +36,7 @@ These are the canonical project documents:
 | [QUALITY.md](docs/QUALITY.md) | Automated checks, browser/accessibility/performance matrices, and release gate |
 | [DECISIONS.md](docs/DECISIONS.md) | Accepted decisions and pending architecture commitments |
 | [OFFLINE-PWA.md](docs/OFFLINE-PWA.md) | iPad installation, offline behavior, hosting, and update procedure |
+| [CUSTOM-PAINT-STUDIO.md](docs/CUSTOM-PAINT-STUDIO.md) | Custom Paint Studio PRD, raster/SVG decision, prerequisites, storage contracts, and gated delivery plan |
 
 Dated audits are non-canonical history under [`review/`](review/). If a review conflicts with a canonical document, the canonical document wins.
 

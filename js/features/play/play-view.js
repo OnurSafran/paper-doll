@@ -4,11 +4,12 @@
  * batch transforms, alignment, and quick controls.
  */
 
-import { assetsByKind, getAsset } from '../../core/asset-catalog.js';
+import { assetsByKind, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { clientToLogical } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, getEntityBounds } from '../../domain/scene-rules.js';
 import { PointerController } from '../../core/pointer-controller.js?v=2';
-import { CAMERA_CONSTANTS, DEFAULT_EXPRESSION, DEFAULT_STAGE_WIDTH } from '../../domain/vocabulary.js';
+import { CAMERA_CONSTANTS, DEFAULT_EXPRESSION, DEFAULT_STAGE_WIDTH, isCustomAssetId } from '../../domain/vocabulary.js';
+import { customAssetToDescriptor } from '../../core/asset-registry.js';
 import { appendAsset, renderAssetPreview } from '../designer/designer-view.js';
 import { createBubbleSvg } from '../../services/export-service.js';
 
@@ -31,7 +32,10 @@ export function createPlayView({
   $$,
   renderDollInto,
   askConfirm,
-  openSceneOutlineDialog
+  openSceneOutlineDialog,
+  customArtRepo,
+  openPaintStudio,
+  getAsset = getBuiltinAsset
 }) {
   let playRenderToken = 0;
   let spawnTab = 'characters';
@@ -95,9 +99,11 @@ export function createPlayView({
       selector: '.scene-entity-positioner',
       getId: (element) => element.dataset.instanceId,
       onSelect(instanceId, element, event) {
+        const state = store.getState();
+        const selectedIds = state.ui.selectedEntityIds || [];
         if (event?.shiftKey) {
           store.dispatch({ type: 'ui/toggleEntitySelection', instanceId });
-        } else {
+        } else if (!selectedIds.includes(instanceId)) {
           store.dispatch({ type: 'ui/selectEntity', instanceId });
         }
       },
@@ -358,13 +364,18 @@ export function createPlayView({
       return;
     }
 
-    const sources = spawnTab === 'characters' ? state.presets : assetsByKind('prop');
-    list.replaceChildren(...sources.map((source) => {
+    const builtins = assetsByKind('prop');
+    const customs = (state.customAssets || [])
+      .filter((a) => a.kind === 'prop' && a.status === 'available' && a.libraryVisible !== false)
+      .map(customAssetToDescriptor);
+    const sources = spawnTab === 'characters' ? state.presets : [...builtins, ...customs];
+
+    const cards = sources.map((source) => {
       const card = document.createElement('button');
       card.type = 'button';
-      card.className = 'spawn-item';
+      card.className = `spawn-item${source.custom ? ' is-custom-spawn-item' : ''}`;
       card.draggable = true;
-      card.setAttribute('aria-label', `Spawn ${source.name} in scene (or drag to place)`);
+      card.setAttribute('aria-label', `Spawn ${source.name} in scene (or drag to place)${source.custom ? ' (Custom Art)' : ''}`);
       const thumb = document.createElement('span');
       thumb.className = 'spawn-thumb';
       thumb.setAttribute('aria-hidden', 'true');
@@ -373,7 +384,7 @@ export function createPlayView({
       label.textContent = source.name;
       const kindLabel = document.createElement('span');
       kindLabel.className = 'spawn-kind';
-      kindLabel.textContent = spawnTab === 'characters' ? 'Saved doll' : 'Scene prop';
+      kindLabel.textContent = spawnTab === 'characters' ? 'Saved doll' : (source.custom ? '🎨 Custom prop' : 'Scene prop');
       card.append(thumb, kindLabel, label);
       const kind = spawnTab === 'characters' ? 'character' : 'prop';
       const sourceId = kind === 'character' ? source.presetId : source.id;
@@ -394,12 +405,42 @@ export function createPlayView({
       card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
 
       if (spawnTab === 'characters') {
-        void renderDollInto(thumb, source).then(() => { if (token !== playRenderToken) thumb.replaceChildren(); });
+        void renderDollInto(thumb, source, { customArtRepo, getAsset }).then(() => { if (token !== playRenderToken) thumb.replaceChildren(); });
       } else {
-        void renderAssetPreview(thumb, source);
+        void renderAssetPreview(thumb, source, { customArtRepo, getAsset });
       }
       return card;
-    }));
+    });
+
+    if (spawnTab === 'props') {
+      const paintPropCard = document.createElement('button');
+      paintPropCard.type = 'button';
+      paintPropCard.className = 'spawn-item paint-prop-action-card';
+      paintPropCard.setAttribute('aria-label', 'Paint a new custom prop in Paint Studio');
+      const thumb = document.createElement('span');
+      thumb.className = 'spawn-thumb';
+      thumb.textContent = '🎨';
+      const kindLabel = document.createElement('span');
+      kindLabel.className = 'spawn-kind';
+      kindLabel.textContent = 'Custom Prop';
+      const label = document.createElement('span');
+      label.className = 'spawn-name';
+      label.textContent = '+ Paint Prop';
+      paintPropCard.append(thumb, kindLabel, label);
+      paintPropCard.addEventListener('click', () => {
+        if (openPaintStudio) {
+          openPaintStudio({
+            itemType: 'prop',
+            originContext: 'play'
+          });
+        } else {
+          window.location.hash = '#paint';
+        }
+      });
+      cards.push(paintPropCard);
+    }
+
+    list.replaceChildren(...cards);
   }
 
   function renderSelectedActions(state = store.getState()) {
@@ -546,7 +587,10 @@ export function createPlayView({
     if (entity.kind === 'character') {
       const canvas = document.createElement('span');
       canvas.className = 'scene-character-canvas';
-      await renderDollInto(canvas, entity.characterSnapshot, { expression: entity.expression || DEFAULT_EXPRESSION });
+      await renderDollInto(canvas, entity.characterSnapshot, {
+        expression: entity.expression || DEFAULT_EXPRESSION,
+        customArtRepo
+      });
       visual.append(canvas);
       const preset = store.getState().presets.find((item) => item.presetId === entity.sourceId);
       button.setAttribute('aria-label', `${entity.pinned ? 'Pinned ' : ''}${preset?.name ?? (entity.sourceId === 'demo_emma' ? 'Emma sample doll' : 'Paper doll scene item')}`);
@@ -559,8 +603,22 @@ export function createPlayView({
         openEditBubbleDialog(entity);
       });
     } else {
-      await appendAsset(visual, entity.sourceId, {});
-      button.setAttribute('aria-label', `${entity.pinned ? 'Pinned ' : ''}${asset?.name ?? 'Unavailable prop'}`);
+      if (isCustomAssetId(entity.sourceId)) {
+        const url = await customArtRepo?.getTrackedObjectUrl?.(entity.sourceId);
+        if (url) {
+          const img = document.createElement('img');
+          img.src = url;
+          img.className = 'scene-custom-prop-img';
+          img.alt = asset?.name ?? 'Custom Prop';
+          img.draggable = false;
+          visual.append(img);
+        } else {
+          await appendAsset(visual, entity.sourceId, { customArtRepo, getAsset });
+        }
+      } else {
+        await appendAsset(visual, entity.sourceId, { customArtRepo, getAsset });
+      }
+      button.setAttribute('aria-label', `${entity.pinned ? 'Pinned ' : ''}${asset?.name ?? 'Scene prop'}`);
     }
     button.append(visual);
     if (entity.pinned) {

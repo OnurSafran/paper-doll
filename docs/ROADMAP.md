@@ -11,12 +11,13 @@ This is the single authority for implementation status, open work, and delivery 
 - Dollbox, Scene Book, current-scene autosave/reload, and local schema migration
 - Pointer/keyboard scene editing, bounded Undo/Redo, and PNG export
 - Seven in-session expressions and strictly local voice puppetry
-- 186 automated tests passing
+- Custom Paint Studio Gates 0–3B complete with IndexedDB storage, portability, mixed renderers, bounded history, My Art lifecycle, non-destructive wearable slot switching, trusted cutout actions, and precision body/alignment overlays
+- 237 automated tests passing
 - 77 cataloged SVG files passing asset validation
 - Catalog assets carry `added_date`, `creator`, `concept`, `dlc`, and `source` provenance metadata; current content pack is `core`
 - Installable offline PWA shell with Turkish in-app guide
-- Documentation validation passing with 8 canonical documents
-- Gates A–D complete; Gate E asset expansion complete; hosted iPad smoke test remains before family release
+- Documentation validation passing with 9 canonical documents
+- Gates A–D complete; Gate E asset expansion complete; Custom Paint Gates 0–3 complete; Gate 4 evidence is in progress and the hosted iPad smoke test remains before family release
 
 ## Status by capability
 
@@ -102,7 +103,7 @@ Every extraction is independently reviewable and behavior-preserving. Do not com
 5. Interactive props and optional sound effects
 6. [x] Panoramic stages and camera navigation (`1600`, `3200`, `4800` widths with persisted cameraX, minimap, steppers, trackpad/wheel, edge auto-pan)
 7. World map and scene transitions
-8. Custom paint studio after IndexedDB and project-portability prerequisites
+8. [Custom paint studio](CUSTOM-PAINT-STUDIO.md) (Gates 0–3B complete; Gate 4 hosted-device and cross-browser evidence in progress)
 9. Pose/gesture animation after export and reduced-motion contracts are defined
 
 ## Acceptance summaries for planned features
@@ -114,7 +115,7 @@ Every extraction is independently reviewable and behavior-preserving. Do not com
 | Object stickiness | Pinned scenery immovable by pointer, hierarchical parent-child delta move, compound boundary clamping, cycle-free attachment, detach-on-parent-delete. |
 | Multi-select | One command/history entry, deterministic order, accessible outline alternative. |
 | Panoramic stages | Persisted camera, correct coordinate offset, all input modes, edge pan, efficient offscreen behavior. |
-| Custom paint | IndexedDB transactions, byte quotas, safe metadata, placeholders, portability, explicit destructive cleanup. |
+| [Custom paint](CUSTOM-PAINT-STUDIO.md) | IndexedDB transactions, byte quotas, safe metadata, placeholders, portability, explicit destructive cleanup, mixed raster/vector render parity, and dated hosted-device evidence. |
 
 ## Completed implementation sequence
 
@@ -126,7 +127,7 @@ The original 19-task plan is consolidated here instead of retained as separate p
 4. Automated domain/integration/static UI tests
 5. Offline PWA shell, Turkish guide, and family deployment documentation
 
-Manual core journeys and the formal release matrices remain open even where automated coverage exists. The PWA installation path is documented but still needs a real iPad Safari install/offline smoke test before a hosted family release.
+Manual core journeys and the formal release matrices remain open even where automated coverage exists. The PWA installation path and Custom Paint offline flow are documented, but a real hosted iPad Safari install/offline smoke test is still required before a family release.
 
 ## Change discipline
 

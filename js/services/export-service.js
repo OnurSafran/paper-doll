@@ -12,8 +12,18 @@ import {
   CHARACTER_DIMENSIONS,
   DEFAULT_BASE_DOLL_ID,
   DEFAULT_EXPRESSION,
-  LIMITS
+  LIMITS,
+  isCustomAssetId
 } from '../domain/vocabulary.js';
+
+export function loadImageFromUrl(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = (err) => reject(err);
+    img.src = url;
+  });
+}
 
 /**
  * Applies mouth expression geometry to a character doll SVG DOM.
@@ -80,6 +90,7 @@ export function svgElementToImage(svgElement, width, height) {
  */
 export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION, options = {}) {
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
+  const customArtRepo = options.customArtRepo;
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 300 450');
   svg.setAttribute('width', '300');
@@ -100,10 +111,24 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
 
   for (const [order, id, color, group, slot] of layers) {
     try {
+      if (isCustomAssetId(id)) {
+        const url = await customArtRepo?.getTrackedObjectUrl?.(id) || await options.getCustomArtUrl?.(id);
+        if (url) {
+          const imgEl = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          imgEl.setAttribute('href', url);
+          imgEl.setAttribute('x', '0');
+          imgEl.setAttribute('y', '0');
+          imgEl.setAttribute('width', '300');
+          imgEl.setAttribute('height', '450');
+          imgEl.setAttribute('preserveAspectRatio', 'none');
+          svg.appendChild(imgEl);
+          continue;
+        }
+      }
       const assetSvg = await loadSvg(id);
       const clone = assetSvg.cloneNode(true);
       const groupEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      groupEl.style.setProperty('--skin-color', paletteValue(draft.skinTone, 'peach'));
+      groupEl.style.setProperty('--skin-color', paletteValue(draft?.skinTone, 'peach'));
       groupEl.style.setProperty('--hair-color', paletteValue(color, 'brown'));
       groupEl.style.setProperty('--asset-color-primary', paletteValue(color, 'coral'));
       if (group) {
@@ -345,6 +370,7 @@ export function createExportService(options = {}) {
   const getAssetFn = options.getAsset ?? getAsset;
   const loadSvgFn = options.loadAssetSvg ?? loadAssetSvg;
   const toImageFn = options.svgElementToImage ?? svgElementToImage;
+  const customArtRepo = options.customArtRepo;
   const now = options.now ?? (() => new Date());
   const onProgress = options.onProgress ?? (() => {});
 
@@ -384,7 +410,10 @@ export function createExportService(options = {}) {
       ctx.scale(flipSign * entity.scale, entity.scale);
 
       if (entity.kind === 'character') {
-        const dollSvg = await createExportDollSvg(entity.characterSnapshot, entity.expression || DEFAULT_EXPRESSION, { loadAssetSvg: loadSvgFn });
+        const dollSvg = await createExportDollSvg(entity.characterSnapshot, entity.expression || DEFAULT_EXPRESSION, {
+          loadAssetSvg: loadSvgFn,
+          customArtRepo
+        });
         const dollImg = await toImageFn(dollSvg, 300, 450);
         ctx.drawImage(
           dollImg,
@@ -412,7 +441,24 @@ export function createExportService(options = {}) {
         const renderH = bounds.height / entity.scale;
         const asset = getAssetFn(entity.sourceId);
         let rendered = false;
-        if (asset) {
+        if (isCustomAssetId(entity.sourceId)) {
+          const url = await customArtRepo?.getTrackedObjectUrl?.(entity.sourceId);
+          if (url) {
+            try {
+              const propImg = await loadImageFromUrl(url);
+              ctx.drawImage(
+                propImg,
+                -renderW * bounds.anchorX,
+                -renderH * bounds.anchorY,
+                renderW,
+                renderH
+              );
+              rendered = true;
+            } catch {
+              rendered = false;
+            }
+          }
+        } else if (asset) {
           try {
             const propSvg = await loadSvgFn(asset.id);
             const propImg = await toImageFn(propSvg, renderW, renderH);

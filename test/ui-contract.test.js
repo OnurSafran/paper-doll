@@ -26,7 +26,7 @@ test('stage-first UI exposes the visual spawner and derived scene HUD hooks', ()
 
 test('responsive UI preserves a non-drag layout path on narrow screens', () => {
   assert.match(css, /@media \(max-width: 920px\)[\s\S]*\.designer-grid, \.play-grid\s*{\s*display: flex;\s*flex-direction: column;/);
-  assert.match(playJs, /card\.className = 'spawn-item'/u);
+  assert.match(playJs, /spawn-item/);
 });
 
 test('cross-tab recovery ignores temporary write keys', () => {
@@ -44,7 +44,7 @@ test('pointer cancellation remains safe across mixed cached module versions', ()
   assert.match(playJs, /typeof cancel === 'function'/);
   assert.doesNotMatch(playJs, /pointerController\?\.cancel\(\)/);
   assert.match(playJs, /pointer-controller\.js\?v=2/);
-  assert.match(html, /js\/app\.js\?v=2/);
+  assert.match(html, /js\/app\.js\?v=4/);
 });
 
 test('Designer uses one viewport workspace with a deliberate scrolling rail', () => {
@@ -225,5 +225,4 @@ test('panoramic stages and camera navigation expose accessible HUD, slider, mini
   assert.match(playJs, /entityRoot\.replaceChildren\(stagedEntities\);\s*renderCameraHud\(state\);/);
   assert.match(js, /clientToLogical\(event\.clientX, event\.clientY, playStage\.getBoundingClientRect\(\), cameraX\)/);
 });
-
 

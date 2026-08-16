@@ -100,6 +100,34 @@ export function isValidId(value) {
   return typeof value === 'string' && ID_PATTERN.test(value);
 }
 
+export const CUSTOM_ID_PREFIX = 'custom_';
+
+export function isCustomAssetId(value) {
+  return typeof value === 'string' && value.startsWith(CUSTOM_ID_PREFIX) && isValidId(value);
+}
+
+export const CUSTOM_ASSET_STATUSES = Object.freeze([
+  'available',
+  'missing',
+  'trashed'
+]);
+
+export function isCustomAssetStatus(value) {
+  return typeof value === 'string' && CUSTOM_ASSET_STATUSES.includes(value);
+}
+
+export const MVP_CUSTOM_WEARABLE_SLOTS = Object.freeze([
+  'top',
+  'bottom',
+  'dress',
+  'shoes',
+  'accessory'
+]);
+
+export function isMvpCustomWearableSlot(value) {
+  return typeof value === 'string' && MVP_CUSTOM_WEARABLE_SLOTS.includes(value);
+}
+
 export function defaultMakeId() {
   return globalThis.crypto?.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -121,6 +149,11 @@ export const LIMITS = Object.freeze({
   MIN_ID_LENGTH: 3,
   MAX_ID_LENGTH: 100,
   MAX_IMPORT_BYTES: 5 * 1024 * 1024,
+  MAX_CUSTOM_ASSETS: 30,
+  MAX_CUSTOM_ASSET_BYTES: 2 * 1024 * 1024,
+  MAX_TOTAL_CUSTOM_BYTES: 30 * 1024 * 1024,
+  MAX_PACKAGE_BYTES: 45 * 1024 * 1024,
+  MAX_CUSTOM_ASSET_NAME_LENGTH: 30,
   MIN_SCALE: 0.5,
   MAX_SCALE: 2.0,
   STAGE_WIDTH: 1600,
@@ -151,8 +184,21 @@ export const CHARACTER_DIMENSIONS = Object.freeze({
   GROUND_ANCHOR: Object.freeze({ x: 0.5, y: 1.0 })
 });
 
+export const CUSTOM_WEARABLE_DIMENSIONS = Object.freeze({
+  LOGICAL_WIDTH: 300,
+  LOGICAL_HEIGHT: 450,
+  PIXEL_WIDTH: 600,
+  PIXEL_HEIGHT: 900
+});
+
+export const CUSTOM_PROP_DIMENSIONS = Object.freeze({
+  LOGICAL_WIDTH: 500,
+  LOGICAL_HEIGHT: 500,
+  PIXEL_WIDTH: 1000,
+  PIXEL_HEIGHT: 1000
+});
+
 export const DEFAULT_BACKGROUND_ID = 'bg_bedroom';
 export const DEFAULT_BASE_DOLL_ID = 'doll_classic_a';
 export const DEFAULT_SKIN_TONE = 'peach';
 export const DEFAULT_GARMENT_COLOR = 'coral';
-

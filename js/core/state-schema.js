@@ -13,6 +13,7 @@ import {
   DEFAULT_REDUCED_MOTION,
   DEFAULT_STAGE_WIDTH,
   isBubbleStyle,
+  isCustomAssetId,
   isEntityKind,
   isExpression,
   isReducedMotionOption,
@@ -22,7 +23,7 @@ import {
   STAGE_WIDTHS
 } from '../domain/vocabulary.js';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const STORAGE_KEY = 'paperDollStudio.state';
 
 export function createDefaultEnvelope() {
@@ -31,6 +32,7 @@ export function createDefaultEnvelope() {
     revision: 1,
     savedAt: new Date(0).toISOString(),
     settings: { reducedMotion: DEFAULT_REDUCED_MOTION, soundEnabled: false },
+    customAssets: [],
     presets: [],
     scenes: [],
     currentScene: null
@@ -42,7 +44,8 @@ export function createRuntimeState(envelope = createDefaultEnvelope()) {
     schemaVersion: SCHEMA_VERSION,
     revision: Number.isInteger(envelope?.revision) && envelope.revision >= 1 ? envelope.revision : 1,
     settings: { ...envelope.settings },
-    presets: envelope.presets.map(clonePreset),
+    customAssets: (envelope.customAssets || []).map(cloneCustomAsset),
+    presets: (envelope.presets || []).map(clonePreset),
     scenes: (envelope.scenes || []).map(cloneScene),
     currentScene: envelope.currentScene ? cloneScene(envelope.currentScene) : createSampleScene(createStarterDraft()),
     designer: {
@@ -69,9 +72,109 @@ export function persistedProjection(state, now = () => new Date(), revision = st
     revision: Number.isInteger(revision) && revision >= 1 ? revision : 1,
     savedAt: now().toISOString(),
     settings: { ...state.settings },
+    customAssets: (state.customAssets || []).map(cloneCustomAsset),
     presets: state.presets.map(clonePreset),
     scenes: (state.scenes || []).map(cloneScene),
     currentScene: state.currentScene ? cloneScene(state.currentScene) : null
+  };
+}
+
+export function cloneCustomAsset(asset) {
+  if (!asset || typeof asset !== 'object') return null;
+  return {
+    ...asset,
+    ...(asset.groundAnchor ? { groundAnchor: { ...asset.groundAnchor } } : {})
+  };
+}
+
+export function sanitizeCustomAsset(candidate) {
+  if (!candidate || typeof candidate !== 'object') return null;
+  if (!isValidId(candidate.assetId)) return null;
+
+  const rawName = candidate.name;
+  if (!hasValidDisplayName(rawName, LIMITS.MAX_CUSTOM_ASSET_NAME_LENGTH)) return null;
+  const name = normalizeDisplayName(rawName, LIMITS.MAX_CUSTOM_ASSET_NAME_LENGTH);
+
+  const kind = candidate.kind;
+  if (kind !== 'wearable' && kind !== 'prop') return null;
+
+  let slot = undefined;
+  if (kind === 'wearable') {
+    if (candidate.slot !== 'top' && candidate.slot !== 'bottom' && candidate.slot !== 'dress' && candidate.slot !== 'shoes' && candidate.slot !== 'accessory') {
+      return null;
+    }
+    slot = candidate.slot;
+  }
+
+  const format = 'image/png';
+  const logicalWidth = Number.isInteger(candidate.logicalWidth) && candidate.logicalWidth > 0
+    ? candidate.logicalWidth
+    : (kind === 'wearable' ? 300 : 500);
+  const logicalHeight = Number.isInteger(candidate.logicalHeight) && candidate.logicalHeight > 0
+    ? candidate.logicalHeight
+    : (kind === 'wearable' ? 450 : 500);
+
+  const pixelWidth = Number.isInteger(candidate.pixelWidth) && candidate.pixelWidth > 0
+    ? candidate.pixelWidth
+    : (kind === 'wearable' ? 600 : 1000);
+  const pixelHeight = Number.isInteger(candidate.pixelHeight) && candidate.pixelHeight > 0
+    ? candidate.pixelHeight
+    : (kind === 'wearable' ? 900 : 1000);
+
+  const expectedDimensions = kind === 'wearable'
+    ? { logicalWidth: 300, logicalHeight: 450, pixelWidth: 600, pixelHeight: 900 }
+    : { logicalWidth: 500, logicalHeight: 500, pixelWidth: 1000, pixelHeight: 1000 };
+  if (logicalWidth !== expectedDimensions.logicalWidth || logicalHeight !== expectedDimensions.logicalHeight ||
+    pixelWidth !== expectedDimensions.pixelWidth || pixelHeight !== expectedDimensions.pixelHeight) {
+    return null;
+  }
+
+  const byteLength = typeof candidate.byteLength === 'number' && candidate.byteLength > 0 && candidate.byteLength <= LIMITS.MAX_CUSTOM_ASSET_BYTES
+    ? candidate.byteLength
+    : undefined;
+
+  const sha256 = typeof candidate.sha256 === 'string' && candidate.sha256.length >= 8
+    ? candidate.sha256
+    : 'unknown';
+
+  const createdAt = validDateString(candidate.createdAt) ? candidate.createdAt : new Date(0).toISOString();
+  const updatedAt = validDateString(candidate.updatedAt) ? candidate.updatedAt : createdAt;
+  const libraryVisible = candidate.libraryVisible !== false;
+  const status = candidate.status === 'missing' || candidate.status === 'trashed' ? candidate.status : 'available';
+
+  let displayWidth = undefined;
+  let displayHeight = undefined;
+  let groundAnchor = undefined;
+
+  if (kind === 'prop') {
+    displayWidth = typeof candidate.displayWidth === 'number' && candidate.displayWidth > 0
+      ? Math.round(clamp(candidate.displayWidth, 40, 360))
+      : 240;
+    displayHeight = typeof candidate.displayHeight === 'number' && candidate.displayHeight > 0
+      ? Math.round(clamp(candidate.displayHeight, 40, 360))
+      : 240;
+    const ax = typeof candidate.groundAnchor?.x === 'number' ? clamp(candidate.groundAnchor.x, 0, 1) : 0.5;
+    const ay = typeof candidate.groundAnchor?.y === 'number' ? clamp(candidate.groundAnchor.y, 0, 1) : 1.0;
+    groundAnchor = { x: ax, y: ay };
+  }
+
+  return {
+    assetId: candidate.assetId,
+    name,
+    kind,
+    ...(slot ? { slot } : {}),
+    format,
+    logicalWidth,
+    logicalHeight,
+    pixelWidth,
+    pixelHeight,
+    ...(byteLength != null ? { byteLength } : {}),
+    sha256,
+    createdAt,
+    updatedAt,
+    libraryVisible,
+    status,
+    ...(kind === 'prop' ? { displayWidth, displayHeight, groundAnchor } : {})
   };
 }
 
@@ -87,11 +190,41 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
     return { envelope: defaults, warnings, recovered: false };
   }
 
+  // 1. Sanitize customAssets
+  const customAssets = [];
+  const customAssetIds = new Set();
+  let totalCustomBytes = 0;
+
+  for (const candidate of Array.isArray(value.customAssets) ? value.customAssets : []) {
+    if (customAssets.length >= LIMITS.MAX_CUSTOM_ASSETS) {
+      warnings.push(`Custom artwork limit (${LIMITS.MAX_CUSTOM_ASSETS}) reached; extra items were skipped.`);
+      break;
+    }
+    const sanitized = sanitizeCustomAsset(candidate);
+    if (sanitized && !customAssetIds.has(sanitized.assetId)) {
+      if (sanitized.byteLength && totalCustomBytes + sanitized.byteLength > LIMITS.MAX_TOTAL_CUSTOM_BYTES) {
+        warnings.push(`Total custom artwork byte limit (${LIMITS.MAX_TOTAL_CUSTOM_BYTES}) reached.`);
+        break;
+      }
+      totalCustomBytes += sanitized.byteLength || 0;
+      customAssetIds.add(sanitized.assetId);
+      customAssets.push(sanitized);
+    } else if (sanitized) {
+      warnings.push('A duplicate custom artwork was skipped.');
+    } else {
+      warnings.push('An invalid custom artwork was skipped.');
+    }
+  }
+
+  const customMap = new Map(customAssets.map((c) => [c.assetId, c]));
+  const effectiveGetAsset = (id) => customMap.get(id) || getAsset(id);
+
+  // 2. Sanitize presets
   const presets = [];
   const presetIds = new Set();
   for (const candidate of Array.isArray(value.presets) ? value.presets : []) {
     if (presets.length >= LIMITS.MAX_PRESETS) break;
-    const preset = sanitizePreset(candidate, getAsset);
+    const preset = sanitizePreset(candidate, effectiveGetAsset);
     if (preset && !presetIds.has(preset.presetId)) {
       presetIds.add(preset.presetId);
       presets.push(preset);
@@ -99,18 +232,19 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
     else warnings.push('An invalid Dollbox preset was skipped.');
   }
 
+  // 3. Sanitize scenes
   const scenes = [];
   const sceneIds = new Set();
   for (const candidate of Array.isArray(value.scenes) ? value.scenes : []) {
     if (scenes.length >= LIMITS.MAX_SCENES) break;
-    const scene = sanitizeScene(candidate, getAsset, warnings);
+    const scene = sanitizeScene(candidate, effectiveGetAsset, warnings);
     if (scene && !sceneIds.has(scene.sceneId)) {
       sceneIds.add(scene.sceneId);
       scenes.push(scene);
     } else if (scene) warnings.push('A duplicate library scene was skipped.');
   }
 
-  const currentScene = sanitizeScene(value.currentScene, getAsset, warnings);
+  const currentScene = sanitizeScene(value.currentScene, effectiveGetAsset, warnings);
   const revision = Number.isInteger(value?.revision) && value.revision >= 1 ? value.revision : 1;
   return {
     envelope: {
@@ -123,6 +257,7 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
           : DEFAULT_REDUCED_MOTION,
         soundEnabled: Boolean(value.settings?.soundEnabled)
       },
+      customAssets,
       presets,
       scenes,
       currentScene
@@ -160,8 +295,12 @@ export function sanitizeDraft(candidate, getAsset = () => undefined) {
     const item = candidate.slots?.[slot];
     if (item == null) continue;
     const asset = getAsset(item.assetId);
-    if (!asset || asset.kind !== 'wearable' || asset.slot !== slot || !isColorValue(item.color)) continue;
-    slots[slot] = { assetId: item.assetId, color: normalizeColorValue(item.color) };
+    if (asset && asset.kind === 'wearable' && asset.slot === slot) {
+      slots[slot] = { assetId: item.assetId, color: isColorValue(item.color) ? normalizeColorValue(item.color) : 'coral' };
+    } else if (!asset && isCustomAssetId(item.assetId)) {
+      // Retain placeholder reference for missing custom art
+      slots[slot] = { assetId: item.assetId, color: isColorValue(item.color) ? normalizeColorValue(item.color) : 'coral' };
+    }
   }
   if (slots.dress) {
     slots.top = null;
@@ -235,9 +374,6 @@ export function sanitizeScene(candidate, getAsset = () => undefined, warnings = 
     entities
   };
 
-  // Existing v2 scenes may contain wide-stage attachments or pinned items that
-  // were saved before compound re-clamping existed. Repair their runtime
-  // coordinates while preserving the persisted scene timestamp.
   const reclamped = reclampSceneEntities(sanitizedScene, stageWidth, getAsset);
   return { ...reclamped, updatedAt: sanitizedScene.updatedAt };
 }
@@ -246,7 +382,8 @@ function sanitizeEntity(item, getAsset, stageWidth = DEFAULT_STAGE_WIDTH) {
   if (!item || typeof item !== 'object' || !validId(item.instanceId)) return null;
   if (!isEntityKind(item.kind)) return null;
   const sourceAsset = getAsset(item.sourceId);
-  if (item.kind === 'prop' && (!validId(item.sourceId) || (sourceAsset && sourceAsset.kind !== 'prop'))) return null;
+  const isCustomProp = item.kind === 'prop' && isCustomAssetId(item.sourceId);
+  if (item.kind === 'prop' && (!validId(item.sourceId) || (!isCustomProp && sourceAsset && sourceAsset.kind !== 'prop'))) return null;
   if (item.kind === 'character' && (!validId(item.sourceId) || !sanitizeDraft(item.characterSnapshot, getAsset))) return null;
   if (!Number.isFinite(item.x) || !Number.isFinite(item.y)) return null;
   const characterSnapshot = item.kind === 'character' ? sanitizeDraft(item.characterSnapshot, getAsset) : null;
@@ -315,7 +452,15 @@ export function cloneScene(scene) {
 function migrateEnvelope(value, warnings) {
   if (value.schemaVersion === 1) {
     warnings.push('Saved data was upgraded to the custom-color schema.');
-    return { ...value, schemaVersion: 2 };
+    value = { ...value, schemaVersion: 2 };
+  }
+  if (value.schemaVersion === 2) {
+    warnings.push('Saved data was upgraded to custom-assets schema.');
+    return {
+      ...value,
+      schemaVersion: 3,
+      customAssets: Array.isArray(value.customAssets) ? value.customAssets : []
+    };
   }
   return value;
 }

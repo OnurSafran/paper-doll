@@ -75,14 +75,15 @@ All small project records live under `paperDollStudio.state`.
 
 ```json
 {
-  "schemaVersion": 2,
-  "savedAt": "2026-08-14T00:00:00.000Z",
+  "schemaVersion": 3,
+  "savedAt": "2026-08-16T00:00:00.000Z",
   "settings": {
     "reducedMotion": "system",
     "soundEnabled": false
   },
   "presets": [],
   "scenes": [],
+  "customAssets": [],
   "currentScene": null
 }
 ```
@@ -210,6 +211,7 @@ Derived thumbnails, DOM, SVG source, object URLs, pointer events, UI selection, 
 - Brush, eraser, fill, shapes, eyedropper, selection, mirror, and dedicated drawing history.
 - Artwork bytes live in IndexedDB with byte/item quotas; localStorage stores metadata/references only.
 - Project portability and safe placeholder deletion are prerequisites.
+- The implementation-ready scope, raster-over-SVG recommendation, data contracts, failure behavior, and delivery gates are defined in [CUSTOM-PAINT-STUDIO.md](CUSTOM-PAINT-STUDIO.md).
 
 ## Non-goals
 

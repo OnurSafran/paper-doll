@@ -27,7 +27,8 @@ import {
 } from '../domain/scene-rules.js';
 import { clampCameraX } from './coordinate-space.js';
 import { instantiateSceneTemplate } from '../domain/scene-templates.js';
-import { clonePreset, cloneScene, createRuntimeState } from './state-schema.js';
+import { cloneCustomAsset, clonePreset, cloneScene, createRuntimeState, sanitizeCustomAsset } from './state-schema.js';
+import { createAssetRegistry } from './asset-registry.js';
 import { GARMENT_COLORS, HAIR_COLORS, isColorValue, isPaletteToken, normalizeColorValue } from './palette.js';
 import { normalizeDisplayName, truncateGraphemes } from './text.js';
 import {
@@ -42,6 +43,7 @@ import {
   defaultNow,
   isAlignmentMode,
   isBubbleStyle,
+  isCustomAssetId,
   isExpression,
   isOutfitSlot,
   isStageWidth,
@@ -54,7 +56,7 @@ import {
 export function createAppStore(envelope, options = {}) {
   let state = createRuntimeState(envelope);
   const listeners = new Set();
-  const getAsset = options.getAsset ?? (() => undefined);
+  const getAssetOption = options.getAsset ?? (() => undefined);
   const makeId = options.makeId ?? defaultMakeId;
   const now = options.now ?? defaultNow;
   const assets = options.assets ?? [];
@@ -64,6 +66,15 @@ export function createAppStore(envelope, options = {}) {
   const undoStack = [];
   const redoStack = [];
 
+  function getEffectiveAsset(id) {
+    const custom = (state.customAssets || []).find((a) => a.assetId === id);
+    if (custom) {
+      const reg = createAssetRegistry(state.customAssets);
+      return reg.getAsset(id);
+    }
+    return getAssetOption(id);
+  }
+
   function dispatch(action) {
     const previousState = state;
     if (action.type === 'app/undo') {
@@ -72,7 +83,8 @@ export function createAppStore(envelope, options = {}) {
       redoStack.push(snapshotDomain(state));
       const willPersist = prevSnapshot.presets !== state.presets ||
         prevSnapshot.scenes !== state.scenes ||
-        prevSnapshot.currentScene !== state.currentScene;
+        prevSnapshot.currentScene !== state.currentScene ||
+        prevSnapshot.customAssets !== state.customAssets;
       const remainingSelectedIds = (state.ui.selectedEntityIds || []).filter((id) =>
         prevSnapshot.currentScene?.entities?.some((e) => e.instanceId === id)
       );
@@ -86,6 +98,7 @@ export function createAppStore(envelope, options = {}) {
           editingPresetId: prevSnapshot.designer.editingPresetId,
           dirty: prevSnapshot.designer.dirty
         },
+        customAssets: (prevSnapshot.customAssets || []).map(cloneCustomAsset),
         presets: prevSnapshot.presets,
         scenes: prevSnapshot.scenes,
         currentScene: restoreSceneForHistory(prevSnapshot.currentScene, state.currentScene),
@@ -108,7 +121,8 @@ export function createAppStore(envelope, options = {}) {
       undoStack.push(snapshotDomain(state));
       const willPersist = nextSnapshot.presets !== state.presets ||
         nextSnapshot.scenes !== state.scenes ||
-        nextSnapshot.currentScene !== state.currentScene;
+        nextSnapshot.currentScene !== state.currentScene ||
+        nextSnapshot.customAssets !== state.customAssets;
       const remainingSelectedIds = (state.ui.selectedEntityIds || []).filter((id) =>
         nextSnapshot.currentScene?.entities?.some((e) => e.instanceId === id)
       );
@@ -122,6 +136,7 @@ export function createAppStore(envelope, options = {}) {
           editingPresetId: nextSnapshot.designer.editingPresetId,
           dirty: nextSnapshot.designer.dirty
         },
+        customAssets: (nextSnapshot.customAssets || []).map(cloneCustomAsset),
         presets: nextSnapshot.presets,
         scenes: nextSnapshot.scenes,
         currentScene: restoreSceneForHistory(nextSnapshot.currentScene, state.currentScene),
@@ -138,13 +153,14 @@ export function createAppStore(envelope, options = {}) {
       return { ok: true, redone: true };
     }
 
-    const result = reduce(state, action, { getAsset, makeId, now, assets, random });
+    const result = reduce(state, action, { getAsset: getEffectiveAsset, makeId, now, assets, random });
     if (!result || result.state === state) return result?.result ?? { ok: false, code: 'NO_CHANGE' };
 
     const domainChanged = previousState.designer.draft !== result.state.designer.draft ||
       previousState.presets !== result.state.presets ||
       previousState.scenes !== result.state.scenes ||
-      previousState.currentScene !== result.state.currentScene;
+      previousState.currentScene !== result.state.currentScene ||
+      previousState.customAssets !== result.state.customAssets;
     const cameraOnlyAction = action.type === 'scene/setCameraX' || action.type === 'scene/panCamera';
 
     if (domainChanged && !cameraOnlyAction) {
@@ -180,6 +196,7 @@ function snapshotDomain(state) {
       selectedSlot: state.designer.selectedSlot,
       dirty: state.designer.dirty
     },
+    customAssets: (state.customAssets || []).map(cloneCustomAsset),
     presets: state.presets,
     scenes: state.scenes,
     currentScene: state.currentScene
@@ -194,11 +211,71 @@ function restoreSceneForHistory(snapshotScene, currentScene) {
   };
 }
 
+function removeCustomAssetReferences(state, assetIds) {
+  const targetIds = new Set(assetIds);
+  const draft = cloneDraft(state.designer.draft);
+  for (const [slotKey, slotItem] of Object.entries(draft.slots)) {
+    if (targetIds.has(slotItem?.assetId)) draft.slots[slotKey] = null;
+  }
+
+  const nextPresets = state.presets.map((preset) => {
+    let changed = false;
+    const pDraft = cloneDraft(preset);
+    for (const [slotKey, slotItem] of Object.entries(pDraft.slots)) {
+      if (targetIds.has(slotItem?.assetId)) {
+        pDraft.slots[slotKey] = null;
+        changed = true;
+      }
+    }
+    return changed ? { ...preset, ...pDraft } : preset;
+  });
+
+  const filterSceneEntities = (entities) => entities
+    .filter((entity) => !(entity.kind === 'prop' && targetIds.has(entity.sourceId)))
+    .map((entity) => {
+      if (entity.kind !== 'character' || !entity.characterSnapshot) return entity;
+      const characterSnapshot = cloneDraft(entity.characterSnapshot);
+      let changed = false;
+      for (const [slotKey, slotItem] of Object.entries(characterSnapshot.slots)) {
+        if (targetIds.has(slotItem?.assetId)) {
+          characterSnapshot.slots[slotKey] = null;
+          changed = true;
+        }
+      }
+      return changed ? { ...entity, characterSnapshot } : entity;
+    });
+
+  const nextCurrentScene = state.currentScene ? {
+    ...state.currentScene,
+    entities: filterSceneEntities(state.currentScene.entities)
+  } : null;
+  const nextScenes = state.scenes.map((scene) => ({
+    ...scene,
+    entities: filterSceneEntities(scene.entities)
+  }));
+  const selectedIds = (state.ui.selectedEntityIds || []).filter((id) =>
+    nextCurrentScene?.entities.some((entity) => entity.instanceId === id)
+  );
+
+  return {
+    customAssets: state.customAssets.filter((asset) => !targetIds.has(asset.assetId)),
+    presets: nextPresets,
+    scenes: nextScenes,
+    currentScene: nextCurrentScene,
+    designer: { ...state.designer, draft, dirty: true },
+    ui: {
+      ...state.ui,
+      selectedEntityId: selectedIds.includes(state.ui.selectedEntityId) ? state.ui.selectedEntityId : (selectedIds.at(-1) ?? null),
+      selectedEntityIds: selectedIds
+    }
+  };
+}
+
 function reduce(state, action, context) {
   const message = (text, next = state) => ({ ...next, ui: { ...next.ui, message: text } });
   switch (action.type) {
     case 'ui/setMode':
-      if (!['designer', 'play'].includes(action.mode)) return null;
+      if (!['designer', 'paint', 'play'].includes(action.mode)) return null;
       return { state: { ...state, ui: { ...state.ui, mode: action.mode, selectedEntityId: null, selectedEntityIds: [] } } };
 
     case 'ui/selectEntity': {
@@ -263,6 +340,22 @@ function reduce(state, action, context) {
 
     case 'designer/equip': { 
       const asset = context.getAsset(action.assetId);
+      if (asset && asset.custom) {
+        const draft = cloneDraft(state.designer.draft);
+        draft.slots[asset.slot] = { assetId: asset.id, color: 'coral' };
+        if (asset.slot === 'dress') {
+          draft.slots.top = null;
+          draft.slots.bottom = null;
+        } else if (asset.slot === 'top' || asset.slot === 'bottom') {
+          draft.slots.dress = null;
+        }
+        return {
+          state: message(`Equipped ${asset.name}.`, {
+            ...state,
+            designer: { ...state.designer, draft, selectedSlot: asset.slot, dirty: true }
+          })
+        };
+      }
       if (action.color != null && !isColorValue(action.color)) {
         return { result: { ok: false, code: 'INVALID_COLOR' }, state: message('That color could not be used.') };
       }
@@ -341,21 +434,25 @@ function reduce(state, action, context) {
         }
       };
 
-    case 'designer/setColor':
+    case 'designer/setColor': {
       if (!isColorValue(action.color)) return null;
-      if (!isOutfitSlot(action.slot ?? state.designer.selectedSlot)) return null;
-      if (!state.designer.draft.slots[action.slot ?? state.designer.selectedSlot]) return null;
-      if (state.designer.draft.slots[action.slot ?? state.designer.selectedSlot].color === normalizeColorValue(action.color)) return null;
+      const targetSlot = action.slot ?? state.designer.selectedSlot;
+      if (!isOutfitSlot(targetSlot)) return null;
+      const equippedItem = state.designer.draft.slots[targetSlot];
+      if (!equippedItem) return null;
+      if (isCustomAssetId(equippedItem.assetId)) return null;
+      if (equippedItem.color === normalizeColorValue(action.color)) return null;
       return {
         state: {
           ...state,
           designer: {
             ...state.designer,
-            draft: setSlotColor(state.designer.draft, action.slot ?? state.designer.selectedSlot, normalizeColorValue(action.color)),
+            draft: setSlotColor(state.designer.draft, targetSlot, normalizeColorValue(action.color)),
             dirty: true
           }
         }
       };
+    }
 
     case 'preset/save': {
       const name = normalizeDisplayName(action.name, LIMITS.MAX_PRESET_NAME_LENGTH);
@@ -515,7 +612,7 @@ function reduce(state, action, context) {
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
       if (!instanceId) return { state: message('The scene item could not be assigned a safe ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
 
-      const targetId = action.targetEntityId ?? (action.x == null && action.y == null ? state.ui.selectedEntityId : null);
+      const targetId = action.targetEntityId ?? null;
       const target = targetId ? state.currentScene.entities.find((e) => e.instanceId === targetId) : null;
       const attachedTo = target ? target.instanceId : null;
       let spawnX = action.x ?? (target ? target.x : 800);
@@ -983,6 +1080,114 @@ function reduce(state, action, context) {
         persist: true
       };
     }
+    case 'customAsset/add': {
+      const sanitized = sanitizeCustomAsset(action.asset);
+      if (!sanitized) return { state: message('Invalid custom artwork metadata.'), result: { ok: false, code: 'INVALID_METADATA' } };
+      const existingIndex = state.customAssets.findIndex((a) => a.assetId === sanitized.assetId);
+      if (existingIndex < 0 && state.customAssets.length >= LIMITS.MAX_CUSTOM_ASSETS) {
+        return { state: message(`Custom art library limit (${LIMITS.MAX_CUSTOM_ASSETS}) reached. Delete an item first.`), result: { ok: false, code: 'LIMIT' } };
+      }
+      const currentBytes = state.customAssets.reduce((sum, asset, index) => sum + (index === existingIndex ? 0 : (asset.byteLength || 0)), 0);
+      if (sanitized.byteLength && currentBytes + sanitized.byteLength > LIMITS.MAX_TOTAL_CUSTOM_BYTES) {
+        return { state: message(`Custom art storage limit (${LIMITS.MAX_TOTAL_CUSTOM_BYTES} bytes) reached.`, state), result: { ok: false, code: 'BYTE_LIMIT' } };
+      }
+      let nextCustoms;
+      if (existingIndex >= 0) {
+        nextCustoms = [...state.customAssets];
+        nextCustoms[existingIndex] = sanitized;
+      } else {
+        nextCustoms = [...state.customAssets, sanitized];
+      }
+      return {
+        state: message(`"${sanitized.name}" added to My Art.`, { ...state, customAssets: nextCustoms }),
+        persist: true,
+        result: { ok: true, assetId: sanitized.assetId }
+      };
+    }
+
+    case 'customAsset/rename': {
+      const name = normalizeDisplayName(action.name, LIMITS.MAX_CUSTOM_ASSET_NAME_LENGTH);
+      if (!name) return null;
+      const index = state.customAssets.findIndex((a) => a.assetId === action.assetId);
+      if (index < 0) return null;
+      const updated = { ...state.customAssets[index], name, updatedAt: context.now().toISOString() };
+      const nextCustoms = [...state.customAssets];
+      nextCustoms[index] = updated;
+      return {
+        state: message(`Artwork renamed to "${name}".`, { ...state, customAssets: nextCustoms }),
+        persist: true,
+        result: { ok: true }
+      };
+    }
+
+    case 'customAsset/remove': {
+      const index = state.customAssets.findIndex((a) => a.assetId === action.assetId);
+      if (index < 0) return null;
+      const target = state.customAssets[index];
+      const updated = { ...target, status: 'trashed', libraryVisible: false, updatedAt: context.now().toISOString() };
+      const nextCustoms = [...state.customAssets];
+      nextCustoms[index] = updated;
+      return {
+        state: message(`"${target.name}" removed from My Art. Referenced dolls and scenes retain placeholders.`, {
+          ...state,
+          customAssets: nextCustoms
+        }),
+        persist: true,
+        result: { ok: true }
+      };
+    }
+
+    case 'customAsset/restore': {
+      const index = state.customAssets.findIndex((a) => a.assetId === action.assetId);
+      if (index < 0) return null;
+      const target = state.customAssets[index];
+      const updated = { ...target, status: 'available', libraryVisible: true, updatedAt: context.now().toISOString() };
+      const nextCustoms = [...state.customAssets];
+      nextCustoms[index] = updated;
+      return {
+        state: message(`"${target.name}" restored to My Art.`, {
+          ...state,
+          customAssets: nextCustoms
+        }),
+        persist: true,
+        result: { ok: true }
+      };
+    }
+
+    case 'customAsset/deleteWithUses': {
+      const targetId = action.assetId;
+      const target = state.customAssets.find((a) => a.assetId === targetId);
+      if (!target) return null;
+      const next = removeCustomAssetReferences(state, [targetId]);
+
+      return {
+        state: message(`"${target.name}" and its uses were deleted.`, {
+          ...state,
+          ...next
+        }),
+        persist: true,
+        result: { ok: true }
+      };
+    }
+
+    case 'customAsset/purgeTrash': {
+      const trashedIds = state.customAssets
+        .filter((asset) => asset.status === 'trashed' || asset.libraryVisible === false)
+        .map((asset) => asset.assetId);
+      const requestedIds = Array.isArray(action.assetIds) ? new Set(action.assetIds) : null;
+      const targetIds = requestedIds ? trashedIds.filter((id) => requestedIds.has(id)) : trashedIds;
+      if (targetIds.length === 0) return null;
+      const next = removeCustomAssetReferences(state, targetIds);
+      return {
+        state: message(`${targetIds.length} trashed artwork item${targetIds.length === 1 ? '' : 's'} permanently deleted.`, {
+          ...state,
+          ...next
+        }),
+        persist: true,
+        result: { ok: true, assetIds: targetIds }
+      };
+    }
+
     case 'project/importReplace': {
       if (!action.envelope || !Array.isArray(action.envelope.presets)) return null;
       const env = action.envelope;
@@ -992,6 +1197,7 @@ function reduce(state, action, context) {
         state: message(action.message ?? 'Project loaded. Previous data backed up.', {
           ...state,
           settings: { ...state.settings, ...env.settings },
+          customAssets: (env.customAssets || []).map(cloneCustomAsset),
           presets: env.presets.map(clonePreset),
           scenes: (env.scenes || []).map(cloneScene),
           currentScene: env.currentScene ? cloneScene(env.currentScene) : createEmptyScene(fallbackSceneId, context.now),
@@ -1009,6 +1215,7 @@ function reduce(state, action, context) {
         state: message(action.message ?? 'Project items merged into studio.', {
           ...state,
           settings: { ...state.settings, ...env.settings },
+          customAssets: (env.customAssets || []).map(cloneCustomAsset),
           presets: env.presets.map(clonePreset),
           scenes: (env.scenes || []).map(cloneScene),
           currentScene: env.currentScene ? cloneScene(env.currentScene) : state.currentScene
@@ -1026,6 +1233,7 @@ function reduce(state, action, context) {
         state: message(action.message ?? 'Previous project backup restored.', {
           ...state,
           settings: { ...state.settings, ...env.settings },
+          customAssets: (env.customAssets || []).map(cloneCustomAsset),
           presets: env.presets.map(clonePreset),
           scenes: (env.scenes || []).map(cloneScene),
           currentScene: env.currentScene ? cloneScene(env.currentScene) : createEmptyScene(fallbackSceneId, context.now),
