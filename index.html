@@ -124,6 +124,14 @@
               <label for="background-select">🎨 Background:</label>
               <select id="background-select"></select>
             </div>
+            <div class="scene-picker-group stage-width-group">
+              <label for="stage-width-select">📐 Stage:</label>
+              <select id="stage-width-select" aria-label="Stage width">
+                <option value="1600">Standard (1600×900)</option>
+                <option value="3200">Wide (3200×900)</option>
+                <option value="4800">Panoramic (4800×900)</option>
+              </select>
+            </div>
           </div>
           <div class="scene-meta-actions">
             <div class="meta-action-group story-meta-group">
@@ -187,11 +195,30 @@
         <div class="play-grid">
           <div id="play-stage-viewport" class="play-stage-viewport">
             <div id="play-stage" class="play-stage" tabindex="0" aria-label="Play scene. Select an item, then use arrow keys to move it.">
-              <div id="scene-background" class="scene-background" aria-hidden="true"></div>
-              <div class="scene-hud" aria-hidden="true"><span id="scene-name-chip">Cozy bedroom</span><span id="scene-count-chip">0 items</span></div>
-              <div id="scene-entities" class="scene-entities"></div>
+              <div id="scene-world" class="scene-world">
+                <div id="scene-background" class="scene-background" aria-hidden="true"></div>
+                <div id="scene-entities" class="scene-entities"></div>
+              </div>
+              <div class="scene-hud" aria-hidden="true">
+                <span id="scene-name-chip">Cozy bedroom</span>
+                <span id="scene-count-chip">0 items</span>
+                <span id="scene-width-chip" class="scene-width-chip">1600px</span>
+              </div>
               <div id="empty-scene" class="empty-scene"><strong>Your scene is ready.</strong><span>Click or drag a doll or prop from the tray to place it here.</span></div>
-              <div class="scene-help" aria-hidden="true">Drag to arrange · tap for quick tools · arrows nudge</div>
+              <div class="scene-help" aria-hidden="true">Drag to arrange · tap for quick tools · arrows nudge · edge pan</div>
+            </div>
+
+            <div id="camera-hud" class="camera-hud" role="region" aria-label="Panoramic camera controls" hidden>
+              <button id="camera-pan-left" class="camera-pan-btn" type="button" title="Pan camera left (Shift+Left, PageUp)" aria-label="Pan camera left">◀</button>
+              <div class="camera-slider-track">
+                <input id="camera-slider" class="camera-slider" type="range" min="0" max="0" step="10" value="0" aria-label="Camera position">
+              </div>
+              <button id="camera-pan-right" class="camera-pan-btn" type="button" title="Pan camera right (Shift+Right, PageDown)" aria-label="Pan camera right">▶</button>
+              <div id="stage-minimap" class="stage-minimap" title="Click or drag to position camera" aria-label="Scene minimap overview" role="slider" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0">
+                <div id="minimap-bg" class="minimap-bg"></div>
+                <div id="minimap-entities" class="minimap-entities" aria-hidden="true"></div>
+                <div id="minimap-lens" class="minimap-lens" aria-hidden="true"></div>
+              </div>
             </div>
           </div>
 

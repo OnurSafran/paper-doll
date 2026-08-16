@@ -4,9 +4,9 @@
 
 | Check | Current result | What it proves |
 |:--|:--|:--|
-| `node --test` | 172 pass, 0 fail | Domain rules, store/storage doubles, monotonic revision guards, error boundaries, pointer lifecycle, SVG parser, limits, domain vocabulary, project repository, export service, voice puppetry lifecycle, feature modules, UI contracts, project portability, JSON export/import validation, collision rewriting, backup recovery, scene stickiness & pinning, hierarchical entity attachment, compound clamping, speech bubbles & captions, high-fidelity composite Scene Book thumbnails, multi-selection & compound drag, visual alignment algebra, interactive Scene Outline modal, storytelling Scene Templates, expanded catalog inventory, asset provenance metadata, base doll model switching, export cancellation locks, missing-asset placeholders, and comprehensive selection/deselection pathways. |
+| `node --test` | 186 pass, 0 fail | Domain rules, store/storage doubles, monotonic revision guards, error boundaries, pointer lifecycle, SVG parser, limits, domain vocabulary, project repository, export service, voice puppetry lifecycle, feature modules, UI contracts, project portability, JSON export/import validation, collision rewriting, backup recovery, scene stickiness & pinning, hierarchical entity attachment, compound clamping, speech bubbles & captions, high-fidelity composite Scene Book thumbnails, multi-selection & compound drag, visual alignment algebra, interactive Scene Outline modal, storytelling Scene Templates, panoramic stages & camera navigation, minimap & slider controls, edge auto-pan, wide canvas export, expanded catalog inventory, asset provenance metadata, base doll model switching, export cancellation locks, missing-asset placeholders, and comprehensive selection/deselection pathways. |
 | Asset validator | 77 pass | All cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata. |
-| Documentation validator | 9 pass, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
+| Documentation validator | 8 pass, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
 | PWA shell validation | Pass | Manifest, service-worker syntax, and all 106 cached app-shell files validate. |
 
 ## Automated coverage requirements
@@ -14,24 +14,25 @@
 | Area | Status | Covered scenarios |
 |:--|:--|:--|
 | Outfit | Complete | Every slot; dress conflicts; remove/reset/clear/shuffle; stale asset; color normalization. |
-| Schema | Complete | Versions/migration; partial/whole corruption; limits; timestamps; monotonic revision; pinned and attachment DAG validation; bubble entity sanitization; multi-selection state schema. |
+| Schema | Complete | Versions/migration; partial/whole corruption; limits; timestamps; monotonic revision; pinned and attachment DAG validation; bubble entity sanitization; multi-selection state schema; panoramic stageWidth and cameraX state. |
+| Panoramic | Complete | `1600`, `3200`, `4800` widths; persisted `cameraX` clamping; slider/stepper/minimap/wheel/keyboard navigation; live edge auto-pan; absolute coordinate invariant; entity re-clamping on downsize; wide-canvas background tiling and PNG export. |
 | Bubbles | Complete | Speech, thought, shout, and caption styles; word wrapping; dynamic height bounds; 120-grapheme limits; character auto-attachment; procedural SVG composition; PNG canvas export parity. |
 | Stickiness | Complete | Pinned scenery immovable by pointer; hierarchical parent-child delta moves; compound boundary clamping; DAG cycle prevention; detach on parent delete. |
 | Multi-select | Complete | Shift+click selection; multi-drag preview and compound move; batch scaling, flipping, deletion, and pin toggling; 8 alignment & distribution modes (`left`, `center`, `right`, `top`, `middle`, `bottom`, `distribute-h`, `distribute-v`) with atomic single-step undo/redo. |
 | Scene Outline | Complete | Modal inspector for stage entities in z-order; checkbox selection toggles; bring forward/send backward reordering; pin/unpin toggles; select-all and clear buttons; hotkey `O`. |
 | Templates | Complete | 5 curated storytelling starters (Tea Party, Bedroom, Atelier, Garden Story, Comic Drama); fresh instance ID remapping without collision; attachment DAG preservation; active character snapshot inheritance. |
-| Thumbnails | Complete | Full composite vector SVG cards combining background, layered outfit dolls with expressions, props, and bubbles at exact coordinates and scales without rasterization latency or memory leaks. |
+| Thumbnails | Complete | Full composite vector SVG cards combining background, layered outfit dolls with expressions, props, and bubbles at exact coordinates and scales without rasterization latency or memory leaks across standard and panoramic stages. |
 | Expressions | Complete | All seven expressions (`neutral`, `smile`, `happy`, `surprised`, `o_mouth`, `talking`, `wide_open`) round-trip through store, projection, serialization, sanitization, reload, and history. |
 | Store | Complete | Valid/invalid/no-op command; immutable prior state; persistence flag; max history bounds. |
 | Storage | Complete | Empty/corrupt/denied/quota; guard cleanup; quarantine; availability vs recovery separation. |
 | Revisions | Complete | Monotonic revision increments, cross-tab conflict detection, stale write blocking, Keep/Reload prompt, explicit forced overwrite. |
-| Coordinates | Complete | Wide/tall letterboxing; logical ↔ client round-trip conversion; resize cancellation. |
-| Scene bounds | Complete | Asset-aware clamping for character dolls, props, and bubbles at min (0.5), default (1.0), and max (2.0) scale using catalog dimensions and ground anchors at all 4 edges, plus compound multi-entity bounds clamping. |
-| Pointer | Complete | Tap threshold, single and multi-entity live transform preview, commit, capture release, cancellation, resize/visibility cleanup. |
-| Scene | Complete | Unique spawn ID retry; move/scale/flip/order/duplicate/delete/pin/attach/detach/bubble/align/batch mutations; 40-entity limit enforcement. |
+| Coordinates | Complete | Wide/tall letterboxing; logical ↔ client round-trip conversion with camera offset; resize cancellation. |
+| Scene bounds | Complete | Asset-aware clamping for character dolls, props, and bubbles at min (0.5), default (1.0), and max (2.0) scale using catalog dimensions and ground anchors at all 4 edges across standard and panoramic stage widths, plus compound multi-entity bounds clamping. |
+| Pointer | Complete | Tap threshold, single and multi-entity live transform preview, commit, capture release, cancellation, edge auto-pan, resize/visibility cleanup. |
+| Scene | Complete | Unique spawn ID retry; move/scale/flip/order/duplicate/delete/pin/attach/detach/bubble/align/batch/stage-width/camera mutations; 40-entity limit enforcement. |
 | Autosave | Complete | Debounced coalescing; commit-only persistence; flush and cancel handlers. |
 | Assets | Complete | Catalog IDs, viewBox, required groups, attribute sanitizer rejecting scripts/foreignObject/handlers. |
-| Export | Complete | Isolated canvas composition, layout parity, bubble procedural SVG rasterization, placeholder fallback, progress reporting. |
+| Export | Complete | Isolated canvas composition, wide panoramic dimensions, background tiling, layout parity, bubble procedural SVG rasterization, placeholder fallback, progress reporting. |
 | Audio | Complete | Permission denial handling, stale request rejection, teardown on route/visibility/pagehide/error. |
 | Error recovery | Complete | Privacy-safe error code classification (`ERR_STORAGE_QUOTA`, `ERR_MEDIA_PERMISSION`, `ERR_RUNTIME_TYPE`, `ERR_RUNTIME`), safe teardown, storage persistence abort, accessible alertdialog. |
 
@@ -46,7 +47,7 @@
 | J-05 | Move/flip/scale/layer/duplicate/delete | Coordinate transforms compose cleanly, clamp within stage bounds, and maintain contiguous order. | Pass |
 | J-06 | Change background and refresh | Current scene background and entities reload exactly; transient selection clears. | Pass |
 | J-07 | New Scene | Clears stage with confirmation only when meaningful changes exist; empty scene persists cleanly. | Pass |
-| J-08 | Keyboard-only full loop | Tab navigation, arrow key movement (10 units / Shift+arrow 1 unit), `[`/`]` layering, `-`/`+` scale, `D` duplicate, `P` pin toggle, `E` bubble edit, `O` outline modal, and Delete key operate without pointer input. | Pass |
+| J-08 | Keyboard-only full loop | Tab navigation, arrow key movement (10 units / Shift+arrow 1 unit), `[`/`]` layering, `-`/`+` scale, `D` duplicate, `P` pin toggle, `E` bubble edit, `O` outline modal, `PageUp`/`PageDown`/`Home`/`End` camera navigation, and Delete key operate without pointer input. | Pass |
 | J-09 | Save/reload/export every expression | All 7 facial expressions render on the stage, persist across reload, and export to PNG. | Pass |
 | J-10 | Scene Book save/update/open/duplicate/delete | Library scenes manage up to 30 snapshots with independent entity IDs upon duplication and high-fidelity composite vector thumbnails. | Pass |
 | J-11 | Voice start/stop/denial/route change | Microphone permission denial falls back to static expressions; streams release on route change and visibility loss. | Pass |
@@ -57,6 +58,7 @@
 | J-16 | Scene Outline accessible inspector | Open outline via button or `O` hotkey; browse entities in z-order; toggle selections, bring forward/backward, toggle pins, delete items with keyboard navigation. | Pass |
 | J-17 | Scene templates & duplicate current scene | Browse 5 curated storytelling starter templates in modal showcase; load onto stage with fresh ID generation; click "Save as Copy" to duplicate active layout directly into Scene Book. | Pass |
 | J-18 | Install and play offline on iPad | Open the HTTPS site once in Safari, add it to the Home Screen, reload without network, and create/save a doll and scene. | Planned manual smoke test |
+| J-19 | Panoramic stages & camera navigation | Switch to 3200px or 4800px wide stage; navigate camera with slider, steppers, minimap, trackpad, and keyboard; drag entities across edge with live edge-pan; export wide PNG. | Pass |
 
 ## Failure matrix
 

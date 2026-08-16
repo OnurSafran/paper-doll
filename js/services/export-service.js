@@ -358,7 +358,8 @@ export function createExportService(options = {}) {
   async function renderSceneToCanvas(sceneSnapshot, canvas = document.createElement('canvas'), signal = null) {
     if (signal?.aborted) throw new Error('Export cancelled');
     const snapshot = cloneScene(sceneSnapshot);
-    canvas.width = LIMITS.STAGE_WIDTH;
+    const stageWidth = snapshot.stageWidth || LIMITS.STAGE_WIDTH;
+    canvas.width = stageWidth;
     canvas.height = LIMITS.STAGE_HEIGHT;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Could not acquire 2D canvas context');
@@ -366,10 +367,12 @@ export function createExportService(options = {}) {
     try {
       const bgSvg = await loadSvgFn(snapshot.backgroundId);
       const bgImg = await toImageFn(bgSvg, LIMITS.STAGE_WIDTH, LIMITS.STAGE_HEIGHT);
-      ctx.drawImage(bgImg, 0, 0, LIMITS.STAGE_WIDTH, LIMITS.STAGE_HEIGHT);
+      for (let x = 0; x < stageWidth; x += LIMITS.STAGE_WIDTH) {
+        ctx.drawImage(bgImg, x, 0, LIMITS.STAGE_WIDTH, LIMITS.STAGE_HEIGHT);
+      }
     } catch {
       ctx.fillStyle = '#f6efe4';
-      ctx.fillRect(0, 0, LIMITS.STAGE_WIDTH, LIMITS.STAGE_HEIGHT);
+      ctx.fillRect(0, 0, stageWidth, LIMITS.STAGE_HEIGHT);
     }
 
     const ordered = [...snapshot.entities].sort((a, b) => a.order - b.order);

@@ -24,13 +24,13 @@ Paper Doll Studio is a calm browser toy for creating paper dolls and arranging s
 | Designer | Wardrobe | Filter, equip, replace, remove, clear outfit, reset, and compatible shuffle. |
 | Designer | Color | Curated tokens plus normalized `#RRGGBB` for tintable equipped pieces. |
 | Designer | Dollbox | Save, open, update, rename, and delete up to 50 presets. |
-| Play | Stage | Responsive view of a `1600 × 900` logical scene. |
-| Play | Spawning | Add saved-character snapshots or catalog props by activation or drag. |
-| Play | Editing | Select, move, flip, scale, reorder, duplicate, and delete. |
+| Play | Stage | Responsive view of a `1600 × 900`, `3200 × 900`, or `4800 × 900` logical scene with camera navigation HUD and minimap. |
+| Play | Spawning | Add saved-character snapshots, catalog props, speech bubbles, or templates by activation or drag. |
+| Play | Editing | Select, move, flip, scale, reorder, duplicate, pin, attach, align, and delete. |
 | Play | Expressions | Seven static character expressions with stage/export/reload parity. |
-| Play | Scene Book | Save, open, update, rename, duplicate, and delete up to 30 scenes. |
+| Play | Scene Book | Save, open, update, rename, duplicate, and delete up to 30 scenes with vector composite thumbnails. |
 | Play | Recovery | Debounced current-scene autosave after committed mutations; explicit New Scene. |
-| Play | Export | Render one immutable scene snapshot as `1600 × 900` PNG. |
+| Play | Export | Render one immutable scene snapshot as full-width (`1600/3200/4800 × 900`) PNG with tiled background. |
 | Play | Voice | Optional local microphone analysis drives ephemeral mouth previews; audio is never recorded or uploaded. |
 | Studio | History | Bounded Undo/Redo across Designer and Play commands. |
 
@@ -54,9 +54,12 @@ Paper Doll Studio is a calm browser toy for creating paper dolls and arranging s
 - Drag begins after `4 CSS px` for mouse/stylus or `8 CSS px` for touch.
 - Position, scale, and flip compose independently.
 - Arrow keys move by `10` logical units; Shift + arrow moves by `1`.
-- `[` / `]` reorder, `-` / `+` scale, `D` duplicates, and Delete/Backspace requests deletion.
+- `[` / `]` reorder, `-` / `+` scale, `D` duplicates, `P` toggles pinning, `O` opens scene outline, and Delete/Backspace requests deletion.
+- `PageUp` / `PageDown` or `Shift+Arrow` pan camera; `Home` / `End` jump to camera edges.
+- Camera slider, stepper buttons, and interactive minimap lens seek viewport smoothly.
+- Edge auto-panning smoothly translates `cameraX` when dragging entities near stage edges.
 - Floating controls supplement, but never replace, labeled persistent controls.
-- Entity boundaries use rendered dimensions, scale, and catalog ground anchor to keep items completely within the `1600 × 900` logical stage.
+- Entity boundaries use rendered dimensions, scale, and catalog ground anchor to keep items completely within the `[0, stageWidth] × [0, 900]` logical stage.
 
 ### Destructive actions
 

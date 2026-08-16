@@ -32,7 +32,7 @@ const requiredDocuments = [
   'docs/ROADMAP.md',
   'docs/QUALITY.md',
   'docs/DECISIONS.md',
-  'review/2026-08-14-project-audit.md'
+  'docs/OFFLINE-PWA.md'
 ];
 
 for (const relPath of requiredDocuments) {

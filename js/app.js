@@ -191,6 +191,11 @@ store.subscribe(({ action, state, persist }) => {
   if (persist) storage.schedule(persistedProjection(state));
   if (toastActions.has(action.type)) showToast(state.ui.message);
 
+  if (action.type === 'scene/setCameraX' || action.type === 'scene/panCamera') {
+    playView.syncCamera(state);
+    return;
+  }
+
   if (action.type === 'ui/selectEntity' || action.type === 'ui/selectEntities' || action.type === 'ui/toggleEntitySelection' || action.type === 'ui/clearSelection') {
     const selectedSet = new Set(state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []));
     for (const element of $$('.scene-entity-positioner')) {
@@ -463,7 +468,8 @@ function wireStaticEvents() {
     playStage.classList.remove('is-spawn-target');
     const match = event.dataTransfer.getData('text/plain').match(/^paper-doll-spawn:(character|prop|bubble):([a-zA-Z0-9_-]+)(?::(.*))?$/);
     if (!match) return;
-    const point = clientToLogical(event.clientX, event.clientY, playStage.getBoundingClientRect());
+    const cameraX = store.getState().currentScene.cameraX || 0;
+    const point = clientToLogical(event.clientX, event.clientY, playStage.getBoundingClientRect(), cameraX);
     const hostElement = event.target.closest?.('.scene-entity-positioner');
     const targetEntityId = hostElement?.dataset?.instanceId;
 

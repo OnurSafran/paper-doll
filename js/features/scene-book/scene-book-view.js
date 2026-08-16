@@ -18,9 +18,10 @@ import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../../domain/scene-te
 export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
   const getAssetFn = options.getAsset ?? getAsset;
+  const stageWidth = Number(scene?.stageWidth) || 1600;
 
   const rootSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  rootSvg.setAttribute('viewBox', '0 0 1600 900');
+  rootSvg.setAttribute('viewBox', `0 0 ${stageWidth} 900`);
   rootSvg.setAttribute('width', '100%');
   rootSvg.setAttribute('height', '100%');
   rootSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -29,9 +30,6 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
   // 1. Background layer
   try {
     const bgSvg = await loadSvg(scene.backgroundId);
-    const bgG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    bgG.setAttribute('class', 'scene-thumb-bg');
-
     const vbStr = bgSvg.getAttribute?.('viewBox') || '0 0 800 500';
     const vbParts = vbStr.trim().split(/[\s,]+/).map(Number);
     const bvx = Number.isFinite(vbParts[0]) ? vbParts[0] : 0;
@@ -40,16 +38,20 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
     const bvh = Number.isFinite(vbParts[3]) && vbParts[3] > 0 ? vbParts[3] : 500;
 
     const bgScale = Math.max(1600 / bvw, 900 / bvh);
-    const bgOffsetX = (1600 - bvw * bgScale) / 2 - bvx * bgScale;
+    const bgBaseOffsetX = (1600 - bvw * bgScale) / 2 - bvx * bgScale;
     const bgOffsetY = (900 - bvh * bgScale) / 2 - bvy * bgScale;
-    bgG.setAttribute('transform', `translate(${bgOffsetX}, ${bgOffsetY}) scale(${bgScale})`);
 
-    const clone = bgSvg.cloneNode(true);
-    while (clone.firstChild) bgG.appendChild(clone.firstChild);
-    rootSvg.appendChild(bgG);
+    for (let x = 0; x < stageWidth; x += 1600) {
+      const bgG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      bgG.setAttribute('class', 'scene-thumb-bg');
+      bgG.setAttribute('transform', `translate(${x + bgBaseOffsetX}, ${bgOffsetY}) scale(${bgScale})`);
+      const clone = bgSvg.cloneNode(true);
+      while (clone.firstChild) bgG.appendChild(clone.firstChild);
+      rootSvg.appendChild(bgG);
+    }
   } catch {
     const fallbackRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    fallbackRect.setAttribute('width', '1600');
+    fallbackRect.setAttribute('width', String(stageWidth));
     fallbackRect.setAttribute('height', '900');
     fallbackRect.setAttribute('fill', '#f6efe4');
     rootSvg.appendChild(fallbackRect);

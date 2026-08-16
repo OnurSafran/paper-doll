@@ -8,7 +8,7 @@ import { assetsByKind, getAsset } from '../../core/asset-catalog.js';
 import { clientToLogical } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, getEntityBounds } from '../../domain/scene-rules.js';
 import { PointerController } from '../../core/pointer-controller.js?v=2';
-import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION } from '../../domain/vocabulary.js';
+import { CAMERA_CONSTANTS, DEFAULT_EXPRESSION, DEFAULT_STAGE_WIDTH } from '../../domain/vocabulary.js';
 import { appendAsset, renderAssetPreview } from '../designer/designer-view.js';
 import { createBubbleSvg } from '../../services/export-service.js';
 
@@ -38,8 +38,51 @@ export function createPlayView({
   let pointerController = null;
   const previewPoints = new Map();
   const grabOffsets = new Map();
+  let activeDragInstanceId = null;
+  let latestDragPoint = null;
+
+  let edgePanRaf = null;
+  let edgePanDirection = 0;
+
+  function stopEdgePan() {
+    if (edgePanRaf) {
+      cancelAnimationFrame(edgePanRaf);
+      edgePanRaf = null;
+    }
+    edgePanDirection = 0;
+    $('#play-stage')?.classList.remove('is-panning');
+  }
+
+  function startEdgePan(direction) {
+    edgePanDirection = direction;
+    if (edgePanRaf) return;
+    $('#play-stage')?.classList.add('is-panning');
+    function tick() {
+      if (edgePanDirection === 0) {
+        stopEdgePan();
+        return;
+      }
+      const state = store.getState();
+      const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+      const currentX = state.currentScene.cameraX || 0;
+      const delta = edgePanDirection * CAMERA_CONSTANTS.EDGE_SPEED;
+      const maxCameraX = Math.max(0, stageWidth - 1600);
+      const nextX = Math.min(Math.max(0, currentX + delta), maxCameraX);
+      if (nextX === currentX) {
+        stopEdgePan();
+        return;
+      }
+      store.dispatch({ type: 'scene/setCameraX', cameraX: nextX });
+      if (activeDragInstanceId && latestDragPoint) {
+        updateDragPreview(activeDragInstanceId, latestDragPoint);
+      }
+      edgePanRaf = requestAnimationFrame(tick);
+    }
+    edgePanRaf = requestAnimationFrame(tick);
+  }
 
   function cancelPointerController() {
+    stopEdgePan();
     const cancel = pointerController?.cancel;
     if (typeof cancel === 'function') cancel.call(pointerController);
   }
@@ -47,6 +90,7 @@ export function createPlayView({
   function initPointerController() {
     const stageEl = $('#play-stage');
     if (!stageEl) return;
+    initCameraControls();
     pointerController = new PointerController(stageEl, {
       selector: '.scene-entity-positioner',
       getId: (element) => element.dataset.instanceId,
@@ -76,11 +120,14 @@ export function createPlayView({
         playRenderToken += 1;
         previewPoints.clear();
         grabOffsets.clear();
+        activeDragInstanceId = instanceId;
+        latestDragPoint = event ? { clientX: event.clientX, clientY: event.clientY } : null;
         $('#scene-entities .context-ring')?.remove();
 
         if (event) {
           const stageRect = stageEl.getBoundingClientRect();
-          const pointerLogical = clientToLogical(event.clientX, event.clientY, stageRect);
+          const currentCameraX = state.currentScene.cameraX || 0;
+          const pointerLogical = clientToLogical(event.clientX, event.clientY, stageRect, currentCameraX);
 
           for (const ent of entitiesToDrag) {
             const el = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(ent.instanceId)}"]`);
@@ -100,47 +147,25 @@ export function createPlayView({
         }
       },
       onPreview(instanceId, element, event) {
-        const state = store.getState();
+        latestDragPoint = { clientX: event.clientX, clientY: event.clientY };
         const stageRect = stageEl.getBoundingClientRect();
-        const pointerLogical = clientToLogical(event.clientX, event.clientY, stageRect);
-
-        const primaryOffset = grabOffsets.get(instanceId);
-        if (!primaryOffset) return;
-
-        const primaryRawX = pointerLogical.x + primaryOffset.dx;
-        const primaryRawY = pointerLogical.y + primaryOffset.dy;
-        const primaryClamped = clampCompoundEntityPoint(primaryRawX, primaryRawY, state.currentScene, instanceId, getAsset);
-
-        const deltaX = primaryClamped.x - primaryOffset.startX;
-        const deltaY = primaryClamped.y - primaryOffset.startY;
-
-        for (const [id, offset] of grabOffsets) {
-          const ent = state.currentScene.entities.find((e) => e.instanceId === id);
-          if (!ent) continue;
-          const targetX = offset.startX + deltaX;
-          const targetY = offset.startY + deltaY;
-          const clamped = clampCompoundEntityPoint(targetX, targetY, state.currentScene, id, getAsset);
-          previewPoints.set(id, clamped);
-          const el = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(id)}"]`);
-          if (el) {
-            el.style.setProperty('--x', `${clamped.x / 16}%`);
-            el.style.setProperty('--y', `${clamped.y / 9}%`);
-          }
-
-          const descendants = getAttachedDescendants(state.currentScene, id);
-          const childDeltaX = clamped.x - ent.x;
-          const childDeltaY = clamped.y - ent.y;
-          for (const d of descendants) {
-            const childEl = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(d.instanceId)}"]`);
-            if (childEl) {
-              childEl.style.setProperty('--x', `${(d.x + childDeltaX) / 16}%`);
-              childEl.style.setProperty('--y', `${(d.y + childDeltaY) / 9}%`);
-            }
+        const state = store.getState();
+        const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+        if (stageWidth > 1600) {
+          const clientXRel = event.clientX - stageRect.left;
+          if (clientXRel < CAMERA_CONSTANTS.EDGE_ZONE) {
+            startEdgePan(-1);
+          } else if (clientXRel > stageRect.width - CAMERA_CONSTANTS.EDGE_ZONE) {
+            startEdgePan(1);
+          } else {
+            stopEdgePan();
           }
         }
+        updateDragPreview(instanceId, event);
       },
       onCommit(instanceId, element, event) {
         element?.classList?.remove('is-dragging');
+        stopEdgePan();
         for (const [id] of grabOffsets) {
           const el = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(id)}"]`);
           if (el) el.classList.remove('is-dragging');
@@ -161,6 +186,8 @@ export function createPlayView({
 
         grabOffsets.clear();
         previewPoints.clear();
+        activeDragInstanceId = null;
+        latestDragPoint = null;
 
         if (moves.length > 1) {
           store.dispatch({ type: 'scene/moveEntities', moves });
@@ -170,6 +197,7 @@ export function createPlayView({
       },
       onCancel(instanceId, element) {
         element?.classList?.remove('is-dragging');
+        stopEdgePan();
         for (const [id] of grabOffsets) {
           const el = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(id)}"]`);
           if (el) el.classList.remove('is-dragging');
@@ -181,9 +209,53 @@ export function createPlayView({
         }
         grabOffsets.clear();
         previewPoints.clear();
+        activeDragInstanceId = null;
+        latestDragPoint = null;
         void render();
       }
     });
+  }
+
+  function updateDragPreview(instanceId, event) {
+    const stageEl = $('#play-stage');
+    if (!stageEl || !event) return;
+    const state = store.getState();
+    const stageRect = stageEl.getBoundingClientRect();
+    const currentCameraX = state.currentScene.cameraX || 0;
+    const pointerLogical = clientToLogical(event.clientX, event.clientY, stageRect, currentCameraX);
+    const primaryOffset = grabOffsets.get(instanceId);
+    if (!primaryOffset) return;
+
+    const primaryRawX = pointerLogical.x + primaryOffset.dx;
+    const primaryRawY = pointerLogical.y + primaryOffset.dy;
+    const primaryClamped = clampCompoundEntityPoint(primaryRawX, primaryRawY, state.currentScene, instanceId, getAsset);
+    const deltaX = primaryClamped.x - primaryOffset.startX;
+    const deltaY = primaryClamped.y - primaryOffset.startY;
+
+    for (const [id, offset] of grabOffsets) {
+      const ent = state.currentScene.entities.find((e) => e.instanceId === id);
+      if (!ent) continue;
+      const targetX = offset.startX + deltaX;
+      const targetY = offset.startY + deltaY;
+      const clamped = clampCompoundEntityPoint(targetX, targetY, state.currentScene, id, getAsset);
+      previewPoints.set(id, clamped);
+      const el = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(id)}"]`);
+      if (el) {
+        el.style.setProperty('--x', String(clamped.x));
+        el.style.setProperty('--y', String(clamped.y));
+      }
+
+      const descendants = getAttachedDescendants(state.currentScene, id);
+      const childDeltaX = clamped.x - ent.x;
+      const childDeltaY = clamped.y - ent.y;
+      for (const d of descendants) {
+        const childEl = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(d.instanceId)}"]`);
+        if (childEl) {
+          childEl.style.setProperty('--x', String(d.x + childDeltaX));
+          childEl.style.setProperty('--y', String(d.y + childDeltaY));
+        }
+      }
+    }
   }
 
   function renderBackgroundSelect(state) {
@@ -407,11 +479,12 @@ export function createPlayView({
     const entityHeight = bounds.height;
     const placeBelow = selected.y - entityHeight < 175;
     const ringY = placeBelow ? selected.y + 35 : selected.y - entityHeight - 20;
-    const horizontalClass = selected.x < 250 ? ' align-left' : selected.x > 1350 ? ' align-right' : '';
+    const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+    const horizontalClass = selected.x < 250 ? ' align-left' : selected.x > stageWidth - 250 ? ' align-right' : '';
     const ring = document.createElement('div');
     ring.className = `context-ring${placeBelow ? ' is-below' : ''}${horizontalClass}`;
-    ring.style.setProperty('--ring-x', `${selected.x / 16}%`);
-    ring.style.setProperty('--ring-y', `${ringY / 9}%`);
+    ring.style.setProperty('--ring-x', String(selected.x));
+    ring.style.setProperty('--ring-y', String(ringY));
     ring.setAttribute('role', 'toolbar');
     ring.setAttribute('aria-label', 'Selected item quick controls');
     const controls = [
@@ -447,13 +520,13 @@ export function createPlayView({
     button.type = 'button';
     button.className = `scene-entity-positioner${isPrimarySelected ? ' is-selected' : ''}${isMultiSelected ? ' is-multi-selected' : ''}${entity.pinned ? ' is-pinned' : ''}${entity.kind === 'bubble' ? ' is-bubble-entity' : ''}`;
     button.dataset.instanceId = entity.instanceId;
-    button.style.setProperty('--x', `${entity.x / 16}%`);
-    button.style.setProperty('--y', `${entity.y / 9}%`);
+    button.style.setProperty('--x', String(entity.x));
+    button.style.setProperty('--y', String(entity.y));
     button.style.zIndex = String(entity.order);
     const asset = getAsset(entity.sourceId);
     const bounds = getEntityBounds(entity, getAsset);
     const logicalWidth = bounds.width;
-    button.style.setProperty('--entity-width', `${logicalWidth / 16}%`);
+    button.style.setProperty('--entity-width', String(logicalWidth));
     button.style.aspectRatio = entity.kind === 'character'
       ? '2 / 3'
       : (entity.kind === 'bubble' ? `${bounds.width} / ${bounds.height}` : `${asset?.displayWidth ?? 200} / ${asset?.displayHeight ?? 200}`);
@@ -560,9 +633,37 @@ export function createPlayView({
   function handleStageKeydown(event) {
     if (event.target.matches('input, select, textarea')) return;
     const state = store.getState();
+    const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
     const selectedIds = state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []);
     const id = state.ui.selectedEntityId;
     const entity = state.currentScene.entities.find((item) => item.instanceId === id);
+
+    if (event.key === 'PageUp') {
+      event.preventDefault();
+      store.dispatch({ type: 'scene/panCamera', deltaX: -CAMERA_CONSTANTS.STEP });
+      return;
+    }
+    if (event.key === 'PageDown') {
+      event.preventDefault();
+      store.dispatch({ type: 'scene/panCamera', deltaX: CAMERA_CONSTANTS.STEP });
+      return;
+    }
+    if (event.key === 'Home') {
+      event.preventDefault();
+      store.dispatch({ type: 'scene/setCameraX', cameraX: 0 });
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      store.dispatch({ type: 'scene/setCameraX', cameraX: stageWidth - 1600 });
+      return;
+    }
+    if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight') && event.shiftKey && selectedIds.length === 0) {
+      event.preventDefault();
+      const delta = event.key === 'ArrowLeft' ? -CAMERA_CONSTANTS.STEP : CAMERA_CONSTANTS.STEP;
+      store.dispatch({ type: 'scene/panCamera', deltaX: delta });
+      return;
+    }
 
     if (event.key.toLowerCase() === 'o') {
       event.preventDefault();
@@ -615,22 +716,197 @@ export function createPlayView({
     }
   }
 
+  function initCameraControls() {
+    const stageEl = $('#play-stage');
+    const widthSelect = $('#stage-width-select');
+    const slider = $('#camera-slider');
+    const panLeftBtn = $('#camera-pan-left');
+    const panRightBtn = $('#camera-pan-right');
+    const minimap = $('#stage-minimap');
+
+    if (widthSelect && !widthSelect.dataset.bound) {
+      widthSelect.dataset.bound = 'true';
+      widthSelect.addEventListener('change', (e) => {
+        store.dispatch({ type: 'scene/setStageWidth', stageWidth: Number(e.target.value) });
+      });
+    }
+
+    if (panLeftBtn && !panLeftBtn.dataset.bound) {
+      panLeftBtn.dataset.bound = 'true';
+      panLeftBtn.addEventListener('click', () => {
+        store.dispatch({ type: 'scene/panCamera', deltaX: -CAMERA_CONSTANTS.STEP });
+      });
+    }
+
+    if (panRightBtn && !panRightBtn.dataset.bound) {
+      panRightBtn.dataset.bound = 'true';
+      panRightBtn.addEventListener('click', () => {
+        store.dispatch({ type: 'scene/panCamera', deltaX: CAMERA_CONSTANTS.STEP });
+      });
+    }
+
+    if (slider && !slider.dataset.bound) {
+      slider.dataset.bound = 'true';
+      slider.addEventListener('input', (e) => {
+        store.dispatch({ type: 'scene/setCameraX', cameraX: Number(e.target.value) });
+      });
+    }
+
+    if (minimap && !minimap.dataset.bound) {
+      minimap.dataset.bound = 'true';
+      let isSeekingMinimap = false;
+
+      const seekFromMinimap = (event) => {
+        const rect = minimap.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+        const stageWidth = store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+        const targetX = ratio * stageWidth - 800;
+        store.dispatch({ type: 'scene/setCameraX', cameraX: Math.round(targetX) });
+      };
+
+      minimap.addEventListener('pointerdown', (event) => {
+        isSeekingMinimap = true;
+        minimap.setPointerCapture(event.pointerId);
+        seekFromMinimap(event);
+      });
+      minimap.addEventListener('pointermove', (event) => {
+        if (isSeekingMinimap) seekFromMinimap(event);
+      });
+      minimap.addEventListener('pointerup', (event) => {
+        if (isSeekingMinimap) {
+          isSeekingMinimap = false;
+          try { minimap.releasePointerCapture(event.pointerId); } catch {}
+        }
+      });
+      minimap.addEventListener('pointercancel', () => { isSeekingMinimap = false; });
+      minimap.addEventListener('keydown', (event) => {
+        const stageWidth = store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+        const maxCameraX = Math.max(0, stageWidth - 1600);
+        let nextCameraX = null;
+        if (event.key === 'ArrowLeft' || event.key === 'PageUp') nextCameraX = (store.getState().currentScene.cameraX || 0) - CAMERA_CONSTANTS.STEP;
+        if (event.key === 'ArrowRight' || event.key === 'PageDown') nextCameraX = (store.getState().currentScene.cameraX || 0) + CAMERA_CONSTANTS.STEP;
+        if (event.key === 'Home') nextCameraX = 0;
+        if (event.key === 'End') nextCameraX = maxCameraX;
+        if (nextCameraX === null) return;
+        event.preventDefault();
+        store.dispatch({ type: 'scene/setCameraX', cameraX: nextCameraX });
+      });
+    }
+
+    if (stageEl && !stageEl.dataset.wheelBound) {
+      stageEl.dataset.wheelBound = 'true';
+      stageEl.addEventListener('wheel', (event) => {
+        const stageWidth = store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+        if (stageWidth <= 1600) return;
+        const delta = event.shiftKey || Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+          ? event.deltaY
+          : event.deltaX;
+        if (!delta) return;
+        event.preventDefault();
+        store.dispatch({ type: 'scene/panCamera', deltaX: delta });
+      }, { passive: false });
+    }
+  }
+
+  function renderCameraHud(state, includeSceneMap = true) {
+    const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+    const cameraX = state.currentScene.cameraX || 0;
+    const hud = $('#camera-hud');
+    const widthSelect = $('#stage-width-select');
+    if (widthSelect && widthSelect.value !== String(stageWidth)) {
+      widthSelect.value = String(stageWidth);
+    }
+    if (!hud) return;
+    const isPanoramic = stageWidth > 1600;
+    hud.hidden = !isPanoramic;
+    if (!isPanoramic) return;
+
+    const maxCameraX = stageWidth - 1600;
+    const slider = $('#camera-slider');
+    if (slider) {
+      slider.max = String(maxCameraX);
+      slider.value = String(cameraX);
+    }
+    const panLeftBtn = $('#camera-pan-left');
+    if (panLeftBtn) panLeftBtn.disabled = cameraX <= 0;
+    const panRightBtn = $('#camera-pan-right');
+    if (panRightBtn) panRightBtn.disabled = cameraX >= maxCameraX;
+
+    const minimap = $('#stage-minimap');
+    if (minimap) {
+      const minimapBg = $('#minimap-bg');
+      const background = getAsset(state.currentScene.backgroundId);
+      const panelCount = Math.max(1, Math.round(stageWidth / 1600));
+      const mapKey = `${background?.id ?? ''}:${panelCount}`;
+      if (includeSceneMap && minimapBg && background && minimapBg.dataset.mapKey !== mapKey) {
+        const panels = Array.from({ length: panelCount }, () => {
+          const panel = document.createElement('span');
+          panel.className = 'minimap-bg-panel';
+          panel.style.backgroundImage = `url("${background.path}")`;
+          return panel;
+        });
+        minimapBg.replaceChildren(...panels);
+        minimapBg.dataset.mapKey = mapKey;
+      }
+      const lensWidthPct = (1600 / stageWidth) * 100;
+      const lensLeftPct = (cameraX / stageWidth) * 100;
+      minimap.style.setProperty('--lens-width', `${lensWidthPct}%`);
+      minimap.style.setProperty('--lens-left', `${lensLeftPct}%`);
+      minimap.setAttribute('aria-valuemax', String(maxCameraX));
+      minimap.setAttribute('aria-valuenow', String(cameraX));
+
+      const minimapEntities = $('#minimap-entities');
+      if (includeSceneMap && minimapEntities) {
+        const dots = state.currentScene.entities.map((e) => {
+          const dot = document.createElement('span');
+          dot.className = 'minimap-dot';
+          dot.style.left = `${(e.x / stageWidth) * 100}%`;
+          dot.style.top = `${(e.y / 900) * 100}%`;
+          return dot;
+        });
+        minimapEntities.replaceChildren(...dots);
+      }
+    }
+  }
+
+  function syncCamera(state = store.getState()) {
+    const stageEl = $('#play-stage');
+    if (stageEl) {
+      stageEl.style.setProperty('--stage-width', String(state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH));
+      stageEl.style.setProperty('--camera-x', String(state.currentScene.cameraX || 0));
+    }
+    renderCameraHud(state, false);
+  }
+
   async function render(state = store.getState()) {
     const token = ++playRenderToken;
     const focusedEntityId = document.activeElement?.closest?.('.scene-entity-positioner')?.dataset.instanceId;
+    const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+
+    syncCamera(state);
+
     renderBackgroundSelect(state);
     renderSpawnTray(state, token);
     renderSelectedActions(state);
+
     $('#empty-scene').hidden = state.currentScene.entities.length > 0;
     const currentBackground = getAsset(state.currentScene.backgroundId);
     $('#scene-name-chip').textContent = currentBackground?.name ?? 'Paper scene';
     $('#scene-count-chip').textContent = `${state.currentScene.entities.length} item${state.currentScene.entities.length === 1 ? '' : 's'}`;
+    const widthChip = $('#scene-width-chip');
+    if (widthChip) widthChip.textContent = `${stageWidth}px`;
 
     const background = $('#scene-background');
-    const stagedBackground = document.createElement('div');
-    await appendAsset(stagedBackground, state.currentScene.backgroundId, {});
+    const numPanels = Math.max(1, Math.round(stageWidth / 1600));
+    const panels = [];
+    for (let i = 0; i < numPanels; i++) {
+      const panel = document.createElement('div');
+      panel.className = 'scene-bg-panel';
+      await appendAsset(panel, state.currentScene.backgroundId, {});
+      panels.push(panel);
+    }
     if (token !== playRenderToken) return;
-    background.replaceChildren(stagedBackground);
+    background.replaceChildren(...panels);
 
     const entityRoot = $('#scene-entities');
     const stagedEntities = document.createDocumentFragment();
@@ -647,6 +923,7 @@ export function createPlayView({
       stagedEntities.append(element);
     }
     entityRoot.replaceChildren(stagedEntities);
+    renderCameraHud(state);
     renderContextRing(state);
     if (focusedEntityId) {
       requestAnimationFrame(() => {
@@ -669,6 +946,7 @@ export function createPlayView({
     cancelPointerController,
     renderSelectedActions,
     renderContextRing,
+    syncCamera,
     handleEntityAction,
     handleStageKeydown
   };

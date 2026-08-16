@@ -14,6 +14,7 @@ import {
   getEntityBounds,
   moveEntities,
   moveEntity,
+  reclampSceneEntities,
   reorderEntity,
   scaleEntities,
   scaleEntity,
@@ -24,6 +25,7 @@ import {
   togglePinEntities,
   touchScene
 } from '../domain/scene-rules.js';
+import { clampCameraX } from './coordinate-space.js';
 import { instantiateSceneTemplate } from '../domain/scene-templates.js';
 import { clonePreset, cloneScene, createRuntimeState } from './state-schema.js';
 import { GARMENT_COLORS, HAIR_COLORS, isColorValue, isPaletteToken, normalizeColorValue } from './palette.js';
@@ -31,18 +33,22 @@ import { normalizeDisplayName, truncateGraphemes } from './text.js';
 import {
   ALIGNMENT_MODES,
   BUBBLE_STYLES,
+  CAMERA_CONSTANTS,
   DEFAULT_BUBBLE_STYLE,
   DEFAULT_BUBBLE_TEXT,
   DEFAULT_EXPRESSION,
+  DEFAULT_STAGE_WIDTH,
   defaultMakeId,
   defaultNow,
   isAlignmentMode,
   isBubbleStyle,
   isExpression,
-  isValidId,
   isOutfitSlot,
+  isStageWidth,
+  isValidId,
   LIMITS,
-  OUTFIT_SLOTS
+  OUTFIT_SLOTS,
+  STAGE_WIDTHS
 } from '../domain/vocabulary.js';
 
 export function createAppStore(envelope, options = {}) {
@@ -82,7 +88,7 @@ export function createAppStore(envelope, options = {}) {
         },
         presets: prevSnapshot.presets,
         scenes: prevSnapshot.scenes,
-        currentScene: prevSnapshot.currentScene,
+        currentScene: restoreSceneForHistory(prevSnapshot.currentScene, state.currentScene),
         ui: {
           ...state.ui,
           selectedEntityId: selectedStillExists ? state.ui.selectedEntityId : (remainingSelectedIds[0] || null),
@@ -118,7 +124,7 @@ export function createAppStore(envelope, options = {}) {
         },
         presets: nextSnapshot.presets,
         scenes: nextSnapshot.scenes,
-        currentScene: nextSnapshot.currentScene,
+        currentScene: restoreSceneForHistory(nextSnapshot.currentScene, state.currentScene),
         ui: {
           ...state.ui,
           selectedEntityId: selectedStillExists ? state.ui.selectedEntityId : (remainingSelectedIds[0] || null),
@@ -139,8 +145,9 @@ export function createAppStore(envelope, options = {}) {
       previousState.presets !== result.state.presets ||
       previousState.scenes !== result.state.scenes ||
       previousState.currentScene !== result.state.currentScene;
+    const cameraOnlyAction = action.type === 'scene/setCameraX' || action.type === 'scene/panCamera';
 
-    if (domainChanged) {
+    if (domainChanged && !cameraOnlyAction) {
       undoStack.push(snapshotDomain(previousState));
       if (undoStack.length > maxHistory) undoStack.shift();
       redoStack.length = 0;
@@ -176,6 +183,14 @@ function snapshotDomain(state) {
     presets: state.presets,
     scenes: state.scenes,
     currentScene: state.currentScene
+  };
+}
+
+function restoreSceneForHistory(snapshotScene, currentScene) {
+  if (!snapshotScene) return snapshotScene;
+  return {
+    ...snapshotScene,
+    cameraX: clampCameraX(currentScene?.cameraX ?? snapshotScene.cameraX, snapshotScene.stageWidth || DEFAULT_STAGE_WIDTH)
   };
 }
 
@@ -428,6 +443,53 @@ function reduce(state, action, context) {
         state: { ...state, currentScene: touchScene({ ...state.currentScene, backgroundId: action.backgroundId }, context.now) },
         persist: true
       };
+
+    case 'scene/setStageWidth': {
+      if (!isStageWidth(action.stageWidth)) return null;
+      const currentWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+      if (currentWidth === action.stageWidth) return null;
+      let nextScene = { ...state.currentScene, stageWidth: action.stageWidth };
+      if (action.stageWidth < currentWidth) {
+        nextScene = reclampSceneEntities(nextScene, action.stageWidth, context.getAsset);
+      }
+      nextScene.cameraX = clampCameraX(nextScene.cameraX, action.stageWidth);
+      return {
+        state: message(`Stage width set to ${action.stageWidth}px.`, {
+          ...state,
+          currentScene: touchScene(nextScene, context.now)
+        }),
+        persist: true
+      };
+    }
+
+    case 'scene/setCameraX': {
+      const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+      const clampedX = clampCameraX(action.cameraX, stageWidth);
+      if ((state.currentScene.cameraX || 0) === clampedX) return null;
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, cameraX: clampedX }, context.now)
+        },
+        persist: true
+      };
+    }
+
+    case 'scene/panCamera': {
+      const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
+      const delta = Number(action.deltaX) || 0;
+      if (delta === 0) return null;
+      const currentX = state.currentScene.cameraX || 0;
+      const clampedX = clampCameraX(currentX + delta, stageWidth);
+      if (currentX === clampedX) return null;
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, cameraX: clampedX }, context.now)
+        },
+        persist: true
+      };
+    }
 
     case 'scene/spawnCharacter': { 
       if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message('Scene is full.'), result: { ok: false, code: 'LIMIT' } };

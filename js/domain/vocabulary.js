@@ -129,6 +129,22 @@ export const LIMITS = Object.freeze({
   AUTOSAVE_DEBOUNCE_MS: 400
 });
 
+export const STAGE_WIDTHS = Object.freeze([1600, 3200, 4800]);
+export const DEFAULT_STAGE_WIDTH = 1600;
+export const VIEWPORT_WIDTH = 1600;
+export const VIEWPORT_HEIGHT = 900;
+
+export function isStageWidth(value) {
+  return typeof value === 'number' && STAGE_WIDTHS.includes(value);
+}
+
+export const CAMERA_CONSTANTS = Object.freeze({
+  DEFAULT_CAMERA_X: 0,
+  STEP: 300,
+  EDGE_ZONE: 70,
+  EDGE_SPEED: 18
+});
+
 export const CHARACTER_DIMENSIONS = Object.freeze({
   BASE_WIDTH: 235,
   BASE_HEIGHT: 352.5,

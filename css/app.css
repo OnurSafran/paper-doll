@@ -1325,23 +1325,59 @@ input:focus, select:focus, textarea:focus {
   isolation: isolate;
 }
 
-.scene-background,
-.scene-background .asset-svg,
+.scene-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: calc(var(--stage-width, 1600) / 1600 * 100%);
+  transform: translate3d(calc(-1 * var(--camera-x, 0) / var(--stage-width, 1600) * 100%), 0, 0);
+  will-change: transform;
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.play-stage.is-panning .scene-world,
+.play-stage.is-dragging .scene-world {
+  transition: none;
+}
+
+.scene-background {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+.scene-bg-panel {
+  flex: 0 0 calc(1600 / var(--stage-width, 1600) * 100%);
+  height: 100%;
+  position: relative;
+}
+
+.scene-bg-panel .asset-svg,
+.scene-background .asset-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .scene-entities {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.scene-background { z-index: 0; }
-.scene-entities { z-index: 2; pointer-events: none; }
-
 .scene-entity-positioner {
+  contain: layout style;
   position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--entity-width);
+  left: calc(var(--x) / var(--stage-width, 1600) * 100%);
+  top: calc(var(--y) / 900 * 100%);
+  width: calc(var(--entity-width) / var(--stage-width, 1600) * 100%);
   transform: translate(-50%, -100%);
   pointer-events: auto;
   touch-action: none;
@@ -1349,6 +1385,130 @@ input:focus, select:focus, textarea:focus {
   padding: 0;
   border: 0;
   background: transparent;
+}
+
+/* Panoramic Camera HUD */
+.camera-hud {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: min(100%, calc((100dvh - 150px) * 16 / 9));
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(255, 253, 249, 0.95);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.camera-pan-btn {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--paper-card);
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.12s ease;
+}
+
+.camera-pan-btn:hover:not(:disabled) {
+  background: var(--paper-warm);
+  border-color: var(--ink-soft);
+  transform: scale(1.04);
+}
+
+.camera-slider-track {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.camera-slider {
+  width: 100%;
+  accent-color: var(--coral);
+  cursor: pointer;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.stage-minimap {
+  position: relative;
+  width: 140px;
+  height: 42px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #e8dcc9;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: inset 0 1px 3px rgba(46, 38, 31, 0.15);
+  flex-shrink: 0;
+  outline: none;
+}
+
+.stage-minimap:focus-visible {
+  box-shadow: 0 0 0 3px var(--sky);
+}
+
+.minimap-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  opacity: 0.45;
+}
+
+.minimap-bg-panel {
+  flex: 1 1 0;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  border-right: 1px dashed rgba(46, 38, 31, 0.25);
+}
+
+.minimap-bg-panel:last-child {
+  border-right: none;
+}
+
+.minimap-entities {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.minimap-dot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--coral-dark);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+}
+
+.minimap-lens {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--lens-left, 0%);
+  width: var(--lens-width, 100%);
+  background: rgba(255, 255, 255, 0.45);
+  border: 2px solid var(--coral);
+  border-radius: 3px;
+  box-shadow: 0 0 4px rgba(46, 38, 31, 0.25);
+  pointer-events: none;
+}
+
+.scene-width-chip {
+  background: rgba(94, 158, 201, 0.18);
+  color: #1e5a8a;
+  font-weight: 800;
 }
 
 .scene-entity-positioner.is-selected::after {
@@ -1514,8 +1674,8 @@ input:focus, select:focus, textarea:focus {
 .context-ring {
   position: absolute;
   z-index: 1100;
-  left: var(--ring-x);
-  top: var(--ring-y);
+  left: calc(var(--ring-x) / var(--stage-width, 1600) * 100%);
+  top: calc(var(--ring-y) / 900 * 100%);
   min-width: 180px;
   display: flex;
   align-items: center;

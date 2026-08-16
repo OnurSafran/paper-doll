@@ -1,15 +1,19 @@
 import {
+  CAMERA_CONSTANTS,
   CHARACTER_DIMENSIONS,
   DEFAULT_BACKGROUND_ID,
   DEFAULT_BUBBLE_STYLE,
   DEFAULT_BUBBLE_TEXT,
   DEFAULT_EXPRESSION,
+  DEFAULT_STAGE_WIDTH,
   defaultMakeId,
   defaultNow,
   isAlignmentMode,
   isBubbleStyle,
   isExpression,
-  LIMITS
+  isStageWidth,
+  LIMITS,
+  STAGE_WIDTHS
 } from './vocabulary.js';
 
 export const STAGE_WIDTH = LIMITS.STAGE_WIDTH;
@@ -64,6 +68,8 @@ export function createEmptyScene(id = defaultMakeId(), now = defaultNow) {
     sceneId: id,
     title: 'Current Scene',
     backgroundId: DEFAULT_BACKGROUND_ID,
+    stageWidth: DEFAULT_STAGE_WIDTH,
+    cameraX: CAMERA_CONSTANTS.DEFAULT_CAMERA_X,
     updatedAt: now().toISOString(),
     entities: []
   };
@@ -74,6 +80,8 @@ export function createSampleScene(characterSnapshot, now = defaultNow) {
     sceneId: 'sample-scene',
     title: 'Welcome Scene',
     backgroundId: DEFAULT_BACKGROUND_ID,
+    stageWidth: DEFAULT_STAGE_WIDTH,
+    cameraX: CAMERA_CONSTANTS.DEFAULT_CAMERA_X,
     updatedAt: now().toISOString(),
     entities: [
       {
@@ -96,10 +104,11 @@ export function clamp(value, min, max) {
   return Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
 }
 
-export function clampPoint(x, y, bounds = null) {
+export function clampPoint(x, y, bounds = null, stageWidth = STAGE_WIDTH) {
+  const currentStageWidth = Number(stageWidth) || STAGE_WIDTH;
   if (!bounds) {
     return {
-      x: Math.round(clamp(Number(x), 30, STAGE_WIDTH - 30)),
+      x: Math.round(clamp(Number(x), 30, currentStageWidth - 30)),
       y: Math.round(clamp(Number(y), 80, STAGE_HEIGHT - 10))
     };
   }
@@ -110,12 +119,12 @@ export function clampPoint(x, y, bounds = null) {
   const ay = Number.isFinite(bounds.anchorY) ? bounds.anchorY : 1.0;
 
   const minX = Math.round(width * ax);
-  const maxX = Math.round(STAGE_WIDTH - width * (1 - ax));
+  const maxX = Math.round(currentStageWidth - width * (1 - ax));
   const minY = Math.round(height * ay);
   const maxY = Math.round(STAGE_HEIGHT - height * (1 - ay));
 
-  const safeMinX = minX <= maxX ? minX : Math.round(STAGE_WIDTH / 2);
-  const safeMaxX = minX <= maxX ? maxX : Math.round(STAGE_WIDTH / 2);
+  const safeMinX = minX <= maxX ? minX : Math.round(currentStageWidth / 2);
+  const safeMaxX = minX <= maxX ? maxX : Math.round(currentStageWidth / 2);
   const safeMinY = minY <= maxY ? minY : Math.round(STAGE_HEIGHT / 2);
   const safeMaxY = minY <= maxY ? maxY : Math.round(STAGE_HEIGHT / 2);
 
@@ -125,9 +134,9 @@ export function clampPoint(x, y, bounds = null) {
   };
 }
 
-export function clampEntityPoint(x, y, entity, getAsset) {
+export function clampEntityPoint(x, y, entity, getAsset, stageWidth = STAGE_WIDTH) {
   const bounds = getEntityBounds(entity, getAsset);
-  return clampPoint(x, y, bounds);
+  return clampPoint(x, y, bounds, stageWidth);
 }
 
 export function clampScale(scale) {
@@ -137,7 +146,8 @@ export function clampScale(scale) {
 export function addEntity(scene, entity, getAsset = () => undefined) {
   if (scene.entities.length >= MAX_ENTITIES || scene.entities.some((item) => item.instanceId === entity.instanceId)) return scene;
   const bounds = getEntityBounds(entity, getAsset);
-  const point = clampPoint(entity.x ?? STAGE_WIDTH / 2, entity.y ?? 720, bounds);
+  const stageWidth = scene?.stageWidth || STAGE_WIDTH;
+  const point = clampPoint(entity.x ?? stageWidth / 2, entity.y ?? 720, bounds, stageWidth);
   const parent = entity.attachedTo ? scene.entities.find((e) => e.instanceId === entity.attachedTo) : null;
   const attachOffset = parent
     ? { dx: Math.round(point.x - parent.x), dy: Math.round(point.y - parent.y) }
@@ -174,45 +184,44 @@ export function updateEntity(scene, instanceId, updater) {
 }
 
 export function setEntityPinned(scene, instanceId, pinned) {
-  const isPinned = Boolean(pinned);
   return updateEntity(scene, instanceId, (entity) => {
-    if (entity.pinned === isPinned) return entity;
-    return {
-      ...entity,
-      pinned: isPinned,
-      attachedTo: isPinned ? null : entity.attachedTo,
-      attachOffset: isPinned ? null : entity.attachOffset
-    };
+    if (Boolean(entity.pinned) === Boolean(pinned)) return entity;
+    if (pinned) {
+      return { ...entity, pinned: true, attachedTo: null, attachOffset: null };
+    }
+    return { ...entity, pinned: false };
   });
 }
 
 export function getAttachedDescendants(scene, parentInstanceId) {
-  const direct = scene.entities.filter((e) => e.attachedTo === parentInstanceId);
-  const result = [...direct];
-  for (const child of direct) {
-    result.push(...getAttachedDescendants(scene, child.instanceId));
+  const descendants = [];
+  const queue = [parentInstanceId];
+  while (queue.length > 0) {
+    const currentId = queue.shift();
+    const children = scene.entities.filter((e) => e.attachedTo === currentId);
+    for (const child of children) {
+      descendants.push(child);
+      queue.push(child.instanceId);
+    }
   }
-  return result;
+  return descendants;
 }
 
-export function attachEntity(scene, childInstanceId, parentInstanceId) {
+export function attachEntity(scene, childInstanceId, parentInstanceId, getAsset = () => undefined) {
   const child = scene.entities.find((e) => e.instanceId === childInstanceId);
   const parent = scene.entities.find((e) => e.instanceId === parentInstanceId);
-  if (!child || !parent || child.pinned || child.instanceId === parentInstanceId) return scene;
+  if (!child || !parent || child.pinned || childInstanceId === parentInstanceId) return scene;
 
-  // Cycle prevention: parent cannot be a descendant of child
-  const descendants = getAttachedDescendants(scene, childInstanceId);
-  if (descendants.some((d) => d.instanceId === parentInstanceId)) return scene;
+  const descendantsOfChild = getAttachedDescendants(scene, childInstanceId);
+  if (descendantsOfChild.some((d) => d.instanceId === parentInstanceId)) {
+    return scene;
+  }
 
-  const attachOffset = {
-    dx: Math.round(child.x - parent.x),
-    dy: Math.round(child.y - parent.y)
-  };
-
-  return updateEntity(scene, childInstanceId, (e) => ({
-    ...e,
+  const offset = { dx: Math.round(child.x - parent.x), dy: Math.round(child.y - parent.y) };
+  return updateEntity(scene, childInstanceId, (entity) => ({
+    ...entity,
     attachedTo: parentInstanceId,
-    attachOffset
+    attachOffset: offset
   }));
 }
 
@@ -223,7 +232,8 @@ export function detachEntity(scene, childInstanceId) {
   });
 }
 
-export function getEntityAllowedRange(entity, getAsset = () => undefined) {
+export function getEntityAllowedRange(entity, getAsset = () => undefined, stageWidth = STAGE_WIDTH) {
+  const currentStageWidth = Number(stageWidth) || STAGE_WIDTH;
   const bounds = getEntityBounds(entity, getAsset);
   const width = Math.max(0, Number(bounds.width) || 0);
   const height = Math.max(0, Number(bounds.height) || 0);
@@ -231,24 +241,25 @@ export function getEntityAllowedRange(entity, getAsset = () => undefined) {
   const ay = Number.isFinite(bounds.anchorY) ? bounds.anchorY : 1.0;
 
   const minX = Math.round(width * ax);
-  const maxX = Math.round(STAGE_WIDTH - width * (1 - ax));
+  const maxX = Math.round(currentStageWidth - width * (1 - ax));
   const minY = Math.round(height * ay);
   const maxY = Math.round(STAGE_HEIGHT - height * (1 - ay));
 
   return {
-    minX: minX <= maxX ? minX : Math.round(STAGE_WIDTH / 2),
-    maxX: minX <= maxX ? maxX : Math.round(STAGE_WIDTH / 2),
+    minX: minX <= maxX ? minX : Math.round(currentStageWidth / 2),
+    maxX: minX <= maxX ? maxX : Math.round(currentStageWidth / 2),
     minY: minY <= maxY ? minY : Math.round(STAGE_HEIGHT / 2),
     maxY: minY <= maxY ? maxY : Math.round(STAGE_HEIGHT / 2)
   };
 }
 
 export function getCompoundEntityRange(scene, instanceId, getAsset = () => undefined) {
+  const stageWidth = scene?.stageWidth || STAGE_WIDTH;
   const root = scene?.entities?.find((e) => e.instanceId === instanceId);
-  if (!root) return { minX: 0, maxX: STAGE_WIDTH, minY: 0, maxY: STAGE_HEIGHT };
+  if (!root) return { minX: 0, maxX: stageWidth, minY: 0, maxY: STAGE_HEIGHT };
   const descendants = getAttachedDescendants(scene, instanceId);
   if (descendants.length === 0) {
-    return getEntityAllowedRange(root, getAsset);
+    return getEntityAllowedRange(root, getAsset, stageWidth);
   }
   let compoundMinX = -Infinity;
   let compoundMaxX = Infinity;
@@ -259,7 +270,7 @@ export function getCompoundEntityRange(scene, instanceId, getAsset = () => undef
   for (const entity of group) {
     const relX = entity.x - root.x;
     const relY = entity.y - root.y;
-    const range = getEntityAllowedRange(entity, getAsset);
+    const range = getEntityAllowedRange(entity, getAsset, stageWidth);
 
     compoundMinX = Math.max(compoundMinX, range.minX - relX);
     compoundMaxX = Math.min(compoundMaxX, range.maxX - relX);
@@ -346,7 +357,7 @@ export function scaleEntity(scene, instanceId, scale, getAsset = () => undefined
 
   const scaledEntity = { ...target, scale: nextScale };
   const bounds = getEntityBounds(scaledEntity, getAsset);
-  const point = clampPoint(target.x, target.y, bounds);
+  const point = clampPoint(target.x, target.y, bounds, scene?.stageWidth || STAGE_WIDTH);
   const deltaX = point.x - target.x;
   const deltaY = point.y - target.y;
 
@@ -663,8 +674,42 @@ export function togglePinEntities(scene, instanceIds, forcedPinned = null) {
   return current;
 }
 
+export function reclampSceneEntities(scene, targetStageWidth = STAGE_WIDTH, getAsset = () => undefined) {
+  if (!scene || !Array.isArray(scene.entities)) return scene;
+  let nextScene = { ...scene, stageWidth: targetStageWidth };
+  for (const entity of nextScene.entities) {
+    if (!entity.attachedTo) {
+      nextScene = entity.pinned
+        ? reclampPinnedEntityTree(nextScene, entity.instanceId, getAsset)
+        : moveEntity(nextScene, entity.instanceId, entity.x, entity.y, getAsset);
+    }
+  }
+  return nextScene;
+}
+
+function reclampPinnedEntityTree(scene, instanceId, getAsset) {
+  const root = scene.entities.find((entity) => entity.instanceId === instanceId);
+  if (!root) return scene;
+  const descendants = getAttachedDescendants(scene, instanceId);
+  const range = getCompoundEntityRange(scene, instanceId, getAsset);
+  const clampedRootX = Math.round(clamp(root.x, range.minX, range.maxX));
+  const clampedRootY = Math.round(clamp(root.y, range.minY, range.maxY));
+  const deltaX = clampedRootX - root.x;
+  const deltaY = clampedRootY - root.y;
+  if (deltaX === 0 && deltaY === 0) return scene;
+
+  const descendantIds = new Set(descendants.map((entity) => entity.instanceId));
+  return touchScene({
+    ...scene,
+    entities: scene.entities.map((entity) => {
+      if (entity.instanceId === instanceId) return { ...entity, x: clampedRootX, y: clampedRootY };
+      if (descendantIds.has(entity.instanceId)) return { ...entity, x: entity.x + deltaX, y: entity.y + deltaY };
+      return entity;
+    })
+  });
+}
+
 export function touchScene(scene, now = defaultNow) {
   return { ...scene, updatedAt: now().toISOString() };
 }
-
 

@@ -1,20 +1,25 @@
 import { isColorValue, isPaletteToken, normalizeColorValue } from './palette.js';
 import { cloneDraft, createStarterDraft, emptySlots, OUTFIT_SLOTS } from '../domain/outfit-rules.js';
-import { clamp, clampPoint, clampScale, createEmptyScene, createSampleScene, getEntityBounds } from '../domain/scene-rules.js';
+import { clamp, clampPoint, clampScale, createEmptyScene, createSampleScene, getEntityBounds, reclampSceneEntities } from '../domain/scene-rules.js';
+import { clampCameraX } from './coordinate-space.js';
 import { hasValidDisplayName, normalizeDisplayName } from './text.js';
 import {
+  CAMERA_CONSTANTS,
   DEFAULT_BACKGROUND_ID,
   DEFAULT_BASE_DOLL_ID,
   DEFAULT_BUBBLE_STYLE,
   DEFAULT_BUBBLE_TEXT,
   DEFAULT_EXPRESSION,
   DEFAULT_REDUCED_MOTION,
+  DEFAULT_STAGE_WIDTH,
   isBubbleStyle,
   isEntityKind,
   isExpression,
   isReducedMotionOption,
+  isStageWidth,
   isValidId,
-  LIMITS
+  LIMITS,
+  STAGE_WIDTHS
 } from '../domain/vocabulary.js';
 
 export const SCHEMA_VERSION = 2;
@@ -171,11 +176,12 @@ export function sanitizeScene(candidate, getAsset = () => undefined, warnings = 
     warnings.push('The current scene was invalid and was not restored.');
     return null;
   }
+  const candidateStageWidth = isStageWidth(candidate.stageWidth) ? candidate.stageWidth : DEFAULT_STAGE_WIDTH;
   const entities = [];
   const entityIds = new Set();
   for (const item of Array.isArray(candidate.entities) ? candidate.entities : []) {
     if (entities.length >= LIMITS.MAX_ENTITIES) break;
-    const entity = sanitizeEntity(item, getAsset);
+    const entity = sanitizeEntity(item, getAsset, candidateStageWidth);
     if (entity && !entityIds.has(entity.instanceId)) {
       entityIds.add(entity.instanceId);
       entities.push(entity);
@@ -208,24 +214,35 @@ export function sanitizeScene(candidate, getAsset = () => undefined, warnings = 
       entity.attachedTo = null;
       entity.attachOffset = null;
       warnings.push('A circular attachment reference was detached.');
-    } else if (!entity.attachOffset) {
+    } else {
       const parent = entityMap.get(entity.attachedTo);
       entity.attachOffset = { dx: entity.x - parent.x, dy: entity.y - parent.y };
     }
   }
 
   entities.sort((a, b) => a.order - b.order).forEach((entity, index) => { entity.order = index + 1; });
-  return {
+  const stageWidth = isStageWidth(candidate.stageWidth) ? candidate.stageWidth : DEFAULT_STAGE_WIDTH;
+  const cameraX = clampCameraX(candidate.cameraX ?? CAMERA_CONSTANTS.DEFAULT_CAMERA_X, stageWidth);
+
+  const sanitizedScene = {
     sceneId: candidate.sceneId,
     title: validName(candidate.title) ? normalizeDisplayName(candidate.title, LIMITS.MAX_SCENE_TITLE_LENGTH) : 'Current Scene',
     backgroundId: getAsset(candidate.backgroundId)?.kind === 'background' ? candidate.backgroundId : DEFAULT_BACKGROUND_ID,
+    stageWidth,
+    cameraX,
     createdAt: validDateString(candidate.createdAt) ? candidate.createdAt : (validDateString(candidate.updatedAt) ? candidate.updatedAt : new Date(0).toISOString()),
     updatedAt: validDateString(candidate.updatedAt) ? candidate.updatedAt : new Date(0).toISOString(),
     entities
   };
+
+  // Existing v2 scenes may contain wide-stage attachments or pinned items that
+  // were saved before compound re-clamping existed. Repair their runtime
+  // coordinates while preserving the persisted scene timestamp.
+  const reclamped = reclampSceneEntities(sanitizedScene, stageWidth, getAsset);
+  return { ...reclamped, updatedAt: sanitizedScene.updatedAt };
 }
 
-function sanitizeEntity(item, getAsset) {
+function sanitizeEntity(item, getAsset, stageWidth = DEFAULT_STAGE_WIDTH) {
   if (!item || typeof item !== 'object' || !validId(item.instanceId)) return null;
   if (!isEntityKind(item.kind)) return null;
   const sourceAsset = getAsset(item.sourceId);
@@ -240,7 +257,7 @@ function sanitizeEntity(item, getAsset) {
 
   const scale = clampScale(item.scale == null ? 1 : Number(item.scale));
   const bounds = getEntityBounds({ ...item, scale, text, bubbleStyle, width }, getAsset);
-  const point = clampPoint(item.x, item.y, bounds);
+  const point = clampPoint(item.x, item.y, bounds, stageWidth);
   const pinned = Boolean(item.pinned);
   const attachedTo = !pinned && validId(item.attachedTo) ? item.attachedTo : null;
   const attachOffset = attachedTo && item.attachOffset && Number.isFinite(item.attachOffset.dx) && Number.isFinite(item.attachOffset.dy)

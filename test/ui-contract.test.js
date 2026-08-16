@@ -195,6 +195,35 @@ test('multi-select, alignment controls, scene outline, and templates expose acce
   assert.match(js, /duplicateCurrentToLibrary/);
 });
 
+test('panoramic stages and camera navigation expose accessible HUD, slider, minimap, and CSS rules', () => {
+  // DOM Elements
+  assert.match(html, /id="stage-width-select"/);
+  assert.match(html, /id="scene-world"/);
+  assert.match(html, /id="camera-hud"/);
+  assert.match(html, /id="camera-pan-left"/);
+  assert.match(html, /id="camera-slider"/);
+  assert.match(html, /id="camera-pan-right"/);
+  assert.match(html, /id="stage-minimap"/);
+  assert.match(html, /id="minimap-lens"/);
+  assert.match(html, /id="minimap-entities"/);
 
+  // CSS rules
+  assert.match(css, /\.scene-world\s*{[^}]*transform:\s*translate3d/s);
+  assert.match(css, /\.camera-hud\s*{/);
+  assert.match(css, /\.camera-pan-btn\s*{[^}]*min-width:\s*44px/s);
+  assert.match(css, /\.stage-minimap\s*{/);
+  assert.match(css, /\.minimap-lens\s*{/);
+
+  // JS wiring & Reducers
+  assert.match(playJs, /scene\/setStageWidth/);
+  assert.match(playJs, /scene\/setCameraX/);
+  assert.match(playJs, /scene\/panCamera/);
+  assert.match(playJs, /CAMERA_CONSTANTS\.EDGE_ZONE/);
+  assert.match(playJs, /minimap\.addEventListener\('keydown'/);
+  assert.match(playJs, /minimap-bg-panel/);
+  assert.match(playJs, /function syncCamera\(/);
+  assert.match(playJs, /entityRoot\.replaceChildren\(stagedEntities\);\s*renderCameraHud\(state\);/);
+  assert.match(js, /clientToLogical\(event\.clientX, event\.clientY, playStage\.getBoundingClientRect\(\), cameraX\)/);
+});
 
 

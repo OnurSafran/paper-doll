@@ -20,7 +20,7 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-014 | Accept palette tokens or normalized `#RRGGBB`. | Implemented | Creativity without arbitrary CSS. |
 | D-015 | Combine contextual and persistent scene controls. | Implemented | Efficient pointer use plus accessible fallback. |
 | D-016 | Show sample scene only for pristine storage. | Implemented | Avoids blank first run without replacing work. |
-| D-017 | Panoramic stages use persisted virtual camera state. | Accepted future | Wide stories should not distort entity coordinates. |
+| D-017 | Panoramic stages use persisted virtual camera state. | Implemented | Wide stories should not distort entity coordinates. |
 | D-018 | Custom items retain placeholders by default; destructive cleanup is explicit. | Accepted future | Prevents silent story loss. |
 | D-019 | Extract feature modules and browser services before another major feature. | Implemented | Current browser orchestration is too concentrated. |
 | D-020 | Add revision-aware repository persistence. | Implemented | Informational cross-tab prompts do not stop stale writes without monotonic revisions. |
@@ -36,7 +36,7 @@ Change an accepted decision only by recording a replacement and updating its own
 
 ### D-017 — Panoramic camera
 
-Scenes may use `3200 × 900` or `4800 × 900` logical width. `cameraX` is clamped and persisted. Minimap, slider/buttons, trackpad/touch, keyboard, and edge pan share the same camera command boundary.
+Scenes support `1600 × 900`, `3200 × 900`, and `4800 × 900` logical canvas widths. Entity `(x, y)` is stored as an absolute logical coordinate in `[0, stageWidth] × [0, 900]`. `cameraX` is clamped within `[0, stageWidth - 1600]` and persisted with the scene record without creating duplicate undo entries. The camera navigation HUD features stepper buttons, range slider, and interactive minimap lens. Edge auto-panning smoothly translates `cameraX` when dragging entities near viewport boundaries. Downsizing re-clamps entities safely into bounds with a single undoable step. Export and Scene Book thumbnails tile backgrounds across wide stage canvases.
 
 ### D-018 — Custom item deletion
 

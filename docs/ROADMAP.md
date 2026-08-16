@@ -11,11 +11,11 @@ This is the single authority for implementation status, open work, and delivery 
 - Dollbox, Scene Book, current-scene autosave/reload, and local schema migration
 - Pointer/keyboard scene editing, bounded Undo/Redo, and PNG export
 - Seven in-session expressions and strictly local voice puppetry
-- 172 automated tests passing
+- 186 automated tests passing
 - 77 cataloged SVG files passing asset validation
 - Catalog assets carry `added_date`, `creator`, `concept`, `dlc`, and `source` provenance metadata; current content pack is `core`
 - Installable offline PWA shell with Turkish in-app guide
-- Documentation validation passing with 9 canonical documents
+- Documentation validation passing with 8 canonical documents
 - Gates A–D complete; Gate E asset expansion complete; hosted iPad smoke test remains before family release
 
 ## Status by capability
@@ -26,7 +26,7 @@ This is the single authority for implementation status, open work, and delivery 
 | Schema/storage | Implemented | Monotonic revision guards, post-write race detection, and recovery/availability reporting are complete. |
 | Asset pipeline | Implemented | Add clone-ID scoping before patterns/definitions. Core asset provenance metadata and ordinary SVG expansion are in place. |
 | Designer/Dollbox | Implemented | Modular feature architecture extracted cleanly. Complete real-browser accessibility journey. |
-| Play/Scene Book | Implemented | Modular feature architecture extracted cleanly. Full entity thumbnails; browser lifecycle evidence. |
+| Play/Scene Book | Implemented | Modular feature architecture extracted cleanly. Full entity thumbnails; panoramic world & camera navigation. |
 | Undo/Redo | Implemented | Verify longer mixed-domain journeys and history semantics. |
 | PNG export | Implemented | Extracted export service with immutable snapshots, progress/failure reporting, and parity fixtures. |
 | Expressions/voice | Implemented | Extracted voice puppetry service with injected browser APIs, frequency analyzer, and teardown tests. |
@@ -100,7 +100,7 @@ Every extraction is independently reviewable and behavior-preserving. Do not com
 3. Fabric patterns after SVG ID scoping
 4. Paper-tab visual toggle
 5. Interactive props and optional sound effects
-6. Panoramic stages and camera navigation
+6. [x] Panoramic stages and camera navigation (`1600`, `3200`, `4800` widths with persisted cameraX, minimap, steppers, trackpad/wheel, edge auto-pan)
 7. World map and scene transitions
 8. Custom paint studio after IndexedDB and project-portability prerequisites
 9. Pose/gesture animation after export and reduced-motion contracts are defined

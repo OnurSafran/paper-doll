@@ -114,15 +114,25 @@ Clamping uses entity dimensions, scale, and catalog ground anchor to keep all it
 
 ## Coordinate and pointer lifecycle
 
-The stage is `1600 × 900`; its viewport letterboxes.
+The stage viewport has a fixed 16:9 aspect ratio (`1600 × 900` viewport window), while the inner `#scene-world` supports panoramic widths (`1600`, `3200`, or `4800` logical units). The virtual camera translates `#scene-world` via hardware-accelerated GPU transforms:
 
-```text
-scale = min(containerWidth / 1600, containerHeight / 900)
-logicalX = (clientX - stageLeft) / scale
-logicalY = (clientY - stageTop) / scale
+```css
+.scene-world {
+  width: calc(var(--stage-width, 1600) / 1600 * 100%);
+  transform: translate3d(calc(-1 * var(--camera-x, 0) / var(--stage-width, 1600) * 100%), 0, 0);
+  will-change: transform;
+}
 ```
 
-A pointer session records pointer identity, subject, start/latest positions, threshold state, and cancellation. It captures after threshold, previews at animation-frame cadence, commits once on pointerup, and cancels on pointercancel, capture loss, route change, resize policy, deletion, visibility loss, or teardown.
+Coordinate conversions translate between viewport client coordinates and absolute stage logical coordinates:
+
+```text
+scale = stageRect.width / 1600
+logicalX = (clientX - stageRect.left) * (1600 / stageRect.width) + cameraX
+logicalY = (clientY - stageRect.top) * (900 / stageRect.height)
+```
+
+A pointer session records pointer identity, subject, start/latest positions, threshold state, and cancellation. It captures after threshold, previews at animation-frame cadence with edge auto-panning (moving `cameraX` when hovering within 70px of the viewport edge), commits once on pointerup, and cancels on pointercancel, capture loss, route change, resize policy, deletion, visibility loss, or teardown.
 
 ## Object stickiness, attachment, and compound transform lifecycle
 

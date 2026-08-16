@@ -40,7 +40,7 @@ test('sanitizeScene validates pinned boolean and finite attachOffset', () => {
         scale: 1,
         pinned: false,
         attachedTo: 'doll-1',
-        attachOffset: { dx: 100, dy: 20 }
+        attachOffset: { dx: 999, dy: 999 }
       }
     ]
   };
@@ -555,5 +555,4 @@ test('Single-item scaleEntity, flipEntity, and moveEntity strictly preserve pinn
   const flippedUnpinned = flipEntity(scene, 'unpinned-table');
   assert.equal(flippedUnpinned.entities[1].flipped, true);
 });
-
 
