@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paper-doll-studio-v17';
+const CACHE_NAME = 'paper-doll-studio-v18';
 const APP_SHELL = [
   './',
   './index.html',
@@ -22,7 +22,9 @@ const APP_SHELL = [
   './js/core/asset-registry.js',
   './js/core/coordinate-space.js',
   './js/core/error-boundary.js',
+  './js/core/i18n.js',
   './js/core/palette.js',
+
   './js/core/pointer-controller.js',
   './js/core/state-schema.js',
   './js/core/storage-adapter.js',

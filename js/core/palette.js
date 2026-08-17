@@ -46,3 +46,14 @@ export function paletteValue(token, fallback = 'coral') {
   if (typeof token === 'string' && /^#[0-9a-f]{6}$/i.test(token)) return token.toLowerCase();
   return PALETTE[token]?.value ?? PALETTE[fallback].value;
 }
+
+import { t } from './i18n.js';
+
+export function getPaletteColorName(token) {
+  if (!isPaletteToken(token)) return token ?? '';
+  const localized = t('colors.' + token);
+  if (localized && !localized.startsWith('colors.')) return localized;
+  return PALETTE[token]?.name ?? token;
+}
+
+

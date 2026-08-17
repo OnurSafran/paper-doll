@@ -11,6 +11,7 @@ import { getEntityBounds } from '../../domain/scene-rules.js';
 import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION, defaultMakeId, isCustomAssetId } from '../../domain/vocabulary.js';
 import { createStarterDraft } from '../../domain/outfit-rules.js';
 import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../../domain/scene-templates.js';
+import { t } from '../../core/i18n.js';
 
 /**
  * Creates a high-fidelity composite vector SVG representing a full scene (background + entities).
@@ -206,8 +207,8 @@ export function createSceneBookView({
     if (!state.scenes?.length) {
       grid.innerHTML = `
         <div class="tray-empty" style="grid-column: 1 / -1; padding: 2.5rem 1rem; text-align: center;">
-          <p><strong>Your Scene Book is ready.</strong></p>
-          <p class="panel-copy">Save your current stage layout or try a Scene Template to start your collection!</p>
+          <p><strong>${t('sceneBook.emptyTitle')}</strong></p>
+          <p class="panel-copy">${t('sceneBook.emptyCopy')}</p>
         </div>
       `;
       return;
@@ -237,7 +238,7 @@ export function createSceneBookView({
       meta.className = 'scene-card-meta';
       const bgName = getAsset(scene.backgroundId)?.name ?? 'Scene';
       const updatedDate = new Date(scene.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-      meta.textContent = `${bgName} · ${scene.entities.length} item${scene.entities.length === 1 ? '' : 's'} · ${updatedDate}`;
+      meta.textContent = t('sceneBook.metaInfo', { bg: bgName, count: scene.entities.length, date: updatedDate });
 
       info.append(title, meta);
 
@@ -247,31 +248,31 @@ export function createSceneBookView({
       const loadBtn = document.createElement('button');
       loadBtn.type = 'button';
       loadBtn.className = 'button primary';
-      loadBtn.textContent = 'Open';
-      loadBtn.title = `Load "${scene.title}" onto stage`;
+      loadBtn.textContent = t('sceneBook.openBtn');
+      loadBtn.title = t('sceneBook.openTitle', { title: scene.title });
       loadBtn.addEventListener('click', async () => {
         const hasEntities = store.getState().currentScene.entities.length > 0;
-        if (!hasEntities || await askConfirm(`Open "${scene.title}"?`, 'This will replace the current stage layout.')) {
+        if (!hasEntities || await askConfirm(t('sceneBook.openConfirmTitle', { title: scene.title }), t('sceneBook.openConfirmMessage'))) {
           store.dispatch({ type: 'scene/loadFromLibrary', sceneId: scene.sceneId });
           $('#scene-library-dialog')?.close();
         }
       });
 
-      const renameBtn = miniButton('Aa', `Rename "${scene.title}"`, () => {
-        const nextTitle = window.prompt('Rename this scene', scene.title);
+      const renameBtn = miniButton('Aa', t('sceneBook.renameTitle', { title: scene.title }), () => {
+        const nextTitle = window.prompt(t('sceneBook.renamePrompt'), scene.title);
         if (nextTitle != null && nextTitle.trim()) {
           store.dispatch({ type: 'scene/renameLibraryScene', sceneId: scene.sceneId, name: nextTitle });
           void renderSceneLibrary();
         }
       });
 
-      const dupBtn = miniButton('⧉', `Duplicate "${scene.title}"`, () => {
+      const dupBtn = miniButton('⧉', t('sceneBook.duplicateTitle', { title: scene.title }), () => {
         store.dispatch({ type: 'scene/duplicateLibraryScene', sceneId: scene.sceneId });
         void renderSceneLibrary();
       });
 
-      const delBtn = miniButton('×', `Delete "${scene.title}"`, async () => {
-        if (await askConfirm(`Delete "${scene.title}"?`, 'This removes the scene from your Scene Book.')) {
+      const delBtn = miniButton('×', t('sceneBook.deleteTitle', { title: scene.title }), async () => {
+        if (await askConfirm(t('sceneBook.deleteConfirmTitle', { title: scene.title }), t('sceneBook.deleteConfirmMessage'))) {
           store.dispatch({ type: 'scene/deleteLibraryScene', sceneId: scene.sceneId });
           void renderSceneLibrary();
         }
@@ -324,11 +325,11 @@ export function createSceneBookView({
       const loadBtn = document.createElement('button');
       loadBtn.type = 'button';
       loadBtn.className = 'button primary';
-      loadBtn.textContent = 'Load Template';
-      loadBtn.title = `Load "${template.title}" onto stage`;
+      loadBtn.textContent = t('templates.loadBtn');
+      loadBtn.title = t('templates.loadTitle', { title: template.title });
       loadBtn.addEventListener('click', async () => {
         const hasEntities = store.getState().currentScene.entities.length > 0;
-        if (!hasEntities || await askConfirm(`Load "${template.title}"?`, 'This will replace the current stage layout.')) {
+        if (!hasEntities || await askConfirm(t('templates.loadConfirmTitle', { title: template.title }), t('templates.loadConfirmMessage'))) {
           store.dispatch({ type: 'scene/loadTemplate', templateId: template.id });
           $('#scene-templates-dialog')?.close();
         }

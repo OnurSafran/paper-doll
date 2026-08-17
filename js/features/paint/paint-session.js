@@ -9,6 +9,7 @@ import {
   CUSTOM_PROP_DIMENSIONS,
   LIMITS
 } from '../../domain/vocabulary.js';
+import { t } from '../../core/i18n.js';
 
 export const MAX_HISTORY_STEPS = 20;
 export const MAX_HISTORY_BYTES = 32 * 1024 * 1024; // 32 MB
@@ -19,9 +20,9 @@ export const REFERENCE_DOLL_IDS = Object.freeze(['doll_classic_a', 'doll_classic
  * Validates a custom artwork name.
  */
 export function validateArtworkName(name) {
-  if (typeof name !== 'string') return { valid: false, error: 'Name must be text.' };
+  if (typeof name !== 'string') return { valid: false, error: t('paint.nameMustBeText') };
   const trimmed = name.trim();
-  if (!trimmed) return { valid: false, error: 'Please enter a name for your artwork.' };
+  if (!trimmed) return { valid: false, error: t('paint.nameRequired') };
 
   const segmenter = typeof Intl !== 'undefined' && Intl.Segmenter
     ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
@@ -32,7 +33,7 @@ export function validateArtworkName(name) {
   if (length > maxLen) {
     return {
       valid: false,
-      error: `Name is too long (maximum ${maxLen} characters).`
+      error: t('paint.nameTooLong', { max: maxLen })
     };
   }
 

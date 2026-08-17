@@ -5,7 +5,10 @@ import { nextSpawnPoint } from '../js/features/play/play-view.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { LIMITS } from '../js/domain/vocabulary.js';
 
+import { setLanguage } from '../js/core/i18n.js';
+
 test('describeOutfit generates accessible text for empty and equipped drafts', () => {
+  setLanguage('en');
   const emptyDraft = { slots: {} };
   assert.equal(describeOutfit(emptyDraft), 'Paper doll with no outfit pieces.');
 
@@ -13,7 +16,14 @@ test('describeOutfit generates accessible text for empty and equipped drafts', (
   const starterDesc = describeOutfit(starter);
   assert.match(starterDesc, /^Paper doll wearing /);
   assert.match(starterDesc, /Sailor stripe tee|High-waist jeans|High ponytail/);
+
+  setLanguage('tr');
+  assert.equal(describeOutfit(emptyDraft), 'Kıyafetsiz kâğıt bebek.');
+  const trStarterDesc = describeOutfit(starter);
+  assert.match(trStarterDesc, /Giyilen parçalar/);
 });
+
+
 
 test('WARDROBE_SLOTS defines all canonical categories in logical order', () => {
   const slotKeys = WARDROBE_SLOTS.map(([k]) => k);

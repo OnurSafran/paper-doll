@@ -12,6 +12,8 @@ import { CAMERA_CONSTANTS, DEFAULT_EXPRESSION, DEFAULT_STAGE_WIDTH, isCustomAsse
 import { customAssetToDescriptor } from '../../core/asset-registry.js';
 import { appendAsset, renderAssetPreview } from '../designer/designer-view.js';
 import { createBubbleSvg } from '../../services/export-service.js';
+import { t } from '../../core/i18n.js';
+
 
 const escapeCss = (val) => globalThis.CSS?.escape ? CSS.escape(String(val)) : String(val).replace(/["\\]/g, '\\$&');
 
@@ -297,7 +299,7 @@ export function createPlayView({
   function renderSpawnTray(state, token) {
     const tabs = $('#spawn-tabs');
     const focusedTabId = document.activeElement?.closest?.('#spawn-tabs [role="tab"]')?.id;
-    tabs.replaceChildren(...[['characters', 'Characters'], ['props', 'Props'], ['bubbles', 'Bubbles']].map(([id, label]) => {
+    tabs.replaceChildren(...[['characters', t('play.trayDollsTab')], ['props', t('play.trayPropsTab')], ['bubbles', t('play.trayBubblesTab')]].map(([id, label]) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.role = 'tab';
@@ -318,7 +320,7 @@ export function createPlayView({
     if (spawnTab === 'characters' && !state.presets.length) {
       const empty = document.createElement('div');
       empty.className = 'tray-empty';
-      empty.innerHTML = '<p>Create and save a doll first. Props and bubbles are ready now.</p><a class="button secondary" href="#designer">Go to Designer</a>';
+      empty.innerHTML = `<p>${t('play.emptySceneCopy')}</p><a class="button secondary" href="#designer">${t('nav.designer')}</a>`;
       list.replaceChildren(empty);
       return;
     }
@@ -388,7 +390,7 @@ export function createPlayView({
       label.textContent = source.name;
       const kindLabel = document.createElement('span');
       kindLabel.className = 'spawn-kind';
-      kindLabel.textContent = spawnTab === 'characters' ? 'Saved doll' : (source.custom ? '🎨 Custom prop' : 'Scene prop');
+      kindLabel.textContent = spawnTab === 'characters' ? t('play.savedDoll') : (source.custom ? t('play.customPropBadge') : t('play.sceneProp'));
       card.append(thumb, kindLabel, label);
       const kind = spawnTab === 'characters' ? 'character' : 'prop';
       const sourceId = kind === 'character' ? source.presetId : source.id;
@@ -420,16 +422,16 @@ export function createPlayView({
       const paintPropCard = document.createElement('button');
       paintPropCard.type = 'button';
       paintPropCard.className = 'spawn-item paint-prop-action-card';
-      paintPropCard.setAttribute('aria-label', 'Paint a new custom prop in Paint Studio');
+      paintPropCard.setAttribute('aria-label', t('play.paintPropAria'));
       const thumb = document.createElement('span');
       thumb.className = 'spawn-thumb';
       thumb.textContent = '🎨';
       const kindLabel = document.createElement('span');
       kindLabel.className = 'spawn-kind';
-      kindLabel.textContent = 'Custom Prop';
+      kindLabel.textContent = t('play.customPropBadge');
       const label = document.createElement('span');
       label.className = 'spawn-name';
-      label.textContent = '+ Paint Prop';
+      label.textContent = t('play.paintPropCard');
       paintPropCard.append(thumb, kindLabel, label);
       paintPropCard.addEventListener('click', () => {
         if (openPaintStudio) {
@@ -445,6 +447,7 @@ export function createPlayView({
     }
 
     list.replaceChildren(...cards);
+
   }
 
   function renderSelectedActions(state = store.getState()) {
@@ -456,13 +459,13 @@ export function createPlayView({
     const isCharacter = !isMulti && selected?.kind === 'character';
     const isBubble = !isMulti && selected?.kind === 'bubble';
 
-    let label = 'No item selected';
+    let label = t('play.noItemSelected');
     if (isMulti) {
-      label = `${selectedIds.length} items selected`;
+      label = t('play.itemCount', { count: selectedIds.length });
     } else if (selected) {
       label = isBubble
-        ? `${(selected.bubbleStyle || 'speech').charAt(0).toUpperCase() + (selected.bubbleStyle || 'speech').slice(1)} bubble`
-        : (selected?.sourceId === 'demo_emma' ? 'Emma sample doll' : preset?.name ?? asset?.name ?? 'Scene item');
+        ? `${t('play.bubble' + (selected.bubbleStyle || 'speech').charAt(0).toUpperCase() + (selected.bubbleStyle || 'speech').slice(1)) || 'Balon'}`
+        : (selected?.sourceId === 'demo_emma' ? 'Emma' : preset?.name ?? asset?.name ?? t('play.sceneProp'));
     }
 
     const labelEl = $('#selected-label');
@@ -480,9 +483,10 @@ export function createPlayView({
       const allSelectedPinned = isMulti
         ? state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId)).every((e) => e.pinned)
         : selected?.pinned;
-      pinBtn.textContent = allSelectedPinned ? '📌 Pinned' : '📍 Pin';
-      pinBtn.title = allSelectedPinned ? 'Unpin items from scene background' : 'Pin items to scene background';
+      pinBtn.textContent = allSelectedPinned ? t('play.pinned') : t('play.pin');
+      pinBtn.title = t('play.pinTitle');
     }
+
     const detachBtn = $('#detach-item-btn');
     if (detachBtn) {
       detachBtn.hidden = isMulti || !selected?.attachedTo;
@@ -531,18 +535,18 @@ export function createPlayView({
     ring.style.setProperty('--ring-x', String(selected.x));
     ring.style.setProperty('--ring-y', String(ringY));
     ring.setAttribute('role', 'toolbar');
-    ring.setAttribute('aria-label', 'Selected item quick controls');
+    ring.setAttribute('aria-label', t('play.contextRingAria'));
     const controls = [
-      ...(selected.kind === 'bubble' ? [['editBubble', '✏️', 'Edit bubble text']] : []),
-      ['flip', '↔', 'Flip horizontally'],
-      ['smaller', '−', 'Make smaller'],
-      ['larger', '+', 'Make larger'],
-      ['back', '↓', 'Send backward'],
-      ['front', '↑', 'Bring forward'],
-      ['togglePin', selected.pinned ? '📌' : '📍', selected.pinned ? 'Unpin item' : 'Pin item to scene'],
-      ...(selected.attachedTo ? [['detach', '⛓️', 'Detach from host item']] : []),
-      ['duplicate', '⧉', 'Duplicate item'],
-      ['delete', '×', 'Delete item']
+      ...(selected.kind === 'bubble' ? [['editBubble', '✏️', t('play.editBubble')]] : []),
+      ['flip', '↔', t('play.flip')],
+      ['smaller', '−', t('play.smaller')],
+      ['larger', '+', t('play.larger')],
+      ['back', '↓', t('play.sendBackward')],
+      ['front', '↑', t('play.bringForward')],
+      ['togglePin', selected.pinned ? '📌' : '📍', selected.pinned ? t('play.unpin') : t('play.pin')],
+      ...(selected.attachedTo ? [['detach', '⛓️', t('play.detach')]] : []),
+      ['duplicate', '⧉', t('play.duplicate')],
+      ['delete', '×', t('play.delete')]
     ];
     ring.append(...controls.map(([action, symbol, label]) => {
       const button = document.createElement('button');
@@ -670,7 +674,7 @@ export function createPlayView({
       else if (action === 'smaller') store.dispatch({ type: 'scene/scaleEntities', instanceIds: selectedIds, delta: -0.1 });
       else if (action === 'larger') store.dispatch({ type: 'scene/scaleEntities', instanceIds: selectedIds, delta: 0.1 });
       else if (action === 'togglePin') store.dispatch({ type: 'scene/togglePinEntities', instanceIds: selectedIds });
-      else if (action === 'delete' && await askConfirm(`Delete ${selectedIds.length} scene items?`, 'This removes them from the current scene.')) {
+      else if (action === 'delete' && await askConfirm(t('play.deleteMultipleTitle', { count: selectedIds.length }), t('play.deleteMultipleMessage'))) {
         store.dispatch({ type: 'scene/deleteEntities', instanceIds: selectedIds });
         $('#play-stage')?.focus();
       }
@@ -686,7 +690,7 @@ export function createPlayView({
     else if (action === 'duplicate') store.dispatch({ type: 'scene/duplicateEntity', instanceId: id });
     else if (action === 'togglePin') store.dispatch({ type: 'scene/togglePin', instanceId: id });
     else if (action === 'detach') store.dispatch({ type: 'scene/detachEntity', instanceId: id });
-    else if (action === 'delete' && await askConfirm('Delete this scene item?', 'This removes only this copy from the current scene.')) {
+    else if (action === 'delete' && await askConfirm(t('play.deleteOneTitle'), t('play.deleteOneMessage'))) {
       store.dispatch({ type: 'scene/deleteEntity', instanceId: id });
       $('#play-stage')?.focus();
     }
@@ -953,9 +957,10 @@ export function createPlayView({
 
     $('#empty-scene').hidden = state.currentScene.entities.length > 0;
     const currentBackground = getAsset(state.currentScene.backgroundId);
-    $('#scene-name-chip').textContent = currentBackground?.name ?? 'Paper scene';
-    $('#scene-count-chip').textContent = `${state.currentScene.entities.length} item${state.currentScene.entities.length === 1 ? '' : 's'}`;
+    $('#scene-name-chip').textContent = currentBackground?.name ?? t('play.paperScene');
+    $('#scene-count-chip').textContent = t('play.itemCount', { count: state.currentScene.entities.length });
     const widthChip = $('#scene-width-chip');
+
     if (widthChip) widthChip.textContent = `${stageWidth}px`;
 
     const background = $('#scene-background');

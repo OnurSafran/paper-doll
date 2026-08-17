@@ -23,7 +23,8 @@ const paintRasterJs = readFileSync(new URL('../js/features/paint/paint-raster.js
 
 test('paint studio HTML shell declares complete accessible structure, canvas, guide overlay, and dialogs', () => {
   // Navigation link
-  assert.match(html, /<a\s+href="#paint"\s+data-mode-link="paint">Paint<\/a>/);
+  assert.match(html, /<a\s+href="#paint"[^>]*data-mode-link="paint"/);
+
 
   // Paint screen and toolbar
   assert.match(html, /id="paint-screen"/);
@@ -129,12 +130,13 @@ test('paint view wiring integrates with app router, designer wardrobe, and play 
 
   // Designer entry card
   assert.match(designerJs, /paint-item-action-card/);
-  assert.match(designerJs, /\+ Paint \$\{state\.designer\.selectedSlot\}/);
+  assert.match(designerJs, /paintSlotAction/);
 
   // Play entry card
   assert.match(playJs, /paint-prop-action-card/);
-  assert.match(playJs, /\+ Paint Prop/);
+  assert.match(playJs, /paintPropCard/);
 });
+
 
 test('paint session controller enforces 20-step undo/redo, dirty flag tracking, and name validation', () => {
   assert.match(paintSessionJs, /MAX_HISTORY_STEPS = 20/);

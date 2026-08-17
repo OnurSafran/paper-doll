@@ -5,6 +5,7 @@
  */
 
 import { getAsset } from '../../core/asset-catalog.js';
+import { t } from '../../core/i18n.js';
 
 const escapeCss = (val) => globalThis.CSS?.escape ? CSS.escape(String(val)) : String(val).replace(/["\\]/g, '\\$&');
 
@@ -23,14 +24,14 @@ export function createSceneOutlineView({
     const entities = state.currentScene?.entities || [];
     if (summary) {
       const selectedCount = state.ui.selectedEntityIds?.length || (state.ui.selectedEntityId ? 1 : 0);
-      summary.textContent = `${entities.length} total items · ${selectedCount} selected`;
+      summary.textContent = t('sceneOutlineDialog.totalSelected', { total: entities.length, selected: selectedCount });
     }
 
     if (entities.length === 0) {
       list.innerHTML = `
         <div class="tray-empty" style="padding: 2rem 1rem; text-align: center;">
-          <p><strong>The stage is empty.</strong></p>
-          <p class="panel-copy">Spawn characters, props, or bubbles from the scene tray to see them here.</p>
+          <p><strong>${t('sceneOutlineDialog.emptyStage')}</strong></p>
+          <p class="panel-copy">${t('sceneOutlineDialog.emptyStageCopy')}</p>
         </div>
       `;
       return;
@@ -64,13 +65,13 @@ export function createSceneOutlineView({
       if (entity.kind === 'character') {
         icon.textContent = '👗';
         const preset = state.presets.find((p) => p.presetId === entity.sourceId);
-        labelText = preset?.name || (entity.sourceId === 'demo_emma' ? 'Emma (Doll)' : 'Paper Doll');
+        labelText = preset?.name || (entity.sourceId === 'demo_emma' ? 'Emma' : t('play.savedDoll'));
       } else if (entity.kind === 'bubble') {
         icon.textContent = entity.bubbleStyle === 'thought' ? '💭' : (entity.bubbleStyle === 'shout' ? '💥' : (entity.bubbleStyle === 'caption' ? '📜' : '💬'));
-        labelText = `Bubble: "${entity.text?.slice(0, 22) || 'Hello'}${entity.text?.length > 22 ? '...' : ''}"`;
+        labelText = `${t('play.bubbleSpeech')}: "${entity.text?.slice(0, 22) || 'Hello'}${entity.text?.length > 22 ? '...' : ''}"`;
       } else {
         icon.textContent = '🪑';
-        labelText = getAsset(entity.sourceId)?.name || 'Scene Prop';
+        labelText = getAsset(entity.sourceId)?.name || t('play.sceneProp');
       }
 
       selectBox.setAttribute('aria-label', `Select ${labelText} in outline`);
@@ -84,9 +85,9 @@ export function createSceneOutlineView({
 
       const meta = document.createElement('span');
       meta.className = 'outline-meta';
-      const orderText = `Layer ${entity.order}`;
-      const attachedText = entity.attachedTo ? ' · 🔗 Attached' : '';
-      const pinnedText = entity.pinned ? ' · 📌 Pinned' : '';
+      const orderText = t('sceneOutlineDialog.layerOrder', { order: entity.order });
+      const attachedText = entity.attachedTo ? ` · ${t('sceneOutlineDialog.attached')}` : '';
+      const pinnedText = entity.pinned ? ` · ${t('sceneOutlineDialog.pinned')}` : '';
       meta.textContent = `${orderText}${attachedText}${pinnedText}`;
 
       info.append(title, meta);
@@ -95,20 +96,20 @@ export function createSceneOutlineView({
       const actions = document.createElement('div');
       actions.className = 'outline-actions';
 
-      const upBtn = miniButton('↑', 'Bring forward', () => {
+      const upBtn = miniButton('↑', t('sceneOutlineDialog.bringForward'), () => {
         store.dispatch({ type: 'scene/reorderEntity', instanceId: entity.instanceId, direction: 1 });
       });
 
-      const downBtn = miniButton('↓', 'Send backward', () => {
+      const downBtn = miniButton('↓', t('sceneOutlineDialog.sendBackward'), () => {
         store.dispatch({ type: 'scene/reorderEntity', instanceId: entity.instanceId, direction: -1 });
       });
 
-      const pinBtn = miniButton(entity.pinned ? '📌' : '📍', entity.pinned ? 'Unpin' : 'Pin', () => {
+      const pinBtn = miniButton(entity.pinned ? '📌' : '📍', entity.pinned ? t('play.pinned') : t('play.pin'), () => {
         store.dispatch({ type: 'scene/togglePin', instanceId: entity.instanceId });
       });
 
-      const delBtn = miniButton('×', 'Delete item', async () => {
-        if (await askConfirm('Delete this scene item?', 'This removes it from the active stage.')) {
+      const delBtn = miniButton('×', t('sceneOutlineDialog.deleteItem'), async () => {
+        if (await askConfirm(t('sceneOutlineDialog.deleteConfirmTitle'), t('sceneOutlineDialog.deleteConfirmMessage'))) {
           store.dispatch({ type: 'scene/deleteEntity', instanceId: entity.instanceId });
         }
       });

@@ -135,10 +135,12 @@
   gap: 0.5rem;
 }
 
-.project-btn {
+.project-btn,
+.lang-toggle-btn {
   font-size: 0.8rem;
   font-weight: 750;
 }
+
 
 .history-controls {
   display: inline-flex;

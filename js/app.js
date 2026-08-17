@@ -28,6 +28,14 @@ import {
   saveProjectBackup,
   validateImportPayload
 } from './services/project-portability.js';
+import {
+  initLanguage,
+  setLanguage,
+  getCurrentLanguage,
+  t,
+  updateDomTranslations
+} from './core/i18n.js';
+
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -194,22 +202,23 @@ const voiceService = createVoicePuppetryService({
     }
   },
   onError() {
-    showToast('Could not access microphone.');
+    showToast(t('toasts.micError'));
   }
 });
 
 function toggleVoicePuppetry() {
   if (voiceService.isActive()) {
     voiceService.stop();
-    showToast('🎙️ Voice Puppetry stopped.');
+    showToast(t('toasts.voiceStopped'));
   } else {
     void voiceService.start().then(() => {
       if (voiceService.isActive()) {
-        showToast('🎙️ Accurate Voice Puppetry active! Speak into mic to flap mouth.');
+        showToast(t('toasts.voiceActive'));
       }
     });
   }
 }
+
 
 function stopVoicePuppetry() {
   voiceService.stop();
@@ -265,6 +274,33 @@ store.subscribe(({ action, state, persist }) => {
   renderApp();
 });
 
+// Initialize language on startup (defaults to Turkish 'tr')
+initLanguage();
+updateDomTranslations();
+
+function updateLangButtonUI() {
+  const current = getCurrentLanguage();
+  const textEl = $('#current-lang-text');
+  if (textEl) textEl.textContent = current.toUpperCase();
+}
+updateLangButtonUI();
+
+window.addEventListener('languagechange', () => {
+  updateLangButtonUI();
+  paintView.refreshLanguage?.();
+  if ($('#scene-outline-dialog')?.open) {
+    sceneOutlineView.renderSceneOutline(store.getState());
+  }
+  if ($('#scene-library-dialog')?.open) {
+    sceneBookView.renderSceneLibrary();
+  }
+  if ($('#scene-templates-dialog')?.open) {
+    sceneBookView.renderSceneTemplates();
+  }
+  renderApp();
+  if ($('#project-dialog')?.open) openProjectDialog();
+});
+
 wireStaticEvents();
 playView.initPointerController();
 const initialMode = modeFromHash();
@@ -297,7 +333,8 @@ function renderApp() {
   $('#paint-screen').hidden = !paintActive;
   $('#play-screen').hidden = !playActive;
 
-  document.title = `${paintActive ? 'Paint Studio' : designerActive ? 'Doll Designer' : 'Play Sandbox'} · Paper Doll Studio`;
+  const sectionName = paintActive ? t('paint.title') : designerActive ? t('designer.title') : t('play.title');
+  document.title = `${sectionName} · ${t('app.title')}`;
   for (const link of $$('[data-mode-link]')) {
     if (link.dataset.modeLink === state.ui.mode) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
@@ -308,11 +345,16 @@ function renderApp() {
   if (redoBtn) redoBtn.disabled = !store.canRedo();
   const saveStatus = $('#save-status');
   saveStatus.dataset.status = state.ui.storageStatus;
-  saveStatus.textContent = ({ saved: 'Saved', saving: 'Saving…', unsaved: 'Not saved' })[state.ui.storageStatus] ?? 'Saved';
-  saveStatus.title = state.ui.storageStatus === 'saved' ? 'Saved on this device' : saveStatus.textContent;
+  const statusTexts = {
+    saved: t('header.statusSaved'),
+    saving: t('header.statusSaving'),
+    unsaved: t('header.statusUnsaved')
+  };
+  saveStatus.textContent = statusTexts[state.ui.storageStatus] ?? t('header.statusSaved');
+  saveStatus.title = state.ui.storageStatus === 'saved' ? t('header.savedDevice') : saveStatus.textContent;
   const count = $('#dollbox-count');
   count.textContent = String(state.presets.length);
-  count.setAttribute('aria-label', `${state.presets.length} saved doll${state.presets.length === 1 ? '' : 's'}`);
+  count.setAttribute('aria-label', t('nav.dollboxCountAria', { count: state.presets.length }));
   const sceneLibCount = $('#scene-library-count');
   if (sceneLibCount) sceneLibCount.textContent = String(state.scenes?.length ?? 0);
   const voiceBtn = $('#voice-puppetry-btn');
@@ -330,6 +372,7 @@ function renderApp() {
     void playView.render(state);
   }
 }
+
 
 function modeFromHash() {
   if (location.hash === '#paint') return 'paint';
@@ -366,7 +409,7 @@ function wireStaticEvents() {
   $('#shuffle-outfit').addEventListener('click', () => store.dispatch({ type: 'designer/shuffle' }));
   $('#clear-outfit').addEventListener('click', async () => {
     const dressed = ['top', 'bottom', 'dress', 'shoes', 'accessory'].some((slot) => store.getState().designer.draft.slots[slot]);
-    if (!dressed || await askConfirm('Take off this outfit?', 'Hair and skin tone will stay. Clothing, shoes, and accessories will be removed.')) {
+    if (!dressed || await askConfirm(t('designer.clearOutfitTitle'), t('designer.clearOutfitMessage'))) {
       store.dispatch({ type: 'designer/clearOutfit' });
     }
   });
@@ -376,14 +419,14 @@ function wireStaticEvents() {
     store.dispatch({ type: 'designer/setColor', slot, color: event.target.value });
   });
   $('#reset-doll').addEventListener('click', async () => {
-    if (!store.getState().designer.dirty || await askConfirm('Reset this doll?', 'Your current changes will be replaced by the starter outfit.')) {
+    if (!store.getState().designer.dirty || await askConfirm(t('designer.resetDollTitle'), t('designer.resetDollMessage'))) {
       store.dispatch({ type: 'designer/reset' });
     }
   });
   $('#background-select').addEventListener('change', (event) => store.dispatch({ type: 'scene/setBackground', backgroundId: event.target.value }));
   $('#new-scene').addEventListener('click', async () => {
     const hasItems = store.getState().currentScene.entities.length > 0;
-    if (!hasItems || await askConfirm('Start a new scene?', 'The current scene will be cleared on this device.')) {
+    if (!hasItems || await askConfirm(t('play.newSceneTitle'), t('play.newSceneMessage'))) {
       store.dispatch({ type: 'scene/new' });
     }
   });
@@ -448,6 +491,12 @@ function wireStaticEvents() {
   // Voice Puppetry wiring
   $('#voice-puppetry-btn')?.addEventListener('click', () => void toggleVoicePuppetry());
 
+  // Language Toggle wiring
+  $('#lang-toggle-btn')?.addEventListener('click', () => {
+    const nextLang = getCurrentLanguage() === 'tr' ? 'en' : 'tr';
+    setLanguage(nextLang);
+  });
+
   // Project Portability wiring
   $('#guide-menu-btn')?.addEventListener('click', () => $('#guide-dialog')?.showModal());
   $('#close-guide-dialog')?.addEventListener('click', () => $('#guide-dialog')?.close());
@@ -457,11 +506,11 @@ function wireStaticEvents() {
 
   async function handleHardResetAction() {
     const confirmed = await askConfirm(
-      'Force reload and clear cached files?',
-      'This will clear cached app scripts and reload the newest studio version from the server. Your saved dolls, scenes, and custom art in storage will remain safe.'
+      t('projectDialog.forceReloadBtn'),
+      t('projectDialog.updateCopy')
     );
     if (confirmed) {
-      showToast('Clearing cache and reloading…');
+      showToast(t('toasts.clearingReloading'));
       await window.hardRefresh();
     }
   }
@@ -594,8 +643,8 @@ function wireStaticEvents() {
       const baseRev = storage.getBaseRevision();
       if (storageRev != null && storageRev > baseRev) {
         const shouldReload = await askConfirm(
-          'Saved data changed in another tab',
-          'Another tab updated this project. Would you like to reload this page to view the latest saved changes, or keep working in this tab?'
+          t('sync.crossTabTitle'),
+          t('sync.crossTabMessage')
         );
         if (shouldReload) {
           location.reload();
@@ -603,7 +652,7 @@ function wireStaticEvents() {
           store.dispatch({
             type: 'ui/storageStatus',
             status: 'unsaved',
-            message: 'Working with tab-local state. Future saves require explicit confirmation to overwrite newer disk changes.'
+            message: t('sync.tabLocalState')
           });
         }
       }
@@ -646,7 +695,7 @@ function handleTopLevelError(error, source = 'runtime') {
   if (dialog && typeof dialog.showModal === 'function' && !dialog.open) {
     dialog.showModal();
   }
-  store.dispatch({ type: 'ui/storageStatus', status: 'unsaved', message: 'An error occurred. Saved project data was preserved.' });
+  store.dispatch({ type: 'ui/storageStatus', status: 'unsaved', message: t('sync.errorMessage') });
 }
 
 function handleTabKeys(event) {
@@ -687,9 +736,9 @@ async function exportSceneAsPng() {
   const state = store.getState();
   const result = await exportService.exportSceneAndDownload(state.currentScene);
   if (result.ok) {
-    showToast('📸 Scene exported as PNG image!');
+    showToast(t('toasts.sceneExportedPng'));
   } else {
-    showToast(result.message || 'Could not export scene image.');
+    showToast(result.message || t('toasts.sceneExportFailed'));
   }
 }
 
@@ -705,10 +754,10 @@ function openProjectDialog() {
     const entityCount = state.currentScene?.entities?.length ?? 0;
     const customCount = state.customAssets?.length ?? 0;
     statsContainer.replaceChildren(
-      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `👗 ${dollCount} Doll${dollCount === 1 ? '' : 's'}` }),
-      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `📚 ${sceneCount} Scene${sceneCount === 1 ? '' : 's'}` }),
-      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `🎭 ${entityCount} Stage item${entityCount === 1 ? '' : 's'}` }),
-      ...(customCount > 0 ? [Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `🎨 ${customCount} Custom Art` })] : [])
+      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statDolls', { count: dollCount }) }),
+      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statScenes', { count: sceneCount }) }),
+      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: entityCount > 0 ? t('projectDialog.statActiveStage', { count: entityCount }) : t('projectDialog.statEmptyStage') }),
+      ...(customCount > 0 ? [Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statCustomArt', { count: customCount }) })] : [])
     );
   }
 
@@ -719,8 +768,8 @@ function openProjectDialog() {
       backupSection.hidden = false;
       const backupTime = $('#backup-timestamp');
       const backupDetails = $('#backup-details');
-      if (backupTime) backupTime.textContent = `Backup from ${new Date(backupRes.backedUpAt).toLocaleString()}`;
-      if (backupDetails) backupDetails.textContent = `${backupRes.summary.presetCount} dolls · ${backupRes.summary.sceneCount} scenes`;
+      if (backupTime) backupTime.textContent = t('projectDialog.backupFrom', { date: new Date(backupRes.backedUpAt).toLocaleString() });
+      if (backupDetails) backupDetails.textContent = t('projectDialog.backupDetails', { presets: backupRes.summary.presetCount, scenes: backupRes.summary.sceneCount });
     } else {
       backupSection.hidden = true;
     }
@@ -748,23 +797,23 @@ async function exportProjectJsonFile() {
     link.download = filename;
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 6000);
-    showToast('📦 Project package downloaded with custom art!');
+    showToast(t('toasts.projectDownloaded'));
   } catch {
-    showToast('Could not export project package.');
+    showToast(t('toasts.projectExportFailed'));
   }
 }
 
 async function handleProjectFile(file) {
   if (!file) return;
   if (file.size > LIMITS.MAX_PACKAGE_BYTES) {
-    showToast('Project package exceeds the maximum allowed size (45MB).');
+    showToast(t('toasts.packageTooLarge'));
     return;
   }
   try {
     const text = await file.text();
     const res = await validateImportPayload(text, getAsset);
     if (!res.ok) {
-      showToast(res.error || 'Could not parse project file.');
+      showToast(res.error || t('toasts.projectParseError'));
       return;
     }
     pendingImportEnvelope = res.envelope;
@@ -778,10 +827,10 @@ async function handleProjectFile(file) {
     if (filenameEl) filenameEl.textContent = file.name || 'project.json';
     if (badgesEl) {
       badgesEl.replaceChildren(
-        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `👗 ${res.summary.presetCount} Dolls` }),
-        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `📚 ${res.summary.sceneCount} Scenes` }),
-        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: res.summary.hasCurrentScene ? `🎭 Active Stage (${res.summary.currentSceneEntityCount} items)` : '🎭 Empty stage' }),
-        ...(res.summary.customAssetCount > 0 ? [Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: `🎨 ${res.summary.customAssetCount} Custom Art` })] : [])
+        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statDolls', { count: res.summary.presetCount }) }),
+        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statScenes', { count: res.summary.sceneCount }) }),
+        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: res.summary.hasCurrentScene ? t('projectDialog.statActiveStage', { count: res.summary.currentSceneEntityCount }) : t('projectDialog.statEmptyStage') }),
+        ...(res.summary.customAssetCount > 0 ? [Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statCustomArt', { count: res.summary.customAssetCount }) })] : [])
       );
     }
 
@@ -796,7 +845,7 @@ async function handleProjectFile(file) {
 
     if (previewCard) previewCard.hidden = false;
   } catch {
-    showToast('Error reading project file.');
+    showToast(t('toasts.projectReadError'));
   }
 }
 
@@ -808,20 +857,24 @@ async function executeImportMerge() {
   const sessionId = 'merge_' + Date.now();
   const staged = await customArtRepo.stageArtworkBatch(sessionId, merged.customArtwork || []);
   if (!staged.ok) {
-    showToast(`Merge blocked: imported artwork could not be staged (${staged.error || 'storage issue'}).`);
+    showToast(t('toasts.mergeStagingError', { error: staged.error || 'storage issue' }));
     return;
   }
   const committed = await customArtRepo.commitStagedArtwork(sessionId);
   if (!committed.ok) {
     await customArtRepo.pruneStaging(sessionId);
-    showToast(`Merge blocked: imported artwork could not be committed (${committed.error || 'storage issue'}).`);
+    showToast(t('toasts.mergeCommitError', { error: committed.error || 'storage issue' }));
     return;
   }
 
   store.dispatch({
     type: 'project/importMerge',
     envelope: merged.envelope,
-    message: `Merged ${merged.stats.addedPresets} dolls, ${merged.stats.addedScenes} scenes, and ${merged.stats.addedCustomAssets ?? 0} custom artwork items into studio.`
+    message: t('toasts.importMergedStats', {
+      dolls: merged.stats.addedPresets,
+      scenes: merged.stats.addedScenes,
+      custom: merged.stats.addedCustomAssets ?? 0
+    })
   });
   $('#project-dialog')?.close();
 }
@@ -829,8 +882,8 @@ async function executeImportMerge() {
 async function executeImportReplace() {
   if (!pendingImportEnvelope) return;
   const confirmed = await askConfirm(
-    'Replace entire studio?',
-    'All current dolls, scenes, and custom artwork will be replaced by the imported project. An automatic backup will be created so you can restore at any time.'
+    t('projectDialog.replaceConfirmTitle'),
+    t('projectDialog.replaceConfirmMessage')
   );
   if (!confirmed) return;
 
@@ -840,7 +893,7 @@ async function executeImportReplace() {
   const customBackupResult = await customArtRepo.saveBackup('latest', currentEnv, currentArtwork);
   if (!backupResult.ok || !customBackupResult.ok) {
     clearProjectBackup(storageRef);
-    showToast(`Replace blocked: could not create a complete backup (${backupResult.error || customBackupResult.error || 'storage issue'}).`);
+    showToast(t('toasts.replaceBackupError', { error: backupResult.error || customBackupResult.error || 'storage issue' }));
     return;
   }
 
@@ -848,13 +901,13 @@ async function executeImportReplace() {
   const staged = await customArtRepo.stageArtworkBatch(sessionId, pendingImportArtwork);
   if (!staged.ok) {
     await customArtRepo.pruneStaging(sessionId);
-    showToast(`Replace blocked: imported artwork could not be staged (${staged.error || 'storage issue'}).`);
+    showToast(t('toasts.replaceStagingError', { error: staged.error || 'storage issue' }));
     return;
   }
   const committed = await customArtRepo.commitStagedArtwork(sessionId);
   if (!committed.ok) {
     await customArtRepo.pruneStaging(sessionId);
-    showToast(`Replace blocked: imported artwork could not be committed (${committed.error || 'storage issue'}).`);
+    showToast(t('toasts.replaceCommitError', { error: committed.error || 'storage issue' }));
     return;
   }
 
@@ -862,8 +915,8 @@ async function executeImportReplace() {
     type: 'project/importReplace',
     envelope: pendingImportEnvelope,
     message: backupResult.ok
-      ? 'Project loaded successfully. Previous studio was backed up.'
-      : 'Project loaded successfully.'
+      ? t('toasts.importReplacedWithBackup')
+      : t('toasts.importReplaced')
   });
   $('#project-dialog')?.close();
 }
@@ -871,24 +924,24 @@ async function executeImportReplace() {
 async function executeRestoreBackup() {
   const backup = getAvailableBackup(storageRef, getAsset);
   if (!backup.available) {
-    showToast('No backup found.');
+    showToast(t('toasts.noBackupFound'));
     return;
   }
   const confirmed = await askConfirm(
-    'Restore previous backup?',
-    'This will replace your active studio with the backed-up project snapshot.'
+    t('projectDialog.restoreBackupBtn'),
+    t('projectDialog.backupCopy')
   );
   if (!confirmed) return;
 
   const latestArtBackup = await customArtRepo.getLatestBackup();
   if (backup.envelope.customAssets?.length && !latestArtBackup) {
-    showToast('Backup restore blocked: the custom artwork backup is unavailable.');
+    showToast(t('toasts.backupRestoreUnavailable'));
     return;
   }
   if (latestArtBackup) {
     const restored = await customArtRepo.restoreBackup(latestArtBackup.backupId);
     if (!restored.ok) {
-      showToast(`Backup restore blocked: ${restored.error || 'custom artwork could not be restored.'}`);
+      showToast(t('toasts.backupRestoreError', { error: restored.error || 'custom artwork could not be restored.' }));
       return;
     }
   }
@@ -910,8 +963,9 @@ function executeDismissBackup() {
   clearProjectBackup(storageRef);
   const backupSection = $('#project-backup-section');
   if (backupSection) backupSection.hidden = true;
-  showToast('Backup dismissed.');
+  showToast(t('toasts.backupDismissed'));
 }
+
 
 window.hardRefresh = async function hardRefresh() {
   if ('serviceWorker' in navigator) {

@@ -9,6 +9,7 @@ import { loadAssetSvg, makeAssetPlaceholder } from '../../core/svg-loader.js';
 import { DEFAULT_EXPRESSION, isCustomAssetId } from '../../domain/vocabulary.js';
 import { customAssetToDescriptor } from '../../core/asset-registry.js';
 import { applyMouthExpression } from '../../services/export-service.js';
+import { t } from '../../core/i18n.js';
 
 export const WARDROBE_SLOTS = [
   ['top', 'Tops'],
@@ -21,8 +22,9 @@ export const WARDROBE_SLOTS = [
 
 export function describeOutfit(draft, getAsset = getBuiltinAsset) {
   const names = Object.values(draft.slots).filter(Boolean).map((item) => getAsset(item.assetId)?.name).filter(Boolean);
-  return names.length ? `Paper doll wearing ${names.join(', ')}.` : 'Paper doll with no outfit pieces.';
+  return names.length ? t('designer.outfitWearing', { items: names.join(', ') }) : t('designer.outfitEmpty');
 }
+
 
 export const SLOT_PREVIEW_VIEWBOX = Object.freeze({
   top: '80 85 140 125',
@@ -173,13 +175,14 @@ export function createDesignerView({
 
   function renderSwatches(container, tokens, selected, onSelect) {
     container.replaceChildren(...tokens.map((token) => {
+      const colorName = t('colors.' + token) || PALETTE[token]?.name || token;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'swatch';
       button.style.setProperty('--swatch', paletteValue(token));
-      button.setAttribute('aria-label', PALETTE[token].name);
+      button.setAttribute('aria-label', colorName);
       button.setAttribute('aria-pressed', String(token === selected));
-      button.title = PALETTE[token].name;
+      button.title = colorName;
       button.addEventListener('click', () => onSelect(token));
       return button;
     }));
@@ -189,7 +192,8 @@ export function createDesignerView({
     const tabs = $('#wardrobe-tabs');
     const items = $('#wardrobe-items');
     const focusedTabId = document.activeElement?.closest?.('#wardrobe-tabs [role="tab"]')?.id;
-    tabs.replaceChildren(...WARDROBE_SLOTS.map(([slot, label]) => {
+    tabs.replaceChildren(...WARDROBE_SLOTS.map(([slot]) => {
+      const label = t('wardrobeSlots.' + slot) || slot;
       const button = document.createElement('button');
       button.type = 'button';
       button.role = 'tab';
@@ -219,7 +223,7 @@ export function createDesignerView({
       button.draggable = true;
       button.dataset.assetId = asset.id;
       button.setAttribute('aria-pressed', String(state.designer.draft.slots[asset.slot]?.assetId === asset.id));
-      button.setAttribute('aria-label', `Equip ${asset.name}${asset.custom ? ' (Custom Art)' : ''}`);
+      button.setAttribute('aria-label', t('designer.equipAssetAria', { name: asset.name, custom: asset.custom ? ` (${t('designer.customBadgeTitle')})` : '' }));
       const preview = document.createElement('span');
       preview.className = 'asset-card-preview';
       const label = document.createElement('span');
@@ -229,7 +233,7 @@ export function createDesignerView({
         const badge = document.createElement('span');
         badge.className = 'custom-art-badge';
         badge.textContent = '🎨';
-        badge.title = 'Hand-painted custom art';
+        badge.title = t('designer.customBadgeTitle');
         badge.setAttribute('aria-hidden', 'true');
         button.append(badge);
       }
@@ -252,15 +256,16 @@ export function createDesignerView({
     });
 
     if (['top', 'bottom', 'dress', 'shoes', 'accessory'].includes(state.designer.selectedSlot)) {
+      const slotName = t('wardrobeSlots.' + state.designer.selectedSlot) || state.designer.selectedSlot;
       const paintBtn = document.createElement('button');
       paintBtn.type = 'button';
       paintBtn.className = 'asset-card paint-item-action-card';
-      paintBtn.setAttribute('aria-label', `Paint a custom ${state.designer.selectedSlot}`);
+      paintBtn.setAttribute('aria-label', t('designer.paintSlotAria', { slot: slotName }));
       const preview = document.createElement('span');
       preview.className = 'asset-card-preview';
       preview.textContent = '🎨';
       const label = document.createElement('span');
-      label.textContent = `+ Paint ${state.designer.selectedSlot}`;
+      label.textContent = t('designer.paintSlotAction', { slot: slotName });
       paintBtn.append(preview, label);
       paintBtn.addEventListener('click', () => {
         if (openPaintStudio) {
@@ -283,13 +288,14 @@ export function createDesignerView({
     if (!container) return;
     const dollAssets = assetsByKind('doll');
     container.replaceChildren(...dollAssets.map((asset) => {
+      const modelLabel = t('models.' + asset.id) || (asset.id === 'doll_classic_a' ? 'Klasik' : asset.id === 'doll_classic_b' ? 'Neşeli' : 'Chibi');
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'model-picker-btn';
       button.setAttribute('aria-label', asset.name);
       button.setAttribute('aria-pressed', String(asset.id === selectedDollId));
       button.title = asset.name;
-      button.textContent = asset.id === 'doll_classic_a' ? 'Classic' : asset.id === 'doll_classic_b' ? 'Joy' : 'Chibi';
+      button.textContent = modelLabel;
       button.addEventListener('click', () => store.dispatch({ type: 'designer/setBaseDoll', baseDollId: asset.id }));
       return button;
     }));
@@ -302,7 +308,7 @@ export function createDesignerView({
     if (draft.slots.hair) {
       renderSwatches($('#hair-palette'), HAIR_COLORS, draft.slots.hair.color, (color) => store.dispatch({ type: 'designer/setColor', slot: 'hair', color }));
     } else {
-      $('#hair-palette').replaceChildren(Object.assign(document.createElement('span'), { className: 'empty-note compact-note', textContent: 'Equip hair first' }));
+      $('#hair-palette').replaceChildren(Object.assign(document.createElement('span'), { className: 'empty-note compact-note', textContent: t('designer.equipHairFirst') }));
     }
     const slot = state.designer.selectedSlot;
     const selectedItem = draft.slots[slot];
@@ -310,10 +316,10 @@ export function createDesignerView({
     const colors = slot === 'hair' ? HAIR_COLORS : GARMENT_COLORS;
     const container = $('#piece-palette');
     if (!selectedItem) {
-      container.replaceChildren(Object.assign(document.createElement('p'), { textContent: 'Choose or equip a piece first.', className: 'empty-note' }));
+      container.replaceChildren(Object.assign(document.createElement('p'), { textContent: t('designer.choosePieceFirst'), className: 'empty-note' }));
     } else if (isCustom) {
       container.replaceChildren(Object.assign(document.createElement('p'), {
-        textContent: '🎨 Custom hand-painted artwork preserves its original colors.',
+        textContent: t('designer.customArtColorNote'),
         className: 'empty-note custom-art-note'
       }));
     } else {
@@ -327,7 +333,7 @@ export function createDesignerView({
   function renderDollbox(state, token) {
     const list = $('#dollbox-list');
     if (!state.presets.length) {
-      list.replaceChildren(Object.assign(document.createElement('p'), { className: 'empty-note', textContent: 'Saved dolls will appear here and in the Play tray.' }));
+      list.replaceChildren(Object.assign(document.createElement('p'), { className: 'empty-note', textContent: t('designer.emptyDollbox') }));
       return;
     }
     list.replaceChildren(...state.presets.map((preset) => {
@@ -343,15 +349,15 @@ export function createDesignerView({
       const actions = document.createElement('div');
       actions.className = 'mini-actions';
       actions.append(
-        miniButton('✎', `Open ${preset.name} in Designer`, () => store.dispatch({ type: 'preset/load', presetId: preset.presetId })),
-        miniButton('Aa', `Rename ${preset.name}`, () => {
-          const nextName = window.prompt('Rename doll', preset.name);
+        miniButton('✎', t('designer.openInDesigner', { name: preset.name }), () => store.dispatch({ type: 'preset/load', presetId: preset.presetId })),
+        miniButton('Aa', t('designer.renameTitle', { name: preset.name }), () => {
+          const nextName = window.prompt(t('designer.renamePrompt'), preset.name);
           if (nextName != null && nextName.trim()) {
             store.dispatch({ type: 'preset/rename', presetId: preset.presetId, name: nextName });
           }
         }),
-        miniButton('×', `Delete ${preset.name}`, async () => {
-          if (await askConfirm(`Delete "${preset.name}"?`, 'This removes the doll from your Dollbox and future scenes.')) {
+        miniButton('×', t('designer.deleteConfirmTitle', { name: preset.name }), async () => {
+          if (await askConfirm(t('designer.deleteConfirmTitle', { name: preset.name }), t('designer.deleteConfirmMessage'))) {
             store.dispatch({ type: 'preset/delete', presetId: preset.presetId });
           }
         })
@@ -370,8 +376,10 @@ export function createDesignerView({
     renderWardrobe(state, token);
     renderPalettes(state);
     renderDollbox(state, token);
-    $('#outfit-count').textContent = `${Object.values(draft.slots).filter(Boolean).length} pieces`;
+    const pieceCount = Object.values(draft.slots).filter(Boolean).length;
+    $('#outfit-count').textContent = t('designer.outfitCount', { count: pieceCount });
     $('#remove-piece').disabled = !draft.slots[state.designer.selectedSlot];
+
 
     const editing = state.presets.find((preset) => preset.presetId === state.designer.editingPresetId);
     const nameInput = $('#doll-name');

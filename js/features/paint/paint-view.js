@@ -24,6 +24,8 @@ import {
 } from '../../domain/vocabulary.js';
 import { countAssetUses, slotLabel } from '../../domain/outfit-rules.js';
 import { getReferenceGuides } from './paint-guides.js';
+import { t } from '../../core/i18n.js';
+
 
 const CURATED_PALETTE = [
   '#2d261e', '#ffffff', '#e76f51', '#f4a261',
@@ -277,9 +279,10 @@ export function createPaintView({
 
     if (itemBadge) {
       itemBadge.textContent = state.itemType === 'wearable'
-        ? `${state.slot.toUpperCase()} Cutout`
-        : 'PROP';
+        ? `${t('wardrobeSlots.' + state.slot) || state.slot.toUpperCase()} ${t('paint.defaultCutoutLabel').split(' ')[1] || 'Kalıbı'}`
+        : t('paint.propTypeBtn').replace(/^[^\s]+\s*/, '');
     }
+
 
     typeWearableBtn?.classList.toggle('active', state.itemType === 'wearable');
     typePropBtn?.classList.toggle('active', state.itemType === 'prop');
@@ -346,11 +349,11 @@ export function createPaintView({
       .slice(0, 8);
 
     if (approvedCutouts.length === 0) {
-      setCutoutStatus('No starting cutouts are available for this slot.');
+      setCutoutStatus(t('paint.noCutoutsAvailable'));
       return;
     }
 
-    setCutoutStatus(selectedCutoutId ? 'Choose a cutout or select None.' : 'Choose a cutout to use as a non-saving reference.');
+    setCutoutStatus(selectedCutoutId ? t('paint.cutoutSelectedHelp') : t('paint.cutoutHelpStatus'));
 
     // Dedicated None card
     const noneCard = document.createElement('button');
@@ -360,8 +363,8 @@ export function createPaintView({
     noneCard.setAttribute('role', 'option');
     noneCard.setAttribute('aria-selected', String(!selectedCutoutId));
     noneCard.classList.toggle('active', !selectedCutoutId);
-    noneCard.title = 'No reference cutout';
-    noneCard.setAttribute('aria-label', 'No reference cutout');
+    noneCard.title = t('paint.noneCutoutTitle');
+    noneCard.setAttribute('aria-label', t('paint.noneCutoutTitle'));
     noneCard.innerHTML = '<span class="cutout-none-icon" aria-hidden="true">🚫</span>';
     noneCard.addEventListener('click', () => {
       cancelCutoutAction();
@@ -373,8 +376,8 @@ export function createPaintView({
       updateCutoutActions();
       renderGuideLayer();
       checkpointReferencePreferences();
-      setCutoutStatus('Reference cutout unselected.');
-      announceStatus('Reference cutout unselected.');
+      setCutoutStatus(t('paint.cutoutUnselected'));
+      announceStatus(t('paint.cutoutUnselected'));
     });
     cutoutGrid.appendChild(noneCard);
 
@@ -462,8 +465,8 @@ function fitCutoutSvg(svg, slot) {
           updateCutoutActions();
           renderGuideLayer();
           checkpointReferencePreferences();
-          setCutoutStatus('Reference cutout unselected.');
-          announceStatus('Reference cutout unselected.');
+          setCutoutStatus(t('paint.cutoutUnselected'));
+          announceStatus(t('paint.cutoutUnselected'));
           return;
         }
 
@@ -478,15 +481,15 @@ function fitCutoutSvg(svg, slot) {
         updateCutoutActions();
         renderGuideLayer();
         checkpointReferencePreferences();
-        setCutoutStatus(`${asset.name || asset.id} selected as a non-saving reference.`);
-        announceStatus(`${asset.name || asset.id} selected as reference.`);
+        setCutoutStatus(t('paint.cutoutSelectedStatus', { name: asset.name || asset.id }));
+        announceStatus(t('paint.cutoutSelectedAnnounce', { name: asset.name || asset.id }));
       });
 
       cutoutGrid.appendChild(card);
     });
     if (selectedCutoutId) {
       const selected = getTrustedCutout(selectedCutoutId, slot);
-      setCutoutStatus(`${selected?.name || selectedCutoutId} restored as a non-saving reference.`);
+      setCutoutStatus(t('paint.cutoutRestoredStatus', { name: selected?.name || selectedCutoutId }));
     }
   }
 
@@ -543,7 +546,7 @@ function fitCutoutSvg(svg, slot) {
     let before = null;
     cutoutActionPending = true;
     updateCutoutActions();
-    setCutoutStatus(`Loading ${initialAsset.name || assetId}…`);
+    setCutoutStatus(t('paint.loadingCutout', { name: initialAsset.name || assetId }));
     try {
       const svgElement = await svgLoader.load(assetId);
       if (!svgElement) throw new Error('Cutout SVG is unavailable.');
@@ -569,7 +572,7 @@ function fitCutoutSvg(svg, slot) {
       if (mode === 'replace') ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       if (!imageDataChanged(before)) {
-        setCutoutStatus('The cutout did not change the artwork.');
+        setCutoutStatus(t('paint.cutoutNoChange'));
         return false;
       }
       session.pushHistory(before);
@@ -577,14 +580,14 @@ function fitCutoutSvg(svg, slot) {
       updateUIFromState();
       updateLivePreview();
       scheduleDraftCheckpoint();
-      setCutoutStatus(`${initialAsset.name || assetId} ${mode === 'replace' ? 'replaced the artwork' : 'was added to the artwork'}.`);
-      announceStatus(`Cutout ${mode === 'replace' ? 'replacement' : 'addition'} complete. Undo is available.`);
+      setCutoutStatus(mode === 'replace' ? t('paint.cutoutReplaced', { name: initialAsset.name || assetId }) : t('paint.cutoutAdded', { name: initialAsset.name || assetId }));
+      announceStatus(mode === 'replace' ? t('paint.cutoutReplaceDone') : t('paint.cutoutAddDone'));
       return true;
     } catch (err) {
       if (before) ctx.putImageData(before, 0, 0);
       if (requestToken === cutoutActionToken) {
         console.warn('Could not rasterize cutout:', err);
-        setCutoutStatus('Could not load that cutout. Your artwork was not changed.');
+        setCutoutStatus(t('paint.cutoutLoadError'));
       }
       return false;
     } finally {
@@ -1170,7 +1173,7 @@ function fitCutoutSvg(svg, slot) {
           session.setBrushSize(newSize);
           updateUIFromState();
           updateVirtualCursor();
-          announceStatus(`Brush size ${newSize} pixels`);
+          announceStatus(t('paint.brushSizeStatus', { size: newSize }));
         }
         break;
       case ']':
@@ -1180,7 +1183,7 @@ function fitCutoutSvg(svg, slot) {
           session.setBrushSize(newSize);
           updateUIFromState();
           updateVirtualCursor();
-          announceStatus(`Brush size ${newSize} pixels`);
+          announceStatus(t('paint.brushSizeStatus', { size: newSize }));
         }
         break;
       default:
@@ -1252,7 +1255,7 @@ function fitCutoutSvg(svg, slot) {
       ctx.putImageData(prev, 0, 0);
       updateHistoryButtons();
       updateUIFromState();
-      announceStatus('Paint operation undone.');
+      announceStatus(t('paint.undoAnnouncement'));
       updateLivePreview();
       scheduleDraftCheckpoint();
     }
@@ -1266,7 +1269,7 @@ function fitCutoutSvg(svg, slot) {
       ctx.putImageData(next, 0, 0);
       updateHistoryButtons();
       updateUIFromState();
-      announceStatus('Paint operation redone.');
+      announceStatus(t('paint.redoAnnouncement'));
       updateLivePreview();
       scheduleDraftCheckpoint();
     }
@@ -1382,15 +1385,16 @@ function fitCutoutSvg(svg, slot) {
 
     if (saveContextBtn) {
       if (state.originContext === 'designer') {
-        saveContextBtn.textContent = '💾 Save & Wear';
+        saveContextBtn.textContent = t('paint.saveAndWear');
         saveContextBtn.hidden = false;
       } else if (state.originContext === 'play') {
-        saveContextBtn.textContent = '💾 Save & Add to Stage';
+        saveContextBtn.textContent = t('paint.saveAndAddToStage');
         saveContextBtn.hidden = false;
       } else {
         saveContextBtn.hidden = true;
       }
     }
+
 
     saveDialog.showModal();
     setTimeout(() => {
@@ -1459,8 +1463,8 @@ function fitCutoutSvg(svg, slot) {
       });
       if (!metadataResult?.ok) {
         throw new Error(metadataResult?.code === 'LIMIT'
-          ? 'The My Art library is full. The draft is still available.'
-          : 'Artwork metadata could not be committed. The draft is still available.');
+          ? t('paint.limitReached')
+          : t('paint.metadataCommitFailed'));
       }
 
       // 3. Clear draft
@@ -1482,11 +1486,11 @@ function fitCutoutSvg(svg, slot) {
         });
         if (onNavigate) onNavigate('play');
       } else {
-        announceStatus(`Saved "${validation.name}" to My Art!`);
+        announceStatus(t('paint.savedStatus', { name: validation.name }));
       }
     } catch (err) {
       console.error('Save artwork failed:', err);
-      alert(`Could not save artwork: ${err.message || 'Storage failure'}`);
+      alert(t('paint.saveError', { error: err.message || 'Storage failure' }));
     }
   }
 
@@ -1590,7 +1594,7 @@ function fitCutoutSvg(svg, slot) {
       renderGuideLayer();
       updateLivePreview();
       scheduleDraftCheckpoint();
-      announceStatus(`Changed to ${slotLabel(slot) || slot}. Your artwork and paint history were kept.`);
+      announceStatus(t('paint.slotChanged', { slot: slotLabel(slot) || slot }));
     });
 
     cutoutAddBtn?.addEventListener('click', () => {
@@ -1613,7 +1617,7 @@ function fitCutoutSvg(svg, slot) {
       session.setReferenceVisible(e.target.checked);
       renderGuideLayer();
       checkpointReferencePreferences();
-      announceStatus(`Body reference ${e.target.checked ? 'shown' : 'hidden'}. Artwork pixels are unchanged.`);
+      announceStatus(e.target.checked ? t('paint.referenceShown') : t('paint.referenceHidden'));
     });
 
     referenceModel?.addEventListener('change', (e) => {
@@ -1621,7 +1625,7 @@ function fitCutoutSvg(svg, slot) {
       renderGuideLayer();
       updateLivePreview();
       checkpointReferencePreferences();
-      announceStatus(`Reference model changed to ${e.target.selectedOptions?.[0]?.textContent || 'selected model'}. Artwork pixels are unchanged.`);
+      announceStatus(t('paint.modelChanged', { name: e.target.selectedOptions?.[0]?.textContent || 'selected model' }));
     });
 
     referenceOpacity?.addEventListener('input', (e) => {
@@ -1633,21 +1637,21 @@ function fitCutoutSvg(svg, slot) {
     });
 
     referenceOpacity?.addEventListener('change', () => {
-      announceStatus(`Reference opacity ${session.getState().referenceOpacity} percent. Artwork pixels are unchanged.`);
+      announceStatus(t('paint.opacityChanged', { percent: session.getState().referenceOpacity }));
     });
 
     guidesVisible?.addEventListener('change', (e) => {
       session.setGuidesVisible(e.target.checked);
       renderGuideLayer();
       checkpointReferencePreferences();
-      announceStatus(`Alignment guides ${e.target.checked ? 'shown' : 'hidden'}. Artwork pixels are unchanged.`);
+      announceStatus(e.target.checked ? t('paint.guidesShown') : t('paint.guidesHidden'));
     });
 
     cutoutReferenceVisible?.addEventListener('change', (e) => {
       session.setCutoutReferenceVisible(e.target.checked);
       renderGuideLayer();
       checkpointReferencePreferences();
-      announceStatus(`Cutout reference ${e.target.checked ? 'shown' : 'hidden'}. Artwork pixels are unchanged.`);
+      announceStatus(e.target.checked ? t('paint.cutoutRefShown') : t('paint.cutoutRefHidden'));
     });
 
     // Tools
@@ -1671,7 +1675,7 @@ function fitCutoutSvg(svg, slot) {
       session.setBrushSize(size);
       if (brushSizeValue) brushSizeValue.value = `${size}px`;
       updateVirtualCursor();
-      announceStatus(`Brush size set to ${size} pixels.`);
+      announceStatus(t('paint.brushSizeStatus', { size }));
     });
 
     shapeOptions?.addEventListener('click', (e) => {
@@ -1809,8 +1813,8 @@ function fitCutoutSvg(svg, slot) {
       emptyP.style.textAlign = 'center';
       emptyP.style.padding = '2rem 1rem';
       emptyP.textContent = currentMyArtTab === 'trash'
-        ? 'Trash is empty.'
-        : 'No custom artwork found in this category. Click "+ New" to paint something!';
+        ? t('paintMyArtDialog.emptyTrash')
+        : (currentMyArtTab === 'wearable' ? t('paintMyArtDialog.emptyWearable') : (currentMyArtTab === 'prop' ? t('paintMyArtDialog.emptyProp') : t('paintMyArtDialog.emptyAll')));
       myArtGrid.appendChild(emptyP);
       return;
     }
@@ -1833,7 +1837,7 @@ function fitCutoutSvg(svg, slot) {
           if (url) {
             img.src = url;
           } else {
-            thumbWrap.innerHTML = `<span class="missing-art-label" style="font-size:0.75rem; color:var(--ink-muted);">🎨 ${asset.status === 'trashed' ? 'Trashed' : 'No preview'}</span>`;
+            thumbWrap.innerHTML = `<span class="missing-art-label" style="font-size:0.75rem; color:var(--ink-muted);">🎨 ${asset.status === 'trashed' ? t('paintMyArtDialog.trashed') : t('paintMyArtDialog.noPreview')}</span>`;
           }
         }).catch(() => {});
       }
@@ -1855,7 +1859,7 @@ function fitCutoutSvg(svg, slot) {
 
       const meta = document.createElement('span');
       meta.className = 'myart-card-meta';
-      const slotText = asset.kind === 'wearable' ? (slotLabel(asset.slot) || 'Wearable') : 'Prop';
+      const slotText = asset.kind === 'wearable' ? (t('wardrobeSlots.' + asset.slot) || slotLabel(asset.slot) || 'Wearable') : (t('paint.propTypeBtn') || 'Prop');
       meta.textContent = `${slotText} • ${new Date(asset.createdAt || Date.now()).toLocaleDateString()}`;
       info.appendChild(meta);
 
@@ -1863,9 +1867,7 @@ function fitCutoutSvg(svg, slot) {
       const usageBadge = document.createElement('span');
       usageBadge.className = 'panel-copy';
       usageBadge.style.fontSize = '0.78rem';
-      usageBadge.textContent = impact.totalUses > 0
-        ? `Used ${impact.totalUses} time${impact.totalUses === 1 ? '' : 's'}`
-        : 'Not in use';
+      usageBadge.textContent = t('paintMyArtDialog.usedInCount', { count: impact.totalUses });
       info.appendChild(usageBadge);
 
       card.appendChild(info);
@@ -1877,24 +1879,24 @@ function fitCutoutSvg(svg, slot) {
         const restoreBtn = document.createElement('button');
         restoreBtn.type = 'button';
         restoreBtn.className = 'button secondary myart-card-btn';
-        restoreBtn.innerHTML = '↺ Restore';
-        restoreBtn.title = `Restore "${asset.name}" to My Art`;
+        restoreBtn.innerHTML = '↺ ' + t('projectDialog.restoreBackupBtn').replace(/^[^\s]+\s*/, '');
+        restoreBtn.title = t('paintMyArtDialog.restoreTitle');
         restoreBtn.addEventListener('click', () => handleRestoreArtwork(asset.assetId));
         actions.appendChild(restoreBtn);
 
         const purgeBtn = document.createElement('button');
         purgeBtn.type = 'button';
         purgeBtn.className = 'button danger-fill myart-card-btn';
-        purgeBtn.innerHTML = '🗑 Delete';
-        purgeBtn.title = `Permanently delete "${asset.name}"`;
+        purgeBtn.innerHTML = '🗑 ' + t('play.deleteItem');
+        purgeBtn.title = t('paintMyArtDialog.deleteTitle');
         purgeBtn.addEventListener('click', () => handleDeletePermanently(asset.assetId));
         actions.appendChild(purgeBtn);
       } else {
         const useBtn = document.createElement('button');
         useBtn.type = 'button';
         useBtn.className = 'button primary myart-card-btn';
-        useBtn.innerHTML = asset.kind === 'wearable' ? '👗 Wear' : '➕ Add';
-        useBtn.title = asset.kind === 'wearable' ? 'Wear on doll in Designer' : 'Add to scene in Play';
+        useBtn.innerHTML = asset.kind === 'wearable' ? '👗 ' + t('designer.reset') : '➕ ' + t('projectDialog.addMergeBtn').replace(/^[^\s]+\s*/, '');
+        useBtn.title = asset.kind === 'wearable' ? t('designer.equipAssetAria', { name: asset.name, custom: '' }) : t('play.paintPropAria');
         useBtn.addEventListener('click', () => {
           myArtDialog.close();
           if (asset.kind === 'wearable') {
@@ -1910,24 +1912,24 @@ function fitCutoutSvg(svg, slot) {
         const copyBtn = document.createElement('button');
         copyBtn.type = 'button';
         copyBtn.className = 'button secondary myart-card-btn';
-        copyBtn.innerHTML = '📝 Edit Copy';
-        copyBtn.title = `Edit a copy of "${asset.name}"`;
+        copyBtn.innerHTML = '📝 ' + t('play.saveCopyBtn').replace(/^[^\s]+\s*/, '');
+        copyBtn.title = t('paintMyArtDialog.editCopyTitle', { name: asset.name });
         copyBtn.addEventListener('click', () => editCopyOfArtwork(asset.assetId));
         actions.appendChild(copyBtn);
 
         const renameBtn = document.createElement('button');
         renameBtn.type = 'button';
         renameBtn.className = 'button secondary myart-card-btn';
-        renameBtn.innerHTML = '✏️ Rename';
-        renameBtn.title = `Rename "${asset.name}"`;
+        renameBtn.innerHTML = '✏️ ' + t('paintRenameDialog.title').replace(/^[^\s]+\s*/, '');
+        renameBtn.title = t('paintMyArtDialog.renameTitle');
         renameBtn.addEventListener('click', () => openRenameDialog(asset));
         actions.appendChild(renameBtn);
 
         const impactBtn = document.createElement('button');
         impactBtn.type = 'button';
         impactBtn.className = 'button secondary myart-card-btn';
-        impactBtn.innerHTML = '🗑 Remove';
-        impactBtn.title = `Remove or delete "${asset.name}"`;
+        impactBtn.innerHTML = '🗑 ' + t('paintImpactDialog.removeBtn');
+        impactBtn.title = t('paintMyArtDialog.deleteTitle');
         impactBtn.addEventListener('click', () => openImpactDialog(asset));
         actions.appendChild(impactBtn);
       }
@@ -1935,6 +1937,7 @@ function fitCutoutSvg(svg, slot) {
       card.appendChild(actions);
       myArtGrid.appendChild(card);
     }
+
   }
 
   async function editCopyOfArtwork(assetId) {
@@ -1951,7 +1954,7 @@ function fitCutoutSvg(svg, slot) {
           if (draft?.metadata?.assetId === assetId) record = draft;
         }
         if (!record?.blob) {
-          alert('Artwork pixels could not be found for copying.');
+          alert(t('paint.pixelsNotFound'));
           return;
         }
 
@@ -1972,7 +1975,7 @@ function fitCutoutSvg(svg, slot) {
           slot: asset.slot || 'top',
           propSize: asset.displayWidth > 240 ? 'large' : (asset.displayWidth < 180 ? 'small' : 'medium'),
           propPlacement: asset.groundAnchor?.y === 0.5 ? 'hang' : 'surface',
-          name: `${asset.name} (Copy)`
+          name: t('paint.copyName', { name: asset.name })
         });
 
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -1980,10 +1983,10 @@ function fitCutoutSvg(svg, slot) {
         updateLivePreview();
         updateHistoryButtons();
         myArtDialog?.close();
-        announceStatus(`Opened copy of "${asset.name}". Saving will create a new artwork.`);
+        announceStatus(t('paint.openedCopyStatus', { name: asset.name }));
       } catch (err) {
         console.error('Edit copy failed:', err);
-        alert('Could not edit copy of artwork.');
+        alert(t('paint.editCopyFailed'));
       }
     });
   }
@@ -2014,7 +2017,7 @@ function fitCutoutSvg(svg, slot) {
 
       if (impact.inDesignerDraft) {
         const li = document.createElement('li');
-        li.innerHTML = '<span>👗</span> <span>Equipped in current <strong>Designer draft</strong></span>';
+        li.innerHTML = `<span>👗</span> <span>${t('paintImpactDialog.equippedInDraft')}</span>`;
         list.appendChild(li);
       }
 
@@ -2023,7 +2026,7 @@ function fitCutoutSvg(svg, slot) {
         const icon = document.createElement('span');
         icon.textContent = '🎀';
         const text = document.createElement('span');
-        text.append('Dollbox Preset: ');
+        text.append(`${t('paintImpactDialog.dollboxPreset')}: `);
         const name = document.createElement('strong');
         name.textContent = p.name || 'Untitled';
         text.append(name, ` (${p.count} use${p.count === 1 ? '' : 's'})`);
@@ -2033,7 +2036,7 @@ function fitCutoutSvg(svg, slot) {
 
       if (impact.currentSceneUses > 0) {
         const li = document.createElement('li');
-        li.innerHTML = `<span>🎬</span> <span>Active Stage Scene: <strong>${impact.currentSceneUses} item${impact.currentSceneUses === 1 ? '' : 's'}</strong></span>`;
+        li.innerHTML = `<span>🎬</span> <span>${t('paintImpactDialog.activeStageScene', { count: impact.currentSceneUses })}</span>`;
         list.appendChild(li);
       }
 
@@ -2042,7 +2045,7 @@ function fitCutoutSvg(svg, slot) {
         const icon = document.createElement('span');
         icon.textContent = '📖';
         const text = document.createElement('span');
-        text.append('Saved Scene: ');
+        text.append(`${t('paintImpactDialog.savedScene')}: `);
         const title = document.createElement('strong');
         title.textContent = s.title || 'Untitled scene';
         text.append(title, ` (${s.count} item${s.count === 1 ? '' : 's'})`);
@@ -2052,7 +2055,7 @@ function fitCutoutSvg(svg, slot) {
 
       if (impact.totalUses === 0) {
         const li = document.createElement('li');
-        li.innerHTML = '<span>✨</span> <span>Not currently used in any dolls or scenes.</span>';
+        li.innerHTML = `<span>✨</span> <span>${t('paintImpactDialog.notCurrentlyUsed')}</span>`;
         list.appendChild(li);
       }
 
@@ -2074,10 +2077,10 @@ function fitCutoutSvg(svg, slot) {
       }
       impactDialog?.close();
       renderMyArtCards();
-      announceStatus('Artwork removed from My Art. Retained placeholders in dolls and scenes.');
+      announceStatus(t('paintMyArtDialog.removedStatus'));
     } catch (err) {
       console.error('Remove artwork failed:', err);
-      alert('Could not remove artwork.');
+      alert(t('paintMyArtDialog.removeFailed'));
     }
   }
 
@@ -2093,10 +2096,10 @@ function fitCutoutSvg(svg, slot) {
       }
       impactDialog?.close();
       renderMyArtCards();
-      announceStatus('Artwork and all its uses were deleted.');
+      announceStatus(t('paintMyArtDialog.deletedWithUsesStatus'));
     } catch (err) {
       console.error('Delete with uses failed:', err);
-      alert('Could not delete artwork.');
+      alert(t('paintMyArtDialog.deleteFailed'));
     }
   }
 
@@ -2127,7 +2130,7 @@ function fitCutoutSvg(svg, slot) {
     });
     renameDialog?.close();
     renderMyArtCards();
-    announceStatus(`Artwork renamed to "${validation.name}".`);
+    announceStatus(t('paintMyArtDialog.renamedStatus', { name: validation.name }));
   }
 
   async function handleRestoreArtwork(assetId) {
@@ -2141,16 +2144,16 @@ function fitCutoutSvg(svg, slot) {
         throw new Error('Artwork metadata could not be restored.');
       }
       renderMyArtCards();
-      announceStatus('Artwork restored to My Art.');
+      announceStatus(t('paintMyArtDialog.restoredStatus'));
     } catch (err) {
       console.error('Restore artwork failed:', err);
-      alert('Could not restore artwork.');
+      alert(t('paintMyArtDialog.restoreFailed'));
     }
   }
 
   async function handleDeletePermanently(assetId) {
     if (!assetId) return;
-    if (!confirm('Are you sure you want to permanently delete this artwork from trash?')) return;
+    if (!confirm(t('paintMyArtDialog.permanentDeleteConfirm'))) return;
     try {
       const deleted = store.dispatch({ type: 'customAsset/deleteWithUses', assetId });
       if (!deleted?.ok) throw new Error('Artwork metadata could not be deleted.');
@@ -2160,10 +2163,10 @@ function fitCutoutSvg(svg, slot) {
         throw new Error(binaryResult?.error || 'Artwork pixels could not be deleted.');
       }
       renderMyArtCards();
-      announceStatus('Artwork permanently deleted.');
+      announceStatus(t('paintMyArtDialog.permanentDeletedStatus'));
     } catch (err) {
       console.error('Permanent deletion failed:', err);
-      alert('Could not delete artwork.');
+      alert(t('paintMyArtDialog.deleteFailed'));
     }
   }
 
@@ -2174,8 +2177,8 @@ function fitCutoutSvg(svg, slot) {
       countAssetUses(asset.assetId, currentState).totalUses > 0
     ).length;
     const confirmation = referencedTrashCount > 0
-      ? `Permanently delete unused trash? ${referencedTrashCount} referenced item${referencedTrashCount === 1 ? '' : 's'} will be retained so dolls and scenes keep their placeholders.`
-      : 'Are you sure you want to permanently empty the trash?';
+      ? t('paintMyArtDialog.emptyTrashRetainedConfirm', { count: referencedTrashCount })
+      : t('paintMyArtDialog.emptyTrashConfirmMessage');
     if (!confirm(confirmation)) return;
     try {
       const state = store?.getState?.() || {};
@@ -2194,11 +2197,11 @@ function fitCutoutSvg(svg, slot) {
       renderMyArtCards();
       const retainedCount = trashed.length - deletableIds.length;
       announceStatus(retainedCount > 0
-        ? `Trash emptied for unused artwork. ${retainedCount} referenced item${retainedCount === 1 ? '' : 's'} retained safely.`
-        : 'Trash emptied.');
+        ? t('paintMyArtDialog.trashEmptiedRetained', { count: retainedCount })
+        : t('paintMyArtDialog.trashEmptied'));
     } catch (err) {
       console.error('Empty trash failed:', err);
-      alert('Could not empty trash.');
+      alert(t('paintMyArtDialog.emptyTrashFailed'));
     }
   }
 
@@ -2275,6 +2278,34 @@ function fitCutoutSvg(svg, slot) {
     void flushDraftCheckpoint();
   }
 
+  function refreshLanguage() {
+    updateUIFromState();
+    renderPalette();
+    const st = session.getState();
+    if (st.itemType === 'wearable') {
+      void loadCutoutsForSlot(st.slot);
+    }
+    if (myArtDialog?.open) {
+      renderMyArtCards();
+    }
+    if (saveDialog?.open) {
+      if (saveContextBtn) {
+        if (st.originContext === 'designer') {
+          saveContextBtn.textContent = t('paint.saveAndWear');
+          saveContextBtn.hidden = false;
+        } else if (st.originContext === 'play') {
+          saveContextBtn.textContent = t('paint.saveAndAddToStage');
+          saveContextBtn.hidden = false;
+        } else {
+          saveContextBtn.hidden = true;
+        }
+      }
+    }
+    if (impactDialog?.open && activeImpactAsset) {
+      openImpactDialog(activeImpactAsset);
+    }
+  }
+
   init();
 
   return {
@@ -2285,6 +2316,7 @@ function fitCutoutSvg(svg, slot) {
     checkDirtyBeforeAction,
     cancelAsyncOperations,
     flushDraftCheckpoint,
+    refreshLanguage,
     getSessionState: () => session.getState()
   };
 }
