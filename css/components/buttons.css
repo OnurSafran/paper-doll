@@ -1,0 +1,101 @@
+/* ==========================================================================
+   Paper Doll Studio - Button Components Stylesheet
+   ========================================================================== */
+
+/* Button & UI Components ------------------------------------------------- */
+.button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  background: var(--paper-card);
+  color: var(--ink);
+  box-shadow: 0 2px 4px rgba(46, 38, 31, 0.06), 0 1px 1px rgba(46, 38, 31, 0.04);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+  user-select: none;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--ink-soft);
+  box-shadow: var(--shadow-md);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.button.primary {
+  background: var(--coral-dark);
+  color: white;
+  border-color: var(--coral-dark);
+  box-shadow: 0 2px 6px rgba(184, 67, 59, 0.3);
+}
+
+.button.primary:hover:not(:disabled) {
+  background: #a83a33;
+  border-color: #a83a33;
+  box-shadow: 0 4px 12px rgba(184, 67, 59, 0.4);
+}
+
+.button.secondary {
+  background: var(--paper-card);
+  color: var(--ink);
+}
+
+.button.playful {
+  background: linear-gradient(135deg, #f7be52, var(--gold));
+  color: var(--ink);
+  border-color: rgba(46, 38, 31, 0.18);
+  box-shadow: 0 2px 6px rgba(242, 170, 53, 0.25);
+}
+
+.button.playful:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f9c768, #f0a324);
+}
+
+.button.danger-fill {
+  background: var(--coral-dark);
+  color: white;
+  border-color: var(--coral-dark);
+}
+
+.compact-action {
+  min-height: 44px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.text-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--coral-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.text-button:hover {
+  opacity: 0.8;
+}

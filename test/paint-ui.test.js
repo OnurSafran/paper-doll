@@ -3,8 +3,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { isTrustedCutoutDescriptor } from '../js/features/paint/paint-view.js';
 
+function loadCssBundle(entryPath = '../css/app.css') {
+  const entryUrl = new URL(entryPath, import.meta.url);
+  const entryContent = readFileSync(entryUrl, 'utf8');
+  return entryContent.replace(/@import\s+['"]([^'"]+)['"];/g, (_, relativeImport) => {
+    const importedUrl = new URL(relativeImport, entryUrl);
+    return readFileSync(importedUrl, 'utf8');
+  });
+}
+
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const css = readFileSync(new URL('../css/app.css', import.meta.url), 'utf8');
+const css = loadCssBundle();
 const appJs = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 const designerJs = readFileSync(new URL('../js/features/designer/designer-view.js', import.meta.url), 'utf8');
 const playJs = readFileSync(new URL('../js/features/play/play-view.js', import.meta.url), 'utf8');

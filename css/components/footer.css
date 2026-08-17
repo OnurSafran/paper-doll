@@ -1,0 +1,57 @@
+/* ==========================================================================
+   Paper Doll Studio - App Footer & Version Badge Stylesheet
+   ========================================================================== */
+
+/* App Footer & Version Badge */
+.app-footer {
+  padding: 0.45rem 1rem;
+  background: var(--paper-warm);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-align: center;
+  user-select: none;
+}
+
+.app-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.app-footer-version strong {
+  color: var(--ink);
+}
+
+.footer-divider {
+  color: var(--line);
+}
+
+.inline-refresh-btn {
+  font-size: 0.76rem;
+  color: var(--coral-dark);
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  min-height: 28px;
+}
+
+.inline-refresh-btn:hover {
+  background: var(--coral-soft);
+}
+
+.app-version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 4px 10px;
+  background: var(--paper-warm);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.8rem;
+  color: var(--ink);
+  font-weight: 600;
+}

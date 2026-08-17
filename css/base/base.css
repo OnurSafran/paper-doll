@@ -1,0 +1,128 @@
+/* ==========================================================================
+   Paper Doll Studio - Base & Reset Stylesheet
+   ========================================================================== */
+
+/* Base & Reset ----------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+[hidden],
+.expression-buttons[hidden],
+.bubble-controls[hidden],
+.alignment-buttons[hidden] {
+  display: none !important;
+}
+
+.context-ring::before {
+  display: none !important;
+}
+
+html {
+  min-width: 320px;
+  background: var(--paper-warm);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at 12% -5%, rgba(255, 255, 255, 0.95) 0 14rem, transparent 36rem),
+    radial-gradient(circle at 90% 12%, rgba(240, 108, 92, 0.08) 0 12rem, transparent 30rem),
+    radial-gradient(rgba(46, 38, 31, 0.06) 0.8px, transparent 0.9px),
+    var(--paper-warm);
+  background-size: auto, auto, 20px 20px, auto;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+input, textarea, select, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+button, select, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 2px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  touch-action: manipulation;
+}
+
+h1, h2, h3, h4, p {
+  margin-top: 0;
+}
+
+h1 {
+  font: 700 clamp(1.4rem, 2.2vw, 2.1rem)/1.1 var(--font-display);
+  letter-spacing: -0.02em;
+  margin-bottom: 0;
+  color: var(--ink);
+}
+
+h2 {
+  font: 700 1.15rem/1.2 var(--font-display);
+  margin-bottom: 0.5rem;
+  color: var(--ink);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -6rem;
+  z-index: 1000;
+  padding: 0.75rem 1.25rem;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  font-weight: 700;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Main Layout & Screens -------------------------------------------------- */
+main {
+  width: 100%;
+  max-width: 1720px;
+  margin: 0 auto;
+}
+
+.screen {
+  padding: 10px clamp(10px, 1.4vw, 20px);
+}
+
+.screen-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}

@@ -1,0 +1,562 @@
+/* ==========================================================================
+   Paper Doll Studio - Designer Screen Layout Stylesheet
+   ========================================================================== */
+
+#designer-screen {
+  height: calc(100dvh - var(--app-header-height));
+  overflow: hidden;
+}
+
+.designer-grid {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(400px, 1fr) minmax(360px, 440px);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.designer-stage-wrap {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+}
+
+.designer-topbar {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.designer-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.outfit-count {
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.designer-inline-status {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.designer-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Paper Stage Canvas */
+.paper-stage {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border: 6px solid rgba(255, 253, 249, 0.95);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.3)),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(94, 158, 201, 0.08) 32px),
+    linear-gradient(150deg, #f2e3cc, #e8d3b7);
+  box-shadow: inset 0 0 0 1px var(--line), inset 0 0 60px rgba(46, 38, 31, 0.05), var(--shadow-md);
+  overflow: hidden;
+}
+
+.paper-stage::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px dashed rgba(46, 38, 31, 0.14);
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.snap-target {
+  position: absolute;
+  z-index: 20;
+  inset: 4%;
+  display: grid;
+  place-items: start center;
+  padding-top: 1.2rem;
+  border: 3px dashed var(--coral);
+  border-radius: calc(var(--radius-lg) - 8px);
+  opacity: 0;
+  transform: scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.snap-target span {
+  padding: 0.55rem 1rem;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--paper-card);
+  box-shadow: 0 4px 12px rgba(46, 38, 31, 0.12);
+  font-weight: 850;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.paper-stage.is-drop-target .snap-target {
+  opacity: 1;
+  transform: scale(1);
+  animation: snap-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes snap-pulse {
+  to { border-color: var(--gold); }
+}
+
+.doll-canvas {
+  position: relative;
+  z-index: 2;
+  width: auto;
+  height: min(90%, 650px);
+  max-width: 78%;
+  aspect-ratio: 2 / 3;
+  filter: drop-shadow(0 14px 28px rgba(46, 38, 31, 0.16)) drop-shadow(0 2px 6px rgba(46, 38, 31, 0.08));
+}
+
+.doll-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.doll-layer .asset-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.paper-stand {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 4%;
+  width: min(44%, 260px);
+  height: 24px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(46, 38, 31, 0.22), transparent 70%);
+  filter: blur(2px);
+}
+
+.skin-fill { fill: var(--skin-color, #f2c7a5); }
+.hair-fill { fill: var(--hair-color, #654735); }
+.tint-primary { fill: var(--asset-color-primary, #ef7f72); }
+.tint-secondary { fill: var(--asset-color-secondary, #fff4d6); }
+
+/* Designer Sidebar Rail */
+.designer-sidebar {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.wardrobe-panel {
+  flex: 0 0 auto;
+  padding: 0.85rem;
+}
+
+.tab-list {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.15rem 0.15rem 0.5rem;
+  scrollbar-width: none;
+}
+
+.tab-list::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-list button {
+  min-height: 44px;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--paper-card);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.tab-list button:hover:not([aria-selected="true"]) {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.tab-list button[aria-selected="true"] {
+  color: white;
+  background: var(--ink);
+  border-color: var(--ink);
+  box-shadow: 0 2px 6px rgba(46, 38, 31, 0.15);
+}
+
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.asset-card {
+  position: relative;
+  min-height: 124px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.35rem;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(150deg, #ffffff, #faf4eb);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.asset-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--coral);
+  box-shadow: var(--shadow-md);
+}
+
+.asset-card[aria-pressed="true"] {
+  border-color: var(--sage);
+  background: var(--sage-soft);
+  box-shadow: 0 0 0 2px rgba(112, 159, 94, 0.25);
+}
+
+.asset-card[aria-pressed="true"]::after {
+  content: '✓';
+  position: absolute;
+  z-index: 3;
+  top: 5px;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: white;
+  background: var(--sage);
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.asset-card-preview {
+  position: relative;
+  width: 100%;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.asset-card-preview .asset-svg {
+  width: 100%;
+  height: 100%;
+  max-width: 68px;
+  max-height: 68px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(46, 38, 31, 0.1));
+}
+
+.asset-card span:last-child {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0.2rem 0.3rem;
+  border-radius: var(--radius-xs);
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+
+.asset-card[draggable="true"] { cursor: grab; }
+.asset-card.is-dragging { opacity: 0.5; cursor: grabbing; }
+
+.wardrobe-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--line);
+}
+
+/* Doll Colors Styling Bar */
+.stage-style-bar {
+  flex: 0 0 auto;
+  padding: 0.75rem 0.85rem;
+}
+
+.stage-style-bar h2 {
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+.stage-style-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.model-picker-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.model-picker-btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--paper-card);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(46, 38, 31, 0.08);
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.model-picker-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--coral);
+  background: #fffdf7;
+}
+
+.model-picker-btn[aria-pressed="true"] {
+  background: var(--coral);
+  color: #fff;
+  border-color: var(--coral);
+  box-shadow: 0 2px 6px rgba(239, 127, 114, 0.35);
+}
+
+.style-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.style-group strong {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.swatch-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.swatch-list.compact .swatch {
+  width: 32px;
+  height: 32px;
+}
+
+.swatch {
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(46, 38, 31, 0.2);
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: 0 2px 4px rgba(46, 38, 31, 0.12);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, outline 0.15s ease;
+}
+
+.swatch:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(46, 38, 31, 0.18);
+}
+
+.swatch[aria-pressed="true"] {
+  outline: 3px solid var(--coral);
+  outline-offset: 2px;
+  border-color: var(--ink);
+}
+
+/* Designer Tools (Selected piece & Dollbox) */
+.designer-tools {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.tool-card {
+  padding: 0.85rem;
+}
+
+.tool-card h2 {
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+}
+
+.custom-color {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--line);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.custom-color input {
+  width: 50px;
+  height: 36px;
+  min-height: 36px;
+  padding: 2px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--paper-card);
+  cursor: pointer;
+}
+
+.save-form {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.save-form label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+input, select, textarea {
+  min-height: 44px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper-card);
+  padding: 0.55rem 0.75rem;
+  color: var(--ink);
+  font-size: 16px;
+  font-size: max(16px, 1rem);
+  touch-action: manipulation;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px rgba(94, 158, 201, 0.2);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.button-row.end {
+  justify-content: flex-end;
+}
+
+.dollbox-list {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dollbox-item {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.dollbox-preview {
+  position: relative;
+  width: 44px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: var(--radius-xs);
+  background: var(--paper-warm);
+}
+
+.dollbox-preview .doll-layer { inset: 0; }
+
+.dollbox-name {
+  min-width: 0;
+  font-weight: 800;
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-actions {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.mini-actions button {
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  min-width: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-xs);
+  font-size: 0.95rem;
+  color: var(--ink);
+  transition: background 0.15s ease;
+}
+
+.mini-actions button:hover {
+  background: var(--paper-warm);
+}

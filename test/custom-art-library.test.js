@@ -384,8 +384,16 @@ test('AssetRegistry descriptor marks missing and trashed custom items accurately
 
 test('My Art library and impact dialogs expose accessible markup and contracts', async () => {
   const { readFileSync } = await import('node:fs');
+  function loadCssBundle(entryPath = '../css/app.css') {
+    const entryUrl = new URL(entryPath, import.meta.url);
+    const entryContent = readFileSync(entryUrl, 'utf8');
+    return entryContent.replace(/@import\s+['"]([^'"]+)['"];/g, (_, relativeImport) => {
+      const importedUrl = new URL(relativeImport, entryUrl);
+      return readFileSync(importedUrl, 'utf8');
+    });
+  }
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const css = readFileSync(new URL('../css/app.css', import.meta.url), 'utf8');
+  const css = loadCssBundle();
   const paintViewJs = readFileSync(new URL('../js/features/paint/paint-view.js', import.meta.url), 'utf8');
 
   // HTML dialogs and buttons

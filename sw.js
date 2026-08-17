@@ -1,10 +1,21 @@
-const CACHE_NAME = 'paper-doll-studio-v16';
+const CACHE_NAME = 'paper-doll-studio-v17';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './css/tokens.css',
   './css/app.css',
+  './css/base/base.css',
+  './css/components/buttons.css',
+  './css/components/cards.css',
+  './css/components/dialogs.css',
+  './css/components/toasts.css',
+  './css/components/footer.css',
+  './css/features/header.css',
+  './css/features/designer.css',
+  './css/features/play.css',
+  './css/features/paint.css',
+  './css/responsive/responsive.css',
   './js/app.js?v=4',
   './js/core/app-store.js',
   './js/core/asset-catalog.js',
