@@ -6,8 +6,9 @@ import { createAppStore } from '../js/core/app-store.js';
 
 test('expanded catalog has unique IDs and the complete planned inventory', () => {
   assert.equal(new Set(ASSETS.map((asset) => asset.id)).size, ASSETS.length);
-  assert.equal(ASSETS.filter((asset) => asset.kind === 'doll').length, 3);
-  assert.equal(ASSETS.filter((asset) => asset.kind === 'wearable').length, 45);
+  assert.equal(ASSETS.filter((asset) => asset.kind === 'doll').length, 6);
+  assert.equal(ASSETS.filter((asset) => asset.kind === 'wearable').length, 58);
+  assert.equal(ASSETS.filter((asset) => asset.kind === 'face').length, 19);
   assert.equal(ASSETS.filter((asset) => asset.kind === 'background').length, 7);
   assert.equal(ASSETS.filter((asset) => asset.kind === 'prop').length, 22);
 });
@@ -15,14 +16,14 @@ test('expanded catalog has unique IDs and the complete planned inventory', () =>
 test('wearable slot counts match the expanded product contract', () => {
   assert.deepEqual(
     Object.fromEntries(['top', 'bottom', 'dress', 'shoes', 'hair', 'accessory'].map((slot) => [slot, wearablesBySlot(slot).length])),
-    { top: 9, bottom: 7, dress: 5, shoes: 6, hair: 8, accessory: 10 }
+    { top: 11, bottom: 8, dress: 6, shoes: 8, hair: 11, accessory: 14 }
   );
 });
 
 test('catalog assets carry core DLC provenance metadata', () => {
   for (const asset of ASSETS) {
     assert.deepEqual(Object.keys(asset.metadata).sort(), ['added_date', 'concept', 'creator', 'dlc', 'source']);
-    assert.match(asset.metadata.added_date, /^2026-08-(14|16)$/);
+    assert.match(asset.metadata.added_date, /^2026-08-(14|16|17)$/);
     assert.ok(['Paper Doll Studio', '5.6 Luna'].includes(asset.metadata.creator));
     assert.ok(['core', 'weekend garden'].includes(asset.metadata.concept));
     assert.equal(asset.metadata.dlc, 'core');

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="eyes_round">
+  <g id="face-feature">
+    <!-- Left Eye -->
+    <ellipse cx="135" cy="59" rx="4.5" ry="6" fill="var(--iris-color, #2d261e)" stroke="none"/>
+    <circle cx="134" cy="56.5" r="2" fill="#ffffff" stroke="none"/>
+    <circle cx="137" cy="61.5" r="1.2" fill="#ffffff" stroke="none"/>
+    
+    <!-- Right Eye -->
+    <ellipse cx="165" cy="59" rx="4.5" ry="6" fill="var(--iris-color, #2d261e)" stroke="none"/>
+    <circle cx="164" cy="56.5" r="2" fill="#ffffff" stroke="none"/>
+    <circle cx="167" cy="61.5" r="1.2" fill="#ffffff" stroke="none"/>
+  </g>
+</svg>

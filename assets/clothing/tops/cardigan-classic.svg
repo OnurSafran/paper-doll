@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_cardigan_classic">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Cardigan Body -->
+    <path class="tint-primary" d="M124 112 C116 138 116 168 118 200 C130 204 170 204 182 200 C184 168 184 138 176 112 L158 114 L150 160 L142 114 Z" fill="var(--asset-color-primary, #6b705c)"/>
+    <!-- Inner Shirt / Collar Peeking -->
+    <path d="M142 114 L150 148 L158 114 C153 116 147 116 142 114 Z" fill="#f8f9fa" stroke="#2d261e" stroke-width="1.8"/>
+    <!-- Cardigan Sleeves -->
+    <path class="tint-primary" d="M124 112 C112 138 102 168 98 202 L108 204 C112 174 118 144 128 120 Z" fill="var(--asset-color-primary, #6b705c)"/>
+    <path class="tint-primary" d="M176 112 C188 138 198 168 202 202 L192 204 C188 174 182 144 172 120 Z" fill="var(--asset-color-primary, #6b705c)"/>
+    <!-- Cute Buttons -->
+    <circle cx="150" cy="168" r="2" fill="#ddbea9" stroke="#2d261e" stroke-width="1.2"/>
+    <circle cx="150" cy="182" r="2" fill="#ddbea9" stroke="#2d261e" stroke-width="1.2"/>
+    <circle cx="150" cy="196" r="2" fill="#ddbea9" stroke="#2d261e" stroke-width="1.2"/>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_short_slick">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M116 62 C110 78 112 100 120 112 C135 118 165 118 180 112 C188 100 190 78 184 62 Z" fill="var(--hair-color, #2d261e)"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <!-- Clean Side-Parted Slick Hair -->
+    <path class="hair-fill" d="M116 62 C114 36 128 20 150 20 C172 20 186 36 184 62 C178 44 162 38 146 38 C130 38 120 46 116 62 Z" fill="var(--hair-color, #2d261e)"/>
+    <path class="hair-fill" d="M116 62 C112 78 114 96 122 106 C124 90 124 72 130 50 Z" fill="var(--hair-color, #2d261e)"/>
+    <path class="hair-fill" d="M184 62 C188 78 186 96 178 106 C176 90 176 72 170 50 Z" fill="var(--hair-color, #2d261e)"/>
+  </g>
+</svg>

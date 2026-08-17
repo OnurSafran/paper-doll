@@ -1,5 +1,5 @@
-import { isColorValue, isPaletteToken, normalizeColorValue } from './palette.js';
-import { cloneDraft, createStarterDraft, emptySlots, OUTFIT_SLOTS } from '../domain/outfit-rules.js';
+import { isColorValue, isIrisColor, isPaletteToken, normalizeColorValue } from './palette.js';
+import { cloneDraft, createDefaultFace, createStarterDraft, emptySlots, OUTFIT_SLOTS } from '../domain/outfit-rules.js';
 import { clamp, clampPoint, clampScale, createEmptyScene, createSampleScene, getEntityBounds, reclampSceneEntities } from '../domain/scene-rules.js';
 import { clampCameraX } from './coordinate-space.js';
 import { hasValidDisplayName, normalizeDisplayName } from './text.js';
@@ -10,12 +10,17 @@ import {
   DEFAULT_BUBBLE_STYLE,
   DEFAULT_BUBBLE_TEXT,
   DEFAULT_EXPRESSION,
+  DEFAULT_IRIS_COLOR,
   DEFAULT_REDUCED_MOTION,
   DEFAULT_STAGE_WIDTH,
+  FIT_FAMILIES,
   isBubbleStyle,
   isCustomAssetId,
   isEntityKind,
   isExpression,
+  isFaceGroup,
+  isFitFamily,
+  isPresentationStyle,
   isReducedMotionOption,
   isStageWidth,
   isValidId,
@@ -23,7 +28,7 @@ import {
   STAGE_WIDTHS
 } from '../domain/vocabulary.js';
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 export const STORAGE_KEY = 'paperDollStudio.state';
 
 export function createDefaultEnvelope() {
@@ -100,7 +105,7 @@ export function sanitizeCustomAsset(candidate) {
 
   let slot = undefined;
   if (kind === 'wearable') {
-    if (candidate.slot !== 'top' && candidate.slot !== 'bottom' && candidate.slot !== 'dress' && candidate.slot !== 'shoes' && candidate.slot !== 'accessory') {
+    if (!['top', 'bottom', 'dress', 'shoes', 'accessory', 'hair'].includes(candidate.slot)) {
       return null;
     }
     slot = candidate.slot;
@@ -158,6 +163,17 @@ export function sanitizeCustomAsset(candidate) {
     groundAnchor = { x: ax, y: ay };
   }
 
+  const supportedFitFamilies = kind === 'wearable'
+    ? (Array.isArray(candidate.supportedFitFamilies) && candidate.supportedFitFamilies.filter(isFitFamily).length
+      ? candidate.supportedFitFamilies.filter(isFitFamily)
+      : [...FIT_FAMILIES])
+    : undefined;
+  const presentationStyles = kind === 'wearable'
+    ? (Array.isArray(candidate.presentationStyles) && candidate.presentationStyles.filter((style) => isPresentationStyle(style) && style !== 'all').length
+      ? candidate.presentationStyles.filter((style) => isPresentationStyle(style) && style !== 'all')
+      : ['neutral', 'feminine', 'masculine'])
+    : undefined;
+
   return {
     assetId: candidate.assetId,
     name,
@@ -174,6 +190,7 @@ export function sanitizeCustomAsset(candidate) {
     updatedAt,
     libraryVisible,
     status,
+    ...(kind === 'wearable' ? { supportedFitFamilies, presentationStyles } : {}),
     ...(kind === 'prop' ? { displayWidth, displayHeight, groundAnchor } : {})
   };
 }
@@ -184,7 +201,9 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return { envelope: defaults, warnings: ['Saved data was not an object.'], recovered: false };
   }
-  value = migrateEnvelope(value, warnings);
+  const migrationWarnings = [];
+  value = migrateEnvelope(value, migrationWarnings);
+  warnings.push(...migrationWarnings);
   if (value.schemaVersion !== SCHEMA_VERSION) {
     warnings.push(`Unsupported schema version ${String(value.schemaVersion)}; safe defaults loaded.`);
     return { envelope: defaults, warnings, recovered: false };
@@ -224,7 +243,7 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
   const presetIds = new Set();
   for (const candidate of Array.isArray(value.presets) ? value.presets : []) {
     if (presets.length >= LIMITS.MAX_PRESETS) break;
-    const preset = sanitizePreset(candidate, effectiveGetAsset);
+    const preset = sanitizePreset(candidate, effectiveGetAsset, warnings);
     if (preset && !presetIds.has(preset.presetId)) {
       presetIds.add(preset.presetId);
       presets.push(preset);
@@ -263,17 +282,18 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
       currentScene
     },
     warnings,
-    recovered: warnings.length === 0
+    migrated: migrationWarnings.length > 0,
+    recovered: warnings.length === migrationWarnings.length
   };
 }
 
-export function sanitizePreset(candidate, getAsset = () => undefined) {
+export function sanitizePreset(candidate, getAsset = () => undefined, warnings = []) {
   if (!candidate || typeof candidate !== 'object') return null;
   if (!validId(candidate.presetId) || !validPresetName(candidate.name)) return null;
   const dollAsset = getAsset(candidate.baseDollId);
   const isValidDoll = candidate.baseDollId === DEFAULT_BASE_DOLL_ID || (dollAsset && dollAsset.kind === 'doll');
   if (!isValidDoll || !isPaletteToken(candidate.skinTone)) return null;
-  const draft = sanitizeDraft(candidate, getAsset);
+  const draft = sanitizeDraft(candidate, getAsset, warnings);
   if (!draft) return null;
   return {
     presetId: candidate.presetId,
@@ -284,12 +304,25 @@ export function sanitizePreset(candidate, getAsset = () => undefined) {
   };
 }
 
-export function sanitizeDraft(candidate, getAsset = () => undefined) {
+export function sanitizeDraft(candidate, getAsset = () => undefined, warnings = []) {
   if (!candidate) return null;
   const dollAsset = getAsset(candidate.baseDollId);
   const isValidDoll = candidate.baseDollId === DEFAULT_BASE_DOLL_ID || (dollAsset && dollAsset.kind === 'doll');
   if (!isValidDoll || !isPaletteToken(candidate.skinTone)) return null;
   const baseDollId = candidate.baseDollId || DEFAULT_BASE_DOLL_ID;
+  const defaultFace = createDefaultFace(baseDollId);
+
+  let face = defaultFace;
+  if (candidate.face && typeof candidate.face === 'object') {
+    face = {
+      eyes: sanitizeFaceFeature('eyes', candidate.face.eyes, defaultFace.eyes, getAsset, baseDollId, warnings),
+      eyebrows: sanitizeFaceFeature('eyebrows', candidate.face.eyebrows, defaultFace.eyebrows, getAsset, baseDollId, warnings),
+      nose: sanitizeFaceFeature('nose', candidate.face.nose, defaultFace.nose, getAsset, baseDollId, warnings),
+      mouth: sanitizeFaceFeature('mouth', candidate.face.mouth, defaultFace.mouth, getAsset, baseDollId, warnings),
+      detail: candidate.face.detail ? sanitizeFaceFeature('detail', candidate.face.detail, null, getAsset, baseDollId, warnings) : null
+    };
+  }
+
   const slots = emptySlots();
   for (const slot of OUTFIT_SLOTS) {
     const item = candidate.slots?.[slot];
@@ -306,7 +339,27 @@ export function sanitizeDraft(candidate, getAsset = () => undefined) {
     slots.top = null;
     slots.bottom = null;
   }
-  return { baseDollId, skinTone: candidate.skinTone, slots };
+  return { baseDollId, skinTone: candidate.skinTone, face, slots };
+}
+
+function sanitizeFaceFeature(group, item, fallback, getAsset, baseDollId, warnings = []) {
+  if (!item || typeof item !== 'object' || !validId(item.assetId)) {
+    if (item != null) warnings.push(`Invalid face feature for ${group}; the approved default was restored.`);
+    return fallback ? { ...fallback } : null;
+  }
+  const asset = getAsset(item.assetId);
+  const doll = getAsset(baseDollId);
+  const fitFamily = doll?.fitFamily;
+  if (!asset || asset.kind !== 'face' || asset.faceGroup !== group ||
+    (fitFamily && asset.supportedFitFamilies && !asset.supportedFitFamilies.includes(fitFamily))) {
+    warnings.push(`Invalid face feature for ${group}; the approved default was restored.`);
+    return fallback ? { ...fallback } : null;
+  }
+  if (group === 'eyes') {
+    const irisColor = isIrisColor(item.irisColor) ? item.irisColor : (fallback?.irisColor || DEFAULT_IRIS_COLOR);
+    return { assetId: item.assetId, irisColor };
+  }
+  return { assetId: item.assetId };
 }
 
 export function sanitizeScene(candidate, getAsset = () => undefined, warnings = []) {
@@ -320,7 +373,7 @@ export function sanitizeScene(candidate, getAsset = () => undefined, warnings = 
   const entityIds = new Set();
   for (const item of Array.isArray(candidate.entities) ? candidate.entities : []) {
     if (entities.length >= LIMITS.MAX_ENTITIES) break;
-    const entity = sanitizeEntity(item, getAsset, candidateStageWidth);
+    const entity = sanitizeEntity(item, getAsset, candidateStageWidth, warnings);
     if (entity && !entityIds.has(entity.instanceId)) {
       entityIds.add(entity.instanceId);
       entities.push(entity);
@@ -378,15 +431,17 @@ export function sanitizeScene(candidate, getAsset = () => undefined, warnings = 
   return { ...reclamped, updatedAt: sanitizedScene.updatedAt };
 }
 
-function sanitizeEntity(item, getAsset, stageWidth = DEFAULT_STAGE_WIDTH) {
+function sanitizeEntity(item, getAsset, stageWidth = DEFAULT_STAGE_WIDTH, warnings = []) {
   if (!item || typeof item !== 'object' || !validId(item.instanceId)) return null;
   if (!isEntityKind(item.kind)) return null;
   const sourceAsset = getAsset(item.sourceId);
   const isCustomProp = item.kind === 'prop' && isCustomAssetId(item.sourceId);
   if (item.kind === 'prop' && (!validId(item.sourceId) || (!isCustomProp && sourceAsset && sourceAsset.kind !== 'prop'))) return null;
-  if (item.kind === 'character' && (!validId(item.sourceId) || !sanitizeDraft(item.characterSnapshot, getAsset))) return null;
+  const characterSnapshot = item.kind === 'character' && validId(item.sourceId)
+    ? sanitizeDraft(item.characterSnapshot, getAsset, warnings)
+    : null;
+  if (item.kind === 'character' && (!validId(item.sourceId) || !characterSnapshot)) return null;
   if (!Number.isFinite(item.x) || !Number.isFinite(item.y)) return null;
-  const characterSnapshot = item.kind === 'character' ? sanitizeDraft(item.characterSnapshot, getAsset) : null;
   const isBubble = item.kind === 'bubble';
   const text = isBubble ? (normalizeDisplayName(item.text, LIMITS.MAX_BUBBLE_TEXT_LENGTH) || DEFAULT_BUBBLE_TEXT) : undefined;
   const bubbleStyle = isBubble ? (isBubbleStyle(item.bubbleStyle) ? item.bubbleStyle : DEFAULT_BUBBLE_STYLE) : undefined;
@@ -456,10 +511,57 @@ function migrateEnvelope(value, warnings) {
   }
   if (value.schemaVersion === 2) {
     warnings.push('Saved data was upgraded to custom-assets schema.');
-    return {
+    value = {
       ...value,
       schemaVersion: 3,
       customAssets: Array.isArray(value.customAssets) ? value.customAssets : []
+    };
+  }
+  if (value.schemaVersion === 3) {
+    warnings.push('Saved data was upgraded to modular character face schema.');
+    const presets = Array.isArray(value.presets)
+      ? value.presets.map((preset) => ({
+          ...preset,
+          face: preset.face ? { ...preset.face } : createDefaultFace(preset.baseDollId)
+        }))
+      : [];
+
+    const migrateSceneEntities = (entities) => {
+      if (!Array.isArray(entities)) return [];
+      return entities.map((entity) => {
+        if (entity.kind === 'character' && entity.characterSnapshot) {
+          return {
+            ...entity,
+            characterSnapshot: {
+              ...entity.characterSnapshot,
+              face: entity.characterSnapshot.face ? { ...entity.characterSnapshot.face } : createDefaultFace(entity.characterSnapshot.baseDollId)
+            }
+          };
+        }
+        return entity;
+      });
+    };
+
+    const scenes = Array.isArray(value.scenes)
+      ? value.scenes.map((scene) => ({
+          ...scene,
+          entities: migrateSceneEntities(scene.entities)
+        }))
+      : [];
+
+    const currentScene = value.currentScene
+      ? {
+          ...value.currentScene,
+          entities: migrateSceneEntities(value.currentScene.entities)
+        }
+      : null;
+
+    return {
+      ...value,
+      schemaVersion: 4,
+      presets,
+      scenes,
+      currentScene
     };
   }
   return value;

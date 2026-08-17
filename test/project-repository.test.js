@@ -18,7 +18,7 @@ test('project repository load handles null and unavailable storage', () => {
   const nullResult = loadProject(null, getAsset);
   assert.equal(nullResult.available, false);
   assert.equal(nullResult.recovered, false);
-  assert.equal(nullResult.envelope.schemaVersion, 3);
+  assert.equal(nullResult.envelope.schemaVersion, 4);
 
   const throwingStorage = {
     getItem: () => { throw new Error('SecurityError: access denied'); }
@@ -44,6 +44,17 @@ test('project repository load cleans up leftover .tmp writes and quarantines cor
   const quarantineKeys = [...storage.data.keys()].filter((k) => k.startsWith('paperDollStudio.quarantine.'));
   assert.equal(quarantineKeys.length, 1);
   assert.equal(storage.data.get(quarantineKeys[0]), corruptedRaw);
+});
+
+test('project repository treats a valid v3 to v4 migration as recovered', () => {
+  const legacy = { ...createDefaultEnvelope(), schemaVersion: 3 };
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+
+  const result = loadProject(storage, getAsset);
+  assert.equal(result.available, true);
+  assert.equal(result.recovered, true);
+  assert.equal(result.envelope.schemaVersion, 4);
+  assert.equal([...storage.data.keys()].some((key) => key.startsWith('paperDollStudio.quarantine.')), false);
 });
 
 test('project repository tracks monotonic revisions and detects cross-tab conflicts', () => {

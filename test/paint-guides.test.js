@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getReferenceGuides, guideIsInBounds, REFERENCE_MODELS } from '../js/features/paint/paint-guides.js';
 
-const SLOTS = ['top', 'bottom', 'dress', 'shoes', 'accessory'];
+const SLOTS = ['top', 'bottom', 'dress', 'shoes', 'hair', 'accessory'];
 
 test('every supported wearable slot and reference model has bounded declared guides', () => {
   for (const slot of SLOTS) {

@@ -69,6 +69,14 @@
       "concept": "weekend garden",
       "dlc": "core",
       "added_date": "2026-08-16"
+    },
+    {
+      "scope": "assets/characters/face",
+      "method": "project-authored SVG primitives and paths",
+      "creator": "Paper Doll Studio",
+      "concept": "modular face expansion",
+      "dlc": "core",
+      "added_date": "2026-08-17"
     }
   ]
 }

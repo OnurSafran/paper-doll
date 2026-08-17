@@ -183,7 +183,7 @@ Slot guides use the shared `300 × 450` coordinate system:
 | Shoes | left/right foot contours, ankle anchors, and ground baseline |
 | Accessory | head contour, center crown line, ear markers, neckline anchor, and center axis |
 
-Hair guides are not included because custom hair remains deferred. Model-specific guide coordinates must be declared data, not inferred from rendered DOM bounds. The selected reference model may update the live mannequin preview, but it never changes the saved `300 × 450` coordinate contract or custom-asset metadata.
+Hair guides are included for the shipped single-layer custom-hair slot. Model-specific guide coordinates are declared data, not inferred from rendered DOM bounds. The selected reference model may update the live mannequin preview and records the custom asset's fit family, but it never changes the saved `300 × 450` coordinate contract.
 
 All guide content lives under `#paint-guide-layer`, has `pointer-events: none`, and is absent from the artwork canvas, save thumbnail source, draft Blob, canonical PNG, Scene Book render, scene render, project package, and PNG export. Guide controls and preferences may be included in recoverable draft metadata so a crash restores the authoring view, but they do not enter saved custom-asset metadata. Guide toggles must not change artwork digest, dirty state, or paint history.
 
@@ -387,7 +387,7 @@ Keep one dependency-free JSON download. Introduce an outer package format separa
   "format": "paper-doll-project",
   "formatVersion": 1,
   "exportedAt": "2026-08-16T12:00:00.000Z",
-  "state": { "schemaVersion": 3 },
+  "state": { "schemaVersion": 4 },
   "customArtwork": [
     {
       "metadata": { "assetId": "custom_01abc...", "format": "image/png" },
@@ -667,9 +667,9 @@ Exit criteria:
 
 ### Gate 3B — Precision references, non-destructive slot switching, and starting cutouts
 
-Gate 3B is a required corrective gate between the implemented library lifecycle and release QA. It does not add layers, arbitrary imports, custom hair, free transform, or a second editable document.
+Gate 3B is a required corrective gate between the implemented library lifecycle and release QA. It does not add split hair layers, arbitrary imports, free transform, or a second editable document. Single-layer custom hair is covered by Gate 4.
 
-Implementation evidence (2026-08-16): complete. The full suite passes with 237 tests; local browser QA verified slot/history retention, trusted cutout discovery and Add/Undo, three reference models, non-saving guide controls, exact canvas/overlay alignment, no console errors, and zero horizontal overflow at `768 × 1024`. Replace confirmation, stale-load cancellation, draft recovery, and guide-data bounds are covered by automated contracts. Hosted iPad and cross-browser evidence remain Gate 4 work.
+Implementation evidence: complete for the library lifecycle and single-layer custom hair. The automated suite covers slot/history retention, trusted cutout discovery and Add/Undo, six reference models, non-saving guide controls, exact canvas/overlay alignment, stale-load cancellation, draft recovery, and guide-data bounds. Hosted iPad and cross-browser evidence remain release QA work.
 
 #### Batch A — Document metadata without pixel loss
 
@@ -724,7 +724,7 @@ Verify Batch C together:
 
 - Switching wearable slots never clears, resizes, recolors, or mutates artwork pixels and never resets raster Undo/Redo.
 - A stale or failed cutout request cannot modify the current canvas; successful add/replace actions are explicit and undoable.
-- Reference body, selected cutout, and alignment guides are useful across all five supported slots and three base models.
+- Reference body, selected cutout, and alignment guides are useful across all six supported wearable slots and six base models.
 - Toggling or changing any guide produces an identical canonical PNG digest and leaves dirty/history state unchanged.
 - Draft recovery restores artwork pixels, final slot, and authoring-reference preferences without adding reference pixels.
 - Pointer, touch, and keyboard paths pass at desktop and tablet portrait sizes.

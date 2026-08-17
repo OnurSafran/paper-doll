@@ -39,7 +39,7 @@ test('serializeProjectExport formats valid versioned JSON containing full domain
   const parsed = JSON.parse(jsonStr);
   assert.equal(parsed.format, 'paper-doll-project');
   assert.equal(parsed.formatVersion, 1);
-  assert.equal(parsed.state.schemaVersion, 3);
+  assert.equal(parsed.state.schemaVersion, 4);
   assert.equal(parsed.state.presets.length, 1);
   assert.equal(parsed.state.presets[0].name, 'Export Doll');
   assert.equal(parsed.state.scenes.length, 1);
@@ -51,7 +51,7 @@ test('serializeProjectExport formats valid versioned JSON containing full domain
 test('validateImportPayload performs 5-stage validation and summarizes incoming payload', async () => {
   // 1. Valid JSON payload
   const validEnvelope = {
-    schemaVersion: 3,
+    schemaVersion: 4,
     savedAt: new Date().toISOString(),
     settings: { reducedMotion: 'reduce', soundEnabled: true },
     presets: [{
@@ -59,6 +59,13 @@ test('validateImportPayload performs 5-stage validation and summarizes incoming 
       name: 'Imported Doll',
       baseDollId: 'doll_classic_a',
       skinTone: 'peach',
+      face: {
+        eyes: { assetId: 'eyes_classic', irisColor: 'cocoa' },
+        eyebrows: { assetId: 'brows_soft' },
+        nose: { assetId: 'nose_dot' },
+        mouth: { assetId: 'mouth_gentle_smile' },
+        detail: null
+      },
       slots: { hair: null, top: { assetId: 'top_tshirt', color: 'coral' }, bottom: null, dress: null, shoes: null, accessory: null }
     }],
     scenes: [{
@@ -97,7 +104,7 @@ test('validateImportPayload performs 5-stage validation and summarizes incoming 
   const v1Payload = { ...validEnvelope, schemaVersion: 1 };
   const migratedRes = await validateImportPayload(JSON.stringify(v1Payload), getAsset);
   assert.equal(migratedRes.ok, true);
-  assert.equal(migratedRes.envelope.schemaVersion, 3);
+  assert.equal(migratedRes.envelope.schemaVersion, 4);
   assert.ok(migratedRes.warnings.some((w) => w.includes('upgraded')));
 });
 

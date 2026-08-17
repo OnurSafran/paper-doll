@@ -4,16 +4,30 @@ const LOGICAL_HEIGHT = 450;
 export const REFERENCE_MODELS = Object.freeze([
   Object.freeze({ id: 'doll_classic_a', label: 'Classic' }),
   Object.freeze({ id: 'doll_classic_b', label: 'Joy' }),
-  Object.freeze({ id: 'doll_chibi_a', label: 'Chibi' })
+  Object.freeze({ id: 'doll_chibi_a', label: 'Chibi' }),
+  Object.freeze({ id: 'doll_baby_a', label: 'Baby' }),
+  Object.freeze({ id: 'doll_adult_a', label: 'Adult' }),
+  Object.freeze({ id: 'doll_elder_a', label: 'Elder' })
 ]);
 
 const MODEL_TRANSFORMS = Object.freeze({
   doll_classic_a: Object.freeze({ xScale: 1, yScale: 1, xOffset: 0, yOffset: 0 }),
   doll_classic_b: Object.freeze({ xScale: 0.98, yScale: 1, xOffset: 3, yOffset: 0 }),
-  doll_chibi_a: Object.freeze({ xScale: 0.9, yScale: 0.84, xOffset: 15, yOffset: 28 })
+  doll_chibi_a: Object.freeze({ xScale: 0.9, yScale: 0.84, xOffset: 15, yOffset: 28 }),
+  doll_baby_a: Object.freeze({ xScale: 1.05, yScale: 0.95, xOffset: -7.5, yOffset: 8 }),
+  doll_adult_a: Object.freeze({ xScale: 0.96, yScale: 1.02, xOffset: 6, yOffset: -5 }),
+  doll_elder_a: Object.freeze({ xScale: 0.96, yScale: 1.02, xOffset: 6, yOffset: -5 })
 });
 
 const SLOT_GUIDES = Object.freeze({
+  hair: Object.freeze([
+    { type: 'ellipse', label: 'Head contour', cx: 150, cy: 62, rx: 32, ry: 38 },
+    { type: 'line', label: 'Crown', x1: 150, y1: 15, x2: 150, y2: 62 },
+    { type: 'line', label: 'Hairline', x1: 125, y1: 42, x2: 175, y2: 42 },
+    { type: 'point', label: 'Left ear', x: 119, y: 64 },
+    { type: 'point', label: 'Right ear', x: 181, y: 64 },
+    { type: 'point', label: 'Neck', x: 150, y: 92 }
+  ]),
   top: Object.freeze([
     { type: 'line', label: 'Shoulders', x1: 75, y1: 112, x2: 225, y2: 112 },
     { type: 'point', label: 'Neck', x: 150, y: 92 },

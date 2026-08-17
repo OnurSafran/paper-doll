@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_baby_curl">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2" stroke-linejoin="round">
+    <!-- Soft little baby tufts back -->
+    <path class="hair-fill" d="M125 50 C120 40 130 32 140 36 C134 42 130 46 125 50 Z" fill="var(--hair-color, #e29b38)"/>
+    <path class="hair-fill" d="M175 50 C180 40 170 32 160 36 C166 42 170 46 175 50 Z" fill="var(--hair-color, #e29b38)"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.2" stroke-linejoin="round">
+    <!-- Sweet baby swirl curl on top -->
+    <path class="hair-fill" d="M148 35 C142 22 154 16 158 24 C162 32 154 36 148 35 Z" fill="var(--hair-color, #e29b38)"/>
+    <!-- Tiny soft baby sideburns -->
+    <path class="hair-fill" d="M118 60 C116 54 122 50 126 54 C122 58 120 62 118 60 Z" fill="var(--hair-color, #e29b38)"/>
+    <path class="hair-fill" d="M182 60 C184 54 178 50 174 54 C178 58 180 62 182 60 Z" fill="var(--hair-color, #e29b38)"/>
+  </g>
+</svg>

@@ -19,11 +19,14 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 - Custom metadata keeps logical dimensions, pixel dimensions, digest, display bounds, and anchor. Derived thumbnails and object URLs are runtime-only.
 - Project import validates PNG signature, dimensions, byte limit, digest, and browser decode before metadata is committed.
 
-### Doll, hair, and wearables
+### Doll, face, hair, and wearables
 
 - `viewBox="0 0 300 450"`
 - Root `data-asset-id` matches catalog ID.
-- Base requires `#body`; ordinary wearables require `#garment`; hair requires `#hairBack` and `#hairFront` in the current catalog.
+- Base models (6 models across 5 life stages: `doll_classic_a`, `doll_classic_b`, `doll_chibi_a`, `doll_baby_a`, `doll_adult_a`, `doll_elder_a`) require `#body` and `<g id="baked-face">`.
+- Modular face assets (`eyes`, `eyebrows`, `nose`, `mouth`, `detail`) require `#face-feature`.
+- Ordinary wearables require `#garment` and declare `supportedFitFamilies` and `presentationStyles`.
+- Built-in hair requires `#hairBack` and `#hairFront`. Single-layer custom hair renders as transparent PNG at Layer 70.
 - Geometry is authored in doll coordinates; equip selects a slot and never guesses anchors.
 
 ### Backgrounds

@@ -13,8 +13,8 @@ import { t } from '../../core/i18n.js';
 
 export const MAX_HISTORY_STEPS = 20;
 export const MAX_HISTORY_BYTES = 32 * 1024 * 1024; // 32 MB
-export const WEARABLE_PAINT_SLOTS = Object.freeze(['top', 'bottom', 'dress', 'shoes', 'accessory']);
-export const REFERENCE_DOLL_IDS = Object.freeze(['doll_classic_a', 'doll_classic_b', 'doll_chibi_a']);
+export const WEARABLE_PAINT_SLOTS = Object.freeze(['top', 'bottom', 'dress', 'shoes', 'hair', 'accessory']);
+export const REFERENCE_DOLL_IDS = Object.freeze(['doll_classic_a', 'doll_classic_b', 'doll_chibi_a', 'doll_baby_a', 'doll_adult_a', 'doll_elder_a']);
 
 /**
  * Validates a custom artwork name.

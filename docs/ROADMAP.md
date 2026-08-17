@@ -7,17 +7,24 @@ This is the single authority for implementation status, open work, and delivery 
 ## Current snapshot
 
 - Working dependency-free Designer and Play vertical slice
-- 3 base dolls, 45 wearable/hair/accessory assets, 7 backgrounds, and 22 props
-- Dollbox, Scene Book, current-scene autosave/reload, and local schema migration
+- 6 base dolls across 5 life stages (Baby, Child, Teen, Adult, Elder), 19 modular face features, 58 wearable/hair/accessory assets, 7 backgrounds, and 22 props
+- Dollbox, Scene Book, current-scene autosave/reload, and local schema migration (v4 modular face)
 - Pointer/keyboard scene editing, bounded Undo/Redo, and PNG export
 - Seven in-session expressions and strictly local voice puppetry
 - Custom Paint Studio Gates 0–3B complete with IndexedDB storage, portability, mixed renderers, bounded history, My Art lifecycle, non-destructive wearable slot switching, trusted cutout actions, and precision body/alignment overlays
-- 237 automated tests passing
-- 77 cataloged SVG files passing asset validation
+- Character Customization System (Gates 0–5) complete:
+  - Gate 0: Modular layer order, fit families, presentation styles, and domain contracts
+  - Gate 1: 19 modular face SVGs, iris palette, schema v4 migration, resting-face restoration, and full undo/redo
+  - Gate 2: 6 base doll models across 5 life stages, fit-family wardrobe filtering, retention on model switch
+  - Gate 3: Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage hair/garments
+  - Gate 4: Single-layer custom hair architecture with Layer 70 rendering, Paint Studio guides for all 6 models, and portability
+  - Gate 5: 277 automated tests passing, 112 cataloged SVGs validated, complete release evidence and documentation
+- 277 automated tests passing
+- 112 cataloged SVG files passing asset validation
 - Catalog assets carry `added_date`, `creator`, `concept`, `dlc`, and `source` provenance metadata; current content pack is `core`
 - Installable offline PWA shell with Turkish in-app guide
-- Documentation validation passing with 9 canonical documents
-- Gates A–D complete; Gate E asset expansion complete; Custom Paint Gates 0–3 complete; Gate 4 evidence is in progress and the hosted iPad smoke test remains before family release
+- Documentation validation passing with 10 canonical documents
+- Gates A–D complete; Gate E asset expansion complete; Custom Paint Gates 0–3 complete; Character Customization Gates 0–5 complete; hosted iPad smoke test remains before family release
 
 ## Status by capability
 

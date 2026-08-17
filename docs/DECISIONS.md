@@ -86,3 +86,19 @@ Binary custom PNG artwork is stored strictly in client-side IndexedDB (`paperDol
 ### D-029 — Release evidence boundary
 
 Automated tests and source validators prove deterministic contracts, but browser and device journeys remain separate evidence. Gate 4 can close only after the dated quality matrix records the hosted iPad Home Screen offline run, service-worker update check, and export/import across two browsers. A missing target host or device is an explicit release blocker, not a pass by inference.
+
+### D-030 — Modular Facial Feature Foundation, Schema v4, and Dual-Mode Designer
+
+Character facial appearance is decoupled from base doll bodies into 5 independent modular layers: `eyes` (with customizable `irisColor`), `eyebrows`, `nose`, `mouth`, and `detail` (blush, freckles). Existing base dolls isolate their legacy face geometry within `<g id="baked-face">`, which is cleanly suppressed in DOM rendering and SVG export when modular face layers are rendered, guaranteeing 100% visual parity for default presets. Schema v4 introduces automatic backward-compatible migration from v3 envelopes, injecting default doll-matched face features for existing presets and scene character snapshots. The Designer UI provides accessible mode switching between Wardrobe and Face tabs with localized Turkish/English strings, swatch pickers for iris colors, and bounded single-step undo/redo support.
+
+### D-031 — Life-Stage Body Models, Fit-Family Compatibility, and Style Discovery Filters
+
+The base doll catalog expands to 6 stylized models covering 5 distinct life stages: `doll_baby_a` (`baby`), `doll_chibi_a` (`child`), `doll_classic_a`/`doll_classic_b` (`teen`), `doll_adult_a` (`adult`), and `doll_elder_a` (`elder`). Wearables declare explicit `supportedFitFamilies` matching eligible body types. When a player changes models in Designer (`designer/setBaseDoll`), compatible equipped items are retained and incompatible references stay recoverable but render as fit-warning placeholders until the player switches back or removes them. Presentation style tags (`neutral`, `feminine`, `masculine`, `unsorted`) act strictly as non-destructive catalog discovery filters (`#style-filter-nav`), ensuring players are never forced into gendered identity choices.
+
+### D-032 — Fit-Aware Randomization and Expanded Face & Wardrobe Catalog
+
+The Designer randomization algorithm (`designer/shuffle`) enforces strict fit-family compatibility by evaluating the active doll's `fitFamily`. Wearables with incompatible `supportedFitFamilies` are excluded from random selection, ensuring life stages like Baby, Child, Adult, and Elder only receive suitable garments. Randomization also samples harmonious facial features (eyes with randomized iris colors, eyebrows, noses, mouths, and details), producing diverse, appealing characters without generating invalid combinations. The catalog expands with 7 expressive face features and 5 life-stage specific hair and wardrobe assets (total 112 cataloged SVGs).
+
+### D-033 — Single-Layer Custom Hair Architecture and Paint Pipeline
+
+Custom player-drawn hair is structured as a single-layer wearable asset (`slot: 'hair'`) with standard `300 × 450` logical / `600 × 900` backing transparent PNG dimensions, matching the architecture of other wearable slots (`top`, `bottom`, `dress`, `shoes`, `accessory`). Custom hair renders over the character's head and face at Layer 70 (`hairFront`), while Layer 10 (`hairBack`) is skipped for custom raster hair. This avoids dual-canvas cognitive friction, split-layer undo complexity, and multi-blob storage overhead while supporting short cuts, curls, afros, topknots, buns, braids, and hats. Paint Studio provides hairline, crown, ear, and head contour reference guides for all 6 base doll models, with seamless "Save & Wear" workflow in Designer and complete project export/import portability.

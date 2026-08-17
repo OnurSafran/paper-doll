@@ -24,8 +24,10 @@ export function nextSpawnPoint(index) {
 export function findSceneSkinSvg(instanceId) {
   const entity = [...document.querySelectorAll('.scene-entity-positioner')]
     .find((element) => element.dataset.instanceId === instanceId);
-  return entity?.querySelector('[data-slot="skin"] svg')
-    || entity?.querySelector('svg[data-asset-id="doll_classic_a"]');
+  return entity?.querySelector('[data-slot="face-mouth"] svg')
+    || entity?.querySelector('[data-slot="skin"] svg')
+    || entity?.querySelector('svg[data-asset-id="doll_classic_a"]')
+    || entity?.querySelector('svg');
 }
 
 export function createPlayView({

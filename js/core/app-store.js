@@ -1,4 +1,17 @@
-import { equipWearable, clearOutfit, cloneDraft, createStarterDraft, removeSlot, setSlotColor } from '../domain/outfit-rules.js';
+import {
+  clearFaceDetail,
+  clearOutfit,
+  cloneDraft,
+  createStarterDraft,
+  equipWearable,
+  isFaceCompatible,
+  removeSlot,
+  resetFace,
+  setBaseDoll,
+  setFaceFeature,
+  setIrisColor,
+  setSlotColor
+} from '../domain/outfit-rules.js';
 import {
   addEntity,
   alignEntities,
@@ -29,15 +42,18 @@ import { clampCameraX } from './coordinate-space.js';
 import { instantiateSceneTemplate } from '../domain/scene-templates.js';
 import { cloneCustomAsset, clonePreset, cloneScene, createRuntimeState, sanitizeCustomAsset } from './state-schema.js';
 import { createAssetRegistry } from './asset-registry.js';
-import { GARMENT_COLORS, HAIR_COLORS, isColorValue, isPaletteToken, normalizeColorValue } from './palette.js';
+import { assetName, t } from './i18n.js';
+import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, isColorValue, isIrisColor, isPaletteToken, normalizeColorValue } from './palette.js';
 import { normalizeDisplayName, truncateGraphemes } from './text.js';
 import {
   ALIGNMENT_MODES,
   BUBBLE_STYLES,
   CAMERA_CONSTANTS,
+  DEFAULT_BASE_DOLL_ID,
   DEFAULT_BUBBLE_STYLE,
   DEFAULT_BUBBLE_TEXT,
   DEFAULT_EXPRESSION,
+  DEFAULT_IRIS_COLOR,
   DEFAULT_STAGE_WIDTH,
   defaultMakeId,
   defaultNow,
@@ -45,7 +61,9 @@ import {
   isBubbleStyle,
   isCustomAssetId,
   isExpression,
+  isFaceGroup,
   isOutfitSlot,
+  isPresentationStyle,
   isStageWidth,
   isValidId,
   LIMITS,
@@ -338,29 +356,18 @@ function reduce(state, action, context) {
       if (!isOutfitSlot(action.slot) || action.slot === state.designer.selectedSlot) return null;
       return { state: { ...state, designer: { ...state.designer, selectedSlot: action.slot } } };
 
-    case 'designer/equip': { 
+    case 'designer/equip': {
       const asset = context.getAsset(action.assetId);
-      if (asset && asset.custom) {
-        const draft = cloneDraft(state.designer.draft);
-        draft.slots[asset.slot] = { assetId: asset.id, color: 'coral' };
-        if (asset.slot === 'dress') {
-          draft.slots.top = null;
-          draft.slots.bottom = null;
-        } else if (asset.slot === 'top' || asset.slot === 'bottom') {
-          draft.slots.dress = null;
-        }
-        return {
-          state: message(`Equipped ${asset.name}.`, {
-            ...state,
-            designer: { ...state.designer, draft, selectedSlot: asset.slot, dirty: true }
-          })
-        };
-      }
       if (action.color != null && !isColorValue(action.color)) {
         return { result: { ok: false, code: 'INVALID_COLOR' }, state: message('That color could not be used.') };
       }
-      const equipped = equipWearable(state.designer.draft, asset, action.color == null ? undefined : normalizeColorValue(action.color));
-      if (!equipped.changed) return { result: { ok: false, code: 'INVALID_ASSET' }, state: message(equipped.message) };
+      const equipped = equipWearable(state.designer.draft, asset, action.color == null ? undefined : normalizeColorValue(action.color), context.getAsset);
+      if (!equipped.changed) {
+        const errorMessage = equipped.code === 'INCOMPATIBLE_FIT'
+          ? t('designer.incompatibleAsset', { name: asset?.name || t('designer.unknownAsset') })
+          : equipped.message;
+        return { result: { ok: false, code: equipped.code || 'INVALID_ASSET' }, state: message(errorMessage) };
+      }
       return {
         state: message(equipped.message, {
           ...state,
@@ -406,20 +413,6 @@ function reduce(state, action, context) {
       };
     }
 
-    case 'designer/setBaseDoll': {
-      const asset = context.getAsset(action.baseDollId);
-      if (!asset || asset.kind !== 'doll' || action.baseDollId === state.designer.draft.baseDollId) return null;
-      return {
-        state: {
-          ...state,
-          designer: {
-            ...state.designer,
-            draft: { ...cloneDraft(state.designer.draft), baseDollId: action.baseDollId },
-            dirty: true
-          }
-        }
-      };
-    }
 
     case 'designer/setSkin':
       if (!isPaletteToken(action.color) || action.color === state.designer.draft.skinTone) return null;
@@ -449,6 +442,124 @@ function reduce(state, action, context) {
             ...state.designer,
             draft: setSlotColor(state.designer.draft, targetSlot, normalizeColorValue(action.color)),
             dirty: true
+          }
+        }
+      };
+    }
+
+    case 'designer/setActiveTab':
+      if (action.tab !== 'wardrobe' && action.tab !== 'face') return null;
+      return {
+        state: {
+          ...state,
+          designer: { ...state.designer, activeTab: action.tab }
+        }
+      };
+
+    case 'designer/selectFaceGroup':
+      if (!isFaceGroup(action.group) || action.group === state.designer.selectedFaceGroup) return null;
+      return {
+        state: {
+          ...state,
+          designer: { ...state.designer, selectedFaceGroup: action.group }
+        }
+      };
+
+    case 'designer/setFaceFeature': {
+      if (!isFaceGroup(action.group)) return null;
+      const faceAsset = context.getAsset(action.assetId);
+      if (!isFaceCompatible(state.designer.draft, faceAsset, context.getAsset) || faceAsset.faceGroup !== action.group) {
+        return { result: { ok: false, code: 'INVALID_FACE_ASSET' }, state: message(t('designer.invalidFaceAsset')) };
+      }
+      const res = setFaceFeature(state.designer.draft, action.group, action.assetId, context.getAsset);
+      if (!res.changed) return null;
+      const asset = context.getAsset(action.assetId);
+      const featureName = assetName(asset, t('designer.unknownAsset'));
+      return {
+        state: message(t('designer.faceFeatureUpdated', { name: featureName }), {
+          ...state,
+          designer: {
+            ...state.designer,
+            draft: res.draft,
+            selectedFaceGroup: action.group,
+            dirty: true
+          }
+        })
+      };
+    }
+
+    case 'designer/setIrisColor': {
+      if (!isIrisColor(action.color)) return null;
+      const res = setIrisColor(state.designer.draft, action.color);
+      if (!res.changed) return null;
+      return {
+        state: message(t('designer.irisColorUpdated'), {
+          ...state,
+          designer: {
+            ...state.designer,
+            draft: res.draft,
+            dirty: true
+          }
+        })
+      };
+    }
+
+    case 'designer/clearFaceDetail': {
+      const res = clearFaceDetail(state.designer.draft);
+      return {
+        state: message(t('designer.faceDetailCleared'), {
+          ...state,
+          designer: {
+            ...state.designer,
+            draft: res.draft,
+            dirty: true
+          }
+        })
+      };
+    }
+
+    case 'designer/resetFace': {
+      const res = resetFace(state.designer.draft);
+      return {
+        state: message(t('designer.defaultFaceRestored'), {
+          ...state,
+          designer: {
+            ...state.designer,
+            draft: res.draft,
+            dirty: true
+          }
+        })
+      };
+    }
+
+    case 'designer/setBaseDoll': {
+      const res = setBaseDoll(state.designer.draft, action.baseDollId, context.getAsset);
+      if (!res.changed) return null;
+      const dollAsset = context.getAsset(action.baseDollId);
+      const dollName = t(`models.${action.baseDollId}`) || dollAsset?.name || t('designer.unknownAsset');
+      const msg = res.incompatibleSlots.length > 0
+        ? t('designer.baseDollChangedFit', { name: dollName })
+        : t('designer.baseDollChanged', { name: dollName });
+      return {
+        state: message(msg, {
+          ...state,
+          designer: {
+            ...state.designer,
+            draft: res.draft,
+            dirty: true
+          }
+        })
+      };
+    }
+
+    case 'designer/setStyleFilter': {
+      if (!isPresentationStyle(action.style) || action.style === state.designer.selectedStyleFilter) return null;
+      return {
+        state: {
+          ...state,
+          designer: {
+            ...state.designer,
+            selectedStyleFilter: action.style
           }
         }
       };
@@ -1251,21 +1362,53 @@ function reduce(state, action, context) {
 
 function shuffleDraft(current, assets, random) {
   const draft = cloneDraft(current);
-  const bySlot = (slot) => assets.filter((asset) => asset.kind === 'wearable' && asset.slot === slot);
-  const choose = (items) => items[Math.min(items.length - 1, Math.floor(random() * items.length))];
-  const colors = (slot) => slot === 'hair' ? HAIR_COLORS : GARMENT_COLORS;
+  const doll = assets.find((a) => a.id === draft.baseDollId) || assets.find((a) => a.id === DEFAULT_BASE_DOLL_ID);
+  const targetFit = doll?.fitFamily || 'teen';
+
+  const bySlot = (slot) => assets.filter((asset) => {
+    if (asset.kind !== 'wearable' || asset.slot !== slot) return false;
+    return !asset.supportedFitFamilies || asset.supportedFitFamilies.includes(targetFit);
+  });
+  const choose = (items) => (items.length ? items[Math.min(items.length - 1, Math.floor(random() * items.length))] : null);
+  const colors = (slot) => (slot === 'hair' ? HAIR_COLORS : GARMENT_COLORS);
   const equip = (slot) => {
-    const asset = choose(bySlot(slot));
+    const available = bySlot(slot);
+    if (!available.length) return;
+    const asset = choose(available);
     const color = choose(colors(slot));
     if (asset) draft.slots[slot] = { assetId: asset.id, color };
   };
 
   for (const slot of OUTFIT_SLOTS) draft.slots[slot] = null;
   equip('hair');
-  if (random() < 0.42) equip('dress');
-  else { equip('top'); equip('bottom'); }
+  const availableDresses = bySlot('dress');
+  const availableTops = bySlot('top');
+  const availableBottoms = bySlot('bottom');
+
+  if (availableDresses.length && (!availableTops.length || random() < 0.42)) {
+    equip('dress');
+  } else {
+    equip('top');
+    equip('bottom');
+  }
   equip('shoes');
   if (random() < 0.78) equip('accessory');
+
+  // Also randomize face features within catalog
+  const faceByGroup = (group) => assets.filter((asset) => asset.kind === 'face' && asset.faceGroup === group);
+  const randomEyes = choose(faceByGroup('eyes'));
+  const randomIris = choose(IRIS_COLORS);
+  const randomBrows = choose(faceByGroup('eyebrows'));
+  const randomNose = choose(faceByGroup('nose'));
+  const randomMouth = choose(faceByGroup('mouth'));
+  const randomDetail = random() < 0.6 ? choose(faceByGroup('detail')) : null;
+
+  if (randomEyes) draft.face.eyes = { assetId: randomEyes.id, irisColor: randomIris || DEFAULT_IRIS_COLOR };
+  if (randomBrows) draft.face.eyebrows = { assetId: randomBrows.id };
+  if (randomNose) draft.face.nose = { assetId: randomNose.id };
+  if (randomMouth) draft.face.mouth = { assetId: randomMouth.id };
+  draft.face.detail = randomDetail ? { assetId: randomDetail.id } : null;
+
   return draft;
 }
 

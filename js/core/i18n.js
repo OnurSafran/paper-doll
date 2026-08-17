@@ -91,7 +91,40 @@ export const TRANSLATIONS = Object.freeze({
       clearOutfitTitle: 'Kıyafeti çıkar?',
       clearOutfitMessage: 'Saç ve ten rengi kalır. Giysiler, ayakkabılar ve aksesuarlar çıkarılır.',
       resetDollTitle: 'Bu bebek sıfırlansın mı?',
-      resetDollMessage: 'Mevcut değişiklikleriniz başlangıç kıyafetiyle değiştirilecektir.'
+      resetDollMessage: 'Mevcut değişiklikleriniz başlangıç kıyafetiyle değiştirilecektir.',
+      tabWardrobe: '👗 Gardırop',
+      tabFace: '😊 Yüz',
+      faceTitle: 'Yüz Özellikleri',
+      faceCopy: 'Göz, kaş, burun, ağız ve detayları seçin.',
+      faceTabsAria: 'Yüz özellikleri',
+      irisColorLabel: 'Göz Rengi',
+      resetFace: 'Yüzü Sıfırla',
+      clearDetail: 'Detayı Kaldır',
+      equipFaceAria: '{name} seç',
+      styleFilterAria: 'Stil filtresi',
+      styleAll: 'Tümü',
+      styleNeutral: 'Nötr',
+      styleFeminine: 'Kadınsı',
+      styleMasculine: 'Erkeksi',
+      faceFeatureUpdated: '{name} güncellendi.',
+      irisColorUpdated: 'Göz rengi güncellendi.',
+      faceDetailCleared: 'Yüz detayı kaldırıldı.',
+      defaultFaceRestored: 'Varsayılan yüz geri yüklendi.',
+      baseDollChanged: '{name} seçildi.',
+      baseDollChangedFit: '{name} seçildi. Uyumsuz parçalar korunuyor ve model değişene kadar gizleniyor.',
+      incompatibleAsset: '{name} bu modelle uyumlu değil.',
+      invalidFaceAsset: 'Bu yüz özelliği seçime uygun değil.',
+      unknownAsset: 'Parça',
+      editCustomHair: 'Özel saçı düzenle',
+      editCustomHairAria: 'Özel saçı Boya bölümünde kopya olarak düzenle',
+      missingArtwork: 'Eksik sanat'
+    },
+    faceGroups: {
+      eyes: 'Gözler',
+      eyebrows: 'Kaşlar',
+      nose: 'Burun',
+      mouth: 'Ağız',
+      detail: 'Detaylar'
     },
     wardrobeSlots: {
       top: 'Üstler',
@@ -104,7 +137,37 @@ export const TRANSLATIONS = Object.freeze({
     models: {
       doll_classic_a: 'Klasik',
       doll_classic_b: 'Neşeli',
-      doll_chibi_a: 'Chibi'
+      doll_chibi_a: 'Çocuk',
+      doll_baby_a: 'Bebek',
+      doll_adult_a: 'Yetişkin',
+      doll_elder_a: 'Yaşlı'
+    },
+    assets: {
+      eyes_classic: 'Klasik gözler', eyes_round: 'Yuvarlak anime gözleri', eyes_sparkle: 'Parıltılı anime gözleri', eyes_calm: 'Sakin gözler', eyes_curious: 'Meraklı gözler',
+      brows_soft: 'Yumuşak kaşlar', brows_arched: 'Kavisli kaşlar', brows_bold: 'Belirgin kaşlar', brows_expressive: 'İfadeli kaşlar',
+      nose_dot: 'Nokta burun', nose_button: 'Düğme burun', nose_soft_curve: 'Yumuşak kıvrımlı burun',
+      mouth_gentle_smile: 'Nazik gülümseme', mouth_open_smile: 'Açık gülümseme', mouth_neutral: 'Nötr ağız', mouth_playful: 'Oyuncu gülümseme', mouth_smirk: 'Hafif sırıtış',
+      detail_blush: 'Tatlı allık', detail_freckles: 'Sevimli çiller',
+      top_tshirt: 'Denizci çizgili tişört', top_blouse: 'Fırfırlı bluz', top_hoodie: 'Rahat kapüşonlu', top_cardigan: 'Örgü hırka', top_crop_jacket: 'Kot ceket', top_sweater: 'Bol kazak', top_sailor: 'Denizci okul bluzu', top_raincoat: 'Güneşli yağmurluk', top_vest: 'Cepli yelek', top_cardigan_classic: 'Klasik hırka', top_coat_adult: 'Klasik kesim kaban',
+      bottom_jeans: 'Yüksek belli kot', bottom_skirt: 'Tenis eteği', bottom_shorts: 'Pileli şort', bottom_overalls: 'Salopet', bottom_pleated_skirt: 'Ekose pileli etek', bottom_culottes: 'Bahçıvan pantolonu', bottom_cargo: 'Cepli kargo pantolon', bottom_trousers_classic: 'Klasik pantolon',
+      dress_sundress: 'Yazlık elbise', dress_party: 'Katlı parti elbisesi', dress_pinafore: 'Önlük elbise', dress_ballgown: 'Prenses balo elbisesi', dress_overall: 'Kapitone salopet elbise', dress_romper_baby: 'Bebek tulumu',
+      shoes_sneakers: 'Retro spor ayakkabı', shoes_sandals: 'Mary Jane ayakkabı', shoes_boots: 'Bağcıklı bot', shoes_loafers: 'Klasik makosen', shoes_ballet: 'Balerin ayakkabısı', shoes_rainboots: 'Neşeli yağmur çizmesi', shoes_booties_baby: 'Yumuşak patik', shoes_oxfords_classic: 'Klasik oksford',
+      hair_short: 'Şık küt saç', hair_long: 'Uzun dalgalar', hair_ponytail: 'Yüksek at kuyruğu', hair_twintails: 'Neşeli çift kuyruk', hair_curly: 'Gür bukleler', hair_braids: 'Taç örgüler', hair_bun: 'Topuz', hair_wavy_bob: 'Dalgalı küt saç', hair_baby_curl: 'Bebek buklesi', hair_silver_waves: 'Gümüş dalgalar', hair_short_slick: 'Kısa geriye taranmış saç',
+      accessory_hat: 'Güneş şapkası', accessory_glasses: 'Kedi gözü gözlük', accessory_bow: 'İpek saç fiyonk', accessory_beret: 'Sanatçı beresi', accessory_crown: 'Altın taç', accessory_headphones: 'Retro kulaklık', accessory_cat_ears: 'Kedi kulaklı taç', accessory_ribbon: 'Puantiyeli kurdele', accessory_hairclip: 'Yıldızlı toka', accessory_flower: 'Papatya saç çiçeği', accessory_bib_baby: 'Bebek önlüğü', accessory_pacifier_baby: 'Bebek emziği', accessory_shawl_elder: 'Sıcak omuz şalı', accessory_spectacles_elder: 'Okuma gözlüğü'
+    },
+    lifeStages: {
+      baby: 'Bebek',
+      child: 'Çocuk',
+      teen: 'Genç',
+      adult: 'Yetişkin',
+      elder: 'Yaşlı'
+    },
+    styleFilters: {
+      all: 'Tümü',
+      neutral: 'Nötr',
+      feminine: 'Kadınsı',
+      masculine: 'Erkeksi',
+      unsorted: 'Diğer'
     },
     colors: {
       cream: 'Vanilya krem',
@@ -692,7 +755,40 @@ export const TRANSLATIONS = Object.freeze({
       clearOutfitTitle: 'Take off this outfit?',
       clearOutfitMessage: 'Hair and skin tone will stay. Clothing, shoes, and accessories will be removed.',
       resetDollTitle: 'Reset this doll?',
-      resetDollMessage: 'Your current changes will be replaced by the starter outfit.'
+      resetDollMessage: 'Your current changes will be replaced by the starter outfit.',
+      tabWardrobe: '👗 Wardrobe',
+      tabFace: '😊 Face',
+      faceTitle: 'Facial Features',
+      faceCopy: 'Choose eyes, eyebrows, nose, mouth, and details.',
+      faceTabsAria: 'Facial features',
+      irisColorLabel: 'Iris Color',
+      resetFace: 'Reset Face',
+      clearDetail: 'Clear Detail',
+      equipFaceAria: 'Choose {name}',
+      styleFilterAria: 'Style filter',
+      styleAll: 'All',
+      styleNeutral: 'Neutral',
+      styleFeminine: 'Feminine',
+      styleMasculine: 'Masculine',
+      faceFeatureUpdated: '{name} updated.',
+      irisColorUpdated: 'Iris color updated.',
+      faceDetailCleared: 'Face detail cleared.',
+      defaultFaceRestored: 'Default face restored.',
+      baseDollChanged: '{name} selected.',
+      baseDollChangedFit: '{name} selected. Incompatible items are preserved and hidden until the model fits them.',
+      incompatibleAsset: '{name} does not fit this model.',
+      invalidFaceAsset: 'That face feature is not valid for this selection.',
+      unknownAsset: 'Item',
+      editCustomHair: 'Edit custom hair',
+      editCustomHairAria: 'Edit custom hair as a copy in Paint Studio',
+      missingArtwork: 'Missing artwork'
+    },
+    faceGroups: {
+      eyes: 'Eyes',
+      eyebrows: 'Eyebrows',
+      nose: 'Nose',
+      mouth: 'Mouth',
+      detail: 'Details'
     },
     wardrobeSlots: {
       top: 'Tops',
@@ -705,7 +801,37 @@ export const TRANSLATIONS = Object.freeze({
     models: {
       doll_classic_a: 'Classic',
       doll_classic_b: 'Joy',
-      doll_chibi_a: 'Chibi'
+      doll_chibi_a: 'Child',
+      doll_baby_a: 'Baby',
+      doll_adult_a: 'Adult',
+      doll_elder_a: 'Elder'
+    },
+    assets: {
+      eyes_classic: 'Classic eyes', eyes_round: 'Round anime eyes', eyes_sparkle: 'Sparkle anime eyes', eyes_calm: 'Calm eyes', eyes_curious: 'Curious eyes',
+      brows_soft: 'Soft eyebrows', brows_arched: 'Arched eyebrows', brows_bold: 'Bold eyebrows', brows_expressive: 'Expressive eyebrows',
+      nose_dot: 'Dot nose', nose_button: 'Button nose', nose_soft_curve: 'Soft curve nose',
+      mouth_gentle_smile: 'Gentle smile', mouth_open_smile: 'Open smile', mouth_neutral: 'Neutral mouth', mouth_playful: 'Playful smile', mouth_smirk: 'Subtle smirk',
+      detail_blush: 'Sweet blush', detail_freckles: 'Cute freckles',
+      top_tshirt: 'Sailor stripe tee', top_blouse: 'Ruffle blouse', top_hoodie: 'Cozy hoodie', top_cardigan: 'Knit cardigan', top_crop_jacket: 'Denim jacket', top_sweater: 'Oversized sweater', top_sailor: 'Sailor school blouse', top_raincoat: 'Sunny raincoat', top_vest: 'Utility vest', top_cardigan_classic: 'Classic cardigan', top_coat_adult: 'Tailored coat',
+      bottom_jeans: 'High-waist jeans', bottom_skirt: 'Tennis skirt', bottom_shorts: 'Pleated shorts', bottom_overalls: 'Dungaree overalls', bottom_pleated_skirt: 'Plaid pleated skirt', bottom_culottes: 'Garden culottes', bottom_cargo: 'Pocket cargo pants', bottom_trousers_classic: 'Classic trousers',
+      dress_sundress: 'Sundress', dress_party: 'Tiered party dress', dress_pinafore: 'Pinafore apron dress', dress_ballgown: 'Princess ballgown', dress_overall: 'Patchwork overall dress', dress_romper_baby: 'Baby romper',
+      shoes_sneakers: 'Retro sneakers', shoes_sandals: 'Mary Jane flats', shoes_boots: 'Lace-up ankle boots', shoes_loafers: 'Preppy loafers', shoes_ballet: 'Ballet ribbon flats', shoes_rainboots: 'Sunny rain boots', shoes_booties_baby: 'Soft booties', shoes_oxfords_classic: 'Classic oxfords',
+      hair_short: 'Chic bob', hair_long: 'Long waves', hair_ponytail: 'High ponytail', hair_twintails: 'Bouncy twintails', hair_curly: 'Voluminous curls', hair_braids: 'Crown braids', hair_bun: 'Top knot bun', hair_wavy_bob: 'Wavy bob', hair_baby_curl: 'Baby curl', hair_silver_waves: 'Silver waves', hair_short_slick: 'Short slick',
+      accessory_hat: 'Sun hat', accessory_glasses: 'Cat-eye glasses', accessory_bow: 'Silk hair bow', accessory_beret: 'Artist wool beret', accessory_crown: 'Golden tiara', accessory_headphones: 'Retro headphones', accessory_cat_ears: 'Cat ear headband', accessory_ribbon: 'Polka-dot ribbon', accessory_hairclip: 'Star hair clip', accessory_flower: 'Daisy hair flower', accessory_bib_baby: 'Baby bib', accessory_pacifier_baby: 'Baby pacifier', accessory_shawl_elder: 'Warm wrap shawl', accessory_spectacles_elder: 'Reading spectacles'
+    },
+    lifeStages: {
+      baby: 'Baby',
+      child: 'Child',
+      teen: 'Teen',
+      adult: 'Adult',
+      elder: 'Elder'
+    },
+    styleFilters: {
+      all: 'All',
+      neutral: 'Neutral',
+      feminine: 'Feminine',
+      masculine: 'Masculine',
+      unsorted: 'Unsorted'
     },
     colors: {
       cream: 'Vanilla cream',
@@ -1282,6 +1408,14 @@ export function t(keyPath, params = {}) {
   return value;
 }
 
+export function assetName(asset, fallback = '') {
+  const id = typeof asset === 'string' ? asset : asset?.id;
+  const defaultName = typeof asset === 'string' ? fallback : (asset?.name || fallback);
+  if (!id) return defaultName;
+  const translated = t(`assets.${id}`);
+  return translated === `assets.${id}` ? defaultName : translated;
+}
+
 /**
  * Updates all DOM nodes having data-i18n attributes
  */
@@ -1323,5 +1457,3 @@ export function updateDomTranslations(root = typeof document !== 'undefined' ? d
     if (key) el.setAttribute('content', t(key));
   });
 }
-
-

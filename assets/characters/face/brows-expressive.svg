@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="brows_expressive">
+  <g id="face-feature" stroke="#2d261e" stroke-width="2.2" stroke-linecap="round" fill="none">
+    <!-- Left Expressive Curved Brow -->
+    <path d="M129 55 C132 50 137 49 143 51"/>
+    <!-- Right Expressive Curved Brow -->
+    <path d="M171 55 C168 50 163 49 157 51"/>
+  </g>
+</svg>

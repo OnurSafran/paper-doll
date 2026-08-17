@@ -72,7 +72,7 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
         const dollSvg = await createExportDollSvg(
           entity.characterSnapshot || {},
           entity.expression || DEFAULT_EXPRESSION,
-          { loadAssetSvg: loadSvg, customArtRepo }
+          { loadAssetSvg: loadSvg, customArtRepo, getAsset: getAssetFn }
         );
         const dollG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const scaleX = CHARACTER_DIMENSIONS.BASE_WIDTH / 300;

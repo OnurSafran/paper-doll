@@ -349,6 +349,7 @@
 }
 
 .model-picker-btn {
+  min-height: 44px;
   padding: 0.35rem 0.6rem;
   font-size: 0.78rem;
   font-weight: 600;
@@ -394,8 +395,8 @@
 }
 
 .swatch-list.compact .swatch {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
 }
 
 .swatch {
@@ -559,4 +560,79 @@ input:focus, select:focus, textarea:focus {
 
 .mini-actions button:hover {
   background: var(--paper-warm);
+}
+
+/* Designer Mode Navigation & Face Customization */
+.designer-mode-tabs {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.15rem;
+}
+
+.designer-mode-tabs .mode-tab {
+  flex: 1;
+  text-align: center;
+  font-size: 0.86rem;
+  border-radius: var(--radius-sm);
+  background: var(--paper-warm);
+}
+
+.designer-mode-tabs .mode-tab.is-active,
+.designer-mode-tabs .mode-tab[aria-selected="true"] {
+  color: white;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.iris-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 0.65rem;
+  margin-bottom: 0.65rem;
+  border-radius: var(--radius-sm);
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+}
+
+.iris-picker-container strong {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Style Filter Pills */
+.style-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+  padding: 0.2rem 0;
+}
+
+.style-pill {
+  min-height: 44px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper-card);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.style-pill:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--paper-warm);
+}
+
+.style-pill.is-active,
+.style-pill[aria-checked="true"] {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+  box-shadow: 0 2px 5px rgba(46, 38, 31, 0.2);
 }

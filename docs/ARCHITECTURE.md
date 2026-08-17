@@ -59,15 +59,18 @@ js/core/state-schema.js           validation and migration
 
 ```javascript
 {
-  schemaVersion: 2,
-  settings: {},
-  designer: { draft: {}, selectedSlot: 'top', editingPresetId: null, dirty: false },
+  schemaVersion: 4,
+  revision: 1,
+  settings: { reducedMotion: 'system', soundEnabled: false },
+  customAssets: [],
+  designer: { draft: { baseDollId: 'doll_classic_a', skinTone: 'peach', face: { eyes: { assetId: 'eyes_classic', irisColor: 'cocoa' }, eyebrows: { assetId: 'brows_soft' }, nose: { assetId: 'nose_dot' }, mouth: { assetId: 'mouth_gentle_smile' }, detail: null }, slots: {} }, selectedSlot: 'top', editingPresetId: null, dirty: false },
   presets: [],
   scenes: [],
   currentScene: {},
   ui: {
     mode: 'designer',
     selectedEntityId: null,
+    selectedEntityIds: [],
     activeSceneLibraryId: null,
     storageStatus: 'saved',
     voicePuppetryActive: false
@@ -75,7 +78,22 @@ js/core/state-schema.js           validation and migration
 }
 ```
 
-Persist `settings`, `presets`, `scenes`, and `currentScene`. Do not persist UI selection, voice-active state, drag previews, render tokens, object URLs, audio frames, or history stacks.
+Persist `settings`, `customAssets`, `presets`, `scenes`, and `currentScene`. Do not persist UI selection, voice-active state, drag previews, render tokens, object URLs, audio frames, or history stacks.
+
+### Layer Stacking Order
+- 10: `hairBack` (built-in SVG back hair)
+- 20: `skin` (doll body base model; `#baked-face` hidden when modular face exists)
+- 22: `face-eyes` (with customizable `--iris-color`)
+- 24: `face-eyebrows`
+- 25: `face-detail` (blush, freckles)
+- 26: `face-nose`
+- 28: `face-mouth` (with expression support)
+- 30: `bottom`
+- 35: `shoes`
+- 40: `top`
+- 45: `dress`
+- 70: `hairFront` (built-in SVG front hair and custom raster hair)
+- 80: `accessory`
 
 ### Command contract
 

@@ -38,25 +38,27 @@
     <circle class="skin-fill" cx="182" cy="64" r="5" fill="var(--skin-color, #fcd7b6)"/>
 
     <!-- Face Details -->
-    <!-- Sweet Pink Anime Blush -->
-    <ellipse cx="132" cy="68" rx="7" ry="4" fill="#ffb4a2" opacity="0.7" stroke="none"/>
-    <ellipse cx="168" cy="68" rx="7" ry="4" fill="#ffb4a2" opacity="0.7" stroke="none"/>
-    
-    <!-- Big Sparkling Anime Eyes with Multiple Highlights -->
-    <!-- Left Eye -->
-    <ellipse cx="135" cy="59" rx="4.5" ry="6" fill="#2d261e" stroke="none"/>
-    <circle cx="134" cy="56.5" r="2" fill="#ffffff" stroke="none"/>
-    <circle cx="137" cy="61.5" r="1.2" fill="#ffffff" stroke="none"/>
-    <path d="M130 52 C134 50 138 50 142 52" fill="none" stroke="#2d261e" stroke-width="2"/>
-    
-    <!-- Right Eye -->
-    <ellipse cx="165" cy="59" rx="4.5" ry="6" fill="#2d261e" stroke="none"/>
-    <circle cx="164" cy="56.5" r="2" fill="#ffffff" stroke="none"/>
-    <circle cx="167" cy="61.5" r="1.2" fill="#ffffff" stroke="none"/>
-    <path d="M158 52 C162 50 166 50 170 52" fill="none" stroke="#2d261e" stroke-width="2"/>
+    <g id="baked-face">
+      <!-- Sweet Pink Anime Blush -->
+      <ellipse cx="132" cy="68" rx="7" ry="4" fill="#ffb4a2" opacity="0.7" stroke="none"/>
+      <ellipse cx="168" cy="68" rx="7" ry="4" fill="#ffb4a2" opacity="0.7" stroke="none"/>
 
-    <!-- Cute Button Nose & Smile -->
-    <circle cx="150" cy="66" r="1" fill="#2d261e" stroke="none"/>
-    <path id="doll-mouth-default" d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+      <!-- Big Sparkling Anime Eyes with Multiple Highlights -->
+      <!-- Left Eye -->
+      <ellipse cx="135" cy="59" rx="4.5" ry="6" fill="#2d261e" stroke="none"/>
+      <circle cx="134" cy="56.5" r="2" fill="#ffffff" stroke="none"/>
+      <circle cx="137" cy="61.5" r="1.2" fill="#ffffff" stroke="none"/>
+      <path d="M130 52 C134 50 138 50 142 52" fill="none" stroke="#2d261e" stroke-width="2"/>
+
+      <!-- Right Eye -->
+      <ellipse cx="165" cy="59" rx="4.5" ry="6" fill="#2d261e" stroke="none"/>
+      <circle cx="164" cy="56.5" r="2" fill="#ffffff" stroke="none"/>
+      <circle cx="167" cy="61.5" r="1.2" fill="#ffffff" stroke="none"/>
+      <path d="M158 52 C162 50 166 50 170 52" fill="none" stroke="#2d261e" stroke-width="2"/>
+
+      <!-- Cute Button Nose & Smile -->
+      <circle cx="150" cy="66" r="1" fill="#2d261e" stroke="none"/>
+      <path id="doll-mouth-default" d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+    </g>
   </g>
 </svg>

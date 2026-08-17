@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="eyes_curious">
+  <g id="face-feature">
+    <!-- Left Eye White & Iris -->
+    <ellipse cx="136" cy="60" rx="5" ry="6.5" fill="#ffffff" stroke="#2d261e" stroke-width="2"/>
+    <circle cx="136" cy="60" r="3.2" fill="var(--iris-color, #2d261e)"/>
+    <circle cx="135" cy="58.5" r="1.4" fill="#ffffff"/>
+    <circle cx="137.5" cy="61.5" r="0.8" fill="#ffffff"/>
+    <!-- Right Eye White & Iris -->
+    <ellipse cx="164" cy="60" rx="5" ry="6.5" fill="#ffffff" stroke="#2d261e" stroke-width="2"/>
+    <circle cx="164" cy="60" r="3.2" fill="var(--iris-color, #2d261e)"/>
+    <circle cx="163" cy="58.5" r="1.4" fill="#ffffff"/>
+    <circle cx="165.5" cy="61.5" r="0.8" fill="#ffffff"/>
+  </g>
+</svg>

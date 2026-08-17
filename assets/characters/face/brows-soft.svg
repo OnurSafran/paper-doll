@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="brows_soft">
+  <g id="face-feature">
+    <!-- Left Brow -->
+    <path d="M131 54 C134 52 139 52 142 54" fill="none" stroke="#2d261e" stroke-width="1.8" stroke-linecap="round"/>
+    
+    <!-- Right Brow -->
+    <path d="M158 54 C161 52 166 52 169 54" fill="none" stroke="#2d261e" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+</svg>

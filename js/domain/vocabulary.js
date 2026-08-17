@@ -56,11 +56,48 @@ export function isBubbleStyle(value) {
   return typeof value === 'string' && BUBBLE_STYLES.includes(value);
 }
 
+export const FACE_GROUPS = Object.freeze([
+  'eyes',
+  'eyebrows',
+  'nose',
+  'mouth',
+  'detail'
+]);
+
+export function isFaceGroup(value) {
+  return typeof value === 'string' && FACE_GROUPS.includes(value);
+}
+
+export const FIT_FAMILIES = Object.freeze([
+  'baby',
+  'child',
+  'teen',
+  'adult',
+  'elder'
+]);
+
+export function isFitFamily(value) {
+  return typeof value === 'string' && FIT_FAMILIES.includes(value);
+}
+
+export const PRESENTATION_STYLES = Object.freeze([
+  'all',
+  'neutral',
+  'feminine',
+  'masculine',
+  'unsorted'
+]);
+
+export function isPresentationStyle(value) {
+  return typeof value === 'string' && PRESENTATION_STYLES.includes(value);
+}
+
 export const ASSET_KINDS = Object.freeze([
   'doll',
   'wearable',
   'prop',
-  'background'
+  'background',
+  'face'
 ]);
 
 export function isAssetKind(value) {
@@ -202,3 +239,4 @@ export const DEFAULT_BACKGROUND_ID = 'bg_bedroom';
 export const DEFAULT_BASE_DOLL_ID = 'doll_classic_a';
 export const DEFAULT_SKIN_TONE = 'peach';
 export const DEFAULT_GARMENT_COLOR = 'coral';
+export const DEFAULT_IRIS_COLOR = 'cocoa';

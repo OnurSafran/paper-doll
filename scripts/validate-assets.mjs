@@ -73,9 +73,10 @@ const inventory = {
   doll: ASSETS.filter((asset) => asset.kind === 'doll').length,
   wearable: ASSETS.filter((asset) => asset.kind === 'wearable').length,
   background: ASSETS.filter((asset) => asset.kind === 'background').length,
-  prop: ASSETS.filter((asset) => asset.kind === 'prop').length
+  prop: ASSETS.filter((asset) => asset.kind === 'prop').length,
+  face: ASSETS.filter((asset) => asset.kind === 'face').length
 };
-const expected = { doll: 3, wearable: 45, background: 7, prop: 22 };
+const expected = { doll: 6, wearable: 58, background: 7, prop: 22, face: 19 };
 for (const [kind, count] of Object.entries(expected)) {
   if (inventory[kind] !== count) failures.push(`catalog: expected ${count} ${kind} assets, found ${inventory[kind]}`);
 }

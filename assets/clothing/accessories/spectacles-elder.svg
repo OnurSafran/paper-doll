@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_spectacles_elder">
+  <g id="garment" stroke="#2d261e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="none">
+    <!-- Classic Round Reading Spectacles -->
+    <circle class="tint-primary" cx="136" cy="61" r="9" fill="rgba(255, 255, 255, 0.4)" stroke="var(--asset-color-primary, #b08968)" stroke-width="2.5"/>
+    <circle class="tint-primary" cx="164" cy="61" r="9" fill="rgba(255, 255, 255, 0.4)" stroke="var(--asset-color-primary, #b08968)" stroke-width="2.5"/>
+    <!-- Bridge -->
+    <path d="M145 61 C150 58 150 58 155 61" fill="none" stroke="var(--asset-color-primary, #b08968)" stroke-width="2.5"/>
+    <!-- Glass Glint -->
+    <line x1="132" y1="58" x2="135" y2="55" stroke="#ffffff" stroke-width="1.5"/>
+    <line x1="160" y1="58" x2="163" y2="55" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+</svg>

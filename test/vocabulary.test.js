@@ -11,13 +11,19 @@ import {
   DEFAULT_SKIN_TONE,
   ENTITY_KINDS,
   EXPRESSIONS,
+  FACE_GROUPS,
+  FIT_FAMILIES,
   isAssetKind,
   isEntityKind,
   isExpression,
+  isFaceGroup,
+  isFitFamily,
   isOutfitSlot,
+  isPresentationStyle,
   isReducedMotionOption,
   LIMITS,
   OUTFIT_SLOTS,
+  PRESENTATION_STYLES,
   REDUCED_MOTION_OPTIONS
 } from '../js/domain/vocabulary.js';
 
@@ -55,13 +61,32 @@ test('domain vocabulary defines entity kinds and asset kinds', () => {
   assert.equal(isEntityKind('bubble'), true);
   assert.equal(isEntityKind('background'), false);
 
-  assert.deepEqual([...ASSET_KINDS], ['doll', 'wearable', 'prop', 'background']);
+  assert.deepEqual([...ASSET_KINDS], ['doll', 'wearable', 'prop', 'background', 'face']);
   assert.ok(Object.isFrozen(ASSET_KINDS));
   assert.equal(isAssetKind('doll'), true);
   assert.equal(isAssetKind('wearable'), true);
   assert.equal(isAssetKind('prop'), true);
   assert.equal(isAssetKind('background'), true);
+  assert.equal(isAssetKind('face'), true);
   assert.equal(isAssetKind('sound'), false);
+});
+
+test('domain vocabulary defines face groups, fit families, and presentation styles', () => {
+  assert.deepEqual([...FACE_GROUPS], ['eyes', 'eyebrows', 'nose', 'mouth', 'detail']);
+  assert.ok(Object.isFrozen(FACE_GROUPS));
+  assert.equal(isFaceGroup('eyes'), true);
+  assert.equal(isFaceGroup('detail'), true);
+  assert.equal(isFaceGroup('hat'), false);
+
+  assert.deepEqual([...FIT_FAMILIES], ['baby', 'child', 'teen', 'adult', 'elder']);
+  assert.ok(Object.isFrozen(FIT_FAMILIES));
+  assert.equal(isFitFamily('teen'), true);
+  assert.equal(isFitFamily('giant'), false);
+
+  assert.deepEqual([...PRESENTATION_STYLES], ['all', 'neutral', 'feminine', 'masculine', 'unsorted']);
+  assert.ok(Object.isFrozen(PRESENTATION_STYLES));
+  assert.equal(isPresentationStyle('neutral'), true);
+  assert.equal(isPresentationStyle('vintage'), false);
 });
 
 test('domain vocabulary defines reduced motion options and defaults', () => {

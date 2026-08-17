@@ -38,26 +38,28 @@
     <circle class="skin-fill" cx="181" cy="64" r="5" fill="var(--skin-color, #fcd7b6)"/>
 
     <!-- Face Details -->
-    <!-- Sweet Coral Blush -->
-    <ellipse cx="134" cy="69" rx="6.5" ry="4" fill="#f28482" opacity="0.6" stroke="none"/>
-    <ellipse cx="166" cy="69" rx="6.5" ry="4" fill="#f28482" opacity="0.6" stroke="none"/>
-    
-    <!-- Left Eye: Cheerful Wink -->
-    <path d="M130 61 Q136 55 142 61" fill="none" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round"/>
-    <path d="M131 54 C134 52 139 52 142 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
-    
-    <!-- Right Eye: Big Sparkle Eye -->
-    <ellipse cx="164" cy="60" rx="3.8" ry="5.2" fill="#2d261e" stroke="none"/>
-    <circle cx="163" cy="58" r="1.6" fill="#ffffff" stroke="none"/>
-    <circle cx="165" cy="62" r="0.8" fill="#ffffff" stroke="none"/>
-    <path d="M158 54 C161 52 166 52 169 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+    <g id="baked-face">
+      <!-- Sweet Coral Blush -->
+      <ellipse cx="134" cy="69" rx="6.5" ry="4" fill="#f28482" opacity="0.6" stroke="none"/>
+      <ellipse cx="166" cy="69" rx="6.5" ry="4" fill="#f28482" opacity="0.6" stroke="none"/>
 
-    <!-- Star Freckle Accent -->
-    <circle cx="134" cy="70" r="0.9" fill="#e76f51" stroke="none"/>
-    <circle cx="166" cy="70" r="0.9" fill="#e76f51" stroke="none"/>
+      <!-- Left Eye: Cheerful Wink -->
+      <path d="M130 61 Q136 55 142 61" fill="none" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M131 54 C134 52 139 52 142 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
 
-    <!-- Tiny Nose & Default Smile -->
-    <circle cx="150" cy="66" r="1" fill="#2d261e" stroke="none"/>
-    <path id="doll-mouth-default" d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+      <!-- Right Eye: Big Sparkle Eye -->
+      <ellipse cx="164" cy="60" rx="3.8" ry="5.2" fill="#2d261e" stroke="none"/>
+      <circle cx="163" cy="58" r="1.6" fill="#ffffff" stroke="none"/>
+      <circle cx="165" cy="62" r="0.8" fill="#ffffff" stroke="none"/>
+      <path d="M158 54 C161 52 166 52 169 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+
+      <!-- Star Freckle Accent -->
+      <circle cx="134" cy="70" r="0.9" fill="#e76f51" stroke="none"/>
+      <circle cx="166" cy="70" r="0.9" fill="#e76f51" stroke="none"/>
+
+      <!-- Tiny Nose & Default Smile -->
+      <circle cx="150" cy="66" r="1" fill="#2d261e" stroke="none"/>
+      <path id="doll-mouth-default" d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+    </g>
   </g>
 </svg>

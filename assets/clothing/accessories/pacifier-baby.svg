@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_pacifier_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Pacifier Shield -->
+    <ellipse class="tint-primary" cx="150" cy="74" rx="8" ry="6" fill="var(--asset-color-primary, #ffc6ff)"/>
+    <!-- Pacifier Handle Ring -->
+    <path d="M146 76 C146 82 154 82 154 76" fill="none" stroke="#2d261e" stroke-width="2"/>
+    <circle cx="150" cy="74" r="2.5" fill="#ffffff" stroke="#2d261e" stroke-width="1.5"/>
+  </g>
+</svg>

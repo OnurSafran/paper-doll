@@ -7,7 +7,9 @@ import { getAsset } from '../core/asset-catalog.js';
 import { loadAssetSvg } from '../core/svg-loader.js';
 import { paletteValue } from '../core/palette.js';
 import { cloneScene } from '../core/state-schema.js';
+import { t } from '../core/i18n.js';
 import { getEntityBounds } from '../domain/scene-rules.js';
+import { isDefaultFace, isWearableCompatible } from '../domain/outfit-rules.js';
 import {
   CHARACTER_DIMENSIONS,
   DEFAULT_BASE_DOLL_ID,
@@ -33,12 +35,36 @@ export function applyMouthExpression(svg, expression) {
   if (!mouthEl) {
     mouthEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     mouthEl.id = 'doll-mouth-expression';
-    const bodyG = svg.querySelector('#body') || svg;
-    bodyG.appendChild(mouthEl);
+    const parentG = svg.querySelector('#face-feature') || svg.querySelector('#body') || svg;
+    parentG.appendChild(mouthEl);
   }
+
+  const faceFeatureG = svg.querySelector('#face-feature');
   const defaultSmile = svg.querySelector('#doll-mouth-default')
     || svg.querySelector('path[d*="146 73"]')
     || svg.querySelector('path[d="M146 73 C148 76 152 76 154 73"]');
+
+  if (!expression || expression === 'neutral') {
+    if (faceFeatureG) {
+      mouthEl.innerHTML = '';
+      for (const child of faceFeatureG.children) {
+        if (child !== mouthEl) child.style.display = '';
+      }
+    } else {
+      mouthEl.innerHTML = '<path d="M146 73 C148 75 152 75 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>';
+    }
+    if (defaultSmile) {
+      defaultSmile.style.display = '';
+    }
+    return;
+  }
+
+  // Active non-neutral expression: hide resting mouth shapes
+  if (faceFeatureG) {
+    for (const child of faceFeatureG.children) {
+      if (child !== mouthEl) child.style.display = 'none';
+    }
+  }
   if (defaultSmile) defaultSmile.style.display = 'none';
 
   mouthEl.innerHTML = '';
@@ -90,6 +116,7 @@ export function svgElementToImage(svgElement, width, height) {
  */
 export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION, options = {}) {
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
+  const resolveAsset = options.getAsset ?? getAsset;
   const customArtRepo = options.customArtRepo;
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 300 450');
@@ -99,17 +126,36 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
 
   const layers = [];
   const hair = draft?.slots?.hair;
-  if (hair) layers.push([10, hair.assetId, hair.color, 'hairBack', 'hair']);
+  const showBakedFace = isDefaultFace(draft?.face, draft?.baseDollId) && expression === DEFAULT_EXPRESSION;
+  if (hair && isWearableCompatible(draft, resolveAsset(hair.assetId), resolveAsset) && !isCustomAssetId(hair.assetId)) {
+    layers.push([10, hair.assetId, hair.color, 'hairBack', 'hair']);
+  }
   layers.push([20, draft?.baseDollId || DEFAULT_BASE_DOLL_ID, null, null, 'skin']);
+
+  const face = draft?.face;
+  if (face && !showBakedFace) {
+    if (face.eyes) layers.push([22, face.eyes.assetId, null, null, 'face-eyes', face.eyes.irisColor]);
+    if (face.eyebrows) layers.push([24, face.eyebrows.assetId, null, null, 'face-eyebrows']);
+    if (face.detail) layers.push([25, face.detail.assetId, null, null, 'face-detail']);
+    if (face.nose) layers.push([26, face.nose.assetId, null, null, 'face-nose']);
+    if (face.mouth) layers.push([28, face.mouth.assetId, null, null, 'face-mouth']);
+  }
+
   for (const [slot, order] of [['bottom', 30], ['shoes', 35], ['top', 40], ['dress', 45]]) {
     const item = draft?.slots?.[slot];
-    if (item) layers.push([order, item.assetId, item.color, null, slot]);
+    if (item && isWearableCompatible(draft, resolveAsset(item.assetId), resolveAsset)) {
+      layers.push([order, item.assetId, item.color, null, slot]);
+    }
   }
-  if (hair) layers.push([70, hair.assetId, hair.color, 'hairFront', 'hair']);
+  if (hair && isWearableCompatible(draft, resolveAsset(hair.assetId), resolveAsset)) {
+    layers.push([70, hair.assetId, hair.color, 'hairFront', 'hair']);
+  }
   const accessory = draft?.slots?.accessory;
-  if (accessory) layers.push([80, accessory.assetId, accessory.color, null, 'accessory']);
+  if (accessory && isWearableCompatible(draft, resolveAsset(accessory.assetId), resolveAsset)) {
+    layers.push([80, accessory.assetId, accessory.color, null, 'accessory']);
+  }
 
-  for (const [order, id, color, group, slot] of layers) {
+  for (const [order, id, color, group, slot, extra] of layers) {
     try {
       if (isCustomAssetId(id)) {
         const url = await customArtRepo?.getTrackedObjectUrl?.(id) || await options.getCustomArtUrl?.(id);
@@ -131,6 +177,9 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
       groupEl.style.setProperty('--skin-color', paletteValue(draft?.skinTone, 'peach'));
       groupEl.style.setProperty('--hair-color', paletteValue(color, 'brown'));
       groupEl.style.setProperty('--asset-color-primary', paletteValue(color, 'coral'));
+      if (slot === 'face-eyes' && extra) {
+        groupEl.style.setProperty('--iris-color', paletteValue(extra, 'cocoa'));
+      }
       if (group) {
         for (const candidate of ['hairBack', 'hairFront']) {
           const node = clone.querySelector(`#${candidate}`);
@@ -138,12 +187,41 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
         }
       }
       if (slot === 'skin') {
-        applyMouthExpression(clone, expression);
+        const baked = clone.querySelector('#baked-face');
+        if (baked && face) {
+          baked.style.display = 'none';
+        } else if (!face) {
+          applyMouthExpression(clone, expression);
+        }
+      }
+      if (slot === 'face-mouth') {
+        if (expression && expression !== 'neutral') {
+          applyMouthExpression(clone, expression);
+        }
       }
       while (clone.firstChild) groupEl.appendChild(clone.firstChild);
       svg.appendChild(groupEl);
     } catch {
-      // skip missing or invalid layer in export output
+      const placeholder = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      placeholder.setAttribute('data-missing-layer', slot || 'asset');
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', '90');
+      rect.setAttribute('y', slot === 'hair' ? '20' : '55');
+      rect.setAttribute('width', '120');
+      rect.setAttribute('height', '24');
+      rect.setAttribute('rx', '6');
+      rect.setAttribute('fill', '#fff4d6');
+      rect.setAttribute('stroke', '#8b6f47');
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', '150');
+      label.setAttribute('y', slot === 'hair' ? '36' : '71');
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('font-size', '9');
+      label.setAttribute('fill', '#5d4930');
+      label.textContent = t('designer.missingArtwork');
+      placeholder.appendChild(rect);
+      placeholder.appendChild(label);
+      svg.appendChild(placeholder);
     }
   }
   return svg;
@@ -412,7 +490,8 @@ export function createExportService(options = {}) {
       if (entity.kind === 'character') {
         const dollSvg = await createExportDollSvg(entity.characterSnapshot, entity.expression || DEFAULT_EXPRESSION, {
           loadAssetSvg: loadSvgFn,
-          customArtRepo
+          customArtRepo,
+          getAsset: getAssetFn
         });
         const dollImg = await toImageFn(dollSvg, 300, 450);
         ctx.drawImage(

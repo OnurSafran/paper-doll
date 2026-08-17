@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_coat_adult">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Tailored Adult Coat Body -->
+    <path class="tint-primary" d="M122 108 C114 140 114 175 116 220 C130 224 170 224 184 220 C186 175 186 140 178 108 L158 110 L150 165 L142 110 Z" fill="var(--asset-color-primary, #4a4e69)"/>
+    <!-- Coat Lapels -->
+    <path class="tint-primary" d="M142 110 L132 145 L150 165 L168 145 L158 110 Z" fill="var(--asset-color-primary, #4a4e69)"/>
+    <!-- Sleeves -->
+    <path class="tint-primary" d="M122 108 C110 138 98 172 96 208 L106 210 C110 178 118 144 128 118 Z" fill="var(--asset-color-primary, #4a4e69)"/>
+    <path class="tint-primary" d="M178 108 C190 138 202 172 204 208 L194 210 C190 178 182 144 172 118 Z" fill="var(--asset-color-primary, #4a4e69)"/>
+    <!-- Pockets & Buttons -->
+    <line x1="126" y1="195" x2="138" y2="195" stroke="#2d261e" stroke-width="2"/>
+    <line x1="162" y1="195" x2="174" y2="195" stroke="#2d261e" stroke-width="2"/>
+    <circle cx="150" cy="180" r="2.5" fill="#f2e9e4" stroke="#2d261e" stroke-width="1.5"/>
+    <circle cx="150" cy="200" r="2.5" fill="#f2e9e4" stroke="#2d261e" stroke-width="1.5"/>
+  </g>
+</svg>

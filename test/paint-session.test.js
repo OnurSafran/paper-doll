@@ -106,8 +106,10 @@ test('wearable slot changes preserve raster history and generated-name semantics
   session.setName('Moonlight costume');
   assert.equal(session.setSlot('shoes'), true);
   assert.equal(session.getState().name, 'Moonlight costume');
-  assert.equal(session.setSlot('hair'), false);
-  assert.equal(session.getState().slot, 'shoes');
+  assert.equal(session.setSlot('hair'), true);
+  assert.equal(session.getState().slot, 'hair');
+  assert.equal(session.setSlot('invalid_slot'), false);
+  assert.equal(session.getState().slot, 'hair');
 });
 
 test('reference preferences are bounded and do not dirty the artwork', () => {

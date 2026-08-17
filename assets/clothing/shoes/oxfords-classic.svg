@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_oxfords_classic">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Left Oxford Shoe -->
+    <path class="tint-primary" d="M126 376 C122 388 116 398 112 404 C120 408 140 408 146 404 L146 376 Z" fill="var(--asset-color-primary, #6f4e37)"/>
+    <line x1="126" y1="392" x2="136" y2="392" stroke="#2d261e" stroke-width="1.8"/>
+    <!-- Right Oxford Shoe -->
+    <path class="tint-primary" d="M154 376 L154 404 C160 408 180 408 188 404 C184 398 178 388 174 376 Z" fill="var(--asset-color-primary, #6f4e37)"/>
+    <line x1="164" y1="392" x2="174" y2="392" stroke="#2d261e" stroke-width="1.8"/>
+  </g>
+</svg>

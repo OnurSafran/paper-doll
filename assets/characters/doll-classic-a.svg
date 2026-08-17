@@ -38,21 +38,23 @@
     <circle class="skin-fill" cx="181" cy="64" r="5" fill="var(--skin-color, #fcd7b6)"/>
 
     <!-- Face Details -->
-    <!-- Soft Blush -->
-    <ellipse cx="134" cy="68" rx="6" ry="3.5" fill="#f28482" opacity="0.5" stroke="none"/>
-    <ellipse cx="166" cy="68" rx="6" ry="3.5" fill="#f28482" opacity="0.5" stroke="none"/>
-    
-    <!-- Big Cute Eyes -->
-    <ellipse cx="136" cy="60" rx="3.5" ry="5" fill="#2d261e" stroke="none"/>
-    <circle cx="135" cy="58" r="1.5" fill="#ffffff" stroke="none"/>
-    <path d="M131 54 C134 52 139 52 142 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
-    
-    <ellipse cx="164" cy="60" rx="3.5" ry="5" fill="#2d261e" stroke="none"/>
-    <circle cx="163" cy="58" r="1.5" fill="#ffffff" stroke="none"/>
-    <path d="M158 54 C161 52 166 52 169 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+    <g id="baked-face">
+      <!-- Soft Blush -->
+      <ellipse cx="134" cy="68" rx="6" ry="3.5" fill="#f28482" opacity="0.5" stroke="none"/>
+      <ellipse cx="166" cy="68" rx="6" ry="3.5" fill="#f28482" opacity="0.5" stroke="none"/>
 
-    <!-- Tiny Cute Nose & Smile -->
-    <circle cx="150" cy="66" r="1" fill="#2d261e" stroke="none"/>
-    <path d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+      <!-- Big Cute Eyes -->
+      <ellipse cx="136" cy="60" rx="3.5" ry="5" fill="#2d261e" stroke="none"/>
+      <circle cx="135" cy="58" r="1.5" fill="#ffffff" stroke="none"/>
+      <path d="M131 54 C134 52 139 52 142 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+
+      <ellipse cx="164" cy="60" rx="3.5" ry="5" fill="#2d261e" stroke="none"/>
+      <circle cx="163" cy="58" r="1.5" fill="#ffffff" stroke="none"/>
+      <path d="M158 54 C161 52 166 52 169 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+
+      <!-- Tiny Cute Nose & Smile -->
+      <circle cx="150" cy="66" r="1" fill="#2d261e" stroke="none"/>
+      <path id="doll-mouth-default" d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+    </g>
   </g>
 </svg>

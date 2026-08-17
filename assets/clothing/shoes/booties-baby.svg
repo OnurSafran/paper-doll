@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_booties_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Left Bootie -->
+    <path class="tint-primary" d="M124 336 C120 348 114 358 110 364 C118 368 138 368 146 364 L146 336 Z" fill="var(--asset-color-primary, #ffcad4)"/>
+    <circle cx="130" cy="346" r="3" fill="#ffffff" stroke="#2d261e" stroke-width="1.5"/>
+    <!-- Right Bootie -->
+    <path class="tint-primary" d="M154 336 L154 364 C162 368 182 368 190 364 C186 358 180 348 176 336 Z" fill="var(--asset-color-primary, #ffcad4)"/>
+    <circle cx="170" cy="346" r="3" fill="#ffffff" stroke="#2d261e" stroke-width="1.5"/>
+  </g>
+</svg>

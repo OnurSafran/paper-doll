@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_silver_waves">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <!-- Wavy Back Volume -->
+    <path class="hair-fill" d="M112 62 C102 90 98 125 106 155 C120 162 180 162 194 155 C202 125 198 90 188 62 Z" fill="var(--hair-color, #ffffff)"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <!-- Elegant Wavy Hair Front -->
+    <path class="hair-fill" d="M114 62 C112 32 130 18 150 18 C170 18 188 32 186 62 C178 44 164 38 150 38 C136 38 122 44 114 62 Z" fill="var(--hair-color, #ffffff)"/>
+    <!-- Flowing Left Lock -->
+    <path class="hair-fill" d="M114 62 C110 88 108 120 120 142 C126 116 126 80 134 52 C124 55 117 58 114 62 Z" fill="var(--hair-color, #ffffff)"/>
+    <!-- Flowing Right Lock -->
+    <path class="hair-fill" d="M186 62 C190 88 192 120 180 142 C174 116 174 80 166 52 C176 55 183 58 186 62 Z" fill="var(--hair-color, #ffffff)"/>
+    <!-- Soft Wave Bang Line -->
+    <path d="M136 44 C144 48 156 48 164 44" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+  </g>
+</svg>

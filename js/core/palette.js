@@ -27,6 +27,11 @@ export const GARMENT_COLORS = Object.freeze([
 
 export const SKIN_COLORS = Object.freeze(['peach', 'honey', 'bronze', 'deep']);
 export const HAIR_COLORS = Object.freeze(['blonde', 'auburn', 'brown', 'black', 'lavender']);
+export const IRIS_COLORS = Object.freeze(['cocoa', 'honey', 'sage', 'sky', 'charcoal', 'lavender']);
+
+export function isIrisColor(token) {
+  return typeof token === 'string' && IRIS_COLORS.includes(token);
+}
 
 export function isPaletteToken(token) {
   return typeof token === 'string' && Object.hasOwn(PALETTE, token);

@@ -396,6 +396,9 @@ function wireStaticEvents() {
       };
       pendingPaintContext = null;
       paintView.openSession(options);
+      if (options.editAssetId) {
+        void paintView.editCopyOfArtwork?.(options.editAssetId);
+      }
     }
     $('#main-content').focus({ preventScroll: true });
   });
@@ -418,6 +421,10 @@ function wireStaticEvents() {
     const slot = store.getState().designer.selectedSlot;
     store.dispatch({ type: 'designer/setColor', slot, color: event.target.value });
   });
+  $('#designer-mode-wardrobe')?.addEventListener('click', () => store.dispatch({ type: 'designer/setActiveTab', tab: 'wardrobe' }));
+  $('#designer-mode-face')?.addEventListener('click', () => store.dispatch({ type: 'designer/setActiveTab', tab: 'face' }));
+  $('#reset-face')?.addEventListener('click', () => store.dispatch({ type: 'designer/resetFace' }));
+  $('#clear-face-detail')?.addEventListener('click', () => store.dispatch({ type: 'designer/clearFaceDetail' }));
   $('#reset-doll').addEventListener('click', async () => {
     if (!store.getState().designer.dirty || await askConfirm(t('designer.resetDollTitle'), t('designer.resetDollMessage'))) {
       store.dispatch({ type: 'designer/reset' });

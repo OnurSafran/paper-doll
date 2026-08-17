@@ -62,7 +62,12 @@
           </div>
 
           <aside class="designer-sidebar" aria-label="Designer controls">
-            <section class="paper-panel wardrobe-panel" aria-labelledby="wardrobe-title">
+            <div id="designer-mode-nav" class="tab-list designer-mode-tabs" role="tablist" aria-label="Designer panels">
+              <button id="designer-mode-wardrobe" type="button" role="tab" class="mode-tab is-active" aria-selected="true" aria-controls="wardrobe-panel-section" data-i18n="designer.tabWardrobe">👗 Gardırop</button>
+              <button id="designer-mode-face" type="button" role="tab" class="mode-tab" aria-selected="false" aria-controls="face-panel-section" data-i18n="designer.tabFace">😊 Yüz</button>
+            </div>
+
+            <section id="wardrobe-panel-section" class="paper-panel wardrobe-panel" aria-labelledby="wardrobe-title">
               <div class="panel-heading compact-panel-heading">
                 <div>
                   <h2 id="wardrobe-title" data-i18n="designer.wardrobeTitle">Gardırop</h2>
@@ -70,10 +75,30 @@
                 </div>
               </div>
               <div id="wardrobe-tabs" class="tab-list" role="tablist" data-i18n-aria-label="designer.wardrobeTabsAria" aria-label="Gardırop kategorileri"></div>
+              <div id="style-filter-nav" class="style-filter-pills" role="radiogroup" aria-label="Stil filtresi" data-i18n-aria-label="designer.styleFilterAria"></div>
               <div id="wardrobe-items" class="asset-grid" role="tabpanel"></div>
               <div class="wardrobe-actions">
                 <button id="shuffle-outfit" class="button playful" type="button" data-i18n="designer.shuffle">Karıştır</button>
                 <button id="clear-outfit" class="button secondary" type="button" data-i18n="designer.takeOff">Çıkar</button>
+              </div>
+            </section>
+
+            <section id="face-panel-section" class="paper-panel face-panel" aria-labelledby="face-title" style="display: none;">
+              <div class="panel-heading compact-panel-heading">
+                <div>
+                  <h2 id="face-title" data-i18n="designer.faceTitle">Yüz Özellikleri</h2>
+                  <p class="panel-copy" data-i18n="designer.faceCopy">Göz, kaş, burun, ağız ve detayları seçin.</p>
+                </div>
+              </div>
+              <div id="face-tabs" class="tab-list" role="tablist" data-i18n-aria-label="designer.faceTabsAria" aria-label="Yüz özellikleri"></div>
+              <div id="iris-color-picker-group" class="iris-picker-container" style="display: none;">
+                <strong data-i18n="designer.irisColorLabel">Göz Rengi</strong>
+                <div id="iris-palette" class="swatch-list compact"></div>
+              </div>
+              <div id="face-items" class="asset-grid" role="tabpanel"></div>
+              <div class="wardrobe-actions">
+                <button id="reset-face" class="button secondary" type="button" data-i18n="designer.resetFace">Yüzü Sıfırla</button>
+                <button id="clear-face-detail" class="button secondary" type="button" data-i18n="designer.clearDetail">Detayı Kaldır</button>
               </div>
             </section>
 

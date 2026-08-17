@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="doll_elder_a">
+  <g id="body" class="outline-shape" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Neck -->
+    <rect class="skin-fill" x="141" y="90" width="18" height="24" rx="4" fill="var(--skin-color, #fcd7b6)"/>
+    
+    <!-- Elder Torso (Gentle, softer slope) -->
+    <path class="skin-fill" d="M125 110 C120 135 120 165 121 198 C123 214 129 224 134 232 L166 232 C171 224 177 214 179 198 C180 165 180 135 175 110 Z" fill="var(--skin-color, #fcd7b6)"/>
+    
+    <!-- Undergarments -->
+    <path d="M125 124 C135 138 165 138 175 124 L173 156 C165 159 135 159 127 156 Z" fill="#e8f4f0" stroke="#2d261e" stroke-width="2"/>
+    <path d="M122 204 C140 209 160 209 178 204 L174 230 C160 234 140 234 126 230 Z" fill="#e8f4f0" stroke="#2d261e" stroke-width="2"/>
+    
+    <!-- Legs & Feet -->
+    <!-- Left Leg -->
+    <path class="skin-fill" d="M132 230 C130 275 128 325 130 380 L144 380 C145 325 148 275 147 230 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <!-- Right Leg -->
+    <path class="skin-fill" d="M153 230 C152 275 155 325 156 380 L170 380 C172 325 170 275 168 230 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <!-- Left Foot -->
+    <path class="skin-fill" d="M128 380 C125 390 120 400 116 403 C122 407 138 407 144 403 L144 380 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <!-- Right Foot -->
+    <path class="skin-fill" d="M156 380 L156 403 C162 407 178 407 184 403 C180 400 175 390 172 380 Z" fill="var(--skin-color, #fcd7b6)"/>
+
+    <!-- Arms (Gentle posture) -->
+    <!-- Left Arm -->
+    <path class="skin-fill" d="M125 112 C112 138 102 168 98 205 C96 215 102 218 106 214 C110 180 118 150 129 124 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <!-- Right Arm -->
+    <path class="skin-fill" d="M175 112 C188 138 198 168 202 205 C204 215 198 218 194 214 C190 180 182 150 171 124 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <!-- Left Hand -->
+    <circle class="skin-fill" cx="99" cy="214" r="7" fill="var(--skin-color, #fcd7b6)"/>
+    <!-- Right Hand -->
+    <circle class="skin-fill" cx="201" cy="214" r="7" fill="var(--skin-color, #fcd7b6)"/>
+
+    <!-- Head -->
+    <ellipse class="skin-fill" cx="150" cy="63" rx="30" ry="36" fill="var(--skin-color, #fcd7b6)"/>
+    
+    <!-- Ears -->
+    <circle class="skin-fill" cx="119" cy="65" r="5" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="181" cy="65" r="5" fill="var(--skin-color, #fcd7b6)"/>
+
+    <!-- Face Details -->
+    <g id="baked-face">
+      <!-- Gentle Smile Lines -->
+      <path d="M132 67 C130 69 130 72 132 74" fill="none" stroke="#2d261e" stroke-width="1.2" opacity="0.4"/>
+      <path d="M168 67 C170 69 170 72 168 74" fill="none" stroke="#2d261e" stroke-width="1.2" opacity="0.4"/>
+      
+      <!-- Gentle Kind Eyes -->
+      <ellipse cx="136" cy="60" rx="3.5" ry="4.8" fill="#2d261e" stroke="none"/>
+      <circle cx="135" cy="58.5" r="1.4" fill="#ffffff" stroke="none"/>
+      <path d="M131 53 C134 51 139 51 142 53" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+      
+      <ellipse cx="164" cy="60" rx="3.5" ry="4.8" fill="#2d261e" stroke="none"/>
+      <circle cx="163" cy="58.5" r="1.4" fill="#ffffff" stroke="none"/>
+      <path d="M158 53 C161 51 166 51 169 53" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+
+      <!-- Nose & Gentle Warm Smile -->
+      <circle cx="150" cy="66" r="1" fill="#2d261e" stroke="none"/>
+      <path id="doll-mouth-default" d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

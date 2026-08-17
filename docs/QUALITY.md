@@ -1,24 +1,27 @@
 # Quality and Release Plan
 
-Updated: 2026-08-16
+Updated: 2026-08-17
 
-Gate 4 status: **in progress**. Automated and source-contract evidence is green. Hosted-device evidence is still required before family release.
+Character Customization Gates 0–5: **complete**. Automated tests, asset validation, and source contracts are green. Hosted-device evidence is still required before family release.
 
 ## Current evidence
 
 | Check | Current result | What it proves |
 |:--|:--|:--|
-| `node --test` | 237 pass, 0 fail | Existing domain, storage, portability, rendering, painter, and library coverage plus Gate 3B non-destructive slot metadata, generated-name behavior, trusted cutout contracts, reference preference bounds, keyboard modifier safety, and all 15 supported slot/model guide combinations. |
-| Asset validator | 77 pass | All cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata. |
-| Documentation validator | 9 pass, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
-| PWA shell validation | Pass | Manifest, service-worker syntax, and all 107 cached app-shell files validate. |
+| `node --test` | 277 pass, 0 fail | Existing domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, and library coverage plus modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, and resting-face restoration. |
+| Asset validator | 112 pass | All 112 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 58 wearables, 7 backgrounds, 22 props). |
+| Documentation validator | 10 pass, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
+| PWA shell validation | Pass | Manifest, service-worker syntax, and all offline app-shell assets validate. |
 
-## Custom Paint Studio Gate 4 evidence
+## Character Customization & Custom Paint Evidence
 
 | Evidence | Result | Notes |
 |:--|:--|:--|
-| `npm run check` | Pass | 237 tests, documentation validation, and 77 cataloged SVG assets passed on 2026-08-16. |
-| Gate 3B local browser QA | Pass | Cutout discovery/Add/Undo, slot/history retention, reference controls, exact overlay alignment, console cleanliness, and `768 × 1024` zero-overflow layout passed on 2026-08-16. |
+| `npm run check` | Pass | 277 tests, documentation validation, and 112 cataloged SVG assets passed on 2026-08-18. |
+| Modular Face Customization (Gates 0–1) | Pass | 19 face SVGs, iris palette, schema v4 migration, resting-face restoration, and full undo/redo pass automated test suites. |
+| Body Models & Fit Families (Gate 2) | Pass | 6 base dolls (Baby, Child, Teen Classic A/B, Adult, Elder), fit-family filtering, presentation style discovery filters pass tests. |
+| Expanded Catalog & Shuffle (Gate 3) | Pass | Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage wardrobe items pass tests. |
+| Custom Hair Design (Gate 4) | Pass | Single-layer custom hair at Layer 70, Paint Studio guides for all 6 models, storage, and project transfer pass tests. |
 | Custom-art storage and recovery contracts | Pass | IndexedDB repository, PNG integrity, staging, backups, trash, restore, orphan safety, and object-URL lifecycle are covered by automated tests. |
 | Painter and accessibility contracts | Pass | Raster operations, bounded history, keyboard cursor, dirty/draft recovery, semantic controls, 44px targets, dark/checkerboard UI, and narrow responsive layout are covered by tests. |
 | Project transfer contracts | Pass | Package validation, SHA-256 artwork integrity, Replace/Merge, collision rewriting, and missing/corrupt artwork behavior are covered by tests. |

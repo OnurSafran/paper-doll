@@ -99,7 +99,8 @@ test('Designer view + Paint item button invokes openPaintStudio without Referenc
   assert.deepEqual(paintOptions, {
     itemType: 'wearable',
     slot: 'top',
-    originContext: 'designer'
+    originContext: 'designer',
+    baseDollId: 'doll_classic_a'
   });
 });
 

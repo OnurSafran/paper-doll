@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="eyes_calm">
+  <g id="face-feature" stroke="#2d261e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Left Eye Calm Arc -->
+    <path d="M130 61 C133 65 138 65 142 61"/>
+    <path d="M141 62 L144 65" stroke-width="1.8"/>
+    <!-- Right Eye Calm Arc -->
+    <path d="M158 61 C162 65 167 65 170 61"/>
+    <path d="M169 62 L172 65" stroke-width="1.8"/>
+  </g>
+</svg>

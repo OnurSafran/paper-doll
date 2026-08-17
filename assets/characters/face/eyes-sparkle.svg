@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="eyes_sparkle">
+  <g id="face-feature">
+    <!-- Left Eye: Winking -->
+    <path d="M130 61 Q136 55 142 61" fill="none" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round"/>
+    
+    <!-- Right Eye: Sparkle -->
+    <ellipse cx="164" cy="60" rx="3.8" ry="5.2" fill="var(--iris-color, #2d261e)" stroke="none"/>
+    <circle cx="163" cy="58" r="1.6" fill="#ffffff" stroke="none"/>
+    <circle cx="165" cy="62" r="0.8" fill="#ffffff" stroke="none"/>
+  </g>
+</svg>

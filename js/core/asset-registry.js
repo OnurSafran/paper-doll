@@ -23,6 +23,8 @@ export function customAssetToDescriptor(asset) {
       viewBox: [0, 0, 300, 450],
       tintable: false,
       defaultColors: Object.freeze({ primary: 'coral' }),
+      ...(asset.supportedFitFamilies?.length ? { supportedFitFamilies: Object.freeze([...asset.supportedFitFamilies]) } : {}),
+      ...(asset.presentationStyles?.length ? { presentationStyles: Object.freeze([...asset.presentationStyles]) } : {}),
       libraryVisible: asset.libraryVisible !== false,
       status: asset.status || 'available',
       metadata: Object.freeze({

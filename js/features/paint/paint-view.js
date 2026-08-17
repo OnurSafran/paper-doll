@@ -1440,6 +1440,9 @@ function fitCutoutSvg(svg, slot) {
 
       if (state.itemType === 'wearable') {
         customMetadata.slot = state.slot;
+        const referenceDoll = assetRegistry?.getAsset?.(state.baseDollId);
+        customMetadata.supportedFitFamilies = referenceDoll?.fitFamily ? [referenceDoll.fitFamily] : undefined;
+        customMetadata.presentationStyles = ['neutral'];
       } else {
         // Calculate display dimensions for prop
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1945,6 +1948,7 @@ function fitCutoutSvg(svg, slot) {
     const state = store?.getState?.() || {};
     const asset = (state.customAssets || []).find((a) => a.assetId === assetId);
     if (!asset) return;
+    const sessionState = session.getState();
 
     checkDirtyBeforeAction(async () => {
       try {
@@ -1975,7 +1979,9 @@ function fitCutoutSvg(svg, slot) {
           slot: asset.slot || 'top',
           propSize: asset.displayWidth > 240 ? 'large' : (asset.displayWidth < 180 ? 'small' : 'medium'),
           propPlacement: asset.groundAnchor?.y === 0.5 ? 'hang' : 'surface',
-          name: t('paint.copyName', { name: asset.name })
+          name: t('paint.copyName', { name: asset.name }),
+          baseDollId: sessionState.baseDollId,
+          originContext: sessionState.originContext
         });
 
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -2310,6 +2316,7 @@ function fitCutoutSvg(svg, slot) {
 
   return {
     openSession,
+    editCopyOfArtwork,
     resetCanvas,
     openMyArtDialog,
     renderMyArtCards,
