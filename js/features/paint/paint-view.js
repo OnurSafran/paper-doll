@@ -32,6 +32,15 @@ const CURATED_PALETTE = [
   '#8d5b4c', '#d4a373', '#ccd5ae', '#e07a5f'
 ];
 
+export const SLOT_PREVIEW_VIEWBOX = Object.freeze({
+  top: '80 85 140 125',
+  bottom: '90 170 120 180',
+  dress: '60 105 180 270',
+  shoes: '105 345 90 70',
+  hair: '70 15 160 175',
+  accessory: '90 0 120 80'
+});
+
 export function isTrustedCutoutDescriptor(asset, slot) {
   return Boolean(asset && !asset.custom && asset.kind === 'wearable' && asset.slot === slot && asset.id);
 }
@@ -107,7 +116,8 @@ export function createPaintView({
   const cutoutReferenceVisible = rootElement.querySelector('#paint-cutout-reference-visible');
   const toolsToolbar = rootElement.querySelector('#paint-tools-toolbar');
   const brushSizeGroup = rootElement.querySelector('#paint-brush-size-group');
-  const brushSizesContainer = rootElement.querySelector('#paint-brush-sizes');
+  const brushSizeSlider = rootElement.querySelector('#paint-brush-size-slider');
+  const brushSizeValue = rootElement.querySelector('#paint-brush-size-value');
   const shapeOptions = rootElement.querySelector('#paint-shape-options');
   const shapeFilledCheckbox = rootElement.querySelector('#paint-shape-filled');
   const paletteGrid = rootElement.querySelector('#paint-palette-grid');
@@ -175,6 +185,18 @@ export function createPaintView({
     resetCanvas();
   }
 
+  function selectColor(hex) {
+    if (!hex) return;
+    session.setColor(hex);
+    if (colorPicker) colorPicker.value = hex;
+    const currentTool = session.getState().tool;
+    if (currentTool === 'eraser' || currentTool === 'select' || currentTool === 'eyedropper') {
+      session.setTool('brush');
+      updateUIFromState();
+    }
+    updatePaletteActive();
+  }
+
   function renderPalette() {
     if (!paletteGrid) return;
     paletteGrid.innerHTML = '';
@@ -185,13 +207,13 @@ export function createPaintView({
       btn.style.backgroundColor = hex;
       btn.title = hex;
       btn.setAttribute('aria-label', `Color ${hex}`);
-      if (hex.toLowerCase() === session.getState().color.toLowerCase()) {
+      const active = hex.toLowerCase() === session.getState().color.toLowerCase();
+      btn.setAttribute('aria-pressed', String(active));
+      if (active) {
         btn.classList.add('active');
       }
       btn.addEventListener('click', () => {
-        session.setColor(hex);
-        if (colorPicker) colorPicker.value = hex;
-        updatePaletteActive();
+        selectColor(hex);
       });
       paletteGrid.appendChild(btn);
     });
@@ -200,10 +222,13 @@ export function createPaintView({
   function updatePaletteActive() {
     const currentColor = session.getState().color.toLowerCase();
     paletteGrid?.querySelectorAll('.paint-swatch').forEach((btn) => {
-      btn.classList.toggle('active', btn.title.toLowerCase() === currentColor);
+      const active = btn.title.toLowerCase() === currentColor;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', String(active));
     });
     if (activeColorSwatch) {
       activeColorSwatch.style.backgroundColor = session.getState().color;
+      activeColorSwatch.setAttribute('aria-label', `Active color: ${session.getState().color}. Click to open color picker.`);
     }
   }
 
@@ -289,11 +314,8 @@ export function createPaintView({
       brushSizeGroup.hidden = state.tool !== 'brush' && state.tool !== 'eraser';
     }
 
-    brushSizesContainer?.querySelectorAll('.size-chip').forEach((chip) => {
-      const active = Number(chip.dataset.size) === state.brushSize;
-      chip.classList.toggle('active', active);
-      chip.setAttribute('aria-checked', String(active));
-    });
+    if (brushSizeSlider) brushSizeSlider.value = String(state.brushSize);
+    if (brushSizeValue) brushSizeValue.value = `${state.brushSize}px`;
 
     mirrorBtn?.setAttribute('aria-pressed', String(state.mirror));
     mirrorBtn?.classList.toggle('active', state.mirror);
@@ -328,7 +350,61 @@ export function createPaintView({
       return;
     }
 
-    setCutoutStatus('Choose a cutout to use as a non-saving reference.');
+    setCutoutStatus(selectedCutoutId ? 'Choose a cutout or select None.' : 'Choose a cutout to use as a non-saving reference.');
+
+    // Dedicated None card
+    const noneCard = document.createElement('button');
+    noneCard.type = 'button';
+    noneCard.className = 'cutout-card cutout-none-card';
+    noneCard.dataset.assetId = '';
+    noneCard.setAttribute('role', 'option');
+    noneCard.setAttribute('aria-selected', String(!selectedCutoutId));
+    noneCard.classList.toggle('active', !selectedCutoutId);
+    noneCard.title = 'No reference cutout';
+    noneCard.setAttribute('aria-label', 'No reference cutout');
+    noneCard.innerHTML = '<span class="cutout-none-icon" aria-hidden="true">🚫</span>';
+    noneCard.addEventListener('click', () => {
+      cancelCutoutAction();
+      session.setCutoutAssetId(null);
+      cutoutGrid.querySelectorAll('.cutout-card').forEach((c) => {
+        c.classList.toggle('active', c === noneCard);
+        c.setAttribute('aria-selected', String(c === noneCard));
+      });
+      updateCutoutActions();
+      renderGuideLayer();
+      checkpointReferencePreferences();
+      setCutoutStatus('Reference cutout unselected.');
+      announceStatus('Reference cutout unselected.');
+    });
+    cutoutGrid.appendChild(noneCard);
+
+function fitCutoutSvg(svg, slot) {
+  try {
+    const targetGroup = svg.querySelector('#garment') || svg.querySelector('g') || svg;
+    const bbox = targetGroup.getBBox ? targetGroup.getBBox() : null;
+    if (bbox && bbox.width > 0 && bbox.height > 0) {
+      const pad = Math.max(bbox.width, bbox.height) * 0.08;
+      const x = Math.max(0, bbox.x - pad);
+      const y = Math.max(0, bbox.y - pad);
+      const w = bbox.width + pad * 2;
+      const h = bbox.height + pad * 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
+      return;
+    }
+  } catch {
+    // getBBox fallback
+  }
+
+  const tightViewBoxes = {
+    top: '95 105 110 95',
+    bottom: '100 170 100 190',
+    dress: '80 105 140 210',
+    shoes: '108 340 84 75',
+    hair: '75 15 150 160',
+    accessory: '95 15 110 90'
+  };
+  svg.setAttribute('viewBox', tightViewBoxes[slot] || '0 0 300 450');
+}
 
     approvedCutouts.forEach((asset) => {
       const card = document.createElement('button');
@@ -339,34 +415,71 @@ export function createPaintView({
       card.setAttribute('aria-selected', String(asset.id === selectedCutoutId));
       card.classList.toggle('active', asset.id === selectedCutoutId);
       card.title = asset.name || asset.id;
-      card.setAttribute('aria-label', `Reference cutout: ${asset.name || asset.id}`);
-
-      if (asset.path) {
+      if (svgLoader?.load) {
+        svgLoader.load(asset.id).then((svg) => {
+          if (svg) {
+            const clone = svg.cloneNode(true);
+            clone.setAttribute('width', '100%');
+            clone.setAttribute('height', '100%');
+            clone.setAttribute('aria-hidden', 'true');
+            card.replaceChildren(clone);
+            fitCutoutSvg(clone, slot);
+            requestAnimationFrame(() => fitCutoutSvg(clone, slot));
+          }
+        }).catch(() => {
+          if (asset.path) {
+            const image = document.createElement('img');
+            image.src = asset.path;
+            image.alt = '';
+            image.setAttribute('aria-hidden', 'true');
+            card.replaceChildren(image);
+          }
+        });
+      } else if (asset.path) {
         const image = document.createElement('img');
         image.src = asset.path;
         image.alt = '';
         image.setAttribute('aria-hidden', 'true');
         card.appendChild(image);
-        const label = document.createElement('span');
-        label.textContent = asset.name || asset.id;
-        card.appendChild(label);
       } else {
-        card.textContent = asset.name || asset.id;
+        const icon = document.createElement('span');
+        icon.className = 'cutout-fallback-icon';
+        icon.textContent = '✂️';
+        icon.setAttribute('aria-hidden', 'true');
+        card.appendChild(icon);
       }
 
       card.addEventListener('click', () => {
         cancelCutoutAction();
+        const isCurrentlySelected = session.getState().cutoutAssetId === asset.id;
+        if (isCurrentlySelected) {
+          // Unselect on re-clicking the active card
+          session.setCutoutAssetId(null);
+          cutoutGrid.querySelectorAll('.cutout-card').forEach((c) => {
+            c.classList.toggle('active', c === noneCard);
+            c.setAttribute('aria-selected', String(c === noneCard));
+          });
+          updateCutoutActions();
+          renderGuideLayer();
+          checkpointReferencePreferences();
+          setCutoutStatus('Reference cutout unselected.');
+          announceStatus('Reference cutout unselected.');
+          return;
+        }
+
         cutoutGrid.querySelectorAll('.cutout-card').forEach((c) => {
-          c.classList.remove('active');
-          c.setAttribute('aria-selected', 'false');
+          const active = c === card;
+          c.classList.toggle('active', active);
+          c.setAttribute('aria-selected', String(active));
         });
-        card.classList.add('active');
-        card.setAttribute('aria-selected', 'true');
         session.setCutoutAssetId(asset.id);
+        session.setCutoutReferenceVisible(true);
+        if (cutoutReferenceVisible) cutoutReferenceVisible.checked = true;
         updateCutoutActions();
         renderGuideLayer();
         checkpointReferencePreferences();
         setCutoutStatus(`${asset.name || asset.id} selected as a non-saving reference.`);
+        announceStatus(`${asset.name || asset.id} selected as reference.`);
       });
 
       cutoutGrid.appendChild(card);
@@ -1050,6 +1163,26 @@ export function createPaintView({
           handleRedo();
         }
         break;
+      case '[':
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          const newSize = Math.max(1, state.brushSize - 2);
+          session.setBrushSize(newSize);
+          updateUIFromState();
+          updateVirtualCursor();
+          announceStatus(`Brush size ${newSize} pixels`);
+        }
+        break;
+      case ']':
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          const newSize = Math.min(50, state.brushSize + 2);
+          session.setBrushSize(newSize);
+          updateUIFromState();
+          updateVirtualCursor();
+          announceStatus(`Brush size ${newSize} pixels`);
+        }
+        break;
       default:
         break;
     }
@@ -1260,6 +1393,10 @@ export function createPaintView({
     }
 
     saveDialog.showModal();
+    setTimeout(() => {
+      nameInput?.focus();
+      nameInput?.select?.();
+    }, 50);
   }
 
   async function commitSave(andUse = false) {
@@ -1522,13 +1659,19 @@ export function createPaintView({
       }
     });
 
-    brushSizesContainer?.addEventListener('click', (e) => {
-      const chip = e.target.closest('.size-chip');
-      if (chip?.dataset.size) {
-        session.setBrushSize(Number(chip.dataset.size));
-        updateUIFromState();
-        updateVirtualCursor();
-      }
+    brushSizeSlider?.addEventListener('input', (e) => {
+      const size = Number(e.target.value);
+      session.setBrushSize(size);
+      if (brushSizeValue) brushSizeValue.value = `${size}px`;
+      updateVirtualCursor();
+    });
+
+    brushSizeSlider?.addEventListener('change', (e) => {
+      const size = Number(e.target.value);
+      session.setBrushSize(size);
+      if (brushSizeValue) brushSizeValue.value = `${size}px`;
+      updateVirtualCursor();
+      announceStatus(`Brush size set to ${size} pixels.`);
     });
 
     shapeOptions?.addEventListener('click', (e) => {
@@ -1547,9 +1690,16 @@ export function createPaintView({
       session.setShapeFilled(e.target.checked);
     });
 
+    activeColorSwatch?.addEventListener('click', () => {
+      colorPicker?.click();
+    });
+
     colorPicker?.addEventListener('input', (e) => {
-      session.setColor(e.target.value);
-      updatePaletteActive();
+      selectColor(e.target.value);
+    });
+
+    colorPicker?.addEventListener('change', (e) => {
+      selectColor(e.target.value);
     });
 
     // Save dialog
@@ -1955,6 +2105,10 @@ export function createPaintView({
     activeRenameAsset = asset;
     if (renameInput) renameInput.value = asset.name || '';
     renameDialog.showModal();
+    setTimeout(() => {
+      renameInput?.focus();
+      renameInput?.select?.();
+    }, 50);
   }
 
   function handleSaveRename(e) {

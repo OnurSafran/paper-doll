@@ -454,6 +454,20 @@ function wireStaticEvents() {
   $('#project-menu-btn')?.addEventListener('click', () => openProjectDialog());
   $('#close-project-dialog')?.addEventListener('click', () => $('#project-dialog')?.close());
   $('#export-project-btn')?.addEventListener('click', () => exportProjectJsonFile());
+
+  async function handleHardResetAction() {
+    const confirmed = await askConfirm(
+      'Force reload and clear cached files?',
+      'This will clear cached app scripts and reload the newest studio version from the server. Your saved dolls, scenes, and custom art in storage will remain safe.'
+    );
+    if (confirmed) {
+      showToast('Clearing cache and reloading…');
+      await window.hardRefresh();
+    }
+  }
+
+  $('#project-hard-reset-btn')?.addEventListener('click', () => void handleHardResetAction());
+  $('#footer-hard-reset-btn')?.addEventListener('click', () => void handleHardResetAction());
   $('#browse-project-file-btn')?.addEventListener('click', () => $('#project-file-input')?.click());
   $('#project-file-input')?.addEventListener('change', (event) => {
     const file = event.target.files?.[0];
@@ -499,6 +513,14 @@ function wireStaticEvents() {
   $('#play-stage').addEventListener('keydown', playView.handleStageKeydown);
   document.addEventListener('keydown', handleTabKeys);
   document.addEventListener('keydown', handleGlobalShortcuts);
+
+  // Ensure reliable virtual keyboard activation on iPad/iOS Safari upon click/tap
+  document.addEventListener('pointerup', (event) => {
+    const input = event.target?.closest?.('input:not([type="file"]):not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]), textarea');
+    if (input && document.activeElement !== input) {
+      input.focus();
+    }
+  });
 
   // Drag & drop into designer
   const designerStage = $('.designer-stage');
@@ -890,3 +912,19 @@ function executeDismissBackup() {
   if (backupSection) backupSection.hidden = true;
   showToast('Backup dismissed.');
 }
+
+window.hardRefresh = async function hardRefresh() {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const reg of registrations) await reg.unregister();
+    } catch { /* ignore */ }
+  }
+  if ('caches' in window) {
+    try {
+      const keys = await caches.keys();
+      for (const key of keys) await caches.delete(key);
+    } catch { /* ignore */ }
+  }
+  window.location.reload(true);
+};

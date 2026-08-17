@@ -112,12 +112,18 @@ test('project portability and backup controls expose accessible dialogs, dropzon
   assert.match(html, /id="import-merge-btn"/);
   assert.match(html, /id="import-replace-btn"/);
   assert.match(html, /id="restore-backup-btn"/);
+  assert.match(html, /id="project-hard-reset-btn"/);
+  assert.match(html, /id="footer-hard-reset-btn"/);
+  assert.match(html, /class="app-footer"/);
   assert.match(css, /\.project-dialog\s*{/);
   assert.match(css, /\.import-dropzone\s*{/);
   assert.match(css, /\.import-preview-card\s*{/);
+  assert.match(css, /\.app-footer\s*{/);
   assert.match(js, /openProjectDialog/);
   assert.match(js, /exportProjectJsonFile/);
   assert.match(js, /handleProjectFile/);
+  assert.match(js, /handleHardResetAction/);
+  assert.match(js, /window\.hardRefresh/);
 });
 
 test('scene stickiness and pinning expose accessible HUD controls, visual badge, and keyboard shortcuts', () => {

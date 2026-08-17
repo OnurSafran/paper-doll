@@ -288,6 +288,10 @@ export function createPlayView({
     dialog.showModal();
     input.focus();
     input.select();
+    setTimeout(() => {
+      input?.focus();
+      input?.select?.();
+    }, 50);
   }
 
   function renderSpawnTray(state, token) {

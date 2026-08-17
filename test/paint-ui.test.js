@@ -55,7 +55,9 @@ test('paint studio HTML shell declares complete accessible structure, canvas, gu
   assert.match(html, /id="tool-shape"/);
   assert.match(html, /id="tool-select"/);
   assert.match(html, /id="tool-eyedropper"/);
-  assert.match(html, /id="paint-shape-filled"/);
+  assert.match(html, /id="paint-brush-size-slider"[^>]*min="1"[^>]*max="50"/);
+  assert.match(html, /id="paint-brush-size-value"/);
+  assert.match(html, /id="paint-active-color"/);
   assert.match(html, /id="paint-palette-grid"/);
   assert.match(html, /id="paint-color-picker"/);
 
@@ -76,6 +78,10 @@ test('starting cutouts are trusted slot-matched built-ins with explicit pixel ac
   assert.match(paintViewJs, /URL\.revokeObjectURL\(url\)/);
   assert.match(paintViewJs, /rasterizeCutoutIntoCanvas\(session\.getState\(\)\.cutoutAssetId, 'add'\)/);
   assert.match(paintViewJs, /rasterizeCutoutIntoCanvas\(session\.getState\(\)\.cutoutAssetId, 'replace'\)/);
+  assert.match(paintViewJs, /cutout-none-card/);
+  assert.match(paintViewJs, /session\.setCutoutAssetId\(null\)/);
+  assert.match(paintViewJs, /selectColor/);
+  assert.match(designerJs, /store\.dispatch\(\{\s*type:\s*'designer\/remove'/);
 });
 
 test('paint studio CSS rules provide dark studio theme, checkerboard, touch targets, and responsive layout', () => {
@@ -90,7 +96,9 @@ test('paint studio CSS rules provide dark studio theme, checkerboard, touch targ
   assert.match(css, /\.paint-virtual-cursor\s*{/);
   assert.match(css, /\.paint-tools-grid\s*{/);
   assert.match(css, /\.cutout-grid\s*{/);
+  assert.match(css, /\.cutout-none-card\s*{/);
   assert.match(css, /\.paint-palette-grid\s*{/);
+  assert.match(css, /\.prop-slider\s*{/);
 
   // Touch target min-height / min-width 44px
   assert.match(css, /\.tool-btn\s*{[^}]*min-height:\s*44px/s);

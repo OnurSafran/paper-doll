@@ -350,6 +350,10 @@ export function createSceneBookView({
     const updateBtn = $('#update-existing-scene');
     if (updateBtn) updateBtn.disabled = !activeLib;
     $('#save-scene-dialog')?.showModal();
+    setTimeout(() => {
+      titleInput?.focus();
+      titleInput?.select?.();
+    }, 50);
   }
 
   function openSceneLibraryDialog() {

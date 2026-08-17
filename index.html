@@ -104,7 +104,7 @@
                 <h2 id="dollbox-title">Dollbox</h2>
                 <form id="save-preset-form" class="save-form">
                   <label for="doll-name">Doll name</label>
-                  <input id="doll-name" name="dollName" maxlength="30" placeholder="Sunny day doll" required>
+                  <input id="doll-name" type="text" inputmode="text" name="dollName" maxlength="30" placeholder="Sunny day doll" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
                   <div class="button-row">
                     <button class="button primary" type="submit">Save new</button>
                     <button id="update-preset" class="button secondary" type="button">Update</button>
@@ -290,13 +290,11 @@
               </div>
 
               <div id="paint-brush-size-group" class="tool-prop-group">
-                <label><strong>Brush Size</strong></label>
-                <div id="paint-brush-sizes" class="size-chips-grid" role="radiogroup" aria-label="Brush size">
-                  <button data-size="4" class="size-chip" type="button" role="radio" aria-checked="false">4px</button>
-                  <button data-size="10" class="size-chip active" type="button" role="radio" aria-checked="true">10px</button>
-                  <button data-size="20" class="size-chip" type="button" role="radio" aria-checked="false">20px</button>
-                  <button data-size="40" class="size-chip" type="button" role="radio" aria-checked="false">40px</button>
+                <div class="tool-prop-header">
+                  <label for="paint-brush-size-slider"><strong>Brush Size</strong></label>
+                  <output id="paint-brush-size-value" for="paint-brush-size-slider">10px</output>
                 </div>
+                <input id="paint-brush-size-slider" class="prop-slider" type="range" min="1" max="50" step="1" value="10" aria-label="Brush size">
               </div>
 
               <div id="paint-shape-options" class="tool-prop-group" hidden>
@@ -314,8 +312,8 @@
 
               <div class="paint-color-bar">
                 <div class="paint-color-bar-row">
-                  <div id="paint-active-color" class="paint-active-color-swatch" title="Active color"></div>
-                  <div id="paint-palette-grid" class="paint-palette-grid"></div>
+                  <button id="paint-active-color" class="paint-active-color-swatch" type="button" title="Active color (click to choose custom color)" aria-label="Active color: Click to open color picker"></button>
+                  <div id="paint-palette-grid" class="paint-palette-grid" role="toolbar" aria-label="Color palette"></div>
                   <label class="paint-color-picker-label" for="paint-color-picker" title="Custom color">
                     <input id="paint-color-picker" type="color" value="#e76f51">
                   </label>
@@ -399,6 +397,14 @@
 
     </main>
 
+    <footer id="app-footer" class="app-footer">
+      <div class="app-footer-inner">
+        <span class="app-footer-version">Paper Doll Studio <strong>v1.15</strong></span>
+        <span class="footer-divider" aria-hidden="true">·</span>
+        <button id="footer-hard-reset-btn" class="text-button inline-refresh-btn" type="button" title="Clear cached scripts and reload latest version">🔄 Reload & Clear Cache</button>
+      </div>
+    </footer>
+
     <dialog id="confirm-dialog" class="confirm-dialog">
       <form method="dialog">
         <span class="eyebrow">Please confirm</span>
@@ -474,6 +480,17 @@
               <button id="restore-backup-btn" class="button secondary" type="button">↺ Restore Previous Studio</button>
               <button id="dismiss-backup-btn" class="text-button" type="button">Dismiss</button>
             </div>
+          </div>
+        </section>
+
+        <section class="project-section update-section">
+          <div class="section-title-wrap">
+            <h3>App Version & Reset</h3>
+            <p class="panel-copy">If you want to clear temporary browser script caches or reload the newest studio version, you can perform a hard reset. Saved dolls and scenes in storage remain safe.</p>
+          </div>
+          <div class="export-meta-row">
+            <span class="app-version-badge">Paper Doll Studio <strong>v1.15</strong></span>
+            <button id="project-hard-reset-btn" class="button secondary" type="button" title="Clear cached scripts and reload app">🔄 Force Reload & Clear Cache</button>
           </div>
         </section>
       </div>
@@ -564,7 +581,7 @@
         <h2>Save Scene</h2>
         <p>Give this scene a title to save it to your Scene Book.</p>
         <label for="scene-title-input">Scene Title</label>
-        <input id="scene-title-input" name="sceneTitle" maxlength="40" placeholder="Afternoon Tea Story" required>
+        <input id="scene-title-input" type="text" inputmode="text" name="sceneTitle" maxlength="40" placeholder="Afternoon Tea Story" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
         <div class="button-row end">
           <button id="cancel-save-scene" type="button" class="button secondary">Cancel</button>
           <button id="update-existing-scene" type="button" class="button secondary" disabled>Update Current</button>
@@ -582,7 +599,7 @@
           <div id="paint-save-thumb" class="paint-save-thumb" role="img" aria-label="Artwork thumbnail preview"></div>
         </div>
         <label for="paint-artwork-name">Artwork Name</label>
-        <input id="paint-artwork-name" name="artworkName" maxlength="30" placeholder="My Custom Shirt" required>
+        <input id="paint-artwork-name" type="text" inputmode="text" name="artworkName" maxlength="30" placeholder="My Custom Shirt" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
         <div class="button-row end">
           <button id="paint-cancel-save-btn" type="button" class="button secondary">Cancel</button>
           <button id="paint-save-myart-btn" type="button" class="button secondary">Save to My Art</button>
@@ -666,7 +683,7 @@
         <span class="eyebrow">Rename Artwork</span>
         <h2 id="rename-dialog-title">Edit Artwork Name</h2>
         <label for="paint-rename-input">Artwork Name</label>
-        <input id="paint-rename-input" name="artworkName" maxlength="30" required>
+        <input id="paint-rename-input" type="text" inputmode="text" name="artworkName" maxlength="30" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
         <div class="button-row end">
           <button id="paint-rename-cancel-btn" type="button" class="button secondary">Cancel</button>
           <button id="paint-rename-save-btn" type="submit" class="button primary">Save Name</button>
@@ -680,7 +697,7 @@
         <h2>Edit Bubble Text</h2>
         <p>Type the message or story text for this bubble.</p>
         <label for="bubble-text-input">Bubble Message</label>
-        <textarea id="bubble-text-input" name="bubbleText" maxlength="120" rows="3" placeholder="Hello!" required></textarea>
+        <textarea id="bubble-text-input" inputmode="text" name="bubbleText" maxlength="120" rows="3" placeholder="Hello!" autocomplete="off" autocapitalize="sentences" autocorrect="on" required></textarea>
         <div class="character-count-row"><span id="bubble-char-count">0/120</span></div>
         <div class="button-row end">
           <button id="cancel-bubble-text" type="button" class="button secondary">Cancel</button>

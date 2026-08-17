@@ -62,8 +62,20 @@ test('createPaintSession manages tool, shape, color, brush, and mirror state mut
   session.setShapeFilled(true);
   assert.equal(session.getState().shapeFilled, true);
 
-  session.setBrushSize(40);
-  assert.equal(session.getState().brushSize, 40);
+  session.setBrushSize(1);
+  assert.equal(session.getState().brushSize, 1);
+
+  session.setBrushSize(50);
+  assert.equal(session.getState().brushSize, 50);
+
+  session.setBrushSize(25);
+  assert.equal(session.getState().brushSize, 25);
+
+  session.setBrushSize(0); // out of bounds: ignored
+  assert.equal(session.getState().brushSize, 25);
+
+  session.setBrushSize(51); // out of bounds: ignored
+  assert.equal(session.getState().brushSize, 25);
 
   session.setColor('#123456');
   assert.equal(session.getState().color, '#123456');

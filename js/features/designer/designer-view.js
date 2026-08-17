@@ -233,7 +233,14 @@ export function createDesignerView({
         badge.setAttribute('aria-hidden', 'true');
         button.append(badge);
       }
-      button.addEventListener('click', () => store.dispatch({ type: 'designer/equip', assetId: asset.id }));
+      button.addEventListener('click', () => {
+        const currentEquipped = state.designer.draft.slots[asset.slot]?.assetId;
+        if (currentEquipped === asset.id && !['skin', 'hair'].includes(asset.slot)) {
+          store.dispatch({ type: 'designer/remove', slot: asset.slot });
+        } else {
+          store.dispatch({ type: 'designer/equip', assetId: asset.id });
+        }
+      });
       button.addEventListener('dragstart', (event) => {
         event.dataTransfer.effectAllowed = 'copy';
         event.dataTransfer.setData('text/plain', `paper-doll-wearable:${asset.id}`);

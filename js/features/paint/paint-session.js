@@ -80,7 +80,9 @@ export function createPaintSession(initialState = {}) {
     tool: ['brush', 'eraser', 'fill', 'shape', 'select', 'eyedropper'].includes(initialState.tool) ? initialState.tool : 'brush',
     shapeType: ['line', 'rect', 'ellipse'].includes(initialState.shapeType) ? initialState.shapeType : 'rect',
     shapeFilled: Boolean(initialState.shapeFilled),
-    brushSize: [4, 10, 20, 40].includes(initialState.brushSize) ? initialState.brushSize : 10,
+    brushSize: Number.isFinite(Number(initialState.brushSize)) && Number(initialState.brushSize) >= 1 && Number(initialState.brushSize) <= 50
+      ? Math.round(Number(initialState.brushSize))
+      : 10,
     color: typeof initialState.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(initialState.color) ? initialState.color : '#e76f51',
     mirror: Boolean(initialState.mirror),
     zoom: [1, 2, 'fit'].includes(initialState.zoom) ? initialState.zoom : 1,
@@ -172,8 +174,9 @@ export function createPaintSession(initialState = {}) {
   }
 
   function setBrushSize(brushSize) {
-    if ([4, 10, 20, 40].includes(brushSize)) {
-      state = { ...state, brushSize };
+    const size = Math.round(Number(brushSize));
+    if (Number.isFinite(size) && size >= 1 && size <= 50) {
+      state = { ...state, brushSize: size };
     }
   }
 
