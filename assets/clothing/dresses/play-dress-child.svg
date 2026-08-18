@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_play_child">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M132 112 L168 112 L174 188 L126 188 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <path class="tint-primary" d="M126 185 L174 185 L194 300 L106 300 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <path d="M134 120 Q150 135 166 120 M126 190 Q150 198 174 190" fill="none" stroke="#fffdf7" stroke-width="4"/>
+    <circle cx="150" cy="158" r="4" fill="#ffd166" stroke="none"/>
+    <path d="M120 270 Q150 280 180 270" fill="none" stroke="#ffd166" stroke-width="3"/>
+  </g>
+</svg>

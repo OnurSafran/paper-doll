@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_rain_child">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M126 112 C136 118 164 118 174 112 L180 206 C162 212 138 212 120 206 Z" fill="var(--asset-color-primary, #ffd166)"/>
+    <path class="tint-primary" d="M120 202 L180 202 L194 292 L106 292 Z" fill="var(--asset-color-primary, #ffd166)"/>
+    <path d="M132 120 Q150 132 168 120 M150 140 L150 190" fill="none" stroke="#fffdf7" stroke-width="3"/>
+    <circle cx="150" cy="165" r="4" fill="#ef476f" stroke="none"/>
+    <path d="M117 270 Q150 280 183 270" fill="none" stroke="#78add2" stroke-width="3"/>
+  </g>
+</svg>

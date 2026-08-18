@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_rattle_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M126 175 L150 198 L174 175 L164 213 L136 213 Z" fill="var(--asset-color-primary, #ffd166)"/>
+    <circle class="tint-primary" cx="150" cy="157" r="24" fill="var(--asset-color-primary, #ffd166)"/>
+    <circle cx="150" cy="157" r="8" fill="#ef476f" stroke="none"/>
+    <path d="M138 157 Q150 145 162 157" fill="none" stroke="#fffdf7" stroke-width="3"/>
+  </g>
+</svg>

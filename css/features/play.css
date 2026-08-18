@@ -37,10 +37,12 @@
 }
 
 .scene-meta-actions {
-  display: flex;
+  flex: 1 1 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .meta-action-group {
@@ -51,6 +53,18 @@
   background: rgba(46, 38, 31, 0.05);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
+}
+
+.scene-meta-left {
+  justify-self: start;
+}
+
+.scene-meta-center {
+  justify-self: center;
+}
+
+.scene-meta-right {
+  justify-self: end;
 }
 
 .meta-action-group button {
@@ -259,9 +273,17 @@
 .play-grid {
   display: grid;
   grid-template-columns: minmax(600px, 1fr) minmax(300px, 360px);
-  grid-template-areas: "scene spawn";
+  grid-template-areas: "scene rail";
   gap: 14px;
   align-items: stretch;
+}
+
+.play-rail {
+  grid-area: rail;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .play-stage-viewport {
@@ -702,12 +724,22 @@
 
 /* Scene Spawner Panel */
 .spawn-panel {
-  grid-area: spawn;
+  flex: 1 1 auto;
   max-height: min(76vh, 800px);
   padding: 0.85rem;
   overflow-y: auto;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
+}
+
+.scene-rail-actions {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.65rem;
+}
+
+.scene-rail-actions button {
+  width: 100%;
 }
 
 .spawn-list {

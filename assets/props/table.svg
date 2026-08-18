@@ -7,5 +7,7 @@
     <!-- Table Top -->
     <ellipse cx="500" cy="420" rx="380" ry="120" fill="#e9c46a"/>
     <ellipse cx="500" cy="390" rx="380" ry="120" fill="#f4d07d"/>
+    <path d="M220 430 Q500 540 780 430" fill="none" stroke="#bc8a5f" stroke-width="20"/>
+    <circle cx="500" cy="390" r="34" fill="#ffd166" stroke="#d4a373" stroke-width="10"/>
   </g>
 </svg>

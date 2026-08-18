@@ -330,7 +330,7 @@ export function moveEntity(scene, instanceId, targetX, targetY, getAsset = () =>
   }
 
   // Single entity move
-  const range = getEntityAllowedRange(root, getAsset);
+  const range = getEntityAllowedRange(root, getAsset, scene?.stageWidth || STAGE_WIDTH);
   const clampedX = Math.round(clamp(Number(targetX), range.minX, range.maxX));
   const clampedY = Math.round(clamp(Number(targetY), range.minY, range.maxY));
 
@@ -712,4 +712,3 @@ function reclampPinnedEntityTree(scene, instanceId, getAsset) {
 export function touchScene(scene, now = defaultNow) {
   return { ...scene, updatedAt: now().toISOString() };
 }
-

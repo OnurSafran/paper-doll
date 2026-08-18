@@ -165,6 +165,52 @@ test('addEntity and clampPoint clamp coordinates against dynamic stageWidth', ()
   assert.ok(clampedPoint.x > 3000);
 });
 
+test('moveEntity preserves unattached entities across the full panoramic width', () => {
+  const scene = {
+    sceneId: 'wide-move',
+    title: 'Wide',
+    backgroundId: 'bg_bedroom',
+    stageWidth: 4800,
+    cameraX: 0,
+    entities: [{
+      instanceId: 'wide-chair',
+      kind: 'prop',
+      sourceId: 'prop_chair',
+      x: 1000,
+      y: 770,
+      scale: 1,
+      pinned: false,
+      order: 1
+    }]
+  };
+
+  const moved = moveEntity(scene, 'wide-chair', 4000, 770, getAsset);
+  assert.equal(moved.entities[0].x, 4000);
+});
+
+test('reclampSceneEntities uses the new panoramic width when narrowing stages', () => {
+  const scene = {
+    sceneId: 'narrow-wide',
+    title: 'Wide',
+    backgroundId: 'bg_bedroom',
+    stageWidth: 4800,
+    cameraX: 0,
+    entities: [{
+      instanceId: 'wide-chair',
+      kind: 'prop',
+      sourceId: 'prop_chair',
+      x: 4000,
+      y: 770,
+      scale: 1,
+      pinned: false,
+      order: 1
+    }]
+  };
+
+  const narrowed = reclampSceneEntities(scene, 3200, getAsset);
+  assert.equal(narrowed.entities[0].x, 3080);
+});
+
 test('AppStore handles scene/setStageWidth, reclamping, and undo/redo', () => {
   const store = createAppStore({
     presets: [{ presetId: 'preset-1', name: 'Doll 1', ...createStarterDraft() }],

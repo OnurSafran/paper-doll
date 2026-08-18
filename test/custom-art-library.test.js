@@ -394,7 +394,7 @@ test('My Art library and impact dialogs expose accessible markup and contracts',
   }
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const css = loadCssBundle();
-  const paintViewJs = readFileSync(new URL('../js/features/paint/paint-view.js', import.meta.url), 'utf8');
+  const paintLibraryViewJs = readFileSync(new URL('../js/features/paint/paint-library-view.js', import.meta.url), 'utf8');
 
   // HTML dialogs and buttons
   assert.match(html, /id="paint-myart-btn"/);
@@ -417,13 +417,15 @@ test('My Art library and impact dialogs expose accessible markup and contracts',
   assert.match(css, /\.impact-art-preview/);
 
   // Paint view controller methods
-  assert.match(paintViewJs, /openMyArtDialog/);
-  assert.match(paintViewJs, /renderMyArtCards/);
-  assert.match(paintViewJs, /editCopyOfArtwork/);
-  assert.match(paintViewJs, /openImpactDialog/);
-  assert.match(paintViewJs, /handleRemoveFromMyArt/);
-  assert.match(paintViewJs, /handleDeleteWithUses/);
-  assert.match(paintViewJs, /handleRestoreArtwork/);
-  assert.match(paintViewJs, /handleDeletePermanently/);
-  assert.match(paintViewJs, /handleEmptyTrash/);
+  assert.match(paintLibraryViewJs, /openMyArtDialog/);
+  assert.match(paintLibraryViewJs, /renderMyArtCards/);
+  assert.match(paintLibraryViewJs, /editCopyOfArtwork/);
+  assert.match(paintLibraryViewJs, /openImpactDialog/);
+  assert.match(paintLibraryViewJs, /handleRemoveFromMyArt/);
+  assert.match(paintLibraryViewJs, /handleDeleteWithUses/);
+  assert.match(paintLibraryViewJs, /handleRestoreArtwork/);
+  assert.match(paintLibraryViewJs, /handleDeletePermanently/);
+  assert.match(paintLibraryViewJs, /handleEmptyTrash/);
+  assert.match(paintLibraryViewJs, /captureHistorySnapshot/);
+  assert.match(paintLibraryViewJs, /getSession\(\)\.pushHistory\(blankCanvasSnapshot\)/);
 });

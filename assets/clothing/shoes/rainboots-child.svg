@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_rainboots_child">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path class="tint-primary" d="M128 345 L147 345 L147 395 Q140 402 123 400 L112 395 Q119 375 128 345 Z" fill="var(--asset-color-primary, #ffd166)"/>
+    <path class="tint-primary" d="M153 345 L172 345 Q181 375 188 395 L177 400 Q160 402 153 395 Z" fill="var(--asset-color-primary, #ffd166)"/>
+    <path d="M124 355 L148 355 M152 355 L176 355" stroke="#fffdf7" stroke-width="5"/>
+  </g>
+</svg>

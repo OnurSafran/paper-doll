@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_apron_elder">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M122 112 C117 143 115 174 118 204 L108 325 Q150 341 192 325 L182 204 C185 174 183 143 178 112 Z" fill="var(--asset-color-primary, #8aa58a)"/>
+    <path d="M122 115 L130 173 L170 173 L178 115" fill="var(--asset-color-secondary, #f5ead9)"/>
+    <path d="M130 173 L121 305 Q150 316 179 305 L170 173 Z" fill="var(--asset-color-secondary, #f5ead9)"/>
+    <path d="M130 174 Q150 183 170 174" fill="none"/>
+    <path d="M121 207 Q150 217 179 207" fill="none" opacity="0.55"/>
+    <path d="M122 285 Q150 296 178 285" fill="none" opacity="0.55"/>
+    <circle cx="150" cy="236" r="8" fill="none"/>
+  </g>
+</svg>

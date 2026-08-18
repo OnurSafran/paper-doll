@@ -58,6 +58,10 @@ export const ASSETS = Object.freeze([
   wearable('top_vest', 'top', 'Utility vest', 'assets/clothing/tops/vest.svg', 'sage'),
   wearable('top_cardigan_classic', 'top', 'Classic cardigan', 'assets/clothing/tops/cardigan-classic.svg', 'sage', ['garment'], ['teen', 'adult', 'elder'], ['neutral']),
   wearable('top_coat_adult', 'top', 'Tailored coat', 'assets/clothing/tops/coat-adult.svg', 'charcoal', ['garment'], ['adult', 'elder'], ['neutral']),
+  wearable('top_tshirt_child', 'top', 'Playground tee', 'assets/clothing/tops/tshirt-child.svg', 'sky', ['garment'], ['child'], ['neutral']),
+  wearable('top_hoodie_child', 'top', 'Playground hoodie', 'assets/clothing/tops/hoodie-child.svg', 'coral', ['garment'], ['child'], ['neutral']),
+  wearable('top_cardigan_baby', 'top', 'Baby cardigan', 'assets/clothing/tops/cardigan-baby.svg', 'lavender', ['garment'], ['baby'], ['neutral']),
+  wearable('top_tee_baby', 'top', 'Baby tee', 'assets/clothing/tops/tee-baby.svg', 'mint', ['garment'], ['baby'], ['neutral']),
 
   wearable('bottom_jeans', 'bottom', 'High-waist jeans', 'assets/clothing/bottoms/jeans.svg', 'denim'),
   wearable('bottom_skirt', 'bottom', 'Tennis skirt', 'assets/clothing/bottoms/skirt.svg', 'marigold', ['garment'], ['teen'], ['feminine']),
@@ -67,6 +71,11 @@ export const ASSETS = Object.freeze([
   wearable('bottom_culottes', 'bottom', 'Garden culottes', 'assets/clothing/bottoms/culottes.svg', 'lavender'),
   wearable('bottom_cargo', 'bottom', 'Pocket cargo pants', 'assets/clothing/bottoms/cargo.svg', 'sage', ['garment'], ['teen'], ['masculine']),
   wearable('bottom_trousers_classic', 'bottom', 'Classic trousers', 'assets/clothing/bottoms/trousers-classic.svg', 'charcoal', ['garment'], ['teen', 'adult', 'elder'], ['neutral']),
+  wearable('bottom_slacks_adult', 'bottom', 'Relaxed slacks', 'assets/clothing/bottoms/slacks-adult.svg', 'charcoal', ['garment'], ['adult', 'elder'], ['neutral']),
+  wearable('bottom_shorts_child', 'bottom', 'Playground shorts', 'assets/clothing/bottoms/shorts-child.svg', 'marigold', ['garment'], ['child'], ['neutral']),
+  wearable('bottom_jeans_child', 'bottom', 'Playground jeans', 'assets/clothing/bottoms/jeans-child.svg', 'denim', ['garment'], ['child'], ['neutral']),
+  wearable('bottom_bloomers_baby', 'bottom', 'Baby bloomers', 'assets/clothing/bottoms/bloomers-baby.svg', 'coral', ['garment'], ['baby'], ['neutral']),
+  wearable('bottom_leggings_baby', 'bottom', 'Baby leggings', 'assets/clothing/bottoms/leggings-baby.svg', 'lavender', ['garment'], ['baby'], ['neutral']),
 
   wearable('dress_sundress', 'dress', 'Sundress', 'assets/clothing/dresses/sundress.svg', 'coral', ['garment'], ['teen'], ['feminine']),
   wearable('dress_party', 'dress', 'Tiered party dress', 'assets/clothing/dresses/party-dress.svg', 'coral', ['garment'], ['teen'], ['feminine']),
@@ -74,15 +83,27 @@ export const ASSETS = Object.freeze([
   wearable('dress_ballgown', 'dress', 'Princess ballgown', 'assets/clothing/dresses/ballgown.svg', 'lavender', ['garment'], ['teen'], ['feminine']),
   wearable('dress_overall', 'dress', 'Patchwork overall dress', 'assets/clothing/dresses/overall.svg', 'denim'),
   wearable('dress_romper_baby', 'dress', 'Baby romper', 'assets/clothing/dresses/romper-baby.svg', 'sky', ['garment'], ['baby'], ['neutral']),
+  wearable('dress_play_child', 'dress', 'Play dress', 'assets/clothing/dresses/play-dress-child.svg', 'coral', ['garment'], ['child'], ['neutral']),
+  wearable('dress_rain_child', 'dress', 'Rainy-day dress', 'assets/clothing/dresses/rain-dress-child.svg', 'marigold', ['garment'], ['child'], ['neutral']),
+  wearable('dress_sun_baby', 'dress', 'Baby sun dress', 'assets/clothing/dresses/sun-dress-baby.svg', 'marigold', ['garment'], ['baby'], ['neutral']),
+  wearable('dress_party_baby', 'dress', 'Baby party dress', 'assets/clothing/dresses/party-dress-baby.svg', 'lavender', ['garment'], ['baby'], ['neutral']),
+  wearable('dress_wrap_adult', 'dress', 'Wrap dress', 'assets/clothing/dresses/wrap-adult.svg', 'coral', ['garment'], ['adult'], ['neutral']),
+  wearable('dress_suit_adult', 'dress', 'Tailored suit dress', 'assets/clothing/dresses/suit-adult.svg', 'charcoal', ['garment'], ['adult'], ['neutral']),
+  wearable('dress_knit_elder', 'dress', 'Knit day dress', 'assets/clothing/dresses/knit-elder.svg', 'cocoa', ['garment'], ['elder'], ['neutral']),
+  wearable('dress_apron_elder', 'dress', 'Apron day dress', 'assets/clothing/dresses/apron-elder.svg', 'sage', ['garment'], ['elder'], ['neutral']),
 
   wearable('shoes_sneakers', 'shoes', 'Retro sneakers', 'assets/clothing/shoes/sneakers.svg', 'coral'),
   wearable('shoes_sandals', 'shoes', 'Mary Jane flats', 'assets/clothing/shoes/sandals.svg', 'cocoa', ['garment'], ['teen'], ['feminine']),
-  wearable('shoes_boots', 'shoes', 'Lace-up ankle boots', 'assets/clothing/shoes/boots.svg', 'cocoa'),
-  wearable('shoes_loafers', 'shoes', 'Preppy loafers', 'assets/clothing/shoes/loafers.svg', 'brown'),
+  wearable('shoes_boots', 'shoes', 'Lace-up ankle boots', 'assets/clothing/shoes/boots.svg', 'cocoa', ['garment'], ['teen', 'adult', 'elder'], ['neutral']),
+  wearable('shoes_loafers', 'shoes', 'Preppy loafers', 'assets/clothing/shoes/loafers.svg', 'brown', ['garment'], ['teen', 'adult', 'elder'], ['neutral']),
   wearable('shoes_ballet', 'shoes', 'Ballet ribbon flats', 'assets/clothing/shoes/ballet.svg', 'coral', ['garment'], ['teen'], ['feminine']),
   wearable('shoes_rainboots', 'shoes', 'Sunny rain boots', 'assets/clothing/shoes/rainboots.svg', 'marigold'),
   wearable('shoes_booties_baby', 'shoes', 'Soft booties', 'assets/clothing/shoes/booties-baby.svg', 'cream', ['garment'], ['baby'], ['neutral']),
   wearable('shoes_oxfords_classic', 'shoes', 'Classic oxfords', 'assets/clothing/shoes/oxfords-classic.svg', 'cocoa', ['garment'], ['teen', 'adult', 'elder'], ['neutral']),
+  wearable('shoes_sneakers_child', 'shoes', 'Playground sneakers', 'assets/clothing/shoes/sneakers-child.svg', 'coral', ['garment'], ['child'], ['neutral']),
+  wearable('shoes_rainboots_child', 'shoes', 'Playground rain boots', 'assets/clothing/shoes/rainboots-child.svg', 'marigold', ['garment'], ['child'], ['neutral']),
+  wearable('shoes_sandals_baby', 'shoes', 'Baby sandals', 'assets/clothing/shoes/sandals-baby.svg', 'sky', ['garment'], ['baby'], ['neutral']),
+  wearable('shoes_sneakers_baby', 'shoes', 'Baby sneakers', 'assets/clothing/shoes/sneakers-baby.svg', 'mint', ['garment'], ['baby'], ['neutral']),
 
   wearable('hair_short', 'hair', 'Chic bob', 'assets/clothing/hair/short.svg', 'marigold', ['hairBack', 'hairFront']),
   wearable('hair_long', 'hair', 'Long waves', 'assets/clothing/hair/long.svg', 'brown', ['hairBack', 'hairFront'], ['teen'], ['feminine']),
@@ -95,6 +116,10 @@ export const ASSETS = Object.freeze([
   wearable('hair_baby_curl', 'hair', 'Baby curl', 'assets/clothing/hair/baby-curl.svg', 'blonde', ['hairBack', 'hairFront'], ['baby'], ['neutral']),
   wearable('hair_silver_waves', 'hair', 'Silver waves', 'assets/clothing/hair/silver-waves.svg', 'white', ['hairBack', 'hairFront'], ['adult', 'elder'], ['neutral']),
   wearable('hair_short_slick', 'hair', 'Short slick', 'assets/clothing/hair/short-slick.svg', 'black', ['hairBack', 'hairFront'], ['teen', 'adult', 'elder'], ['neutral']),
+  wearable('hair_bob_child', 'hair', 'Child bob', 'assets/clothing/hair/bob-child.svg', 'marigold', ['hairBack', 'hairFront'], ['child'], ['neutral']),
+  wearable('hair_curls_child', 'hair', 'Child curls', 'assets/clothing/hair/curls-child.svg', 'brown', ['hairBack', 'hairFront'], ['child'], ['neutral']),
+  wearable('hair_puffs_baby', 'hair', 'Baby puffs', 'assets/clothing/hair/puffs-baby.svg', 'black', ['hairBack', 'hairFront'], ['baby'], ['neutral']),
+  wearable('hair_bun_baby', 'hair', 'Baby bun', 'assets/clothing/hair/bun-baby.svg', 'brown', ['hairBack', 'hairFront'], ['baby'], ['neutral']),
 
   wearable('accessory_hat', 'accessory', 'Sun hat', 'assets/clothing/accessories/hat.svg', 'marigold'),
   wearable('accessory_glasses', 'accessory', 'Cat-eye glasses', 'assets/clothing/accessories/glasses.svg', 'cocoa'),
@@ -110,6 +135,10 @@ export const ASSETS = Object.freeze([
   wearable('accessory_pacifier_baby', 'accessory', 'Baby pacifier', 'assets/clothing/accessories/pacifier-baby.svg', 'lavender', ['garment'], ['baby'], ['neutral']),
   wearable('accessory_shawl_elder', 'accessory', 'Warm wrap shawl', 'assets/clothing/accessories/shawl-elder.svg', 'sage', ['garment'], ['adult', 'elder'], ['neutral']),
   wearable('accessory_spectacles_elder', 'accessory', 'Reading spectacles', 'assets/clothing/accessories/spectacles-elder.svg', 'cocoa', ['garment'], ['teen', 'adult', 'elder'], ['neutral']),
+  wearable('accessory_cap_child', 'accessory', 'Playground cap', 'assets/clothing/accessories/cap-child.svg', 'sky', ['garment'], ['child'], ['neutral']),
+  wearable('accessory_backpack_child', 'accessory', 'Little backpack', 'assets/clothing/accessories/backpack-child.svg', 'coral', ['garment'], ['child'], ['neutral']),
+  wearable('accessory_bonnet_baby', 'accessory', 'Soft baby bonnet', 'assets/clothing/accessories/bonnet-baby.svg', 'lavender', ['garment'], ['baby'], ['neutral']),
+  wearable('accessory_rattle_baby', 'accessory', 'Baby rattle', 'assets/clothing/accessories/rattle-baby.svg', 'marigold', ['garment'], ['baby'], ['neutral']),
 
   { id: 'bg_bedroom', kind: 'background', name: 'Cozy bedroom', path: 'assets/backgrounds/bedroom.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
   { id: 'bg_park', kind: 'background', name: 'Sunny park', path: 'assets/backgrounds/park.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
@@ -177,15 +206,19 @@ export function wearablesBySlot(slot) {
 export function getOfferedWearables(slot, baseDollId, styleFilter = 'all') {
   const doll = getAsset(baseDollId);
   const fitFamily = doll?.fitFamily || 'teen';
-  return wearablesBySlot(slot).filter((w) => {
-    if (w.supportedFitFamilies && !w.supportedFitFamilies.includes(fitFamily)) return false;
-    if (styleFilter === 'all') return true;
-    return w.presentationStyles?.includes(styleFilter) || (styleFilter === 'unsorted' && (!w.presentationStyles || w.presentationStyles.length === 0));
-  });
+  return wearablesBySlot(slot).filter((wearable) => matchesDiscoveryFilters(wearable, fitFamily, styleFilter));
 }
 
-export function facesByGroup(group) {
-  return ASSETS.filter((asset) => asset.kind === 'face' && asset.faceGroup === group);
+export function matchesDiscoveryFilters(asset, fitFamily = 'teen', styleFilter = 'all') {
+  if (asset?.supportedFitFamilies && !asset.supportedFitFamilies.includes(fitFamily)) return false;
+  if (styleFilter === 'all') return true;
+  return asset?.presentationStyles?.includes(styleFilter) ||
+    (styleFilter === 'unsorted' && (!asset?.presentationStyles || asset.presentationStyles.length === 0));
+}
+
+export function facesByGroup(group, fitFamily) {
+  return ASSETS.filter((asset) => asset.kind === 'face' && asset.faceGroup === group &&
+    (!fitFamily || !asset.supportedFitFamilies || asset.supportedFitFamilies.includes(fitFamily)));
 }
 
 function face(id, faceGroup, name, path, requiredGroups = ['face-feature']) {

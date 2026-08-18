@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_shawl_elder">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
     <!-- Cozy Wrap Shawl -->
-    <path class="tint-primary" d="M120 110 C108 135 106 170 120 190 C135 210 165 210 180 190 C194 170 192 135 180 110 C165 125 135 125 120 110 Z" fill="var(--asset-color-primary, #b7b7a4)"/>
+    <path class="tint-primary" d="M119 110 C106 136 104 173 119 193 C134 213 166 213 181 193 C196 173 194 136 181 110 C165 126 135 126 119 110 Z" fill="var(--asset-color-primary, #b7b7a4)"/>
     <!-- Shawl Fringe Details -->
-    <line x1="140" y1="202" x2="140" y2="212" stroke="#2d261e" stroke-width="1.8"/>
-    <line x1="150" y1="205" x2="150" y2="215" stroke="#2d261e" stroke-width="1.8"/>
-    <line x1="160" y1="202" x2="160" y2="212" stroke="#2d261e" stroke-width="1.8"/>
+    <line x1="138" y1="205" x2="138" y2="215" stroke="#2d261e" stroke-width="1.8"/>
+    <line x1="150" y1="208" x2="150" y2="218" stroke="#2d261e" stroke-width="1.8"/>
+    <line x1="162" y1="205" x2="162" y2="215" stroke="#2d261e" stroke-width="1.8"/>
+    <path d="M125 144 Q150 155 175 144" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.32"/>
     <!-- Pin / Brooch -->
     <circle cx="150" cy="140" r="3.5" fill="#e07a5f" stroke="#2d261e" stroke-width="1.5"/>
   </g>

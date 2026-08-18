@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_bun_baby">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <circle class="hair-fill" cx="150" cy="22" r="24" fill="var(--hair-color, #8b5e34)"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M118 61 C116 35 130 20 150 20 C170 20 184 35 182 61 C174 48 162 44 150 44 C138 44 126 48 118 61 Z" fill="var(--hair-color, #8b5e34)"/>
+    <path d="M136 43 Q150 53 164 43" fill="none" stroke="#d4a373" stroke-width="3"/>
+  </g>
+</svg>

@@ -5,8 +5,9 @@
     <!-- Coat Lapels -->
     <path class="tint-primary" d="M142 110 L132 145 L150 165 L168 145 L158 110 Z" fill="var(--asset-color-primary, #4a4e69)"/>
     <!-- Sleeves -->
-    <path class="tint-primary" d="M122 108 C110 138 98 172 96 208 L106 210 C110 178 118 144 128 118 Z" fill="var(--asset-color-primary, #4a4e69)"/>
-    <path class="tint-primary" d="M178 108 C190 138 202 172 204 208 L194 210 C190 178 182 144 172 118 Z" fill="var(--asset-color-primary, #4a4e69)"/>
+    <path class="tint-primary" d="M122 108 C110 138 97 174 94 212 C93 218 98 221 104 218 L108 211 C111 178 118 144 128 118 Z" fill="var(--asset-color-primary, #4a4e69)"/>
+    <path class="tint-primary" d="M178 108 C190 138 203 174 206 212 C207 218 202 221 196 218 L192 211 C189 178 182 144 172 118 Z" fill="var(--asset-color-primary, #4a4e69)"/>
+    <path d="M95 211 Q100 214 105 212 M195 212 Q200 214 205 211" fill="none" stroke="#f2e9e4" stroke-width="2"/>
     <!-- Pockets & Buttons -->
     <line x1="126" y1="195" x2="138" y2="195" stroke="#2d261e" stroke-width="2"/>
     <line x1="162" y1="195" x2="174" y2="195" stroke="#2d261e" stroke-width="2"/>

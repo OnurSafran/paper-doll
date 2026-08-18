@@ -6,6 +6,7 @@ import {
   dollsByLifeStage,
   getAsset,
   getOfferedWearables,
+  matchesDiscoveryFilters,
   wearablesBySlot
 } from '../js/core/asset-catalog.js';
 import {
@@ -20,6 +21,14 @@ import {
   sanitizeDraft
 } from '../js/core/state-schema.js';
 import { createAppStore } from '../js/core/app-store.js';
+import { dollsForLifeStagePicker } from '../js/features/designer/designer-view.js';
+
+test('model picker exposes one representative in life-stage order', () => {
+  assert.deepEqual(
+    dollsForLifeStagePicker().map((doll) => doll.id),
+    ['doll_baby_a', 'doll_chibi_a', 'doll_classic_a', 'doll_adult_a', 'doll_elder_a']
+  );
+});
 
 test('asset catalog registers all 6 base dolls across 5 life stages', () => {
   const allDolls = dolls();
@@ -77,7 +86,7 @@ test('DEFAULT_FACE_BY_DOLL defines defaults for all 6 base dolls', () => {
 test('getOfferedWearables filters by fitFamily and presentation style', () => {
   // Baby doll only sees baby wearables
   const babyTops = getOfferedWearables('top', 'doll_baby_a', 'all');
-  assert.equal(babyTops.length, 0); // No baby tops, baby uses romper dress
+  assert.ok(babyTops.length >= 2); // Baby now has a small top starter set
   const babyDresses = getOfferedWearables('dress', 'doll_baby_a', 'all');
   assert.ok(babyDresses.some((d) => d.id === 'dress_romper_baby'));
   assert.ok(!babyDresses.some((d) => d.id === 'dress_sundress'));
@@ -102,6 +111,12 @@ test('getOfferedWearables filters by fitFamily and presentation style', () => {
   const neutralTeenTops = getOfferedWearables('top', 'doll_classic_a', 'neutral');
   assert.ok(neutralTeenTops.some((t) => t.id === 'top_cardigan_classic'));
   assert.ok(!neutralTeenTops.some((t) => t.id === 'top_blouse'));
+});
+
+test('discovery filters keep untagged custom descriptors in the unsorted style', () => {
+  assert.equal(matchesDiscoveryFilters({ supportedFitFamilies: ['baby'] }, 'baby', 'unsorted'), true);
+  assert.equal(matchesDiscoveryFilters({ supportedFitFamilies: ['baby'] }, 'teen', 'unsorted'), false);
+  assert.equal(matchesDiscoveryFilters({ presentationStyles: ['neutral'] }, 'teen', 'unsorted'), false);
 });
 
 test('setBaseDoll retains compatible items and preserves incompatible references', () => {

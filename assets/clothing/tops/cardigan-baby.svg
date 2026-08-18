@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_cardigan_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M122 112 C113 136 108 170 106 192 L119 198 L132 125 Z" fill="var(--asset-color-primary, #eeddf5)"/>
+    <path class="tint-primary" d="M178 112 C187 136 192 170 194 192 L181 198 L168 125 Z" fill="var(--asset-color-primary, #eeddf5)"/>
+    <path class="tint-primary" d="M122 112 C136 120 164 120 178 112 L182 205 C164 211 136 211 118 205 Z" fill="var(--asset-color-primary, #eeddf5)"/>
+    <path d="M150 124 L150 202 M132 140 Q150 150 168 140" fill="none" stroke="#fffdf7" stroke-width="3"/>
+    <circle cx="150" cy="165" r="3" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

@@ -1,15 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getReferenceGuides, guideIsInBounds, REFERENCE_MODELS } from '../js/features/paint/paint-guides.js';
+import { getReferenceGuides, guideIsInBounds } from '../js/features/paint/paint-guides.js';
+import { REFERENCE_DOLL_IDS } from '../js/domain/vocabulary.js';
 
 const SLOTS = ['top', 'bottom', 'dress', 'shoes', 'hair', 'accessory'];
 
+test('reference model choices expose life stages instead of teen variants', () => {
+  assert.deepEqual([...REFERENCE_DOLL_IDS], [
+    'doll_classic_a', 'doll_classic_b', 'doll_chibi_a', 'doll_baby_a', 'doll_adult_a', 'doll_elder_a'
+  ]);
+});
+
 test('every supported wearable slot and reference model has bounded declared guides', () => {
   for (const slot of SLOTS) {
-    for (const model of REFERENCE_MODELS) {
-      const guides = getReferenceGuides(slot, model.id);
-      assert.ok(guides.length >= 4, `${slot}/${model.id} needs precision guides`);
-      assert.ok(guides.every(guideIsInBounds), `${slot}/${model.id} guides must stay in 300x450`);
+    for (const modelId of REFERENCE_DOLL_IDS) {
+      const guides = getReferenceGuides(slot, modelId);
+      assert.ok(guides.length >= 4, `${slot}/${modelId} needs precision guides`);
+      assert.ok(guides.every(guideIsInBounds), `${slot}/${modelId} guides must stay in 300x450`);
       assert.ok(guides.every((guide) => typeof guide.label === 'string' && guide.label.length > 0));
     }
   }

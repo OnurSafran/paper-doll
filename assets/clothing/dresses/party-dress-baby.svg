@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_party_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M124 112 C136 120 164 120 176 112 L178 198 C162 204 138 204 122 198 Z" fill="var(--asset-color-primary, #ffb4a2)"/>
+    <path class="tint-primary" d="M122 195 L178 195 L190 272 L110 272 Z" fill="var(--asset-color-primary, #ffb4a2)"/>
+    <path d="M122 210 Q150 220 178 210 M116 252 Q150 264 184 252" fill="none" stroke="#fffdf7" stroke-width="4"/>
+    <circle cx="150" cy="150" r="5" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

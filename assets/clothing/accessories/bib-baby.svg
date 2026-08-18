@@ -1,10 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_bib_baby">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
     <!-- Neck Ribbon -->
-    <path d="M136 96 C144 104 156 104 164 96" fill="none" stroke="#2d261e" stroke-width="2"/>
+    <path d="M134 96 C143 105 157 105 166 96" fill="none" stroke="#2d261e" stroke-width="2"/>
     <!-- Bib Body -->
-    <path class="tint-primary" d="M132 100 C120 120 120 152 136 164 C144 170 156 170 164 164 C180 152 180 120 168 100 C158 112 142 112 132 100 Z" fill="var(--asset-color-primary, #bde0fe)"/>
+    <path class="tint-primary" d="M130 100 C117 121 118 153 135 166 C143 172 157 172 165 166 C182 153 183 121 170 100 C159 113 141 113 130 100 Z" fill="var(--asset-color-primary, #bde0fe)"/>
     <!-- Cute Star / Embroidered Icon -->
-    <circle cx="150" cy="138" r="4" fill="#ffd166" stroke="#2d261e" stroke-width="1.5"/>
+    <circle cx="150" cy="140" r="4" fill="#ffd166" stroke="#2d261e" stroke-width="1.5"/>
+    <path d="M143 157 Q150 161 157 157" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.8"/>
   </g>
 </svg>

@@ -125,12 +125,12 @@ Catalog IDs are persisted identifiers. Labels/files may change without changing 
 
 ## Current inventory
 
-- 3 base dolls: classic, joy, and chibi
-- 9 tops, 7 bottoms, 5 dresses, 6 shoe pairs, 8 hairstyles, 10 accessories
+- 6 base dolls: classic, joy, chibi, baby, adult, and elder
+- 15 tops, 13 bottoms, 14 dresses, 12 shoe pairs, 15 hairstyles, 18 accessories
 - 7 backgrounds: bedroom, park, atelier, beach, cafe, forest, library
 - 22 props: chair, table, plant, lamp, rug, tea set, easel, bookshelf, cat, picnic basket, umbrella, balloons, cake, guitar, painting, bench, bicycle, kite, camera, flower pot, mailbox, picnic blanket
 
-Total: 77 cataloged SVG files, including 45 wearable/hair/accessory assets, 3 base dolls, 7 backgrounds, and 22 props.
+Total: 141 cataloged SVG files, including 87 wearable/hair/accessory assets, 6 base dolls, 19 face assets, 7 backgrounds, and 22 props.
 
 ## Production and acceptance
 

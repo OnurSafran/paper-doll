@@ -1,13 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_romper_baby">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
     <!-- Baby Romper Body -->
-    <path class="tint-primary" d="M124 114 C116 140 114 175 118 208 C120 226 128 238 136 242 L164 242 C172 238 180 226 182 208 C186 175 184 140 176 114 Z" fill="var(--asset-color-primary, #a8dadc)"/>
+    <path class="tint-primary" d="M121 114 C113 140 111 176 116 210 C119 228 127 241 135 246 L165 246 C173 241 181 228 184 210 C189 176 187 140 179 114 Z" fill="var(--asset-color-primary, #a8dadc)"/>
     <!-- Cute Straps / Sleeves -->
-    <rect class="tint-primary" x="122" y="112" width="10" height="24" rx="3" fill="var(--asset-color-primary, #a8dadc)"/>
-    <rect class="tint-primary" x="168" y="112" width="10" height="24" rx="3" fill="var(--asset-color-primary, #a8dadc)"/>
+    <rect class="tint-primary" x="120" y="112" width="12" height="25" rx="4" fill="var(--asset-color-primary, #a8dadc)"/>
+    <rect class="tint-primary" x="168" y="112" width="12" height="25" rx="4" fill="var(--asset-color-primary, #a8dadc)"/>
     <!-- Cute Pocket and Buttons -->
     <circle cx="150" cy="145" r="2.5" fill="#ffffff" stroke="#2d261e" stroke-width="1.5"/>
     <circle cx="150" cy="165" r="2.5" fill="#ffffff" stroke="#2d261e" stroke-width="1.5"/>
-    <path d="M140 185 L160 185 C160 198 140 198 140 185 Z" fill="#ffffff" opacity="0.6" stroke="#2d261e" stroke-width="1.5"/>
+    <path d="M139 185 L161 185 C161 199 139 199 139 185 Z" fill="#ffffff" opacity="0.6" stroke="#2d261e" stroke-width="1.5"/>
+    <path d="M132 232 Q140 238 150 232 Q160 238 168 232" fill="none" stroke="#2d261e" stroke-width="1.5"/>
   </g>
 </svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_sun_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M128 112 L138 190 L162 190 L172 112 Z" fill="var(--asset-color-primary, #ffd166)"/>
+    <path class="tint-primary" d="M126 184 L174 184 L194 278 L106 278 Z" fill="var(--asset-color-primary, #ffd166)"/>
+    <path d="M132 124 Q150 136 168 124 M116 256 Q150 266 184 256" fill="none" stroke="#fffdf7" stroke-width="4"/>
+    <circle cx="150" cy="160" r="5" fill="#ef476f" stroke="none"/>
+  </g>
+</svg>

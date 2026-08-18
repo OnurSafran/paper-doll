@@ -1,8 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_kite">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
     <path d="M500 90 L790 390 L500 690 L210 390 Z" fill="#f06c5c"/>
+    <path d="M500 90 L500 390 L210 390 Z" fill="#ffd166" stroke="none"/>
+    <path d="M500 390 L790 390 L500 690 Z" fill="#4ea8de" stroke="none"/>
     <path d="M500 90 L500 690 M210 390 L790 390" fill="none"/>
     <path d="M500 690 Q550 770 500 850 Q450 900 510 950" fill="none" stroke="#457b9d"/>
     <path d="M500 760 L550 800 L500 830 L450 800 Z" fill="#f2aa35"/>
+    <path d="M500 845 L548 875 L500 905 L452 875 Z" fill="#ef476f"/>
+    <path d="M492 920 L532 945 L500 970 L468 945 Z" fill="#ffd166"/>
   </g>
 </svg>

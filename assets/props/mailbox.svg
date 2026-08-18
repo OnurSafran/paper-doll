@@ -6,5 +6,11 @@
     <path d="M500 360 L500 500" stroke="#e76f51"/>
     <path d="M360 680 L360 900 M640 680 L640 900" stroke="#8b5e34"/>
     <rect x="420" y="510" width="160" height="90" rx="12" fill="#f2aa35"/>
+    <!-- Raised flag and mail slot -->
+    <path d="M700 420 L760 420 L760 260" fill="none" stroke="#ef476f" stroke-width="22"/>
+    <rect x="735" y="230" width="70" height="45" rx="8" fill="#ef476f"/>
+    <rect x="430" y="535" width="140" height="18" rx="8" fill="#fff4d6" stroke="none"/>
+    <circle cx="500" cy="585" r="10" fill="#2d261e" stroke="none"/>
+    <path d="M330 900 L390 900 M610 900 L670 900" stroke="#2d261e" stroke-width="22"/>
   </g>
 </svg>

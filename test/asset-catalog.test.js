@@ -7,7 +7,7 @@ import { createAppStore } from '../js/core/app-store.js';
 test('expanded catalog has unique IDs and the complete planned inventory', () => {
   assert.equal(new Set(ASSETS.map((asset) => asset.id)).size, ASSETS.length);
   assert.equal(ASSETS.filter((asset) => asset.kind === 'doll').length, 6);
-  assert.equal(ASSETS.filter((asset) => asset.kind === 'wearable').length, 58);
+  assert.equal(ASSETS.filter((asset) => asset.kind === 'wearable').length, 87);
   assert.equal(ASSETS.filter((asset) => asset.kind === 'face').length, 19);
   assert.equal(ASSETS.filter((asset) => asset.kind === 'background').length, 7);
   assert.equal(ASSETS.filter((asset) => asset.kind === 'prop').length, 22);
@@ -16,7 +16,7 @@ test('expanded catalog has unique IDs and the complete planned inventory', () =>
 test('wearable slot counts match the expanded product contract', () => {
   assert.deepEqual(
     Object.fromEntries(['top', 'bottom', 'dress', 'shoes', 'hair', 'accessory'].map((slot) => [slot, wearablesBySlot(slot).length])),
-    { top: 11, bottom: 8, dress: 6, shoes: 8, hair: 11, accessory: 14 }
+    { top: 15, bottom: 13, dress: 14, shoes: 12, hair: 15, accessory: 18 }
   );
 });
 

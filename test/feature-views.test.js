@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { describeOutfit, previewCustomColor, WARDROBE_SLOTS } from '../js/features/designer/designer-view.js';
-import { nextSpawnPoint } from '../js/features/play/play-view.js';
+import { getWheelPanDelta, nextSpawnPoint } from '../js/features/play/play-view.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { LIMITS } from '../js/domain/vocabulary.js';
 
@@ -36,4 +36,15 @@ test('nextSpawnPoint generates distributed points within stage boundaries', () =
     assert.ok(pt.x >= 0 && pt.x <= LIMITS.STAGE_WIDTH, `Spawn X out of bounds at ${i}: ${pt.x}`);
     assert.ok(pt.y >= 0 && pt.y <= LIMITS.STAGE_HEIGHT, `Spawn Y out of bounds at ${i}: ${pt.y}`);
   }
+});
+
+test('nextSpawnPoint places tray clicks inside the visible camera region', () => {
+  assert.deepEqual(nextSpawnPoint(0, 0), { x: 650, y: 690 });
+  assert.deepEqual(nextSpawnPoint(0, 1600), { x: 2250, y: 690 });
+});
+
+test('wheel panning claims horizontal gestures but preserves vertical scrolling', () => {
+  assert.equal(getWheelPanDelta({ deltaX: 120, deltaY: 20, shiftKey: false }), 120);
+  assert.equal(getWheelPanDelta({ deltaX: 20, deltaY: 120, shiftKey: false }), 0);
+  assert.equal(getWheelPanDelta({ deltaX: 0, deltaY: 120, shiftKey: true }), 120);
 });

@@ -8,21 +8,39 @@ import { assetsByKind, getAsset as getBuiltinAsset } from '../../core/asset-cata
 import { clientToLogical } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, getEntityBounds } from '../../domain/scene-rules.js';
 import { PointerController } from '../../core/pointer-controller.js?v=2';
-import { CAMERA_CONSTANTS, DEFAULT_EXPRESSION, DEFAULT_STAGE_WIDTH, isCustomAssetId } from '../../domain/vocabulary.js';
-import { customAssetToDescriptor } from '../../core/asset-registry.js';
+import { CAMERA_CONSTANTS, DEFAULT_EXPRESSION, DEFAULT_STAGE_WIDTH, VIEWPORT_HEIGHT, VIEWPORT_WIDTH, bubbleStyleLabelKey, isCustomAssetId } from '../../domain/vocabulary.js';
 import { appendAsset, renderAssetPreview } from '../designer/designer-view.js';
 import { createBubbleSvg } from '../../services/export-service.js';
-import { t } from '../../core/i18n.js';
+import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
 
 
 const escapeCss = (val) => globalThis.CSS?.escape ? CSS.escape(String(val)) : String(val).replace(/["\\]/g, '\\$&');
 
-export function nextSpawnPoint(index) {
-  return { x: 650 + (index % 5) * 80, y: 690 + (index % 3) * 45 };
+function sceneEntityRenderKey(entity) {
+  return JSON.stringify({
+    kind: entity.kind,
+    sourceId: entity.sourceId,
+    characterSnapshot: entity.kind === 'character' ? entity.characterSnapshot : null,
+    expression: entity.kind === 'character' ? entity.expression || DEFAULT_EXPRESSION : null,
+    bubble: entity.kind === 'bubble' ? [entity.bubbleStyle, entity.text, entity.width] : null
+  });
 }
 
-export function findSceneSkinSvg(instanceId) {
-  const entity = [...document.querySelectorAll('.scene-entity-positioner')]
+export function nextSpawnPoint(index, cameraX = 0) {
+  return { x: cameraX + 650 + (index % 5) * 80, y: 690 + (index % 3) * 45 };
+}
+
+export function getWheelPanDelta(event) {
+  if (event.shiftKey) return event.deltaY || 0;
+  return Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : 0;
+}
+
+export function getContextRingFocusAction(activeElement) {
+  return activeElement?.closest?.('.context-ring') ? activeElement.dataset?.action || null : null;
+}
+
+export function findSceneSkinSvg(instanceId, queryAll = (selector) => globalThis.document?.querySelectorAll?.(selector) || []) {
+  const entity = [...queryAll('.scene-entity-positioner')]
     .find((element) => element.dataset.instanceId === instanceId);
   return entity?.querySelector('[data-slot="face-mouth"] svg')
     || entity?.querySelector('[data-slot="skin"] svg')
@@ -39,10 +57,12 @@ export function createPlayView({
   openSceneOutlineDialog,
   customArtRepo,
   openPaintStudio,
-  getAsset = getBuiltinAsset
+  getAsset = getBuiltinAsset,
+  getAssetsByKind = (kind) => assetsByKind(kind)
 }) {
   let playRenderToken = 0;
   let spawnTab = 'characters';
+  let spawnTraySignature = null;
   let pointerController = null;
   const previewPoints = new Map();
   const grabOffsets = new Map();
@@ -74,7 +94,7 @@ export function createPlayView({
       const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
       const currentX = state.currentScene.cameraX || 0;
       const delta = edgePanDirection * CAMERA_CONSTANTS.EDGE_SPEED;
-      const maxCameraX = Math.max(0, stageWidth - 1600);
+      const maxCameraX = Math.max(0, stageWidth - VIEWPORT_WIDTH);
       const nextX = Math.min(Math.max(0, currentX + delta), maxCameraX);
       if (nextX === currentX) {
         stopEdgePan();
@@ -161,7 +181,7 @@ export function createPlayView({
         const stageRect = stageEl.getBoundingClientRect();
         const state = store.getState();
         const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
-        if (stageWidth > 1600) {
+        if (stageWidth > VIEWPORT_WIDTH) {
           const clientXRel = event.clientX - stageRect.left;
           if (clientXRel < CAMERA_CONSTANTS.EDGE_ZONE) {
             startEdgePan(-1);
@@ -270,16 +290,17 @@ export function createPlayView({
 
   function renderBackgroundSelect(state) {
     const select = $('#background-select');
-    select.replaceChildren(...assetsByKind('background').map((asset) =>
-      new Option(asset.name, asset.id, false, asset.id === state.currentScene.backgroundId)
+    if (!select) return;
+    select.replaceChildren(...getAssetsByKind('background').map((asset) =>
+      new Option(assetName(asset, asset.name), asset.id, false, asset.id === state.currentScene.backgroundId)
     ));
   }
 
   const BUBBLE_PRESETS = [
-    { style: 'speech', name: 'Speech Bubble', defaultText: 'Hello!', desc: '💬 Talk bubble' },
-    { style: 'thought', name: 'Thought Cloud', defaultText: 'Thinking...', desc: '💭 Thought cloud' },
-    { style: 'shout', name: 'Shout Balloon', defaultText: 'Look here!', desc: '💥 Shout burst' },
-    { style: 'caption', name: 'Story Caption', defaultText: 'Once upon a time...', desc: '📜 Story caption' }
+    { style: 'speech', nameKey: 'play.bubblePresetSpeechName', textKey: 'play.bubblePresetSpeechText', descKey: 'play.bubblePresetSpeechDesc' },
+    { style: 'thought', nameKey: 'play.bubblePresetThoughtName', textKey: 'play.bubblePresetThoughtText', descKey: 'play.bubblePresetThoughtDesc' },
+    { style: 'shout', nameKey: 'play.bubblePresetShoutName', textKey: 'play.bubblePresetShoutText', descKey: 'play.bubblePresetShoutDesc' },
+    { style: 'caption', nameKey: 'play.bubblePresetCaptionName', textKey: 'play.bubblePresetCaptionText', descKey: 'play.bubblePresetCaptionDesc' }
   ];
 
   function openEditBubbleDialog(entity) {
@@ -292,14 +313,24 @@ export function createPlayView({
     dialog.showModal();
     input.focus();
     input.select();
-    setTimeout(() => {
-      input?.focus();
-      input?.select?.();
-    }, 50);
   }
 
   function renderSpawnTray(state, token) {
     const tabs = $('#spawn-tabs');
+    const list = $('#spawn-items');
+    if (!tabs || !list) return;
+
+    const traySignature = JSON.stringify({
+      language: getCurrentLanguage(),
+      tab: spawnTab,
+      presets: state.presets.map((preset) => [preset.presetId, preset.name, preset.updatedAt, preset.characterSnapshot]),
+      customProps: (state.customAssets || [])
+        .filter((asset) => asset.kind === 'prop')
+        .map((asset) => [asset.assetId, asset.name, asset.status, asset.libraryVisible, asset.updatedAt])
+    });
+    if (traySignature === spawnTraySignature) return;
+    spawnTraySignature = traySignature;
+
     const focusedTabId = document.activeElement?.closest?.('#spawn-tabs [role="tab"]')?.id;
     tabs.replaceChildren(...[['characters', t('play.trayDollsTab')], ['props', t('play.trayPropsTab')], ['bubbles', t('play.trayBubblesTab')]].map(([id, label]) => {
       const button = document.createElement('button');
@@ -317,7 +348,6 @@ export function createPlayView({
       if (token === playRenderToken) $(`#${focusedTabId}`)?.focus();
     });
 
-    const list = $('#spawn-items');
     list.setAttribute('aria-labelledby', `spawn-tab-${spawnTab}`);
     if (spawnTab === 'characters' && !state.presets.length) {
       const empty = document.createElement('div');
@@ -329,28 +359,30 @@ export function createPlayView({
 
     if (spawnTab === 'bubbles') {
       list.replaceChildren(...BUBBLE_PRESETS.map((preset) => {
+        const name = t(preset.nameKey);
+        const defaultText = t(preset.textKey);
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'spawn-item spawn-bubble-card';
         card.draggable = true;
-        card.setAttribute('aria-label', `Add ${preset.name} to scene`);
+        card.setAttribute('aria-label', t('play.trayAddBubbleAria', { name }));
         const thumb = document.createElement('span');
         thumb.className = 'spawn-thumb spawn-bubble-thumb';
         thumb.setAttribute('aria-hidden', 'true');
         const label = document.createElement('span');
         label.className = 'spawn-name';
-        label.textContent = preset.name;
+        label.textContent = name;
         const kindLabel = document.createElement('span');
         kindLabel.className = 'spawn-kind';
-        kindLabel.textContent = preset.desc;
+        kindLabel.textContent = t(preset.descKey);
         card.append(thumb, kindLabel, label);
 
         card.addEventListener('click', () => {
           store.dispatch({
             type: 'scene/spawnBubble',
             bubbleStyle: preset.style,
-            text: preset.defaultText,
-            ...nextSpawnPoint(state.currentScene.entities.length)
+            text: defaultText,
+            ...nextSpawnPoint(state.currentScene.entities.length, state.currentScene.cameraX)
           });
         });
 
@@ -363,7 +395,7 @@ export function createPlayView({
 
         const bubbleThumbSvg = createBubbleSvg({
           width: 140,
-          text: preset.defaultText,
+          text: defaultText,
           bubbleStyle: preset.style
         });
         thumb.replaceChildren(bubbleThumbSvg);
@@ -372,36 +404,33 @@ export function createPlayView({
       return;
     }
 
-    const builtins = assetsByKind('prop');
-    const customs = (state.customAssets || [])
-      .filter((a) => a.kind === 'prop' && a.status === 'available' && a.libraryVisible !== false)
-      .map(customAssetToDescriptor);
-    const sources = spawnTab === 'characters' ? state.presets : [...builtins, ...customs];
+    const sources = spawnTab === 'characters' ? state.presets : getAssetsByKind('prop');
 
     const cards = sources.map((source) => {
       const card = document.createElement('button');
       card.type = 'button';
       card.className = `spawn-item${source.custom ? ' is-custom-spawn-item' : ''}`;
       card.draggable = true;
-      card.setAttribute('aria-label', `Spawn ${source.name} in scene (or drag to place)${source.custom ? ' (Custom Art)' : ''}`);
       const thumb = document.createElement('span');
       thumb.className = 'spawn-thumb';
       thumb.setAttribute('aria-hidden', 'true');
+      const kind = spawnTab === 'characters' ? 'character' : 'prop';
+      const sourceId = kind === 'character' ? source.presetId : source.id;
+      const sourceName = kind === 'character' ? source.name : assetName(source, source.name);
       const label = document.createElement('span');
       label.className = 'spawn-name';
-      label.textContent = source.name;
+      label.textContent = sourceName;
       const kindLabel = document.createElement('span');
       kindLabel.className = 'spawn-kind';
       kindLabel.textContent = spawnTab === 'characters' ? t('play.savedDoll') : (source.custom ? t('play.customPropBadge') : t('play.sceneProp'));
       card.append(thumb, kindLabel, label);
-      const kind = spawnTab === 'characters' ? 'character' : 'prop';
-      const sourceId = kind === 'character' ? source.presetId : source.id;
+      card.setAttribute('aria-label', t('play.traySpawnAria', { name: sourceName, custom: source.custom ? t('play.customArtSuffix') : '' }));
 
       card.addEventListener('click', () => {
         if (spawnTab === 'characters') {
-          store.dispatch({ type: 'scene/spawnCharacter', presetId: source.presetId, ...nextSpawnPoint(state.currentScene.entities.length) });
+          store.dispatch({ type: 'scene/spawnCharacter', presetId: source.presetId, ...nextSpawnPoint(state.currentScene.entities.length, state.currentScene.cameraX) });
         } else {
-          store.dispatch({ type: 'scene/spawnProp', assetId: source.id, ...nextSpawnPoint(state.currentScene.entities.length) });
+          store.dispatch({ type: 'scene/spawnProp', assetId: source.id, ...nextSpawnPoint(state.currentScene.entities.length, state.currentScene.cameraX) });
         }
       });
 
@@ -466,8 +495,8 @@ export function createPlayView({
       label = t('play.itemCount', { count: selectedIds.length });
     } else if (selected) {
       label = isBubble
-        ? `${t('play.bubble' + (selected.bubbleStyle || 'speech').charAt(0).toUpperCase() + (selected.bubbleStyle || 'speech').slice(1)) || 'Balon'}`
-        : (selected?.sourceId === 'demo_emma' ? 'Emma' : preset?.name ?? asset?.name ?? t('play.sceneProp'));
+        ? t(bubbleStyleLabelKey(selected.bubbleStyle))
+        : (selected?.sourceId === 'demo_emma' ? 'Emma' : preset?.name ?? assetName(asset, t('play.sceneProp')));
     }
 
     const labelEl = $('#selected-label');
@@ -523,17 +552,15 @@ export function createPlayView({
   }
 
   function renderContextRing(state = store.getState()) {
+    const focusedAction = getContextRingFocusAction(document.activeElement);
     $('#scene-entities .context-ring')?.remove();
     const selected = state.currentScene.entities.find((entity) => entity.instanceId === state.ui.selectedEntityId);
     if (!selected || state.ui.mode !== 'play') return;
-    const bounds = getEntityBounds(selected, getAsset);
-    const entityHeight = bounds.height;
-    const placeBelow = selected.y - entityHeight < 175;
-    const ringY = placeBelow ? selected.y + 35 : selected.y - entityHeight - 20;
+    const ringY = selected.y + 35;
     const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
     const horizontalClass = selected.x < 250 ? ' align-left' : selected.x > stageWidth - 250 ? ' align-right' : '';
     const ring = document.createElement('div');
-    ring.className = `context-ring${placeBelow ? ' is-below' : ''}${horizontalClass}`;
+    ring.className = `context-ring is-below${horizontalClass}`;
     ring.style.setProperty('--ring-x', String(selected.x));
     ring.style.setProperty('--ring-y', String(ringY));
     ring.setAttribute('role', 'toolbar');
@@ -564,6 +591,11 @@ export function createPlayView({
       return button;
     }));
     $('#scene-entities').append(ring);
+    if (focusedAction && typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => {
+        ring.querySelector(`button[data-action="${escapeCss(focusedAction)}"]`)?.focus?.({ preventScroll: true });
+      });
+    }
   }
 
   async function createSceneEntity(entity, isPrimarySelected, isMultiSelected) {
@@ -603,11 +635,11 @@ export function createPlayView({
       });
       visual.append(canvas);
       const preset = store.getState().presets.find((item) => item.presetId === entity.sourceId);
-      button.setAttribute('aria-label', `${entity.pinned ? 'Pinned ' : ''}${preset?.name ?? (entity.sourceId === 'demo_emma' ? 'Emma sample doll' : 'Paper doll scene item')}`);
+      button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${preset?.name ?? (entity.sourceId === 'demo_emma' ? 'Emma' : t('play.savedDoll'))}`);
     } else if (entity.kind === 'bubble') {
       const bubbleSvg = createBubbleSvg(entity);
       visual.append(bubbleSvg);
-      button.setAttribute('aria-label', `${entity.pinned ? 'Pinned ' : ''}${entity.bubbleStyle || 'speech'} bubble: ${entity.text}`);
+      button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${t(bubbleStyleLabelKey(entity.bubbleStyle))}: ${entity.text}`);
       button.addEventListener('dblclick', (event) => {
         event.stopPropagation();
         openEditBubbleDialog(entity);
@@ -619,7 +651,7 @@ export function createPlayView({
           const img = document.createElement('img');
           img.src = url;
           img.className = 'scene-custom-prop-img';
-          img.alt = asset?.name ?? 'Custom Prop';
+          img.alt = assetName(asset, t('play.customPropBadge'));
           img.draggable = false;
           visual.append(img);
         } else {
@@ -628,7 +660,7 @@ export function createPlayView({
       } else {
         await appendAsset(visual, entity.sourceId, { customArtRepo, getAsset });
       }
-      button.setAttribute('aria-label', `${entity.pinned ? 'Pinned ' : ''}${asset?.name ?? 'Scene prop'}`);
+      button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${assetName(asset, t('play.sceneProp'))}`);
     }
     button.append(visual);
     if (entity.pinned) {
@@ -638,7 +670,34 @@ export function createPlayView({
       badge.setAttribute('aria-hidden', 'true');
       button.append(badge);
     }
+    button.dataset.renderKey = sceneEntityRenderKey(entity);
     return button;
+  }
+
+  function patchSceneEntity(element, entity, isPrimarySelected, isMultiSelected) {
+    const asset = getAsset(entity.sourceId);
+    const bounds = getEntityBounds(entity, getAsset);
+    element.className = `scene-entity-positioner${isPrimarySelected ? ' is-selected' : ''}${isMultiSelected ? ' is-multi-selected' : ''}${entity.pinned ? ' is-pinned' : ''}${entity.kind === 'bubble' ? ' is-bubble-entity' : ''}`;
+    element.style.setProperty('--x', String(entity.x));
+    element.style.setProperty('--y', String(entity.y));
+    element.style.zIndex = String(entity.order);
+    element.style.setProperty('--entity-width', String(bounds.width));
+    element.style.aspectRatio = entity.kind === 'character'
+      ? '2 / 3'
+      : (entity.kind === 'bubble' ? `${bounds.width} / ${bounds.height}` : `${asset?.displayWidth ?? 200} / ${asset?.displayHeight ?? 200}`);
+    element.querySelector('.scene-entity-visual')?.style.setProperty('--flip', entity.flipped ? '-1' : '1');
+
+    const pinnedBadge = element.querySelector('.pinned-badge');
+    if (entity.pinned && !pinnedBadge) {
+      const badge = document.createElement('span');
+      badge.className = 'pinned-badge';
+      badge.textContent = '📌';
+      badge.setAttribute('aria-hidden', 'true');
+      element.append(badge);
+    } else if (!entity.pinned) {
+      pinnedBadge?.remove?.();
+    }
+    element.dataset.renderKey = sceneEntityRenderKey(entity);
   }
 
   async function handleEntityAction(action) {
@@ -699,7 +758,8 @@ export function createPlayView({
   }
 
   function handleStageKeydown(event) {
-    if (event.target.matches('input, select, textarea')) return;
+    if (event.target.matches('input, select, textarea, [contenteditable]')) return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
     const state = store.getState();
     const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
     const selectedIds = state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []);
@@ -723,7 +783,7 @@ export function createPlayView({
     }
     if (event.key === 'End') {
       event.preventDefault();
-      store.dispatch({ type: 'scene/setCameraX', cameraX: stageWidth - 1600 });
+      store.dispatch({ type: 'scene/setCameraX', cameraX: stageWidth - VIEWPORT_WIDTH });
       return;
     }
     if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight') && event.shiftKey && selectedIds.length === 0) {
@@ -762,9 +822,11 @@ export function createPlayView({
         const batchMoves = state.currentScene.entities
           .filter((e) => selectedIds.includes(e.instanceId) && !e.pinned)
           .map((e) => ({ instanceId: e.instanceId, x: e.x + dx, y: e.y + dy }));
-        store.dispatch({ type: 'scene/moveEntities', moves: batchMoves });
+        if (batchMoves.length > 0) store.dispatch({ type: 'scene/moveEntities', moves: batchMoves });
+        else store.dispatch({ type: 'ui/message', message: t('play.pinnedMoveBlocked') });
       } else if (entity) {
-        store.dispatch({ type: 'scene/moveEntity', instanceId: id, x: entity.x + dx, y: entity.y + dy });
+        if (entity.pinned) store.dispatch({ type: 'ui/message', message: t('play.pinnedMoveBlocked') });
+        else store.dispatch({ type: 'scene/moveEntity', instanceId: id, x: entity.x + dx, y: entity.y + dy });
       }
     } else if (event.key === '[') {
       if (id) store.dispatch({ type: 'scene/reorderEntity', instanceId: id, direction: -1 });
@@ -828,7 +890,7 @@ export function createPlayView({
         const rect = minimap.getBoundingClientRect();
         const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
         const stageWidth = store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
-        const targetX = ratio * stageWidth - 800;
+        const targetX = ratio * stageWidth - VIEWPORT_WIDTH / 2;
         store.dispatch({ type: 'scene/setCameraX', cameraX: Math.round(targetX) });
       };
 
@@ -849,7 +911,7 @@ export function createPlayView({
       minimap.addEventListener('pointercancel', () => { isSeekingMinimap = false; });
       minimap.addEventListener('keydown', (event) => {
         const stageWidth = store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
-        const maxCameraX = Math.max(0, stageWidth - 1600);
+        const maxCameraX = Math.max(0, stageWidth - VIEWPORT_WIDTH);
         let nextCameraX = null;
         if (event.key === 'ArrowLeft' || event.key === 'PageUp') nextCameraX = (store.getState().currentScene.cameraX || 0) - CAMERA_CONSTANTS.STEP;
         if (event.key === 'ArrowRight' || event.key === 'PageDown') nextCameraX = (store.getState().currentScene.cameraX || 0) + CAMERA_CONSTANTS.STEP;
@@ -865,10 +927,8 @@ export function createPlayView({
       stageEl.dataset.wheelBound = 'true';
       stageEl.addEventListener('wheel', (event) => {
         const stageWidth = store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
-        if (stageWidth <= 1600) return;
-        const delta = event.shiftKey || Math.abs(event.deltaY) >= Math.abs(event.deltaX)
-          ? event.deltaY
-          : event.deltaX;
+        if (stageWidth <= VIEWPORT_WIDTH) return;
+        const delta = getWheelPanDelta(event);
         if (!delta) return;
         event.preventDefault();
         store.dispatch({ type: 'scene/panCamera', deltaX: delta });
@@ -885,11 +945,11 @@ export function createPlayView({
       widthSelect.value = String(stageWidth);
     }
     if (!hud) return;
-    const isPanoramic = stageWidth > 1600;
+    const isPanoramic = stageWidth > VIEWPORT_WIDTH;
     hud.hidden = !isPanoramic;
     if (!isPanoramic) return;
 
-    const maxCameraX = stageWidth - 1600;
+    const maxCameraX = stageWidth - VIEWPORT_WIDTH;
     const slider = $('#camera-slider');
     if (slider) {
       slider.max = String(maxCameraX);
@@ -904,7 +964,7 @@ export function createPlayView({
     if (minimap) {
       const minimapBg = $('#minimap-bg');
       const background = getAsset(state.currentScene.backgroundId);
-      const panelCount = Math.max(1, Math.round(stageWidth / 1600));
+      const panelCount = Math.max(1, Math.round(stageWidth / VIEWPORT_WIDTH));
       const mapKey = `${background?.id ?? ''}:${panelCount}`;
       if (includeSceneMap && minimapBg && background && minimapBg.dataset.mapKey !== mapKey) {
         const panels = Array.from({ length: panelCount }, () => {
@@ -916,7 +976,7 @@ export function createPlayView({
         minimapBg.replaceChildren(...panels);
         minimapBg.dataset.mapKey = mapKey;
       }
-      const lensWidthPct = (1600 / stageWidth) * 100;
+      const lensWidthPct = (VIEWPORT_WIDTH / stageWidth) * 100;
       const lensLeftPct = (cameraX / stageWidth) * 100;
       minimap.style.setProperty('--lens-width', `${lensWidthPct}%`);
       minimap.style.setProperty('--lens-left', `${lensLeftPct}%`);
@@ -929,7 +989,7 @@ export function createPlayView({
           const dot = document.createElement('span');
           dot.className = 'minimap-dot';
           dot.style.left = `${(e.x / stageWidth) * 100}%`;
-          dot.style.top = `${(e.y / 900) * 100}%`;
+          dot.style.top = `${(e.y / VIEWPORT_HEIGHT) * 100}%`;
           return dot;
         });
         minimapEntities.replaceChildren(...dots);
@@ -957,28 +1017,39 @@ export function createPlayView({
     renderSpawnTray(state, token);
     renderSelectedActions(state);
 
-    $('#empty-scene').hidden = state.currentScene.entities.length > 0;
+    const emptyScene = $('#empty-scene');
+    if (emptyScene) emptyScene.hidden = state.currentScene.entities.length > 0;
     const currentBackground = getAsset(state.currentScene.backgroundId);
-    $('#scene-name-chip').textContent = currentBackground?.name ?? t('play.paperScene');
-    $('#scene-count-chip').textContent = t('play.itemCount', { count: state.currentScene.entities.length });
+    const sceneNameChip = $('#scene-name-chip');
+    if (sceneNameChip) sceneNameChip.textContent = assetName(currentBackground, t('play.paperScene'));
+    const sceneCountChip = $('#scene-count-chip');
+    if (sceneCountChip) sceneCountChip.textContent = t('play.itemCount', { count: state.currentScene.entities.length });
     const widthChip = $('#scene-width-chip');
 
     if (widthChip) widthChip.textContent = `${stageWidth}px`;
 
     const background = $('#scene-background');
-    const numPanels = Math.max(1, Math.round(stageWidth / 1600));
-    const panels = [];
-    for (let i = 0; i < numPanels; i++) {
-      const panel = document.createElement('div');
-      panel.className = 'scene-bg-panel';
-      await appendAsset(panel, state.currentScene.backgroundId, {});
-      panels.push(panel);
+    const numPanels = Math.max(1, Math.round(stageWidth / VIEWPORT_WIDTH));
+    const backgroundRenderKey = `${state.currentScene.backgroundId}:${numPanels}`;
+    if (background && background.dataset.renderKey !== backgroundRenderKey) {
+      const panels = await Promise.all(Array.from({ length: numPanels }, async () => {
+        const panel = document.createElement('div');
+        panel.className = 'scene-bg-panel';
+        await appendAsset(panel, state.currentScene.backgroundId, {});
+        return panel;
+      }));
+      if (token !== playRenderToken) return;
+      background.replaceChildren(...panels);
+      background.dataset.renderKey = backgroundRenderKey;
     }
-    if (token !== playRenderToken) return;
-    background.replaceChildren(...panels);
 
     const entityRoot = $('#scene-entities');
-    const stagedEntities = document.createDocumentFragment();
+    if (!entityRoot) {
+      renderCameraHud(state);
+      return;
+    }
+    const existingEntities = new Map([...entityRoot.children].map((element) => [element.dataset.instanceId, element]));
+    const nextElements = [];
     const ordered = [...state.currentScene.entities].sort((a, b) => a.order - b.order);
     const selectedSet = new Set(state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []));
 
@@ -987,11 +1058,18 @@ export function createPlayView({
       const isSelected = selectedSet.has(entity.instanceId);
       const isPrimary = state.ui.selectedEntityId === entity.instanceId;
       const isMulti = isSelected && selectedSet.size > 1;
-      const element = await createSceneEntity(entity, isPrimary, isMulti);
+      const existing = existingEntities.get(entity.instanceId);
+      const element = existing?.dataset.renderKey === sceneEntityRenderKey(entity)
+        ? existing
+        : await createSceneEntity(entity, isPrimary, isMulti);
       if (token !== playRenderToken) return;
-      stagedEntities.append(element);
+      if (element === existing) patchSceneEntity(element, entity, isPrimary, isMulti);
+      nextElements.push(element);
     }
-    entityRoot.replaceChildren(stagedEntities);
+    const orderUnchanged = nextElements.length === entityRoot.children.length
+      && nextElements.every((element, index) => element === entityRoot.children[index]);
+    if (!orderUnchanged) entityRoot.replaceChildren(...nextElements);
+    // The entity root is only replaced when order or membership changes; stable nodes are patched in place.
     renderCameraHud(state);
     renderContextRing(state);
     if (focusedEntityId) {

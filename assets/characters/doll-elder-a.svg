@@ -1,37 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="doll_elder_a">
   <g id="body" class="outline-shape" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Neck -->
-    <rect class="skin-fill" x="141" y="90" width="18" height="24" rx="4" fill="var(--skin-color, #fcd7b6)"/>
+    <!-- Elder Neck -->
+    <rect class="skin-fill" x="140" y="90" width="20" height="25" rx="5" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Elder Torso (Gentle, softer slope) -->
-    <path class="skin-fill" d="M125 110 C120 135 120 165 121 198 C123 214 129 224 134 232 L166 232 C171 224 177 214 179 198 C180 165 180 135 175 110 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M124 110 C118 135 119 165 121 198 C123 214 129 226 135 234 L165 234 C171 226 177 214 179 198 C181 165 182 135 176 110 C164 116 136 118 124 110 Z" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Undergarments -->
     <path d="M125 124 C135 138 165 138 175 124 L173 156 C165 159 135 159 127 156 Z" fill="#e8f4f0" stroke="#2d261e" stroke-width="2"/>
-    <path d="M122 204 C140 209 160 209 178 204 L174 230 C160 234 140 234 126 230 Z" fill="#e8f4f0" stroke="#2d261e" stroke-width="2"/>
+    <path d="M121 205 C140 211 160 211 179 205 L174 232 C160 236 140 236 126 232 Z" fill="#e8f4f0" stroke="#2d261e" stroke-width="2"/>
     
     <!-- Legs & Feet -->
     <!-- Left Leg -->
-    <path class="skin-fill" d="M132 230 C130 275 128 325 130 380 L144 380 C145 325 148 275 147 230 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M131 234 C129 277 127 326 129 382 L144 382 C145 327 148 277 147 234 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Leg -->
-    <path class="skin-fill" d="M153 230 C152 275 155 325 156 380 L170 380 C172 325 170 275 168 230 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M153 234 C152 277 155 327 156 382 L171 382 C173 326 171 277 169 234 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Left Foot -->
-    <path class="skin-fill" d="M128 380 C125 390 120 400 116 403 C122 407 138 407 144 403 L144 380 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M127 382 C124 393 119 403 114 406 C121 411 138 411 144 406 L144 382 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Foot -->
-    <path class="skin-fill" d="M156 380 L156 403 C162 407 178 407 184 403 C180 400 175 390 172 380 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M156 382 L156 406 C162 411 179 411 186 406 C182 402 176 392 173 382 Z" fill="var(--skin-color, #fcd7b6)"/>
 
     <!-- Arms (Gentle posture) -->
     <!-- Left Arm -->
-    <path class="skin-fill" d="M125 112 C112 138 102 168 98 205 C96 215 102 218 106 214 C110 180 118 150 129 124 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M124 112 C111 137 101 167 97 203 C95 214 101 219 106 214 C111 180 119 150 130 124 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Arm -->
-    <path class="skin-fill" d="M175 112 C188 138 198 168 202 205 C204 215 198 218 194 214 C190 180 182 150 171 124 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M176 112 C189 137 199 167 203 203 C205 214 199 219 194 214 C189 180 181 150 170 124 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Left Hand -->
-    <circle class="skin-fill" cx="99" cy="214" r="7" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="98" cy="215" r="7.2" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Hand -->
-    <circle class="skin-fill" cx="201" cy="214" r="7" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="202" cy="215" r="7.2" fill="var(--skin-color, #fcd7b6)"/>
+
+    <!-- Soft knee and knuckle contours -->
+    <path d="M131 329 Q137 332 143 329 M157 329 Q163 332 169 329" fill="none" stroke="#c98c70" stroke-width="1.3" opacity="0.3"/>
+    <path d="M94 207 Q98 209 102 207 M198 207 Q202 209 206 207" fill="none" stroke="#c98c70" stroke-width="1.2" opacity="0.35"/>
 
     <!-- Head -->
-    <ellipse class="skin-fill" cx="150" cy="63" rx="30" ry="36" fill="var(--skin-color, #fcd7b6)"/>
+    <ellipse class="skin-fill" cx="150" cy="63" rx="30" ry="35" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Ears -->
     <circle class="skin-fill" cx="119" cy="65" r="5" fill="var(--skin-color, #fcd7b6)"/>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_sneakers_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M125 337 C121 350 114 360 109 365 C117 371 138 371 146 366 L146 337 Z" fill="var(--asset-color-primary, #a78bc4)"/>
+    <path class="tint-primary" d="M154 337 L154 366 C162 371 183 371 191 365 C186 360 180 350 176 337 Z" fill="var(--asset-color-primary, #a78bc4)"/>
+    <path d="M113 360 Q130 365 145 360 M155 360 Q170 365 187 360" fill="none" stroke="#fffdf7" stroke-width="3"/>
+    <circle cx="130" cy="348" r="3" fill="#ffd166" stroke="none"/>
+    <circle cx="170" cy="348" r="3" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

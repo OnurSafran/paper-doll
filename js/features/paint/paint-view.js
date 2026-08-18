@@ -4,27 +4,30 @@
  * live preview, toolbars, palette, save pipeline, and draft recovery.
  */
 
-import { createPaintSession, validateArtworkName } from './paint-session.js';
+import { createPaintSession } from './paint-session.js';
 import {
   applyStroke,
   interpolateStrokePoints,
   executeFloodFill,
   drawShape,
-  samplePixel,
-  computeNonTransparentBounds,
-  calculatePropDisplayDimensions,
-  canvasToBlob
+  samplePixel
 } from './paint-raster.js';
 import {
   CUSTOM_WEARABLE_DIMENSIONS,
-  CUSTOM_PROP_DIMENSIONS,
-  defaultMakeId,
-  defaultNow,
-  LIMITS
+  CUSTOM_PROP_DIMENSIONS
 } from '../../domain/vocabulary.js';
-import { countAssetUses, slotLabel } from '../../domain/outfit-rules.js';
-import { getReferenceGuides } from './paint-guides.js';
+import { slotLabel } from '../../domain/outfit-rules.js';
+import { getReferenceGuides, guideIsInBounds } from './paint-guides.js';
 import { t } from '../../core/i18n.js';
+import { SLOT_CUTOUT_FALLBACK_VIEWBOX } from '../../core/preview-viewboxes.js';
+import {
+  captureHistorySnapshot,
+  cropHistorySnapshot,
+  historySnapshotChanged,
+  restoreHistorySnapshot
+} from './paint-history.js';
+import { createPaintLibraryView } from './paint-library-view.js';
+import { createPaintSaveService } from './paint-save-service.js';
 
 
 const CURATED_PALETTE = [
@@ -34,17 +37,28 @@ const CURATED_PALETTE = [
   '#8d5b4c', '#d4a373', '#ccd5ae', '#e07a5f'
 ];
 
-export const SLOT_PREVIEW_VIEWBOX = Object.freeze({
-  top: '80 85 140 125',
-  bottom: '90 170 120 180',
-  dress: '60 105 180 270',
-  shoes: '105 345 90 70',
-  hair: '70 15 160 175',
-  accessory: '90 0 120 80'
-});
+export {
+  SLOT_CUTOUT_FALLBACK_VIEWBOX,
+  SLOT_PREVIEW_VIEWBOX
+} from '../../core/preview-viewboxes.js';
 
 export function isTrustedCutoutDescriptor(asset, slot) {
   return Boolean(asset && !asset.custom && asset.kind === 'wearable' && asset.slot === slot && asset.id);
+}
+
+function fitCutoutSvg(svg, slot) {
+  try {
+    const targetGroup = svg.querySelector('#garment') || svg.querySelector('g') || svg;
+    const bbox = targetGroup.getBBox ? targetGroup.getBBox() : null;
+    if (bbox && bbox.width > 0 && bbox.height > 0) {
+      const pad = Math.max(bbox.width, bbox.height) * 0.08;
+      svg.setAttribute('viewBox', `${Math.max(0, bbox.x - pad)} ${Math.max(0, bbox.y - pad)} ${bbox.width + pad * 2} ${bbox.height + pad * 2}`);
+      return;
+    }
+  } catch {
+    // getBBox fallback
+  }
+  svg.setAttribute('viewBox', SLOT_CUTOUT_FALLBACK_VIEWBOX[slot] || '0 0 300 450');
 }
 
 export function createPaintView({
@@ -53,7 +67,9 @@ export function createPaintView({
   customArtRepo,
   assetRegistry,
   svgLoader,
-  onNavigate
+  onNavigate,
+  askConfirm,
+  showAlert
 } = {}) {
   let session = createPaintSession();
   let canvas = null;
@@ -62,9 +78,9 @@ export function createPaintView({
   let lastPointerPos = null;
   let cursorX = 150;
   let cursorY = 225;
-  let draftTimer = null;
   let pendingNavigationHref = null;
   let pendingHistorySnapshot = null;
+  let pendingHistoryRect = null;
   let pointerStart = null;
   let pointerMode = null;
   let selectionRect = null;
@@ -75,6 +91,11 @@ export function createPaintView({
   let cutoutActionToken = 0;
   let cutoutActionPending = false;
   let activeCutoutUrl = null;
+  let livePreviewToken = 0;
+  let livePreviewMode = null;
+  let livePreviewCanvas = null;
+  let livePreviewDollWrap = null;
+  let livePreviewDollId = null;
 
   // DOM elements cache
   const screen = rootElement.querySelector('#paint-screen');
@@ -132,50 +153,15 @@ export function createPaintView({
   const panelDraw = rootElement.querySelector('#paint-panel-draw');
   const panelSetup = rootElement.querySelector('#paint-panel-setup');
 
-  // Dialogs
-  const saveDialog = rootElement.querySelector('#paint-save-dialog');
-  const saveForm = rootElement.querySelector('#paint-save-form');
-  const saveThumb = rootElement.querySelector('#paint-save-thumb');
-  const nameInput = rootElement.querySelector('#paint-artwork-name');
-  const saveMyArtBtn = rootElement.querySelector('#paint-save-myart-btn');
-  const saveContextBtn = rootElement.querySelector('#paint-save-context-btn');
-  const cancelSaveBtn = rootElement.querySelector('#paint-cancel-save-btn');
-
+  // Dirty-navigation dialog
   const dirtyDialog = rootElement.querySelector('#paint-dirty-dialog');
   const dirtyKeepBtn = rootElement.querySelector('#paint-dirty-keep-btn');
   const dirtyDiscardBtn = rootElement.querySelector('#paint-dirty-discard-btn');
   const dirtySaveBtn = rootElement.querySelector('#paint-dirty-save-btn');
 
-  const recoveryDialog = rootElement.querySelector('#paint-draft-recovery-dialog');
-  const recoverContinueBtn = rootElement.querySelector('#paint-recover-continue-btn');
-  const recoverDiscardBtn = rootElement.querySelector('#paint-recover-discard-btn');
-
-  // My Art & Impact Dialogs (Gate 3)
-  const myArtBtn = rootElement.querySelector('#paint-myart-btn');
-  const myArtDialog = rootElement.querySelector('#paint-myart-dialog');
-  const closeMyArtBtn = rootElement.querySelector('#close-myart-dialog');
-  const myArtGrid = rootElement.querySelector('#paint-myart-grid');
-  const myArtTabs = rootElement.querySelectorAll('#paint-myart-dialog .myart-tab-btn');
-  const myArtTrashActions = rootElement.querySelector('#myart-trash-actions');
-  const myArtEmptyTrashBtn = rootElement.querySelector('#myart-empty-trash-btn');
-
-  const impactDialog = rootElement.querySelector('#paint-impact-dialog');
-  const impactThumb = rootElement.querySelector('#impact-art-thumb');
-  const impactName = rootElement.querySelector('#impact-art-name');
-  const impactSummary = rootElement.querySelector('#impact-art-summary');
-  const impactDetailsBox = rootElement.querySelector('#impact-details-box');
-  const impactCancelBtn = rootElement.querySelector('#paint-impact-cancel-btn');
-  const impactRemoveBtn = rootElement.querySelector('#paint-impact-remove-btn');
-  const impactDeleteAllBtn = rootElement.querySelector('#paint-impact-delete-all-btn');
-
-  const renameDialog = rootElement.querySelector('#paint-rename-dialog');
-  const renameForm = rootElement.querySelector('#paint-rename-form');
-  const renameInput = rootElement.querySelector('#paint-rename-input');
-  const renameCancelBtn = rootElement.querySelector('#paint-rename-cancel-btn');
-
-  let currentMyArtTab = 'all';
-  let activeImpactAsset = null;
-  let activeRenameAsset = null;
+  function backingScale() {
+    return canvas?.width && session.logicalWidth ? canvas.width / session.logicalWidth : 1;
+  }
 
   function init() {
     canvas = rootElement.querySelector('#paint-canvas');
@@ -201,14 +187,14 @@ export function createPaintView({
 
   function renderPalette() {
     if (!paletteGrid) return;
-    paletteGrid.innerHTML = '';
+    paletteGrid.replaceChildren();
     CURATED_PALETTE.forEach((hex) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'paint-swatch';
       btn.style.backgroundColor = hex;
       btn.title = hex;
-      btn.setAttribute('aria-label', `Color ${hex}`);
+      btn.setAttribute('aria-label', t('paint.colorSwatchAria', { color: hex }));
       const active = hex.toLowerCase() === session.getState().color.toLowerCase();
       btn.setAttribute('aria-pressed', String(active));
       if (active) {
@@ -230,7 +216,7 @@ export function createPaintView({
     });
     if (activeColorSwatch) {
       activeColorSwatch.style.backgroundColor = session.getState().color;
-      activeColorSwatch.setAttribute('aria-label', `Active color: ${session.getState().color}. Click to open color picker.`);
+      activeColorSwatch.setAttribute('aria-label', `${t('paint.activeColorAria')} ${session.getState().color}`);
     }
   }
 
@@ -239,6 +225,7 @@ export function createPaintView({
     cutoutActionPending = false;
     session = createPaintSession(options);
     pendingHistorySnapshot = null;
+    pendingHistoryRect = null;
     pointerStart = null;
     pointerMode = null;
     selectionRect = null;
@@ -254,7 +241,7 @@ export function createPaintView({
       canvasStage.classList.toggle('is-prop-stage', state.itemType === 'prop');
       canvasStage.style.width = `${session.logicalWidth}px`;
       canvasStage.style.height = `${session.logicalHeight}px`;
-      canvasStage.style.setProperty('--paint-zoom', state.zoom === 2 ? '1.5' : '1');
+      canvasStage.style.setProperty('--paint-zoom', state.zoom === 2 ? '2' : '1');
     }
 
     cursorX = Math.round(session.logicalWidth / 2);
@@ -271,16 +258,17 @@ export function createPaintView({
   function updateUIFromState() {
     const state = session.getState();
 
-    canvas?.setAttribute('aria-label',
-      `${state.itemType === 'wearable' ? 'Wearable' : 'Prop'} artwork canvas. ` +
-      `Tool: ${state.tool}. Zoom: ${state.zoom === 2 ? '2x' : '1x'}. ` +
-      `${state.dirty ? 'Unsaved changes.' : 'No unsaved changes.'} ` +
-      'Use pointer input or Arrow keys and Space to paint.');
+    canvas?.setAttribute('aria-label', t('paint.canvasAria', {
+      type: state.itemType === 'wearable' ? t('paint.wearableTypeBtn') : t('paint.propTypeLabel'),
+      tool: t('paint.toolLabels.' + state.tool) || state.tool,
+      zoom: state.zoom === 2 ? '2x' : '1x',
+      status: state.dirty ? t('paint.unsavedStatus') : t('paint.savedStatus')
+    }));
 
     if (itemBadge) {
       itemBadge.textContent = state.itemType === 'wearable'
-        ? `${t('wardrobeSlots.' + state.slot) || state.slot.toUpperCase()} ${t('paint.defaultCutoutLabel').split(' ')[1] || 'Kalıbı'}`
-        : t('paint.propTypeBtn').replace(/^[^\s]+\s*/, '');
+        ? `${t('wardrobeSlots.' + state.slot) || state.slot.toUpperCase()} ${t('paint.cutoutSuffix')}`
+        : t('paint.propTypeLabel');
     }
 
 
@@ -332,7 +320,7 @@ export function createPaintView({
 
   async function loadCutoutsForSlot(slot) {
     if (!cutoutGrid) return;
-    cutoutGrid.innerHTML = '';
+    cutoutGrid.replaceChildren();
     cancelCutoutAction();
     const requestedCutoutId = session.getState().cutoutAssetId;
     const selectedCutoutId = getTrustedCutout(requestedCutoutId, slot) ? requestedCutoutId : null;
@@ -365,7 +353,11 @@ export function createPaintView({
     noneCard.classList.toggle('active', !selectedCutoutId);
     noneCard.title = t('paint.noneCutoutTitle');
     noneCard.setAttribute('aria-label', t('paint.noneCutoutTitle'));
-    noneCard.innerHTML = '<span class="cutout-none-icon" aria-hidden="true">🚫</span>';
+    const noneIcon = document.createElement('span');
+    noneIcon.className = 'cutout-none-icon';
+    noneIcon.setAttribute('aria-hidden', 'true');
+    noneIcon.textContent = '🚫';
+    noneCard.appendChild(noneIcon);
     noneCard.addEventListener('click', () => {
       cancelCutoutAction();
       session.setCutoutAssetId(null);
@@ -375,39 +367,11 @@ export function createPaintView({
       });
       updateCutoutActions();
       renderGuideLayer();
-      checkpointReferencePreferences();
+      saveService.checkpointReferencePreferences();
       setCutoutStatus(t('paint.cutoutUnselected'));
       announceStatus(t('paint.cutoutUnselected'));
     });
     cutoutGrid.appendChild(noneCard);
-
-function fitCutoutSvg(svg, slot) {
-  try {
-    const targetGroup = svg.querySelector('#garment') || svg.querySelector('g') || svg;
-    const bbox = targetGroup.getBBox ? targetGroup.getBBox() : null;
-    if (bbox && bbox.width > 0 && bbox.height > 0) {
-      const pad = Math.max(bbox.width, bbox.height) * 0.08;
-      const x = Math.max(0, bbox.x - pad);
-      const y = Math.max(0, bbox.y - pad);
-      const w = bbox.width + pad * 2;
-      const h = bbox.height + pad * 2;
-      svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
-      return;
-    }
-  } catch {
-    // getBBox fallback
-  }
-
-  const tightViewBoxes = {
-    top: '95 105 110 95',
-    bottom: '100 170 100 190',
-    dress: '80 105 140 210',
-    shoes: '108 340 84 75',
-    hair: '75 15 150 160',
-    accessory: '95 15 110 90'
-  };
-  svg.setAttribute('viewBox', tightViewBoxes[slot] || '0 0 300 450');
-}
 
     approvedCutouts.forEach((asset) => {
       const card = document.createElement('button');
@@ -464,7 +428,7 @@ function fitCutoutSvg(svg, slot) {
           });
           updateCutoutActions();
           renderGuideLayer();
-          checkpointReferencePreferences();
+          saveService.checkpointReferencePreferences();
           setCutoutStatus(t('paint.cutoutUnselected'));
           announceStatus(t('paint.cutoutUnselected'));
           return;
@@ -480,7 +444,7 @@ function fitCutoutSvg(svg, slot) {
         if (cutoutReferenceVisible) cutoutReferenceVisible.checked = true;
         updateCutoutActions();
         renderGuideLayer();
-        checkpointReferencePreferences();
+        saveService.checkpointReferencePreferences();
         setCutoutStatus(t('paint.cutoutSelectedStatus', { name: asset.name || asset.id }));
         announceStatus(t('paint.cutoutSelectedAnnounce', { name: asset.name || asset.id }));
       });
@@ -531,12 +495,18 @@ function fitCutoutSvg(svg, slot) {
     const initialState = session.getState();
     const initialAsset = getTrustedCutout(assetId, initialState.slot);
     if (!initialAsset) {
-      setCutoutStatus('That cutout is unavailable for the current slot.');
+      setCutoutStatus(t('paint.cutoutUnavailable'));
       return false;
     }
-    if (mode === 'replace' && canvasHasPixels() && !confirm('Replace the current artwork with this cutout? You can Undo afterward.')) {
-      setCutoutStatus('Artwork kept unchanged.');
-      return false;
+    if (mode === 'replace' && canvasHasPixels()) {
+      const confirmed = await (askConfirm?.(
+        t('paint.replaceCutoutTitle'),
+        t('paint.replaceCutoutMessage')
+      ) ?? true);
+      if (!confirmed) {
+        setCutoutStatus(t('paint.artworkKeptStatus'));
+        return false;
+      }
     }
 
     const requestSession = session;
@@ -568,10 +538,10 @@ function fitCutoutSvg(svg, slot) {
         return false;
       }
 
-      before = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      before = captureHistorySnapshot(ctx);
       if (mode === 'replace') ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      if (!imageDataChanged(before)) {
+      if (!historySnapshotChanged(ctx, before)) {
         setCutoutStatus(t('paint.cutoutNoChange'));
         return false;
       }
@@ -579,12 +549,12 @@ function fitCutoutSvg(svg, slot) {
       updateHistoryButtons();
       updateUIFromState();
       updateLivePreview();
-      scheduleDraftCheckpoint();
+      saveService.scheduleDraftCheckpoint();
       setCutoutStatus(mode === 'replace' ? t('paint.cutoutReplaced', { name: initialAsset.name || assetId }) : t('paint.cutoutAdded', { name: initialAsset.name || assetId }));
       announceStatus(mode === 'replace' ? t('paint.cutoutReplaceDone') : t('paint.cutoutAddDone'));
       return true;
     } catch (err) {
-      if (before) ctx.putImageData(before, 0, 0);
+      if (before) restoreHistorySnapshot(ctx, before);
       if (requestToken === cutoutActionToken) {
         console.warn('Could not rasterize cutout:', err);
         setCutoutStatus(t('paint.cutoutLoadError'));
@@ -603,7 +573,7 @@ function fitCutoutSvg(svg, slot) {
   async function renderGuideLayer() {
     if (!guideLayer) return;
     const token = ++guideRenderToken;
-    guideLayer.innerHTML = '';
+    guideLayer.replaceChildren();
     const state = session.getState();
     guideLayer.style.setProperty('--reference-opacity', String(state.referenceOpacity / 100));
 
@@ -656,7 +626,7 @@ function fitCutoutSvg(svg, slot) {
     svg.setAttribute('viewBox', '0 0 300 450');
     svg.setAttribute('aria-hidden', 'true');
 
-    for (const guide of getReferenceGuides(slot, modelId)) {
+    for (const guide of getReferenceGuides(slot, modelId).filter(guideIsInBounds)) {
       let shape;
       if (guide.type === 'line') {
         shape = doc.createElementNS(namespace, 'line');
@@ -724,8 +694,64 @@ function fitCutoutSvg(svg, slot) {
     return ctx.getImageData(selectionRect.x, selectionRect.y, selectionRect.width, selectionRect.height);
   }
 
+  function unionRects(...rects) {
+    const valid = rects.filter((rect) => rect?.width >= 0 && rect?.height >= 0);
+    if (!valid.length) return null;
+    const left = Math.min(...valid.map((rect) => rect.x));
+    const top = Math.min(...valid.map((rect) => rect.y));
+    const right = Math.max(...valid.map((rect) => rect.x + rect.width));
+    const bottom = Math.max(...valid.map((rect) => rect.y + rect.height));
+    return { x: left, y: top, width: right - left, height: bottom - top };
+  }
+
+  function includePendingRect(rect) {
+    pendingHistoryRect = unionRects(pendingHistoryRect, rect);
+  }
+
+  function pointsBounds(points, size, mirror = false, axisX = session.mirrorAxisX * backingScale()) {
+    const radius = size / 2 + 1;
+    const rects = [];
+    for (const point of points) {
+      rects.push({ x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2 });
+      if (mirror) {
+        const mirroredX = 2 * axisX - point.x;
+        rects.push({ x: mirroredX - radius, y: point.y - radius, width: radius * 2, height: radius * 2 });
+      }
+    }
+    return unionRects(...rects);
+  }
+
+  function shapeBounds(x0, y0, x1, y1, size, mirror = false, axisX = session.mirrorAxisX * backingScale()) {
+    const pad = size / 2 + 1;
+    const rect = {
+      x: Math.min(x0, x1) - pad,
+      y: Math.min(y0, y1) - pad,
+      width: Math.abs(x1 - x0) + pad * 2,
+      height: Math.abs(y1 - y0) + pad * 2
+    };
+    if (!mirror) return rect;
+    return unionRects(rect, {
+      x: 2 * axisX - Math.max(x0, x1) - pad,
+      y: rect.y,
+      width: Math.abs(x1 - x0) + pad * 2,
+      height: rect.height
+    });
+  }
+
+  function floodBoundsRect(bounds) {
+    if (!Number.isFinite(bounds?.x) || !Number.isFinite(bounds?.y) ||
+        !Number.isFinite(bounds?.right) || !Number.isFinite(bounds?.bottom)) return null;
+    return {
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.right - bounds.x + 1,
+      height: bounds.bottom - bounds.y + 1
+    };
+  }
+
   function moveSelectionBy(dx, dy, duplicate = false) {
     if (!selectionRect) return false;
+    const previousRect = selectionRect;
     const before = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = selectionPixels || captureSelection();
     if (!pixels) return false;
@@ -739,21 +765,21 @@ function fitCutoutSvg(svg, slot) {
     ctx.putImageData(pixels, next.x, next.y);
     selectionRect = next;
     selectionPixels = pixels;
-    session.pushHistory(before);
+    session.pushHistory(cropHistorySnapshot(before, unionRects(previousRect, next)));
     session.markDirty(true);
     updateSelectionOutline();
     updateHistoryButtons();
     updateUIFromState();
     updateLivePreview();
-    scheduleDraftCheckpoint();
+    saveService.scheduleDraftCheckpoint();
     return true;
   }
 
   function deleteSelection() {
     if (!selectionRect) return false;
-    const before = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const before = captureHistorySnapshot(ctx, selectionRect);
     ctx.clearRect(selectionRect.x, selectionRect.y, selectionRect.width, selectionRect.height);
-    if (!imageDataChanged(before)) return false;
+    if (!historySnapshotChanged(ctx, before)) return false;
     selectionRect = null;
     selectionPixels = null;
     session.pushHistory(before);
@@ -762,7 +788,7 @@ function fitCutoutSvg(svg, slot) {
     updateHistoryButtons();
     updateUIFromState();
     updateLivePreview();
-    scheduleDraftCheckpoint();
+    saveService.scheduleDraftCheckpoint();
     return true;
   }
 
@@ -770,7 +796,7 @@ function fitCutoutSvg(svg, slot) {
     if (!selectionRect) return false;
     const pixels = selectionPixels || captureSelection();
     if (!pixels) return false;
-    const before = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const before = captureHistorySnapshot(ctx, selectionRect);
     const temp = document.createElement('canvas');
     temp.width = pixels.width;
     temp.height = pixels.height;
@@ -783,13 +809,13 @@ function fitCutoutSvg(svg, slot) {
     ctx.drawImage(temp, 0, 0);
     ctx.restore();
     selectionPixels = ctx.getImageData(selectionRect.x, selectionRect.y, selectionRect.width, selectionRect.height);
-    if (!imageDataChanged(before)) return false;
+    if (!historySnapshotChanged(ctx, before)) return false;
     session.pushHistory(before);
     session.markDirty(true);
     updateHistoryButtons();
     updateUIFromState();
     updateLivePreview();
-    scheduleDraftCheckpoint();
+    saveService.scheduleDraftCheckpoint();
     return true;
   }
 
@@ -807,27 +833,21 @@ function fitCutoutSvg(svg, slot) {
     };
   }
 
-  function imageDataChanged(before) {
-    if (!before) return false;
-    const current = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    if (current.data.length !== before.data.length) return true;
-    for (let i = 0; i < current.data.length; i += 1) {
-      if (current.data[i] !== before.data[i]) return true;
-    }
-    return false;
-  }
-
   function commitPendingOperation() {
     const before = pendingHistorySnapshot;
+    const rect = pendingHistoryRect;
     pendingHistorySnapshot = null;
+    pendingHistoryRect = null;
     pointerStart = null;
-    if (!imageDataChanged(before)) return false;
-    session.pushHistory(before);
+    if (!before) return false;
+    if (!historySnapshotChanged(ctx, before, rect)) return false;
+    const historySnapshot = cropHistorySnapshot(before, rect);
+    session.pushHistory(historySnapshot);
     session.markDirty(true);
     updateHistoryButtons();
     updateUIFromState();
     updateLivePreview();
-    scheduleDraftCheckpoint();
+    saveService.scheduleDraftCheckpoint();
     return true;
   }
 
@@ -854,19 +874,21 @@ function fitCutoutSvg(svg, slot) {
     }
 
     if (state.tool === 'fill') {
-      const before = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const before = captureHistorySnapshot(ctx);
+      const fillBounds = {};
       const changed = executeFloodFill(ctx, coords.x, coords.y, state.color, {
         tolerance: 16,
         mirror: state.mirror,
-        axisX: (session.logicalWidth / 2) * 2 // scale factor 2
+        axisX: session.mirrorAxisX * backingScale(),
+        bounds: fillBounds
       });
       if (changed) {
-        session.pushHistory(before);
+        session.pushHistory(cropHistorySnapshot(before, floodBoundsRect(fillBounds)));
         session.markDirty(true);
         updateHistoryButtons();
         updateUIFromState();
         updateLivePreview();
-        scheduleDraftCheckpoint();
+        saveService.scheduleDraftCheckpoint();
       }
       return;
     }
@@ -875,15 +897,19 @@ function fitCutoutSvg(svg, slot) {
       isPointerDown = true;
       activePointerId = e.pointerId;
       canvas.setPointerCapture?.(e.pointerId);
+      lastPointerPos = coords;
       pointerStart = coords;
       selectionBeforeRect = selectionRect;
-      pendingHistorySnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
       if (selectionContains(selectionRect, coords)) {
         pointerMode = 'select-move';
         selectionPixels = captureSelection();
+        pendingHistorySnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        pendingHistoryRect = selectionRect;
       } else {
         pointerMode = 'select-rect';
         selectionPixels = null;
+        pendingHistorySnapshot = null;
+        pendingHistoryRect = null;
         selectionRect = normalizeSelectionRect(coords, coords);
         updateSelectionOutline();
       }
@@ -901,21 +927,23 @@ function fitCutoutSvg(svg, slot) {
 
     if (state.tool === 'brush' || state.tool === 'eraser') {
       applyStroke(ctx, [coords], {
-        size: state.brushSize * 2, // scale factor 2
+        size: state.brushSize * backingScale(),
         color: state.color,
         isEraser: state.tool === 'eraser',
         mirror: state.mirror,
-        axisX: (session.logicalWidth / 2) * 2
+        axisX: session.mirrorAxisX * backingScale()
       });
+      includePendingRect(pointsBounds([coords], state.brushSize * backingScale(), state.mirror));
       updateLivePreview();
     } else if (state.tool === 'shape') {
       drawShape(ctx, state.shapeType, coords.x, coords.y, coords.x, coords.y, {
         color: state.color,
-        size: state.brushSize * 2,
+        size: state.brushSize * backingScale(),
         filled: state.shapeFilled,
         mirror: state.mirror,
-        axisX: (session.logicalWidth / 2) * 2
+        axisX: session.mirrorAxisX * backingScale()
       });
+      includePendingRect(shapeBounds(coords.x, coords.y, coords.x, coords.y, state.brushSize * backingScale(), state.mirror));
     }
   }
 
@@ -927,12 +955,13 @@ function fitCutoutSvg(svg, slot) {
     if (state.tool === 'brush' || state.tool === 'eraser') {
       const points = interpolateStrokePoints(lastPointerPos, coords, 3);
       applyStroke(ctx, points, {
-        size: state.brushSize * 2,
+        size: state.brushSize * backingScale(),
         color: state.color,
         isEraser: state.tool === 'eraser',
         mirror: state.mirror,
-        axisX: (session.logicalWidth / 2) * 2
+        axisX: session.mirrorAxisX * backingScale()
       });
+      includePendingRect(pointsBounds(points, state.brushSize * backingScale(), state.mirror));
       lastPointerPos = coords;
       updateLivePreview();
     } else if (pointerMode === 'select-rect' && pointerStart) {
@@ -947,6 +976,7 @@ function fitCutoutSvg(svg, slot) {
         x: Math.max(0, Math.min(canvas.width - selectionBeforeRect.width, selectionBeforeRect.x + dx)),
         y: Math.max(0, Math.min(canvas.height - selectionBeforeRect.height, selectionBeforeRect.y + dy))
       };
+      includePendingRect(unionRects(selectionBeforeRect, selectionRect));
       ctx.clearRect(selectionBeforeRect.x, selectionBeforeRect.y, selectionBeforeRect.width, selectionBeforeRect.height);
       ctx.putImageData(selectionPixels, selectionRect.x, selectionRect.y);
       updateSelectionOutline();
@@ -955,11 +985,12 @@ function fitCutoutSvg(svg, slot) {
       ctx.putImageData(pendingHistorySnapshot, 0, 0);
       drawShape(ctx, state.shapeType, pointerStart.x, pointerStart.y, coords.x, coords.y, {
         color: state.color,
-        size: state.brushSize * 2,
+        size: state.brushSize * backingScale(),
         filled: state.shapeFilled,
         mirror: state.mirror,
-        axisX: (session.logicalWidth / 2) * 2
+        axisX: session.mirrorAxisX * backingScale()
       });
+      includePendingRect(shapeBounds(pointerStart.x, pointerStart.y, coords.x, coords.y, state.brushSize * backingScale(), state.mirror));
       lastPointerPos = coords;
       updateLivePreview();
     }
@@ -974,6 +1005,7 @@ function fitCutoutSvg(svg, slot) {
 
     if (pointerMode === 'select-rect') {
       pendingHistorySnapshot = null;
+      pendingHistoryRect = null;
       pointerMode = null;
       selectionPixels = captureSelection();
       updateSelectionOutline();
@@ -991,6 +1023,7 @@ function fitCutoutSvg(svg, slot) {
     pointerStart = null;
     if (pendingHistorySnapshot) ctx.putImageData(pendingHistorySnapshot, 0, 0);
     pendingHistorySnapshot = null;
+    pendingHistoryRect = null;
     pointerMode = null;
     if (cancelledSelection) {
       selectionRect = selectionBeforeRect;
@@ -1019,6 +1052,7 @@ function fitCutoutSvg(svg, slot) {
       return;
     }
     if (screen && !screen.contains(document.activeElement) && !screen.contains(e.target)) return;
+    if (e.key === ' ' && e.target?.closest?.('button, [role="button"]')) return;
 
     const state = session.getState();
     const step = e.shiftKey ? 1 : 10;
@@ -1026,7 +1060,7 @@ function fitCutoutSvg(svg, slot) {
     if (state.tool === 'select' && selectionRect && /^Arrow/.test(e.key)) {
       e.preventDefault();
       const delta = e.key === 'ArrowLeft' ? [-step, 0] : e.key === 'ArrowRight' ? [step, 0] : e.key === 'ArrowUp' ? [0, -step] : [0, step];
-      moveSelectionBy(delta[0] * 2, delta[1] * 2);
+      moveSelectionBy(delta[0] * backingScale(), delta[1] * backingScale());
       return;
     }
 
@@ -1061,8 +1095,8 @@ function fitCutoutSvg(svg, slot) {
           e.preventDefault();
           const half = 40;
           selectionRect = normalizeSelectionRect(
-            { x: (cursorX - half) * 2, y: (cursorY - half) * 2 },
-            { x: (cursorX + half) * 2, y: (cursorY + half) * 2 }
+            { x: (cursorX - half) * backingScale(), y: (cursorY - half) * backingScale() },
+            { x: (cursorX + half) * backingScale(), y: (cursorY + half) * backingScale() }
           );
           selectionPixels = captureSelection();
           updateSelectionOutline();
@@ -1154,7 +1188,7 @@ function fitCutoutSvg(svg, slot) {
         } else if (!e.altKey) {
           session.setZoom(state.zoom === 1 ? 2 : 1);
           if (canvasStage) {
-            canvasStage.style.setProperty('--paint-zoom', session.getState().zoom === 2 ? '1.5' : '1');
+            canvasStage.style.setProperty('--paint-zoom', session.getState().zoom === 2 ? '2' : '1');
           }
           if (zoomBtn) zoomBtn.textContent = session.getState().zoom === 2 ? '🔍 2×' : '🔍 1×';
         }
@@ -1193,8 +1227,9 @@ function fitCutoutSvg(svg, slot) {
 
   function applyActionAtVirtualCursor() {
     const state = session.getState();
-    const px = cursorX * 2;
-    const py = cursorY * 2;
+    const scale = backingScale();
+    const px = cursorX * scale;
+    const py = cursorY * scale;
 
     if (state.tool === 'eyedropper') {
       const sampled = samplePixel(ctx, px, py);
@@ -1208,33 +1243,47 @@ function fitCutoutSvg(svg, slot) {
       return;
     }
 
-    const before = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let before;
     let changed = false;
     if (state.tool === 'brush' || state.tool === 'eraser') {
+      before = captureHistorySnapshot(ctx, pointsBounds([{ x: px, y: py }], state.brushSize * scale, state.mirror));
       applyStroke(ctx, [{ x: px, y: py }], {
-        size: state.brushSize * 2,
+        size: state.brushSize * scale,
         color: state.color,
         isEraser: state.tool === 'eraser',
         mirror: state.mirror,
-        axisX: (session.logicalWidth / 2) * 2
+        axisX: session.mirrorAxisX * scale
       });
-      changed = imageDataChanged(before);
+      changed = historySnapshotChanged(ctx, before);
     } else if (state.tool === 'fill') {
+      before = captureHistorySnapshot(ctx);
+      const fillBounds = {};
       changed = executeFloodFill(ctx, px, py, state.color, {
         tolerance: 16,
         mirror: state.mirror,
-        axisX: (session.logicalWidth / 2) * 2
+        axisX: session.mirrorAxisX * scale,
+        bounds: fillBounds
       });
+      if (changed) before = cropHistorySnapshot(before, floodBoundsRect(fillBounds));
     } else if (state.tool === 'shape') {
       const shapeSize = 40;
-      drawShape(ctx, state.shapeType, px - shapeSize * 2, py - shapeSize * 2, px + shapeSize * 2, py + shapeSize * 2, {
+      before = captureHistorySnapshot(ctx, shapeBounds(
+        px - shapeSize * scale,
+        py - shapeSize * scale,
+        px + shapeSize * scale,
+        py + shapeSize * scale,
+        state.brushSize * scale,
+        state.mirror,
+        session.mirrorAxisX * scale
+      ));
+      drawShape(ctx, state.shapeType, px - shapeSize * scale, py - shapeSize * scale, px + shapeSize * scale, py + shapeSize * scale, {
         color: state.color,
-        size: state.brushSize * 2,
+        size: state.brushSize * scale,
         filled: state.shapeFilled,
         mirror: state.mirror,
-        axisX: (session.logicalWidth / 2) * 2
+        axisX: session.mirrorAxisX * scale
       });
-      changed = imageDataChanged(before);
+      changed = historySnapshotChanged(ctx, before);
     }
 
     if (changed) {
@@ -1243,257 +1292,102 @@ function fitCutoutSvg(svg, slot) {
       updateHistoryButtons();
       updateUIFromState();
       updateLivePreview();
-      scheduleDraftCheckpoint();
+      saveService.scheduleDraftCheckpoint();
     }
   }
 
   function handleUndo() {
     if (!session.canUndo()) return;
-    const current = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const current = captureHistorySnapshot(ctx, session.peekUndo());
     const prev = session.undo(current);
     if (prev) {
-      ctx.putImageData(prev, 0, 0);
+      restoreHistorySnapshot(ctx, prev);
       updateHistoryButtons();
       updateUIFromState();
       announceStatus(t('paint.undoAnnouncement'));
       updateLivePreview();
-      scheduleDraftCheckpoint();
+      saveService.scheduleDraftCheckpoint();
     }
   }
 
   function handleRedo() {
     if (!session.canRedo()) return;
-    const current = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const current = captureHistorySnapshot(ctx, session.peekRedo());
     const next = session.redo(current);
     if (next) {
-      ctx.putImageData(next, 0, 0);
+      restoreHistorySnapshot(ctx, next);
       updateHistoryButtons();
       updateUIFromState();
       announceStatus(t('paint.redoAnnouncement'));
       updateLivePreview();
-      scheduleDraftCheckpoint();
+      saveService.scheduleDraftCheckpoint();
     }
   }
 
   async function updateLivePreview() {
     if (!previewStage) return;
-    previewStage.innerHTML = '';
+    const renderToken = ++livePreviewToken;
     const state = session.getState();
+    const mode = state.itemType === 'wearable' ? 'wearable' : 'prop';
+
+    if (mode !== livePreviewMode) {
+      previewStage.replaceChildren();
+      livePreviewMode = mode;
+      livePreviewCanvas = null;
+      livePreviewDollWrap = null;
+      livePreviewDollId = null;
+    }
+
+    if (!livePreviewCanvas) {
+      livePreviewCanvas = document.createElement('canvas');
+      livePreviewCanvas.style.width = '100%';
+      livePreviewCanvas.style.height = '100%';
+      livePreviewCanvas.style.position = 'absolute';
+      livePreviewCanvas.style.inset = '0';
+      livePreviewCanvas.style.zIndex = '2';
+    }
+    if (livePreviewCanvas.width !== canvas.width) livePreviewCanvas.width = canvas.width;
+    if (livePreviewCanvas.height !== canvas.height) livePreviewCanvas.height = canvas.height;
+    livePreviewCanvas.getContext('2d').drawImage(canvas, 0, 0);
 
     if (state.itemType === 'wearable') {
-      const dollWrap = document.createElement('div');
-      dollWrap.className = 'preview-doll-mini';
-      dollWrap.style.position = 'relative';
-      dollWrap.style.width = '100%';
-      dollWrap.style.height = '100%';
+      if (!livePreviewDollWrap) {
+        livePreviewDollWrap = document.createElement('div');
+        livePreviewDollWrap.className = 'preview-doll-mini';
+        livePreviewDollWrap.style.position = 'relative';
+        livePreviewDollWrap.style.width = '100%';
+        livePreviewDollWrap.style.height = '100%';
+        livePreviewDollWrap.appendChild(livePreviewCanvas);
+        previewStage.appendChild(livePreviewDollWrap);
+      }
 
       if (svgLoader) {
         const baseDollId = state.baseDollId || 'doll_classic_a';
-        try {
-          const dollSvg = await svgLoader.load(baseDollId);
-          if (dollSvg && session.getState().itemType === 'wearable') {
+        if (baseDollId !== livePreviewDollId) {
+          livePreviewDollId = baseDollId;
+          livePreviewDollWrap.querySelector?.('.preview-doll-base')?.remove?.();
+          try {
+            const dollSvg = await svgLoader.load(baseDollId);
+            if (renderToken !== livePreviewToken || session.getState().itemType !== 'wearable') return;
+            if (dollSvg) {
             const clone = dollSvg.cloneNode(true);
+            clone.classList.add('preview-doll-base');
             clone.setAttribute('aria-hidden', 'true');
             clone.style.width = '100%';
             clone.style.height = '100%';
             clone.style.position = 'absolute';
             clone.style.inset = '0';
             clone.style.opacity = '0.75';
-            dollWrap.appendChild(clone);
+            livePreviewDollWrap.insertBefore(clone, livePreviewCanvas);
+            }
+          } catch {
+            // ignore
           }
-        } catch {
-          // ignore
         }
       }
-
-      const previewCanvas = document.createElement('canvas');
-      previewCanvas.width = canvas.width;
-      previewCanvas.height = canvas.height;
-      const pCtx = previewCanvas.getContext('2d');
-      pCtx.drawImage(canvas, 0, 0);
-      previewCanvas.style.width = '100%';
-      previewCanvas.style.height = '100%';
-      previewCanvas.style.position = 'absolute';
-      previewCanvas.style.inset = '0';
-      previewCanvas.style.zIndex = '2';
-      dollWrap.appendChild(previewCanvas);
-      previewStage.appendChild(dollWrap);
     } else {
-      const previewCanvas = document.createElement('canvas');
-      previewCanvas.width = canvas.width;
-      previewCanvas.height = canvas.height;
-      const pCtx = previewCanvas.getContext('2d');
-      pCtx.drawImage(canvas, 0, 0);
-      previewCanvas.className = 'preview-prop-mini';
-      previewStage.appendChild(previewCanvas);
-    }
-  }
-
-  function scheduleDraftCheckpoint() {
-    if (!customArtRepo) return;
-    clearTimeout(draftTimer);
-    draftTimer = setTimeout(() => {
-      void flushDraftCheckpoint();
-    }, 500);
-  }
-
-  async function flushDraftCheckpoint() {
-    clearTimeout(draftTimer);
-    draftTimer = null;
-    if (!customArtRepo || !session.getState().dirty) return;
-    try {
-      const blob = await canvasToBlob(canvas);
-      const state = session.getState();
-      await customArtRepo.saveDraft(blob, {
-        itemType: state.itemType,
-        slot: state.slot,
-        nameIsGenerated: state.nameIsGenerated,
-        baseDollId: state.baseDollId,
-        referenceVisible: state.referenceVisible,
-        referenceOpacity: state.referenceOpacity,
-        guidesVisible: state.guidesVisible,
-        cutoutReferenceVisible: state.cutoutReferenceVisible,
-        cutoutAssetId: state.cutoutAssetId,
-        propSize: state.propSize,
-        propPlacement: state.propPlacement,
-        name: state.name
-      });
-    } catch (err) {
-      console.warn('Draft checkpoint failed:', err);
-    }
-  }
-
-  function checkpointReferencePreferences() {
-    if (session.getState().dirty) scheduleDraftCheckpoint();
-  }
-
-  async function openSaveDialog() {
-    if (!saveDialog) return;
-    const state = session.getState();
-
-    if (nameInput) nameInput.value = state.name;
-
-    if (saveThumb) {
-      saveThumb.innerHTML = '';
-      const thumb = document.createElement('canvas');
-      thumb.width = canvas.width;
-      thumb.height = canvas.height;
-      const tCtx = thumb.getContext('2d');
-      tCtx.drawImage(canvas, 0, 0);
-      saveThumb.appendChild(thumb);
-    }
-
-    if (saveContextBtn) {
-      if (state.originContext === 'designer') {
-        saveContextBtn.textContent = t('paint.saveAndWear');
-        saveContextBtn.hidden = false;
-      } else if (state.originContext === 'play') {
-        saveContextBtn.textContent = t('paint.saveAndAddToStage');
-        saveContextBtn.hidden = false;
-      } else {
-        saveContextBtn.hidden = true;
-      }
-    }
-
-
-    saveDialog.showModal();
-    setTimeout(() => {
-      nameInput?.focus();
-      nameInput?.select?.();
-    }, 50);
-  }
-
-  async function commitSave(andUse = false) {
-    const rawName = nameInput ? nameInput.value : session.getState().name;
-    const validation = validateArtworkName(rawName);
-    if (!validation.valid) {
-      alert(validation.error);
-      return;
-    }
-
-    session.setName(validation.name);
-    const state = session.getState();
-    const assetId = `custom_${defaultMakeId()}`;
-    const now = defaultNow().toISOString();
-
-    try {
-      const blob = await canvasToBlob(canvas);
-      if (!customArtRepo?.computeSha256) throw new Error('Artwork digest service is unavailable.');
-      const sha256 = await customArtRepo.computeSha256(blob);
-
-      let customMetadata = {
-        assetId,
-        name: validation.name,
-        kind: state.itemType,
-        format: 'image/png',
-        logicalWidth: session.logicalWidth,
-        logicalHeight: session.logicalHeight,
-        pixelWidth: session.pixelWidth,
-        pixelHeight: session.pixelHeight,
-        byteLength: blob.size,
-        sha256,
-        createdAt: now,
-        updatedAt: now,
-        libraryVisible: true,
-        status: 'available'
-      };
-
-      if (state.itemType === 'wearable') {
-        customMetadata.slot = state.slot;
-        const referenceDoll = assetRegistry?.getAsset?.(state.baseDollId);
-        customMetadata.supportedFitFamilies = referenceDoll?.fitFamily ? [referenceDoll.fitFamily] : undefined;
-        customMetadata.presentationStyles = ['neutral'];
-      } else {
-        // Calculate display dimensions for prop
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const bounds = computeNonTransparentBounds(imgData);
-        const dims = calculatePropDisplayDimensions(bounds.aspectRatio, state.propSize);
-        customMetadata.displayWidth = dims.displayWidth;
-        customMetadata.displayHeight = dims.displayHeight;
-        customMetadata.groundAnchor = state.propPlacement === 'surface'
-          ? { x: 0.5, y: 1.0 }
-          : { x: 0.5, y: 0.5 };
-      }
-
-      // 1. Save binary to IndexedDB
-      const binaryResult = await customArtRepo.saveArtwork(assetId, blob, customMetadata);
-      if (!binaryResult?.ok) throw new Error(binaryResult?.error || 'Artwork binary could not be saved.');
-
-      // 2. Commit metadata to AppStore
-      const metadataResult = store.dispatch({
-        type: 'customAsset/add',
-        asset: customMetadata
-      });
-      if (!metadataResult?.ok) {
-        throw new Error(metadataResult?.code === 'LIMIT'
-          ? t('paint.limitReached')
-          : t('paint.metadataCommitFailed'));
-      }
-
-      // 3. Clear draft
-      await customArtRepo.clearDraft('active');
-      session.markDirty(false);
-      saveDialog?.close();
-
-      // 4. Contextual action if requested
-      if (andUse && state.originContext === 'designer' && state.itemType === 'wearable') {
-        store.dispatch({
-          type: 'designer/equip',
-          assetId
-        });
-        if (onNavigate) onNavigate('designer');
-      } else if (andUse && state.originContext === 'play' && state.itemType === 'prop') {
-        store.dispatch({
-          type: 'scene/spawnProp',
-          assetId
-        });
-        if (onNavigate) onNavigate('play');
-      } else {
-        announceStatus(t('paint.savedStatus', { name: validation.name }));
-      }
-    } catch (err) {
-      console.error('Save artwork failed:', err);
-      alert(t('paint.saveError', { error: err.message || 'Storage failure' }));
+      livePreviewCanvas.className = 'preview-prop-mini';
+      if (livePreviewCanvas.parentNode !== previewStage) previewStage.appendChild(livePreviewCanvas);
     }
   }
 
@@ -1556,24 +1450,31 @@ function fitCutoutSvg(svg, slot) {
       const nextZoom = session.getState().zoom === 1 ? 2 : 1;
       session.setZoom(nextZoom);
       if (canvasStage) {
-        canvasStage.style.setProperty('--paint-zoom', nextZoom === 2 ? '1.5' : '1');
+        canvasStage.style.setProperty('--paint-zoom', nextZoom === 2 ? '2' : '1');
       }
       if (zoomBtn) zoomBtn.textContent = nextZoom === 2 ? '🔍 2×' : '🔍 1×';
     });
 
-    clearBtn?.addEventListener('click', () => {
-      const before = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    clearBtn?.addEventListener('click', async () => {
+      if (canvasHasPixels()) {
+        const confirmed = await (askConfirm?.(
+          t('paint.clearCanvasTitle'),
+          t('paint.clearCanvasMessage')
+        ) ?? true);
+        if (!confirmed) return;
+      }
+      const before = captureHistorySnapshot(ctx);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (!imageDataChanged(before)) return;
+      if (!historySnapshotChanged(ctx, before)) return;
       session.pushHistory(before);
       session.markDirty(true);
       updateHistoryButtons();
       updateUIFromState();
       updateLivePreview();
-      scheduleDraftCheckpoint();
+      saveService.scheduleDraftCheckpoint();
     });
 
-    saveBtn?.addEventListener('click', openSaveDialog);
+    saveBtn?.addEventListener('click', saveService.openSaveDialog);
 
     // Type toggles
     typeWearableBtn?.addEventListener('click', () => {
@@ -1596,7 +1497,7 @@ function fitCutoutSvg(svg, slot) {
       loadCutoutsForSlot(slot);
       renderGuideLayer();
       updateLivePreview();
-      scheduleDraftCheckpoint();
+      saveService.scheduleDraftCheckpoint();
       announceStatus(t('paint.slotChanged', { slot: slotLabel(slot) || slot }));
     });
 
@@ -1619,7 +1520,7 @@ function fitCutoutSvg(svg, slot) {
     referenceVisible?.addEventListener('change', (e) => {
       session.setReferenceVisible(e.target.checked);
       renderGuideLayer();
-      checkpointReferencePreferences();
+      saveService.checkpointReferencePreferences();
       announceStatus(e.target.checked ? t('paint.referenceShown') : t('paint.referenceHidden'));
     });
 
@@ -1627,7 +1528,7 @@ function fitCutoutSvg(svg, slot) {
       if (!session.setBaseDollId(e.target.value)) return;
       renderGuideLayer();
       updateLivePreview();
-      checkpointReferencePreferences();
+      saveService.checkpointReferencePreferences();
       announceStatus(t('paint.modelChanged', { name: e.target.selectedOptions?.[0]?.textContent || 'selected model' }));
     });
 
@@ -1636,7 +1537,7 @@ function fitCutoutSvg(svg, slot) {
       const value = session.getState().referenceOpacity;
       if (referenceOpacityValue) referenceOpacityValue.value = `${value}%`;
       if (guideLayer) guideLayer.style.setProperty('--reference-opacity', String(value / 100));
-      checkpointReferencePreferences();
+      saveService.checkpointReferencePreferences();
     });
 
     referenceOpacity?.addEventListener('change', () => {
@@ -1646,14 +1547,14 @@ function fitCutoutSvg(svg, slot) {
     guidesVisible?.addEventListener('change', (e) => {
       session.setGuidesVisible(e.target.checked);
       renderGuideLayer();
-      checkpointReferencePreferences();
+      saveService.checkpointReferencePreferences();
       announceStatus(e.target.checked ? t('paint.guidesShown') : t('paint.guidesHidden'));
     });
 
     cutoutReferenceVisible?.addEventListener('change', (e) => {
       session.setCutoutReferenceVisible(e.target.checked);
       renderGuideLayer();
-      checkpointReferencePreferences();
+      saveService.checkpointReferencePreferences();
       announceStatus(e.target.checked ? t('paint.cutoutRefShown') : t('paint.cutoutRefHidden'));
     });
 
@@ -1709,20 +1610,6 @@ function fitCutoutSvg(svg, slot) {
       selectColor(e.target.value);
     });
 
-    // Save dialog
-    saveForm?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      commitSave(true);
-    });
-
-    saveMyArtBtn?.addEventListener('click', () => {
-      commitSave(false);
-    });
-
-    cancelSaveBtn?.addEventListener('click', () => {
-      saveDialog?.close();
-    });
-
     // Dirty dialog
     dirtyKeepBtn?.addEventListener('click', () => {
       dirtyDialog?.close();
@@ -1741,474 +1628,11 @@ function fitCutoutSvg(svg, slot) {
 
     dirtySaveBtn?.addEventListener('click', () => {
       dirtyDialog?.close();
-      openSaveDialog();
+      saveService.openSaveDialog();
     });
 
-    // Recovery dialog
-    recoverContinueBtn?.addEventListener('click', async () => {
-      recoveryDialog?.close();
-      await restoreActiveDraft();
-    });
-
-    recoverDiscardBtn?.addEventListener('click', async () => {
-      recoveryDialog?.close();
-      await customArtRepo?.clearDraft();
-    });
-
-    // My Art dialog event bindings
-    myArtBtn?.addEventListener('click', () => openMyArtDialog('all'));
-    closeMyArtBtn?.addEventListener('click', () => myArtDialog?.close());
-    myArtTabs?.forEach((tabBtn) => {
-      tabBtn.addEventListener('click', () => openMyArtDialog(tabBtn.dataset.tab));
-    });
-    myArtEmptyTrashBtn?.addEventListener('click', handleEmptyTrash);
-
-    // Impact dialog event bindings
-    impactCancelBtn?.addEventListener('click', () => impactDialog?.close());
-    impactRemoveBtn?.addEventListener('click', () => {
-      if (activeImpactAsset) handleRemoveFromMyArt(activeImpactAsset.assetId);
-    });
-    impactDeleteAllBtn?.addEventListener('click', () => {
-      if (activeImpactAsset) handleDeleteWithUses(activeImpactAsset.assetId);
-    });
-
-    // Rename dialog event bindings
-    renameCancelBtn?.addEventListener('click', () => renameDialog?.close());
-    renameForm?.addEventListener('submit', handleSaveRename);
-  }
-
-  function openMyArtDialog(tab = 'all') {
-    if (!myArtDialog) return;
-    currentMyArtTab = tab;
-    myArtTabs?.forEach((btn) => {
-      const active = btn.dataset.tab === currentMyArtTab;
-      btn.classList.toggle('active', active);
-      btn.setAttribute('aria-selected', String(active));
-    });
-    if (myArtTrashActions) {
-      myArtTrashActions.hidden = currentMyArtTab !== 'trash';
-    }
-    renderMyArtCards();
-    myArtDialog.showModal();
-  }
-
-  async function renderMyArtCards() {
-    if (!myArtGrid) return;
-    myArtGrid.innerHTML = '';
-    const state = store?.getState?.() || {};
-    const allCustoms = state.customAssets || [];
-
-    let filtered = [];
-    if (currentMyArtTab === 'trash') {
-      filtered = allCustoms.filter((a) => a.status === 'trashed' || a.libraryVisible === false);
-    } else if (currentMyArtTab === 'wearable') {
-      filtered = allCustoms.filter((a) => (a.status === 'available' || a.status == null) && a.libraryVisible !== false && a.kind === 'wearable');
-    } else if (currentMyArtTab === 'prop') {
-      filtered = allCustoms.filter((a) => (a.status === 'available' || a.status == null) && a.libraryVisible !== false && a.kind === 'prop');
-    } else {
-      filtered = allCustoms.filter((a) => (a.status === 'available' || a.status == null) && a.libraryVisible !== false);
-    }
-
-    if (filtered.length === 0) {
-      const emptyP = document.createElement('p');
-      emptyP.className = 'panel-copy';
-      emptyP.style.gridColumn = '1 / -1';
-      emptyP.style.textAlign = 'center';
-      emptyP.style.padding = '2rem 1rem';
-      emptyP.textContent = currentMyArtTab === 'trash'
-        ? t('paintMyArtDialog.emptyTrash')
-        : (currentMyArtTab === 'wearable' ? t('paintMyArtDialog.emptyWearable') : (currentMyArtTab === 'prop' ? t('paintMyArtDialog.emptyProp') : t('paintMyArtDialog.emptyAll')));
-      myArtGrid.appendChild(emptyP);
-      return;
-    }
-
-    for (const asset of filtered) {
-      const card = document.createElement('article');
-      card.className = `myart-card ${asset.status === 'trashed' ? 'is-trashed' : ''}`;
-      card.setAttribute('role', 'listitem');
-
-      const thumbWrap = document.createElement('div');
-      thumbWrap.className = 'myart-card-thumb-wrap';
-
-      const img = document.createElement('img');
-      img.alt = asset.name || 'Custom artwork';
-      img.loading = 'lazy';
-
-      // Load object URL
-      if (customArtRepo?.getTrackedObjectUrl) {
-        customArtRepo.getTrackedObjectUrl(asset.assetId).then((url) => {
-          if (url) {
-            img.src = url;
-          } else {
-            thumbWrap.innerHTML = `<span class="missing-art-label" style="font-size:0.75rem; color:var(--ink-muted);">🎨 ${asset.status === 'trashed' ? t('paintMyArtDialog.trashed') : t('paintMyArtDialog.noPreview')}</span>`;
-          }
-        }).catch(() => {});
-      }
-      thumbWrap.appendChild(img);
-      card.appendChild(thumbWrap);
-
-      const info = document.createElement('div');
-      info.className = 'myart-card-info';
-
-      const titleRow = document.createElement('div');
-      titleRow.className = 'myart-card-title-row';
-
-      const title = document.createElement('strong');
-      title.className = 'myart-card-title';
-      title.textContent = asset.name || 'Untitled';
-      title.title = asset.name || 'Untitled';
-      titleRow.appendChild(title);
-      info.appendChild(titleRow);
-
-      const meta = document.createElement('span');
-      meta.className = 'myart-card-meta';
-      const slotText = asset.kind === 'wearable' ? (t('wardrobeSlots.' + asset.slot) || slotLabel(asset.slot) || 'Wearable') : (t('paint.propTypeBtn') || 'Prop');
-      meta.textContent = `${slotText} • ${new Date(asset.createdAt || Date.now()).toLocaleDateString()}`;
-      info.appendChild(meta);
-
-      const impact = countAssetUses(asset.assetId, state);
-      const usageBadge = document.createElement('span');
-      usageBadge.className = 'panel-copy';
-      usageBadge.style.fontSize = '0.78rem';
-      usageBadge.textContent = t('paintMyArtDialog.usedInCount', { count: impact.totalUses });
-      info.appendChild(usageBadge);
-
-      card.appendChild(info);
-
-      const actions = document.createElement('div');
-      actions.className = 'myart-card-actions';
-
-      if (currentMyArtTab === 'trash') {
-        const restoreBtn = document.createElement('button');
-        restoreBtn.type = 'button';
-        restoreBtn.className = 'button secondary myart-card-btn';
-        restoreBtn.innerHTML = '↺ ' + t('projectDialog.restoreBackupBtn').replace(/^[^\s]+\s*/, '');
-        restoreBtn.title = t('paintMyArtDialog.restoreTitle');
-        restoreBtn.addEventListener('click', () => handleRestoreArtwork(asset.assetId));
-        actions.appendChild(restoreBtn);
-
-        const purgeBtn = document.createElement('button');
-        purgeBtn.type = 'button';
-        purgeBtn.className = 'button danger-fill myart-card-btn';
-        purgeBtn.innerHTML = '🗑 ' + t('play.deleteItem');
-        purgeBtn.title = t('paintMyArtDialog.deleteTitle');
-        purgeBtn.addEventListener('click', () => handleDeletePermanently(asset.assetId));
-        actions.appendChild(purgeBtn);
-      } else {
-        const useBtn = document.createElement('button');
-        useBtn.type = 'button';
-        useBtn.className = 'button primary myart-card-btn';
-        useBtn.innerHTML = asset.kind === 'wearable' ? '👗 ' + t('designer.reset') : '➕ ' + t('projectDialog.addMergeBtn').replace(/^[^\s]+\s*/, '');
-        useBtn.title = asset.kind === 'wearable' ? t('designer.equipAssetAria', { name: asset.name, custom: '' }) : t('play.paintPropAria');
-        useBtn.addEventListener('click', () => {
-          myArtDialog.close();
-          if (asset.kind === 'wearable') {
-            store.dispatch({ type: 'designer/equip', assetId: asset.assetId });
-            if (onNavigate) onNavigate('designer');
-          } else {
-            store.dispatch({ type: 'scene/spawnProp', assetId: asset.assetId });
-            if (onNavigate) onNavigate('play');
-          }
-        });
-        actions.appendChild(useBtn);
-
-        const copyBtn = document.createElement('button');
-        copyBtn.type = 'button';
-        copyBtn.className = 'button secondary myart-card-btn';
-        copyBtn.innerHTML = '📝 ' + t('play.saveCopyBtn').replace(/^[^\s]+\s*/, '');
-        copyBtn.title = t('paintMyArtDialog.editCopyTitle', { name: asset.name });
-        copyBtn.addEventListener('click', () => editCopyOfArtwork(asset.assetId));
-        actions.appendChild(copyBtn);
-
-        const renameBtn = document.createElement('button');
-        renameBtn.type = 'button';
-        renameBtn.className = 'button secondary myart-card-btn';
-        renameBtn.innerHTML = '✏️ ' + t('paintRenameDialog.title').replace(/^[^\s]+\s*/, '');
-        renameBtn.title = t('paintMyArtDialog.renameTitle');
-        renameBtn.addEventListener('click', () => openRenameDialog(asset));
-        actions.appendChild(renameBtn);
-
-        const impactBtn = document.createElement('button');
-        impactBtn.type = 'button';
-        impactBtn.className = 'button secondary myart-card-btn';
-        impactBtn.innerHTML = '🗑 ' + t('paintImpactDialog.removeBtn');
-        impactBtn.title = t('paintMyArtDialog.deleteTitle');
-        impactBtn.addEventListener('click', () => openImpactDialog(asset));
-        actions.appendChild(impactBtn);
-      }
-
-      card.appendChild(actions);
-      myArtGrid.appendChild(card);
-    }
-
-  }
-
-  async function editCopyOfArtwork(assetId) {
-    if (!assetId) return;
-    const state = store?.getState?.() || {};
-    const asset = (state.customAssets || []).find((a) => a.assetId === assetId);
-    if (!asset) return;
-    const sessionState = session.getState();
-
-    checkDirtyBeforeAction(async () => {
-      try {
-        let record = await customArtRepo?.getArtwork?.(assetId);
-        if (!record && customArtRepo?.getDraft) {
-          const draft = await customArtRepo.getDraft('active');
-          if (draft?.metadata?.assetId === assetId) record = draft;
-        }
-        if (!record?.blob) {
-          alert(t('paint.pixelsNotFound'));
-          return;
-        }
-
-        const url = URL.createObjectURL(record.blob);
-        const img = new Image();
-        try {
-          await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
-            img.src = url;
-          });
-        } finally {
-          URL.revokeObjectURL(url);
-        }
-
-        resetCanvas({
-          itemType: asset.kind || 'wearable',
-          slot: asset.slot || 'top',
-          propSize: asset.displayWidth > 240 ? 'large' : (asset.displayWidth < 180 ? 'small' : 'medium'),
-          propPlacement: asset.groundAnchor?.y === 0.5 ? 'hang' : 'surface',
-          name: t('paint.copyName', { name: asset.name }),
-          baseDollId: sessionState.baseDollId,
-          originContext: sessionState.originContext
-        });
-
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        session.markDirty(true);
-        updateLivePreview();
-        updateHistoryButtons();
-        myArtDialog?.close();
-        announceStatus(t('paint.openedCopyStatus', { name: asset.name }));
-      } catch (err) {
-        console.error('Edit copy failed:', err);
-        alert(t('paint.editCopyFailed'));
-      }
-    });
-  }
-
-  function openImpactDialog(asset) {
-    if (!impactDialog || !asset) return;
-    activeImpactAsset = asset;
-    const state = store?.getState?.() || {};
-    const impact = countAssetUses(asset.assetId, state);
-
-    if (impactName) impactName.textContent = asset.name || 'Untitled';
-    if (impactSummary) impactSummary.textContent = impact.formattedSummary;
-
-    if (impactThumb) {
-      impactThumb.innerHTML = '';
-      const img = document.createElement('img');
-      img.alt = asset.name || 'Artwork';
-      customArtRepo?.getTrackedObjectUrl?.(asset.assetId).then((url) => {
-        if (url) img.src = url;
-      }).catch(() => {});
-      impactThumb.appendChild(img);
-    }
-
-    if (impactDetailsBox) {
-      impactDetailsBox.innerHTML = '';
-      const list = document.createElement('ul');
-      list.className = 'impact-details-list';
-
-      if (impact.inDesignerDraft) {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>👗</span> <span>${t('paintImpactDialog.equippedInDraft')}</span>`;
-        list.appendChild(li);
-      }
-
-      for (const p of impact.presets) {
-        const li = document.createElement('li');
-        const icon = document.createElement('span');
-        icon.textContent = '🎀';
-        const text = document.createElement('span');
-        text.append(`${t('paintImpactDialog.dollboxPreset')}: `);
-        const name = document.createElement('strong');
-        name.textContent = p.name || 'Untitled';
-        text.append(name, ` (${p.count} use${p.count === 1 ? '' : 's'})`);
-        li.append(icon, ' ', text);
-        list.appendChild(li);
-      }
-
-      if (impact.currentSceneUses > 0) {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>🎬</span> <span>${t('paintImpactDialog.activeStageScene', { count: impact.currentSceneUses })}</span>`;
-        list.appendChild(li);
-      }
-
-      for (const s of impact.scenes) {
-        const li = document.createElement('li');
-        const icon = document.createElement('span');
-        icon.textContent = '📖';
-        const text = document.createElement('span');
-        text.append(`${t('paintImpactDialog.savedScene')}: `);
-        const title = document.createElement('strong');
-        title.textContent = s.title || 'Untitled scene';
-        text.append(title, ` (${s.count} item${s.count === 1 ? '' : 's'})`);
-        li.append(icon, ' ', text);
-        list.appendChild(li);
-      }
-
-      if (impact.totalUses === 0) {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>✨</span> <span>${t('paintImpactDialog.notCurrentlyUsed')}</span>`;
-        list.appendChild(li);
-      }
-
-      impactDetailsBox.appendChild(list);
-    }
-
-    impactDialog.showModal();
-  }
-
-  async function handleRemoveFromMyArt(assetId) {
-    if (!assetId) return;
-    try {
-      const moved = await customArtRepo?.moveToTrash?.(assetId, 'user_removed');
-      if (!moved?.ok) throw new Error(moved?.error || 'Artwork could not be moved to trash.');
-      const removed = store.dispatch({ type: 'customAsset/remove', assetId });
-      if (!removed?.ok) {
-        await customArtRepo.restoreFromTrash(assetId);
-        throw new Error('Artwork metadata could not be updated.');
-      }
-      impactDialog?.close();
-      renderMyArtCards();
-      announceStatus(t('paintMyArtDialog.removedStatus'));
-    } catch (err) {
-      console.error('Remove artwork failed:', err);
-      alert(t('paintMyArtDialog.removeFailed'));
-    }
-  }
-
-  async function handleDeleteWithUses(assetId) {
-    if (!assetId) return;
-    try {
-      const moved = await customArtRepo?.moveToTrash?.(assetId, 'user_deleted_all_uses');
-      if (!moved?.ok) throw new Error(moved?.error || 'Artwork could not be moved to trash.');
-      const deleted = store.dispatch({ type: 'customAsset/deleteWithUses', assetId });
-      if (!deleted?.ok) {
-        await customArtRepo.restoreFromTrash(assetId);
-        throw new Error('Artwork uses could not be deleted.');
-      }
-      impactDialog?.close();
-      renderMyArtCards();
-      announceStatus(t('paintMyArtDialog.deletedWithUsesStatus'));
-    } catch (err) {
-      console.error('Delete with uses failed:', err);
-      alert(t('paintMyArtDialog.deleteFailed'));
-    }
-  }
-
-  function openRenameDialog(asset) {
-    if (!renameDialog || !asset) return;
-    activeRenameAsset = asset;
-    if (renameInput) renameInput.value = asset.name || '';
-    renameDialog.showModal();
-    setTimeout(() => {
-      renameInput?.focus();
-      renameInput?.select?.();
-    }, 50);
-  }
-
-  function handleSaveRename(e) {
-    e?.preventDefault?.();
-    if (!activeRenameAsset) return;
-    const raw = renameInput?.value || '';
-    const validation = validateArtworkName(raw);
-    if (!validation.valid) {
-      alert(validation.error);
-      return;
-    }
-    store.dispatch({
-      type: 'customAsset/rename',
-      assetId: activeRenameAsset.assetId,
-      name: validation.name
-    });
-    renameDialog?.close();
-    renderMyArtCards();
-    announceStatus(t('paintMyArtDialog.renamedStatus', { name: validation.name }));
-  }
-
-  async function handleRestoreArtwork(assetId) {
-    if (!assetId) return;
-    try {
-      const restored = await customArtRepo?.restoreFromTrash?.(assetId);
-      if (!restored?.ok) throw new Error(restored?.error || 'Artwork could not be restored from trash.');
-      const metadataResult = store.dispatch({ type: 'customAsset/restore', assetId });
-      if (!metadataResult?.ok) {
-        await customArtRepo.moveToTrash(assetId, 'metadata_restore_failed');
-        throw new Error('Artwork metadata could not be restored.');
-      }
-      renderMyArtCards();
-      announceStatus(t('paintMyArtDialog.restoredStatus'));
-    } catch (err) {
-      console.error('Restore artwork failed:', err);
-      alert(t('paintMyArtDialog.restoreFailed'));
-    }
-  }
-
-  async function handleDeletePermanently(assetId) {
-    if (!assetId) return;
-    if (!confirm(t('paintMyArtDialog.permanentDeleteConfirm'))) return;
-    try {
-      const deleted = store.dispatch({ type: 'customAsset/deleteWithUses', assetId });
-      if (!deleted?.ok) throw new Error('Artwork metadata could not be deleted.');
-      const binaryResult = await customArtRepo?.deleteArtwork?.(assetId);
-      if (!binaryResult?.ok) {
-        store.dispatch({ type: 'app/undo' });
-        throw new Error(binaryResult?.error || 'Artwork pixels could not be deleted.');
-      }
-      renderMyArtCards();
-      announceStatus(t('paintMyArtDialog.permanentDeletedStatus'));
-    } catch (err) {
-      console.error('Permanent deletion failed:', err);
-      alert(t('paintMyArtDialog.deleteFailed'));
-    }
-  }
-
-  async function handleEmptyTrash() {
-    const currentState = store?.getState?.() || {};
-    const referencedTrashCount = (currentState.customAssets || []).filter((asset) =>
-      (asset.status === 'trashed' || asset.libraryVisible === false) &&
-      countAssetUses(asset.assetId, currentState).totalUses > 0
-    ).length;
-    const confirmation = referencedTrashCount > 0
-      ? t('paintMyArtDialog.emptyTrashRetainedConfirm', { count: referencedTrashCount })
-      : t('paintMyArtDialog.emptyTrashConfirmMessage');
-    if (!confirm(confirmation)) return;
-    try {
-      const state = store?.getState?.() || {};
-      const trashed = (state.customAssets || []).filter((asset) =>
-        asset.status === 'trashed' || asset.libraryVisible === false
-      );
-      const deletableIds = trashed
-        .filter((asset) => countAssetUses(asset.assetId, state).totalUses === 0)
-        .map((asset) => asset.assetId);
-      if (deletableIds.length > 0) {
-        const emptied = await customArtRepo?.emptyTrash?.(deletableIds);
-        if (!emptied?.ok) throw new Error(emptied?.error || 'Trash could not be emptied.');
-        const purged = store.dispatch({ type: 'customAsset/purgeTrash', assetIds: deletableIds });
-        if (!purged?.ok) throw new Error('Trashed artwork metadata could not be deleted.');
-      }
-      renderMyArtCards();
-      const retainedCount = trashed.length - deletableIds.length;
-      announceStatus(retainedCount > 0
-        ? t('paintMyArtDialog.trashEmptiedRetained', { count: retainedCount })
-        : t('paintMyArtDialog.trashEmptied'));
-    } catch (err) {
-      console.error('Empty trash failed:', err);
-      alert(t('paintMyArtDialog.emptyTrashFailed'));
-    }
+    saveService.bindEvents();
+    libraryView.bindEvents();
   }
 
   function checkDirtyBeforeAction(actionCallback) {
@@ -2220,68 +1644,16 @@ function fitCutoutSvg(svg, slot) {
     }
   }
 
-  async function checkDraftRecovery() {
-    if (!customArtRepo || !recoveryDialog) return;
-    try {
-      const draft = await customArtRepo.getDraft('active');
-      if (draft && draft.blob) {
-        recoveryDialog.showModal();
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  async function restoreActiveDraft() {
-    if (!customArtRepo) return;
-    try {
-      const draft = await customArtRepo.getDraft('active');
-      if (!draft || !draft.blob) return;
-
-      const url = URL.createObjectURL(draft.blob);
-      const img = new Image();
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = url;
-      });
-      URL.revokeObjectURL(url);
-
-      const metadata = draft.metadata || draft;
-
-      resetCanvas({
-        itemType: metadata.itemType || 'wearable',
-        slot: metadata.slot || 'top',
-        nameIsGenerated: metadata.nameIsGenerated,
-        baseDollId: metadata.baseDollId,
-        referenceVisible: metadata.referenceVisible,
-        referenceOpacity: metadata.referenceOpacity,
-        guidesVisible: metadata.guidesVisible,
-        cutoutReferenceVisible: metadata.cutoutReferenceVisible,
-        cutoutAssetId: metadata.cutoutAssetId,
-        propSize: metadata.propSize || 'medium',
-        propPlacement: metadata.propPlacement || 'surface',
-        name: metadata.name || 'Recovered Art'
-      });
-
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      session.markDirty(true);
-      updateLivePreview();
-    } catch (err) {
-      console.warn('Could not restore draft:', err);
-    }
-  }
-
   function openSession(options = {}) {
     resetCanvas(options);
-    checkDraftRecovery();
+    void saveService.checkDraftRecovery();
   }
 
   function cancelAsyncOperations() {
     cancelCutoutAction();
     cancelTransientOperation({ clearSelection: true });
     guideRenderToken += 1;
-    void flushDraftCheckpoint();
+    void saveService.flushDraftCheckpoint();
   }
 
   function refreshLanguage() {
@@ -2291,38 +1663,57 @@ function fitCutoutSvg(svg, slot) {
     if (st.itemType === 'wearable') {
       void loadCutoutsForSlot(st.slot);
     }
-    if (myArtDialog?.open) {
-      renderMyArtCards();
-    }
-    if (saveDialog?.open) {
-      if (saveContextBtn) {
-        if (st.originContext === 'designer') {
-          saveContextBtn.textContent = t('paint.saveAndWear');
-          saveContextBtn.hidden = false;
-        } else if (st.originContext === 'play') {
-          saveContextBtn.textContent = t('paint.saveAndAddToStage');
-          saveContextBtn.hidden = false;
-        } else {
-          saveContextBtn.hidden = true;
-        }
-      }
-    }
-    if (impactDialog?.open && activeImpactAsset) {
-      openImpactDialog(activeImpactAsset);
-    }
+    libraryView.refreshLanguage();
+    saveService.refreshLanguage();
   }
+
+  function destroy() {
+    window.removeEventListener('keydown', handleKeyDown);
+    cancelAsyncOperations();
+    saveService.destroy();
+  }
+
+  const saveService = createPaintSaveService({
+    rootElement,
+    store,
+    customArtRepo,
+    onNavigate,
+    showAlert,
+    getSession: () => session,
+    getCanvasState: () => ({ canvas, ctx }),
+    resetCanvas,
+    updateLivePreview,
+    announceStatus
+  });
+
+  const libraryView = createPaintLibraryView({
+    rootElement,
+    store,
+    customArtRepo,
+    onNavigate,
+    askConfirm,
+    showAlert,
+    getSession: () => session,
+    getCanvasState: () => ({ canvas, ctx }),
+    resetCanvas,
+    updateLivePreview,
+    updateHistoryButtons,
+    announceStatus,
+    checkDirtyBeforeAction
+  });
 
   init();
 
   return {
     openSession,
-    editCopyOfArtwork,
+    editCopyOfArtwork: libraryView.editCopyOfArtwork,
     resetCanvas,
-    openMyArtDialog,
-    renderMyArtCards,
+    openMyArtDialog: libraryView.openMyArtDialog,
+    renderMyArtCards: libraryView.renderMyArtCards,
     checkDirtyBeforeAction,
     cancelAsyncOperations,
-    flushDraftCheckpoint,
+    destroy,
+    flushDraftCheckpoint: saveService.flushDraftCheckpoint,
     refreshLanguage,
     getSessionState: () => session.getState()
   };

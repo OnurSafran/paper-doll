@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_puffs_baby">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <circle class="hair-fill" cx="116" cy="55" r="20" fill="var(--hair-color, #d8aa52)"/>
+    <circle class="hair-fill" cx="184" cy="55" r="20" fill="var(--hair-color, #d8aa52)"/>
+    <path d="M116 74 L116 104 M184 74 L184 104" fill="none" stroke="#d8aa52" stroke-width="7"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M137 43 Q142 20 150 36 Q158 20 163 43 Q150 52 137 43 Z" fill="var(--hair-color, #d8aa52)"/>
+    <circle cx="116" cy="55" r="6" fill="#ef476f" stroke="none"/>
+    <circle cx="184" cy="55" r="6" fill="#ef476f" stroke="none"/>
+  </g>
+</svg>

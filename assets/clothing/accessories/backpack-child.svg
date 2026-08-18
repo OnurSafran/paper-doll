@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_backpack_child">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M103 132 Q96 150 100 213 Q105 232 123 232 L134 220 L128 145 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <path class="tint-primary" d="M197 132 Q204 150 200 213 Q195 232 177 232 L166 220 L172 145 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <path d="M112 142 Q150 122 188 142 M112 158 Q150 145 188 158" fill="none" stroke="#ffd166" stroke-width="3"/>
+    <circle cx="150" cy="176" r="7" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

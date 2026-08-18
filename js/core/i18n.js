@@ -12,12 +12,17 @@ export const LANGUAGE_STORAGE_KEY = STORAGE_KEY;
 
 export const TRANSLATIONS = Object.freeze({
   tr: {
+    alertDialog: {
+      eyebrow: 'Bildirim',
+      defaultTitle: 'Bir sorun oluştu',
+      ok: 'Tamam'
+    },
     app: {
       title: 'Paper Doll Studio',
       brand: 'Paper Doll',
       subtitle: 'Stüdyo',
       skipLink: 'Stüdyoya geç',
-      version: 'Paper Doll Studio v1.15',
+      version: 'Paper Doll Studio v1.16',
       hardReset: '🔄 Yenile ve Önbelleği Temizle',
       clearingCache: 'Önbellek temizleniyor ve yeniden yükleniyor…',
       noscript: 'Paper Doll Studio bebek tasarlamak ve kaydetmek için JavaScript gerektirir.',
@@ -54,6 +59,7 @@ export const TRANSLATIONS = Object.freeze({
       title: 'Bebek Tasarımcısı',
       outfitCount: '{count} parça',
       reset: 'Sıfırla',
+      useArtworkLabel: 'Kullan',
       snapTarget: '✨ Bebeğin üzerine bırakın',
       stageAria: 'Kâğıt bebeğiniz',
       wardrobeTitle: 'Gardırop',
@@ -77,6 +83,8 @@ export const TRANSLATIONS = Object.freeze({
       equipHairFirst: 'Önce saç takın',
       choosePieceFirst: 'Önce bir parça seçin veya takın.',
       customArtColorNote: '🎨 Özel el çizimi sanat eseri orijinal renklerini korur.',
+      fitWarningPlaceholder: '{name} — bu modele uymuyor',
+      fitWarningSummary: '{count} parça bu modele uymuyor',
       paintSlotAction: '+ {slot} Çiz',
       paintSlotAria: 'Özel bir {slot} çiz',
       equipAssetAria: '{name} giydir{custom}',
@@ -143,17 +151,28 @@ export const TRANSLATIONS = Object.freeze({
       doll_elder_a: 'Yaşlı'
     },
     assets: {
+      unavailable: '{name} kullanılamıyor',
+      prop_chair: 'Koltuk', prop_table: 'Kafe masası', prop_plant: 'Deve tabanı bitkisi', prop_lamp: 'Ayaklı lamba',
+      prop_rug: 'Pastel halı', prop_tea_set: 'Çay takımı', prop_easel: 'Resim sehpası', prop_bookshelf: 'Sıcak kitaplık',
+      prop_cat: 'Uyuyan kedi', prop_picnic_basket: 'Piknik sepeti', prop_umbrella: 'Plaj şemsiyesi', prop_balloons: 'Balon demeti',
+      prop_cake: 'Kutlama pastası', prop_guitar: 'Akustik gitar', prop_painting: 'Duvar tablosu', prop_bench: 'Bahçe bankı',
+      prop_bicycle: 'Bahçe bisikleti', prop_kite: 'Renkli uçurtma', prop_camera: 'Küçük fotoğraf makinesi', prop_flower_pot: 'Saksı',
+      prop_mailbox: 'Bahçe posta kutusu', prop_picnic_blanket: 'Piknik örtüsü',
+      bg_bedroom: 'Sıcak yatak odası', bg_park: 'Güneşli park', bg_atelier: 'Yaratıcı atölye', bg_beach: 'Güneşli sahil',
+      bg_cafe: 'Sıcak kafe & fırın', bg_forest: 'Büyülü orman', bg_library: 'Nostaljik kütüphane',
+      doll_classic_a: 'Klasik bebek', doll_classic_b: 'Neşe bebeği', doll_chibi_a: 'Chibi bebek',
+      doll_baby_a: 'Bebek bebeği', doll_adult_a: 'Yetişkin bebek', doll_elder_a: 'Yaşlı bebek',
       eyes_classic: 'Klasik gözler', eyes_round: 'Yuvarlak anime gözleri', eyes_sparkle: 'Parıltılı anime gözleri', eyes_calm: 'Sakin gözler', eyes_curious: 'Meraklı gözler',
       brows_soft: 'Yumuşak kaşlar', brows_arched: 'Kavisli kaşlar', brows_bold: 'Belirgin kaşlar', brows_expressive: 'İfadeli kaşlar',
       nose_dot: 'Nokta burun', nose_button: 'Düğme burun', nose_soft_curve: 'Yumuşak kıvrımlı burun',
       mouth_gentle_smile: 'Nazik gülümseme', mouth_open_smile: 'Açık gülümseme', mouth_neutral: 'Nötr ağız', mouth_playful: 'Oyuncu gülümseme', mouth_smirk: 'Hafif sırıtış',
       detail_blush: 'Tatlı allık', detail_freckles: 'Sevimli çiller',
-      top_tshirt: 'Denizci çizgili tişört', top_blouse: 'Fırfırlı bluz', top_hoodie: 'Rahat kapüşonlu', top_cardigan: 'Örgü hırka', top_crop_jacket: 'Kot ceket', top_sweater: 'Bol kazak', top_sailor: 'Denizci okul bluzu', top_raincoat: 'Güneşli yağmurluk', top_vest: 'Cepli yelek', top_cardigan_classic: 'Klasik hırka', top_coat_adult: 'Klasik kesim kaban',
-      bottom_jeans: 'Yüksek belli kot', bottom_skirt: 'Tenis eteği', bottom_shorts: 'Pileli şort', bottom_overalls: 'Salopet', bottom_pleated_skirt: 'Ekose pileli etek', bottom_culottes: 'Bahçıvan pantolonu', bottom_cargo: 'Cepli kargo pantolon', bottom_trousers_classic: 'Klasik pantolon',
-      dress_sundress: 'Yazlık elbise', dress_party: 'Katlı parti elbisesi', dress_pinafore: 'Önlük elbise', dress_ballgown: 'Prenses balo elbisesi', dress_overall: 'Kapitone salopet elbise', dress_romper_baby: 'Bebek tulumu',
-      shoes_sneakers: 'Retro spor ayakkabı', shoes_sandals: 'Mary Jane ayakkabı', shoes_boots: 'Bağcıklı bot', shoes_loafers: 'Klasik makosen', shoes_ballet: 'Balerin ayakkabısı', shoes_rainboots: 'Neşeli yağmur çizmesi', shoes_booties_baby: 'Yumuşak patik', shoes_oxfords_classic: 'Klasik oksford',
-      hair_short: 'Şık küt saç', hair_long: 'Uzun dalgalar', hair_ponytail: 'Yüksek at kuyruğu', hair_twintails: 'Neşeli çift kuyruk', hair_curly: 'Gür bukleler', hair_braids: 'Taç örgüler', hair_bun: 'Topuz', hair_wavy_bob: 'Dalgalı küt saç', hair_baby_curl: 'Bebek buklesi', hair_silver_waves: 'Gümüş dalgalar', hair_short_slick: 'Kısa geriye taranmış saç',
-      accessory_hat: 'Güneş şapkası', accessory_glasses: 'Kedi gözü gözlük', accessory_bow: 'İpek saç fiyonk', accessory_beret: 'Sanatçı beresi', accessory_crown: 'Altın taç', accessory_headphones: 'Retro kulaklık', accessory_cat_ears: 'Kedi kulaklı taç', accessory_ribbon: 'Puantiyeli kurdele', accessory_hairclip: 'Yıldızlı toka', accessory_flower: 'Papatya saç çiçeği', accessory_bib_baby: 'Bebek önlüğü', accessory_pacifier_baby: 'Bebek emziği', accessory_shawl_elder: 'Sıcak omuz şalı', accessory_spectacles_elder: 'Okuma gözlüğü'
+      top_tshirt: 'Denizci çizgili tişört', top_blouse: 'Fırfırlı bluz', top_hoodie: 'Rahat kapüşonlu', top_cardigan: 'Örgü hırka', top_crop_jacket: 'Kot ceket', top_sweater: 'Bol kazak', top_sailor: 'Denizci okul bluzu', top_raincoat: 'Güneşli yağmurluk', top_vest: 'Cepli yelek', top_cardigan_classic: 'Klasik hırka', top_coat_adult: 'Klasik kesim kaban', top_tshirt_child: 'Oyun alanı tişörtü', top_hoodie_child: 'Oyun alanı kapüşonlusu', top_cardigan_baby: 'Bebek hırkası', top_tee_baby: 'Bebek tişörtü',
+      bottom_jeans: 'Yüksek belli kot', bottom_skirt: 'Tenis eteği', bottom_shorts: 'Pileli şort', bottom_overalls: 'Salopet', bottom_pleated_skirt: 'Ekose pileli etek', bottom_culottes: 'Bahçıvan pantolonu', bottom_cargo: 'Cepli kargo pantolon', bottom_trousers_classic: 'Klasik pantolon', bottom_slacks_adult: 'Rahat kumaş pantolon', bottom_shorts_child: 'Oyun alanı şortu', bottom_jeans_child: 'Oyun alanı kotu', bottom_bloomers_baby: 'Bebek şortu', bottom_leggings_baby: 'Bebek taytı',
+      dress_sundress: 'Yazlık elbise', dress_party: 'Katlı parti elbisesi', dress_pinafore: 'Önlük elbise', dress_ballgown: 'Prenses balo elbisesi', dress_overall: 'Kapitone salopet elbise', dress_romper_baby: 'Bebek tulumu', dress_play_child: 'Oyun elbisesi', dress_rain_child: 'Yağmurlu gün elbisesi', dress_sun_baby: 'Bebek yazlık elbisesi', dress_party_baby: 'Bebek parti elbisesi', dress_wrap_adult: 'Kruvaze elbise', dress_suit_adult: 'Şık takım elbise', dress_knit_elder: 'Örgü günlük elbise', dress_apron_elder: 'Önlüklü günlük elbise',
+      shoes_sneakers: 'Retro spor ayakkabı', shoes_sandals: 'Mary Jane ayakkabı', shoes_boots: 'Bağcıklı bot', shoes_loafers: 'Klasik makosen', shoes_ballet: 'Balerin ayakkabısı', shoes_rainboots: 'Neşeli yağmur çizmesi', shoes_booties_baby: 'Yumuşak patik', shoes_oxfords_classic: 'Klasik oksford', shoes_sneakers_child: 'Oyun alanı spor ayakkabısı', shoes_rainboots_child: 'Oyun alanı yağmur çizmesi', shoes_sandals_baby: 'Bebek sandaletleri', shoes_sneakers_baby: 'Bebek spor ayakkabıları',
+      hair_short: 'Şık küt saç', hair_long: 'Uzun dalgalar', hair_ponytail: 'Yüksek at kuyruğu', hair_twintails: 'Neşeli çift kuyruk', hair_curly: 'Gür bukleler', hair_braids: 'Taç örgüler', hair_bun: 'Topuz', hair_wavy_bob: 'Dalgalı küt saç', hair_baby_curl: 'Bebek buklesi', hair_silver_waves: 'Gümüş dalgalar', hair_short_slick: 'Kısa geriye taranmış saç', hair_bob_child: 'Çocuk küt saçı', hair_curls_child: 'Çocuk bukleleri', hair_puffs_baby: 'Bebek ponpon saçı', hair_bun_baby: 'Bebek topuzu',
+      accessory_hat: 'Güneş şapkası', accessory_glasses: 'Kedi gözü gözlük', accessory_bow: 'İpek saç fiyonk', accessory_beret: 'Sanatçı beresi', accessory_crown: 'Altın taç', accessory_headphones: 'Retro kulaklık', accessory_cat_ears: 'Kedi kulaklı taç', accessory_ribbon: 'Puantiyeli kurdele', accessory_hairclip: 'Yıldızlı toka', accessory_flower: 'Papatya saç çiçeği', accessory_bib_baby: 'Bebek önlüğü', accessory_pacifier_baby: 'Bebek emziği', accessory_shawl_elder: 'Sıcak omuz şalı', accessory_spectacles_elder: 'Okuma gözlüğü', accessory_cap_child: 'Oyun alanı şapkası', accessory_backpack_child: 'Küçük sırt çantası', accessory_bonnet_baby: 'Yumuşak bebek beresi', accessory_rattle_baby: 'Bebek çıngırağı'
     },
     lifeStages: {
       baby: 'Bebek',
@@ -202,11 +221,12 @@ export const TRANSLATIONS = Object.freeze({
       templatesTitle: 'Hikaye anlatım sahne şablonlarına göz atın',
       outlineBtn: '📋 Katmanlar',
       outlineTitle: 'Erişilebilir sahne katman listesini aç (Kısayol: O)',
-      voiceBtn: '🎙️ Sesli Kukla',
-      voiceTitle: 'Canlı Sesli Kukla: Mikrofonunuza konuşarak bebeğin ağzını hareket ettirin',
+      voiceBtn: '🎙️ Seslendir',
+      voiceTitle: 'Mikrofonla sesi etkinleştir',
       scenesBtn: '📚 Sahneler ({count})',
       scenesTitle: 'Sahne Kitabı Kütüphanesini Aç',
       saveCopyBtn: '⧉ Kopyasını Kaydet',
+      saveCopyLabel: 'Kopyala',
       saveCopyTitle: 'Bu sahnenin bir kopyasını Sahne Kitabına kaydet',
       saveSceneBtn: '💾 Sahneyi Kaydet',
       saveSceneTitle: 'Bu sahneyi Sahne Kitabına kaydet',
@@ -250,6 +270,7 @@ export const TRANSLATIONS = Object.freeze({
       pin: '📍 Sabitle',
       pinned: '📌 Sabitlendi',
       pinTitle: 'Öğeyi sahne arka planına sabitle',
+      pinnedMoveBlocked: 'Sabitlenen öğeler taşınamaz. Önce sabitlemeyi kaldırın.',
       detach: '⛓️ Ayır',
       detachTitle: 'Bağlı olduğu ana öğeden ayır',
       deleteItem: '✕ Sil',
@@ -287,13 +308,86 @@ export const TRANSLATIONS = Object.freeze({
       deleteMultipleTitle: '{count} sahne öğesi silinsin mi?',
       deleteMultipleMessage: 'Bu işlem seçili öğeleri mevcut sahneden kaldırır.',
       deleteOneTitle: 'Bu sahne öğesi silinsin mi?',
-      deleteOneMessage: 'Bu işlem yalnızca bu kopyayı mevcut sahneden kaldırır.'
+      deleteOneMessage: 'Bu işlem yalnızca bu kopyayı mevcut sahneden kaldırır.',
+      cameraSliderAria: 'Panoramik kamera konumu',
+      stageWidthAria: 'Sahne genişliği',
+      trayAddBubbleAria: '{name} balonunu sahneye ekle',
+      traySpawnAria: '{name} öğesini sahneye ekle veya yerleştirmek için sürükle{custom}',
+      customArtSuffix: ' (özel çizim)',
+      selectOutlineAria: 'Katmanda {name} öğesini seç',
+      bubblePresetSpeechName: 'Konuşma balonu',
+      bubblePresetSpeechText: 'Merhaba!',
+      bubblePresetSpeechDesc: '💬 Konuşma balonu',
+      bubblePresetThoughtName: 'Düşünce bulutu',
+      bubblePresetThoughtText: 'Düşünüyorum…',
+      bubblePresetThoughtDesc: '💭 Düşünce bulutu',
+      bubblePresetShoutName: 'Haykırış balonu',
+      bubblePresetShoutText: 'Buraya bak!',
+      bubblePresetShoutDesc: '💥 Haykırış balonu',
+      bubblePresetCaptionName: 'Hikaye altyazısı',
+      bubblePresetCaptionText: 'Bir varmış bir yokmuş…',
+      bubblePresetCaptionDesc: '📜 Hikaye altyazısı',
+      statusStageWidth: 'Sahne genişliği {width}px olarak ayarlandı.',
+      statusSceneFull: 'Sahne dolu.',
+      statusSafeId: 'Sahne öğesine güvenli bir kimlik atanamadı. Tekrar deneyin.',
+      statusCharacterAdded: '{name} sahneye eklendi.',
+      statusPropAdded: '{name} sahneye eklendi.',
+      statusBubbleId: 'Konuşma balonuna güvenli bir kimlik atanamadı. Tekrar deneyin.',
+      statusBubbleAdded: 'Konuşma balonu sahneye eklendi.',
+      statusItemRemoved: 'Öğe sahneden kaldırıldı.',
+      statusItemsRemoved: '{count} öğe sahneden kaldırıldı.',
+      statusItemsAligned: 'Öğeler hizalandı ({alignment}).',
+      alignmentModes: {
+        left: 'sola', center: 'ortaya', right: 'sağa',
+        top: 'üste', middle: 'dikey ortaya', bottom: 'alta',
+        'distribute-h': 'yatay dağıtıldı', 'distribute-v': 'dikey dağıtıldı'
+      },
+      statusNewScene: 'Yeni bir sahne hazır.',
+      statusTemplateLoaded: '"{title}" şablonu yüklendi.',
+      statusSceneSavedCopy: '"{title}" Sahne Defteri\'ne kopya olarak kaydedildi.',
+      statusSceneLibraryFullShort: 'Sahne kütüphanesi dolu.',
+      statusDuplicateId: 'Kopyaya güvenli bir kimlik atanamadı. Tekrar deneyin.',
+      statusSceneCopyId: 'Sahne kopyasına güvenli öğe kimlikleri atanamadı. Tekrar deneyin.',
+      statusItemPinned: 'Öğe sahneye sabitlendi.',
+      statusItemUnpinned: 'Öğenin sabitlemesi kaldırıldı.',
+      statusPinningUpdated: 'Sahne öğelerinin sabitleme durumu güncellendi.',
+      statusItemAttached: 'Öğe bağlandı.',
+      statusItemDetached: 'Öğe ayrıldı.',
+      statusItemDuplicated: 'Sahne öğesi çoğaltıldı.',
+      statusDuplicateFailed: 'Öğe çoğaltılamadı.'
+      ,statusSceneTitleRequired: 'Sahne başlığı girin.'
+      ,statusSceneLibraryFull: 'Sahne Kitabı dolu.'
+      ,statusSceneId: 'Sahneye güvenli bir kimlik atanamadı. Tekrar deneyin.'
+      ,statusSceneSaved: '"{title}" Sahne Kitabına kaydedildi.'
+      ,statusSavedSceneMissing: 'Kayıtlı sahne artık bulunamıyor.'
+      ,statusSceneUpdated: '"{title}" güncellendi.'
+      ,statusSceneLoaded: '"{title}" sahneye yüklendi.'
+      ,statusSceneRenamed: 'Sahne yeniden adlandırıldı.'
+      ,statusSceneDuplicated: '"{title}" çoğaltıldı.'
+      ,statusSceneRemoved: 'Sahne Kitabından kaldırıldı. Aktif sahne değişmedi.'
     },
     paint: {
       title: 'Boyama Stüdyosu',
       backBtn: '◀ Geri',
       backBtnTitle: 'Önceki ekrana dön',
       defaultCutoutLabel: 'Üst Kalıbı',
+      cutoutSuffix: 'Kalıbı',
+      propTypeLabel: 'Eşya',
+      wearableTypeLabel: 'Kıyafet',
+      slotHair: 'Saç',
+      defaultWearableName: 'Benim {slot}',
+      defaultPropName: 'Benim Eşyam',
+      customArtwork: 'Özel çizim',
+      untitled: 'Adsız',
+      untitledScene: 'Adsız sahne',
+      recoveredArt: 'Kurtarılan çizim',
+      usesOne: 'kullanım',
+      usesMany: 'kullanım',
+      itemsOne: 'öğe',
+      itemsMany: 'öğe',
+      replaceCutoutTitle: 'Mevcut çizim değiştirilsin mi?',
+      replaceCutoutMessage: 'Mevcut çizimi bu kalıpla değiştirir. Sonrasında Geri Alabilirsiniz.',
+      artworkKeptStatus: 'Çizim değiştirilmedi.',
       undoTitle: 'Hamleyi geri al (Ctrl+Z veya ⌘Z)',
       undoAria: 'Boya hamlesini geri al',
       redoTitle: 'Hamleyi yinele (Ctrl+Y veya ⌘⇧Z)',
@@ -310,6 +404,8 @@ export const TRANSLATIONS = Object.freeze({
       zoomTitle: 'Tuval yakınlaştırmasını aç/kapat (Kısayol: Z)',
       clearBtn: '🗑️ Temizle',
       clearTitle: 'Tuvali temizle',
+      clearCanvasTitle: 'Tuvali temizle?',
+      clearCanvasMessage: 'Mevcut çizim silinecek. Bu işlem geri alınabilir.',
       canvasAria: 'Sanat eseri çizim tuvali. Boyamak için fare/kalem/dokunma veya klavye yön tuşları ve Boşluk tuşunu kullanın.',
       livePreviewAria: 'Canlı önizleme',
       sidebarAria: 'Boyama araçları ve özellikleri',
@@ -337,6 +433,13 @@ export const TRANSLATIONS = Object.freeze({
       activeColorTitle: 'Aktif renk (özel renk seçmek için tıklayın)',
       activeColorAria: 'Aktif renk: Renk seçiciyi açmak için tıklayın',
       paletteAria: 'Renk paleti',
+      colorSwatchAria: 'Renk {color}',
+      canvasAria: '{type} çizim tuvali. Araç: {tool}. Yakınlaştırma: {zoom}. {status} Boyamak için işaretçi girişini veya ok tuşları ile Boşluk tuşunu kullanın.',
+      unsavedStatus: 'Kaydedilmemiş değişiklikler var.',
+      savedStatus: 'Kaydedilmemiş değişiklik yok.',
+      cutoutUnavailable: 'Bu kalıp mevcut parça için kullanılamıyor.',
+      toolLabels: { brush: 'Fırça', eraser: 'Silgi', fill: 'Doldur', shape: 'Şekil', select: 'Seçim', eyedropper: 'Damlalık' },
+      guideLabels: { headContour: 'Baş çevresi', crown: 'Tepe', hairline: 'Saç çizgisi', leftEar: 'Sol kulak', rightEar: 'Sağ kulak', neck: 'Boyun', shoulders: 'Omuzlar', bust: 'Göğüs', waist: 'Bel', hemRange: 'Etek aralığı', hip: 'Kalça', knee: 'Diz', leftFoot: 'Sol ayak', rightFoot: 'Sağ ayak', leftAnkle: 'Sol bilek', rightAnkle: 'Sağ bilek', ground: 'Zemin' },
       customColorTitle: 'Özel renk',
       wearableTypeBtn: '👗 Kıyafet',
       propTypeBtn: '🧸 Eşya',
@@ -481,6 +584,7 @@ export const TRANSLATIONS = Object.freeze({
       title: 'Özel Çizimi Kaydet',
       copy: 'Çiziminizi Çizimlerim kütüphanesine kaydetmek için bir ad verin.',
       thumbAria: 'Çizim küçük resim önizlemesi',
+      fitNote: '🎨 Bu özel çizim tüm bebek modelleriyle uyumlu olacaktır.',
       label: 'Çizim Adı',
       placeholder: 'Özel Tişörtüm',
       cancelBtn: 'İptal',
@@ -534,6 +638,8 @@ export const TRANSLATIONS = Object.freeze({
       restoredStatus: 'Çizim Çizimlerime geri yüklendi.',
       permanentDeletedStatus: 'Çizim kalıcı olarak silindi.',
       permanentDeleteConfirm: 'Bu çizimi çöp kutusundan kalıcı olarak silmek istediğinizden emin misiniz?',
+      permanentDeleteConfirmMessage: 'Bu işlem geri alınamaz.',
+      emptyTrashConfirmTitle: 'Çöp kutusu boşaltılsın mı?',
       emptyTrashRetainedConfirm: 'Kullanılmayan çöpler kalıcı olarak silinsin mi? {count} referanslı öğe korunacak.',
       emptyTrashFailed: 'Çöp kutusu boşaltılamadı.',
       removeFailed: 'Çizim kaldırılamadı.',
@@ -562,7 +668,8 @@ export const TRANSLATIONS = Object.freeze({
       title: 'Çizim Adını Düzenle',
       label: 'Çizim Adı',
       cancelBtn: 'İptal',
-      saveBtn: 'Adı Kaydet'
+      saveBtn: 'Adı Kaydet',
+      renameLabel: 'Yeniden Adlandır'
     },
     bubbleDialog: {
       eyebrow: 'Konuşma Balonu',
@@ -594,6 +701,10 @@ export const TRANSLATIONS = Object.freeze({
       cancel: 'İptal',
       ok: 'Devam Et'
     },
+    promptDialog: {
+      cancel: 'Vazgeç',
+      ok: 'Kaydet'
+    },
     projectDialog: {
       eyebrow: 'Stüdyo Taşınabilirliği',
       title: 'Proje ve Yedekler',
@@ -614,6 +725,8 @@ export const TRANSLATIONS = Object.freeze({
       backupHeading: 'Kurtarılabilir Yedekler',
       backupCopy: 'Son stüdyo değiştirme işleminizden önce bir güvenlik anlık görüntüsü kaydedildi.',
       restoreBackupBtn: '↺ Önceki Stüdyoyu Geri Yükle',
+      restoreArtworkLabel: 'Geri Yükle',
+      addArtworkLabel: 'Ekle',
       dismissBackupBtn: 'Kapat',
       updateHeading: 'Uygulama Sürümü ve Sıfırlama',
       updateCopy: 'Geçici tarayıcı komut dosyası önbelleklerini temizlemek veya en yeni stüdyo sürümünü yeniden yüklemek isterseniz, tam sıfırlama yapabilirsiniz. Depolamadaki kayıtlı bebekler ve sahneler güvende kalır.',
@@ -676,12 +789,17 @@ export const TRANSLATIONS = Object.freeze({
     }
   },
   en: {
+    alertDialog: {
+      eyebrow: 'Notice',
+      defaultTitle: 'Something went wrong',
+      ok: 'OK'
+    },
     app: {
       title: 'Paper Doll Studio',
       brand: 'Paper Doll',
       subtitle: 'Studio',
       skipLink: 'Skip to studio',
-      version: 'Paper Doll Studio v1.15',
+      version: 'Paper Doll Studio v1.16',
       hardReset: '🔄 Reload & Clear Cache',
       clearingCache: 'Clearing cache and reloading…',
       noscript: 'Paper Doll Studio requires JavaScript to design and save dolls.',
@@ -718,6 +836,7 @@ export const TRANSLATIONS = Object.freeze({
       title: 'Doll Designer',
       outfitCount: '{count} pieces',
       reset: 'Reset',
+      useArtworkLabel: 'Use',
       snapTarget: '✨ Drop onto doll',
       stageAria: 'Your paper doll',
       wardrobeTitle: 'Wardrobe',
@@ -741,6 +860,8 @@ export const TRANSLATIONS = Object.freeze({
       equipHairFirst: 'Equip hair first',
       choosePieceFirst: 'Choose or equip a piece first.',
       customArtColorNote: '🎨 Custom hand-painted artwork preserves its original colors.',
+      fitWarningPlaceholder: '{name} — does not fit this model',
+      fitWarningSummary: '{count} pieces do not fit this model',
       paintSlotAction: '+ Paint {slot}',
       paintSlotAria: 'Paint a custom {slot}',
       equipAssetAria: 'Equip {name}{custom}',
@@ -807,17 +928,28 @@ export const TRANSLATIONS = Object.freeze({
       doll_elder_a: 'Elder'
     },
     assets: {
+      unavailable: '{name} unavailable',
+      prop_chair: 'Armchair', prop_table: 'Cafe table', prop_plant: 'Monstera plant', prop_lamp: 'Floor lamp',
+      prop_rug: 'Pastel rug', prop_tea_set: 'Tea set', prop_easel: 'Art easel', prop_bookshelf: 'Cozy bookshelf',
+      prop_cat: 'Sleeping cat', prop_picnic_basket: 'Picnic basket', prop_umbrella: 'Beach parasol', prop_balloons: 'Balloons bunch',
+      prop_cake: 'Celebration cake', prop_guitar: 'Acoustic guitar', prop_painting: 'Wall art frame', prop_bench: 'Garden bench',
+      prop_bicycle: 'Garden bicycle', prop_kite: 'Colorful kite', prop_camera: 'Little camera', prop_flower_pot: 'Flower pot',
+      prop_mailbox: 'Garden mailbox', prop_picnic_blanket: 'Picnic blanket',
+      bg_bedroom: 'Cozy bedroom', bg_park: 'Sunny park', bg_atelier: 'Creative atelier', bg_beach: 'Sunny beach',
+      bg_cafe: 'Cozy cafe & bakery', bg_forest: 'Enchanted forest', bg_library: 'Vintage library',
+      doll_classic_a: 'Classic doll', doll_classic_b: 'Joy doll', doll_chibi_a: 'Chibi doll',
+      doll_baby_a: 'Baby doll', doll_adult_a: 'Adult doll', doll_elder_a: 'Elder doll',
       eyes_classic: 'Classic eyes', eyes_round: 'Round anime eyes', eyes_sparkle: 'Sparkle anime eyes', eyes_calm: 'Calm eyes', eyes_curious: 'Curious eyes',
       brows_soft: 'Soft eyebrows', brows_arched: 'Arched eyebrows', brows_bold: 'Bold eyebrows', brows_expressive: 'Expressive eyebrows',
       nose_dot: 'Dot nose', nose_button: 'Button nose', nose_soft_curve: 'Soft curve nose',
       mouth_gentle_smile: 'Gentle smile', mouth_open_smile: 'Open smile', mouth_neutral: 'Neutral mouth', mouth_playful: 'Playful smile', mouth_smirk: 'Subtle smirk',
       detail_blush: 'Sweet blush', detail_freckles: 'Cute freckles',
-      top_tshirt: 'Sailor stripe tee', top_blouse: 'Ruffle blouse', top_hoodie: 'Cozy hoodie', top_cardigan: 'Knit cardigan', top_crop_jacket: 'Denim jacket', top_sweater: 'Oversized sweater', top_sailor: 'Sailor school blouse', top_raincoat: 'Sunny raincoat', top_vest: 'Utility vest', top_cardigan_classic: 'Classic cardigan', top_coat_adult: 'Tailored coat',
-      bottom_jeans: 'High-waist jeans', bottom_skirt: 'Tennis skirt', bottom_shorts: 'Pleated shorts', bottom_overalls: 'Dungaree overalls', bottom_pleated_skirt: 'Plaid pleated skirt', bottom_culottes: 'Garden culottes', bottom_cargo: 'Pocket cargo pants', bottom_trousers_classic: 'Classic trousers',
-      dress_sundress: 'Sundress', dress_party: 'Tiered party dress', dress_pinafore: 'Pinafore apron dress', dress_ballgown: 'Princess ballgown', dress_overall: 'Patchwork overall dress', dress_romper_baby: 'Baby romper',
-      shoes_sneakers: 'Retro sneakers', shoes_sandals: 'Mary Jane flats', shoes_boots: 'Lace-up ankle boots', shoes_loafers: 'Preppy loafers', shoes_ballet: 'Ballet ribbon flats', shoes_rainboots: 'Sunny rain boots', shoes_booties_baby: 'Soft booties', shoes_oxfords_classic: 'Classic oxfords',
-      hair_short: 'Chic bob', hair_long: 'Long waves', hair_ponytail: 'High ponytail', hair_twintails: 'Bouncy twintails', hair_curly: 'Voluminous curls', hair_braids: 'Crown braids', hair_bun: 'Top knot bun', hair_wavy_bob: 'Wavy bob', hair_baby_curl: 'Baby curl', hair_silver_waves: 'Silver waves', hair_short_slick: 'Short slick',
-      accessory_hat: 'Sun hat', accessory_glasses: 'Cat-eye glasses', accessory_bow: 'Silk hair bow', accessory_beret: 'Artist wool beret', accessory_crown: 'Golden tiara', accessory_headphones: 'Retro headphones', accessory_cat_ears: 'Cat ear headband', accessory_ribbon: 'Polka-dot ribbon', accessory_hairclip: 'Star hair clip', accessory_flower: 'Daisy hair flower', accessory_bib_baby: 'Baby bib', accessory_pacifier_baby: 'Baby pacifier', accessory_shawl_elder: 'Warm wrap shawl', accessory_spectacles_elder: 'Reading spectacles'
+      top_tshirt: 'Sailor stripe tee', top_blouse: 'Ruffle blouse', top_hoodie: 'Cozy hoodie', top_cardigan: 'Knit cardigan', top_crop_jacket: 'Denim jacket', top_sweater: 'Oversized sweater', top_sailor: 'Sailor school blouse', top_raincoat: 'Sunny raincoat', top_vest: 'Utility vest', top_cardigan_classic: 'Classic cardigan', top_coat_adult: 'Tailored coat', top_tshirt_child: 'Playground tee', top_hoodie_child: 'Playground hoodie', top_cardigan_baby: 'Baby cardigan', top_tee_baby: 'Baby tee',
+      bottom_jeans: 'High-waist jeans', bottom_skirt: 'Tennis skirt', bottom_shorts: 'Pleated shorts', bottom_overalls: 'Dungaree overalls', bottom_pleated_skirt: 'Plaid pleated skirt', bottom_culottes: 'Garden culottes', bottom_cargo: 'Pocket cargo pants', bottom_trousers_classic: 'Classic trousers', bottom_slacks_adult: 'Relaxed slacks', bottom_shorts_child: 'Playground shorts', bottom_jeans_child: 'Playground jeans', bottom_bloomers_baby: 'Baby bloomers', bottom_leggings_baby: 'Baby leggings',
+      dress_sundress: 'Sundress', dress_party: 'Tiered party dress', dress_pinafore: 'Pinafore apron dress', dress_ballgown: 'Princess ballgown', dress_overall: 'Patchwork overall dress', dress_romper_baby: 'Baby romper', dress_play_child: 'Play dress', dress_rain_child: 'Rainy-day dress', dress_sun_baby: 'Baby sun dress', dress_party_baby: 'Baby party dress', dress_wrap_adult: 'Wrap dress', dress_suit_adult: 'Tailored suit dress', dress_knit_elder: 'Knit day dress', dress_apron_elder: 'Apron day dress',
+      shoes_sneakers: 'Retro sneakers', shoes_sandals: 'Mary Jane flats', shoes_boots: 'Lace-up ankle boots', shoes_loafers: 'Preppy loafers', shoes_ballet: 'Ballet ribbon flats', shoes_rainboots: 'Sunny rain boots', shoes_booties_baby: 'Soft booties', shoes_oxfords_classic: 'Classic oxfords', shoes_sneakers_child: 'Playground sneakers', shoes_rainboots_child: 'Playground rain boots', shoes_sandals_baby: 'Baby sandals', shoes_sneakers_baby: 'Baby sneakers',
+      hair_short: 'Chic bob', hair_long: 'Long waves', hair_ponytail: 'High ponytail', hair_twintails: 'Bouncy twintails', hair_curly: 'Voluminous curls', hair_braids: 'Crown braids', hair_bun: 'Top knot bun', hair_wavy_bob: 'Wavy bob', hair_baby_curl: 'Baby curl', hair_silver_waves: 'Silver waves', hair_short_slick: 'Short slick', hair_bob_child: 'Child bob', hair_curls_child: 'Child curls', hair_puffs_baby: 'Baby puffs', hair_bun_baby: 'Baby bun',
+      accessory_hat: 'Sun hat', accessory_glasses: 'Cat-eye glasses', accessory_bow: 'Silk hair bow', accessory_beret: 'Artist wool beret', accessory_crown: 'Golden tiara', accessory_headphones: 'Retro headphones', accessory_cat_ears: 'Cat ear headband', accessory_ribbon: 'Polka-dot ribbon', accessory_hairclip: 'Star hair clip', accessory_flower: 'Daisy hair flower', accessory_bib_baby: 'Baby bib', accessory_pacifier_baby: 'Baby pacifier', accessory_shawl_elder: 'Warm wrap shawl', accessory_spectacles_elder: 'Reading spectacles', accessory_cap_child: 'Playground cap', accessory_backpack_child: 'Little backpack', accessory_bonnet_baby: 'Soft baby bonnet', accessory_rattle_baby: 'Baby rattle'
     },
     lifeStages: {
       baby: 'Baby',
@@ -866,11 +998,12 @@ export const TRANSLATIONS = Object.freeze({
       templatesTitle: 'Browse story starter scene templates',
       outlineBtn: '📋 Outline',
       outlineTitle: 'Open accessible scene outline list (Shortcut: O)',
-      voiceBtn: '🎙️ Voice Puppetry',
-      voiceTitle: 'Live Voice Puppetry: Speak into microphone to flap mouth',
+      voiceBtn: '🎙️ Voice',
+      voiceTitle: 'Use the microphone to animate mouths',
       scenesBtn: '📚 Scenes ({count})',
       scenesTitle: 'Open Scene Book Library',
       saveCopyBtn: '⧉ Save Copy',
+      saveCopyLabel: 'Copy',
       saveCopyTitle: 'Save a copy of this scene to the Scene Book',
       saveSceneBtn: '💾 Save Scene',
       saveSceneTitle: 'Save this scene to the Scene Book',
@@ -914,6 +1047,7 @@ export const TRANSLATIONS = Object.freeze({
       pin: '📍 Pin',
       pinned: '📌 Pinned',
       pinTitle: 'Pin item to scene background',
+      pinnedMoveBlocked: 'Pinned items cannot move. Unpin the item first.',
       detach: '⛓️ Detach',
       detachTitle: 'Detach from host item',
       deleteItem: '✕ Delete',
@@ -951,13 +1085,86 @@ export const TRANSLATIONS = Object.freeze({
       deleteMultipleTitle: 'Delete {count} scene items?',
       deleteMultipleMessage: 'This removes them from the current scene.',
       deleteOneTitle: 'Delete this scene item?',
-      deleteOneMessage: 'This removes only this copy from the current scene.'
+      deleteOneMessage: 'This removes only this copy from the current scene.',
+      cameraSliderAria: 'Panoramic camera position',
+      stageWidthAria: 'Stage width',
+      trayAddBubbleAria: 'Add {name} bubble to scene',
+      traySpawnAria: 'Spawn {name} in scene or drag to place{custom}',
+      customArtSuffix: ' (custom art)',
+      selectOutlineAria: 'Select {name} in outline',
+      bubblePresetSpeechName: 'Speech bubble',
+      bubblePresetSpeechText: 'Hello!',
+      bubblePresetSpeechDesc: '💬 Talk bubble',
+      bubblePresetThoughtName: 'Thought cloud',
+      bubblePresetThoughtText: 'Thinking…',
+      bubblePresetThoughtDesc: '💭 Thought cloud',
+      bubblePresetShoutName: 'Shout balloon',
+      bubblePresetShoutText: 'Look here!',
+      bubblePresetShoutDesc: '💥 Shout burst',
+      bubblePresetCaptionName: 'Story caption',
+      bubblePresetCaptionText: 'Once upon a time…',
+      bubblePresetCaptionDesc: '📜 Story caption',
+      statusStageWidth: 'Stage width set to {width}px.',
+      statusSceneFull: 'Scene is full.',
+      statusSafeId: 'The scene item could not be assigned a safe ID. Try again.',
+      statusCharacterAdded: '{name} added to the scene.',
+      statusPropAdded: '{name} added to the scene.',
+      statusBubbleId: 'The speech bubble could not be assigned a safe ID. Try again.',
+      statusBubbleAdded: 'Speech bubble added to the scene.',
+      statusItemRemoved: 'Item removed from the scene.',
+      statusItemsRemoved: '{count} item(s) removed from the scene.',
+      statusItemsAligned: 'Items aligned ({alignment}).',
+      alignmentModes: {
+        left: 'left', center: 'center', right: 'right',
+        top: 'top', middle: 'middle', bottom: 'bottom',
+        'distribute-h': 'distributed horizontally', 'distribute-v': 'distributed vertically'
+      },
+      statusNewScene: 'A new scene is ready.',
+      statusTemplateLoaded: 'Loaded template "{title}".',
+      statusSceneSavedCopy: '"{title}" saved as copy in Scene Book.',
+      statusSceneLibraryFullShort: 'Scene library is full.',
+      statusDuplicateId: 'The duplicate could not be assigned a safe ID. Try again.',
+      statusSceneCopyId: 'Could not assign safe item IDs to scene copy. Try again.',
+      statusItemPinned: 'Item pinned to the scene.',
+      statusItemUnpinned: 'Item unpinned.',
+      statusPinningUpdated: 'Scene item pinning updated.',
+      statusItemAttached: 'Item attached.',
+      statusItemDetached: 'Item detached.',
+      statusItemDuplicated: 'Scene item duplicated.',
+      statusDuplicateFailed: 'That item could not be duplicated.'
+      ,statusSceneTitleRequired: 'Please enter a scene title.'
+      ,statusSceneLibraryFull: 'Scene Book is full.'
+      ,statusSceneId: 'Could not assign a safe scene ID. Try again.'
+      ,statusSceneSaved: '"{title}" saved to Scene Book.'
+      ,statusSavedSceneMissing: 'That saved scene could not be found.'
+      ,statusSceneUpdated: '"{title}" updated.'
+      ,statusSceneLoaded: '"{title}" loaded to the stage.'
+      ,statusSceneRenamed: 'Scene renamed.'
+      ,statusSceneDuplicated: '"{title}" duplicated.'
+      ,statusSceneRemoved: 'Scene removed from Scene Book. The active stage is unchanged.'
     },
     paint: {
       title: 'Paint Studio',
       backBtn: '◀ Back',
       backBtnTitle: 'Return to previous screen',
       defaultCutoutLabel: 'Top Cutout',
+      cutoutSuffix: 'Cutout',
+      propTypeLabel: 'Prop',
+      wearableTypeLabel: 'Wearable',
+      slotHair: 'Hair',
+      defaultWearableName: 'My {slot}',
+      defaultPropName: 'My Prop',
+      customArtwork: 'Custom artwork',
+      untitled: 'Untitled',
+      untitledScene: 'Untitled scene',
+      recoveredArt: 'Recovered Art',
+      usesOne: 'use',
+      usesMany: 'uses',
+      itemsOne: 'item',
+      itemsMany: 'items',
+      replaceCutoutTitle: 'Replace the current artwork?',
+      replaceCutoutMessage: 'This replaces the current artwork with the cutout. You can Undo afterward.',
+      artworkKeptStatus: 'Artwork kept unchanged.',
       undoTitle: 'Undo stroke (Ctrl+Z or ⌘Z)',
       undoAria: 'Undo paint stroke',
       redoTitle: 'Redo stroke (Ctrl+Y or ⌘⇧Z)',
@@ -974,6 +1181,8 @@ export const TRANSLATIONS = Object.freeze({
       zoomTitle: 'Toggle canvas zoom (Shortcut: Z)',
       clearBtn: '🗑️ Clear',
       clearTitle: 'Clear canvas',
+      clearCanvasTitle: 'Clear canvas?',
+      clearCanvasMessage: 'The current artwork will be cleared. You can undo this action.',
       canvasAria: 'Artwork canvas. Use pointer input or Arrow keys and Space to paint.',
       livePreviewAria: 'Live preview',
       sidebarAria: 'Paint tools and properties',
@@ -1001,6 +1210,13 @@ export const TRANSLATIONS = Object.freeze({
       activeColorTitle: 'Active color (click to choose custom color)',
       activeColorAria: 'Active color: Click to open color picker',
       paletteAria: 'Color palette',
+      colorSwatchAria: 'Color {color}',
+      canvasAria: '{type} artwork canvas. Tool: {tool}. Zoom: {zoom}. {status} Use pointer input or Arrow keys and Space to paint.',
+      unsavedStatus: 'Unsaved changes.',
+      savedStatus: 'No unsaved changes.',
+      cutoutUnavailable: 'That cutout is unavailable for the current slot.',
+      toolLabels: { brush: 'Brush', eraser: 'Eraser', fill: 'Fill', shape: 'Shape', select: 'Select', eyedropper: 'Eyedropper' },
+      guideLabels: { headContour: 'Head contour', crown: 'Crown', hairline: 'Hairline', leftEar: 'Left ear', rightEar: 'Right ear', neck: 'Neck', shoulders: 'Shoulders', bust: 'Bust', waist: 'Waist', hemRange: 'Hem range', hip: 'Hip', knee: 'Knee', leftFoot: 'Left foot', rightFoot: 'Right foot', leftAnkle: 'Left ankle', rightAnkle: 'Right ankle', ground: 'Ground' },
       customColorTitle: 'Custom color',
       wearableTypeBtn: '👗 Wearable',
       propTypeBtn: '🧸 Prop',
@@ -1145,6 +1361,7 @@ export const TRANSLATIONS = Object.freeze({
       title: 'Save Custom Artwork',
       copy: 'Give your hand-drawn piece a name to save it into My Art.',
       thumbAria: 'Artwork thumbnail preview',
+      fitNote: '🎨 This custom artwork will fit every doll model.',
       label: 'Artwork Name',
       placeholder: 'Cozy Knit Sweater',
       cancelBtn: 'Cancel',
@@ -1197,6 +1414,8 @@ export const TRANSLATIONS = Object.freeze({
       restoredStatus: 'Artwork restored to My Art.',
       permanentDeletedStatus: 'Artwork permanently deleted.',
       permanentDeleteConfirm: 'Are you sure you want to permanently delete this artwork from trash?',
+      permanentDeleteConfirmMessage: 'This action cannot be undone.',
+      emptyTrashConfirmTitle: 'Empty Trash?',
       emptyTrashRetainedConfirm: 'Permanently delete unused trash? {count} referenced items will be retained so dolls and scenes keep their placeholders.',
       emptyTrashFailed: 'Could not empty trash.',
       removeFailed: 'Could not remove artwork.',
@@ -1226,7 +1445,8 @@ export const TRANSLATIONS = Object.freeze({
       title: 'Edit Artwork Name',
       label: 'Artwork Name',
       cancelBtn: 'Cancel',
-      saveBtn: 'Save Name'
+      saveBtn: 'Save Name',
+      renameLabel: 'Rename'
     },
     bubbleDialog: {
       eyebrow: 'Speech Bubble',
@@ -1257,6 +1477,10 @@ export const TRANSLATIONS = Object.freeze({
       cancel: 'Cancel',
       ok: 'Continue'
     },
+    promptDialog: {
+      cancel: 'Cancel',
+      ok: 'Save'
+    },
     projectDialog: {
       eyebrow: 'Studio Portability',
       title: 'Project & Backups',
@@ -1277,6 +1501,8 @@ export const TRANSLATIONS = Object.freeze({
       backupHeading: 'Recoverable Backups',
       backupCopy: 'A safety snapshot was saved before your last studio replacement.',
       restoreBackupBtn: '↺ Restore Previous Studio',
+      restoreArtworkLabel: 'Restore',
+      addArtworkLabel: 'Add',
       dismissBackupBtn: 'Dismiss',
       updateHeading: 'App Version & Reset',
       updateCopy: 'If you want to clear temporary browser script caches or reload the newest studio version, you can perform a hard reset. Saved dolls and scenes in storage remain safe.',
@@ -1399,7 +1625,7 @@ export function t(keyPath, params = {}) {
   }
   
   if (value === undefined) {
-    return keyPath;
+    return '';
   }
 
   if (typeof value === 'string') {
@@ -1413,7 +1639,7 @@ export function assetName(asset, fallback = '') {
   const defaultName = typeof asset === 'string' ? fallback : (asset?.name || fallback);
   if (!id) return defaultName;
   const translated = t(`assets.${id}`);
-  return translated === `assets.${id}` ? defaultName : translated;
+  return !translated || translated === `assets.${id}` ? defaultName : translated;
 }
 
 /**

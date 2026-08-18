@@ -10,8 +10,8 @@
     <meta name="apple-mobile-web-app-title" content="Paper Doll">
     <link rel="manifest" href="manifest.webmanifest">
     <title>Paper Doll Studio</title>
-    <link rel="stylesheet" href="css/tokens.css?v=3">
-    <link rel="stylesheet" href="css/app.css?v=5">
+    <link rel="stylesheet" href="css/tokens.css?v=5cb25082">
+    <link rel="stylesheet" href="css/app.css?v=d348ede7">
   </head>
   <body>
     <a class="skip-link" href="#main-content" data-i18n="app.skipLink">Stüdyoya geç</a>
@@ -67,6 +67,37 @@
               <button id="designer-mode-face" type="button" role="tab" class="mode-tab" aria-selected="false" aria-controls="face-panel-section" data-i18n="designer.tabFace">😊 Yüz</button>
             </div>
 
+            <section class="paper-panel tool-card dollbox-card" aria-labelledby="dollbox-title">
+              <h2 id="dollbox-title" data-i18n="designer.dollboxTitle">Bebek Kutusu (Dollbox)</h2>
+              <form id="save-preset-form" class="save-form">
+                <label for="doll-name" data-i18n="designer.dollNameLabel">Bebek adı</label>
+                <input id="doll-name" type="text" inputmode="text" name="dollName" maxlength="30" data-i18n-placeholder="designer.dollNamePlaceholder" placeholder="Güneşli gün bebeği" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
+                <div class="button-row">
+                  <button class="button primary" type="submit" data-i18n="designer.saveNew">Yeni kaydet</button>
+                  <button id="update-preset" class="button secondary" type="button" data-i18n="designer.update">Güncelle</button>
+                </div>
+              </form>
+              <div id="dollbox-list" class="dollbox-list"></div>
+            </section>
+
+            <section class="stage-style-bar paper-panel" aria-labelledby="doll-colors-title">
+              <h2 id="doll-colors-title" data-i18n="designer.dollColorsTitle">Bebek stili ve renkleri</h2>
+              <div class="stage-style-groups">
+                <div class="style-group">
+                  <strong data-i18n="designer.modelLabel">Model</strong>
+                  <div id="doll-model-palette" class="model-picker-list compact"></div>
+                </div>
+                <div class="style-group">
+                  <strong data-i18n="designer.skinLabel">Ten</strong>
+                  <div id="skin-palette" class="swatch-list compact"></div>
+                </div>
+                <div class="style-group">
+                  <strong data-i18n="designer.hairLabel">Saç</strong>
+                  <div id="hair-palette" class="swatch-list compact"></div>
+                </div>
+              </div>
+            </section>
+
             <section id="wardrobe-panel-section" class="paper-panel wardrobe-panel" aria-labelledby="wardrobe-title">
               <div class="panel-heading compact-panel-heading">
                 <div>
@@ -96,28 +127,6 @@
                 <div id="iris-palette" class="swatch-list compact"></div>
               </div>
               <div id="face-items" class="asset-grid" role="tabpanel"></div>
-              <div class="wardrobe-actions">
-                <button id="reset-face" class="button secondary" type="button" data-i18n="designer.resetFace">Yüzü Sıfırla</button>
-                <button id="clear-face-detail" class="button secondary" type="button" data-i18n="designer.clearDetail">Detayı Kaldır</button>
-              </div>
-            </section>
-
-            <section class="stage-style-bar paper-panel" aria-labelledby="doll-colors-title">
-              <h2 id="doll-colors-title" data-i18n="designer.dollColorsTitle">Bebek stili ve renkleri</h2>
-              <div class="stage-style-groups">
-                <div class="style-group">
-                  <strong data-i18n="designer.modelLabel">Model</strong>
-                  <div id="doll-model-palette" class="model-picker-list compact"></div>
-                </div>
-                <div class="style-group">
-                  <strong data-i18n="designer.skinLabel">Ten</strong>
-                  <div id="skin-palette" class="swatch-list compact"></div>
-                </div>
-                <div class="style-group">
-                  <strong data-i18n="designer.hairLabel">Saç</strong>
-                  <div id="hair-palette" class="swatch-list compact"></div>
-                </div>
-              </div>
             </section>
 
             <div class="designer-tools">
@@ -125,18 +134,6 @@
                 <div class="panel-heading"><h2 id="color-title" data-i18n="designer.selectedPieceTitle">Seçili parça</h2><button id="remove-piece" class="text-button" type="button" data-i18n="designer.removePiece">Kaldır</button></div>
                 <div id="piece-palette" class="swatch-list"></div>
                 <label class="custom-color" for="custom-color"><span data-i18n="designer.customColor">Özel renk</span><input id="custom-color" type="color" value="#ef7f72"></label>
-              </section>
-              <section class="paper-panel tool-card dollbox-card" aria-labelledby="dollbox-title">
-                <h2 id="dollbox-title" data-i18n="designer.dollboxTitle">Bebek Kutusu (Dollbox)</h2>
-                <form id="save-preset-form" class="save-form">
-                  <label for="doll-name" data-i18n="designer.dollNameLabel">Bebek adı</label>
-                  <input id="doll-name" type="text" inputmode="text" name="dollName" maxlength="30" data-i18n-placeholder="designer.dollNamePlaceholder" placeholder="Güneşli gün bebeği" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
-                  <div class="button-row">
-                    <button class="button primary" type="submit" data-i18n="designer.saveNew">Yeni kaydet</button>
-                    <button id="update-preset" class="button secondary" type="button" data-i18n="designer.update">Güncelle</button>
-                  </div>
-                </form>
-                <div id="dollbox-list" class="dollbox-list"></div>
               </section>
             </div>
           </aside>
@@ -153,7 +150,7 @@
             </div>
             <div class="scene-picker-group stage-width-group">
               <label for="stage-width-select" data-i18n="play.stageLabel">📐 Sahne:</label>
-              <select id="stage-width-select" aria-label="Stage width">
+              <select id="stage-width-select" data-i18n-aria-label="play.stageWidthAria" aria-label="Sahne genişliği">
                 <option value="1600" data-i18n="play.stageStandard">Standart (1600×900)</option>
                 <option value="3200" data-i18n="play.stageWide">Geniş (3200×900)</option>
                 <option value="4800" data-i18n="play.stagePanoramic">Panoramik (4800×900)</option>
@@ -161,12 +158,10 @@
             </div>
           </div>
           <div class="scene-meta-actions">
-            <div class="meta-action-group story-meta-group">
-              <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
-              <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)" data-i18n="play.outlineBtn">📋 Katmanlar</button>
-              <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" data-i18n-title="play.voiceTitle" title="Canlı Sesli Kukla: Mikrofonunuza konuşarak bebeğin ağzını hareket ettirin" data-i18n="play.voiceBtn">🎙️ Sesli Kukla</button>
+            <div class="meta-action-group scene-meta-center">
+              <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir" data-i18n="play.voiceBtn">🎙️ Seslendir</button>
             </div>
-            <div class="meta-action-group library-meta-group">
+            <div class="meta-action-group scene-meta-right library-meta-group">
               <button id="scene-library-btn" class="button secondary compact-action" type="button" data-i18n-title="play.scenesTitle" title="Sahne Kitabı Kütüphanesini Aç">📚 <span data-i18n="play.trayEyebrow">Sahneler</span> (<span id="scene-library-count">0</span>)</button>
               <button id="save-scene-copy-btn" class="button secondary compact-action" type="button" data-i18n-title="play.saveCopyTitle" title="Bu sahnenin bir kopyasını Sahne Kitabına kaydet" data-i18n="play.saveCopyBtn">⧉ Kopyasını Kaydet</button>
               <button id="save-scene-btn" class="button primary compact-action" type="button" data-i18n-title="play.saveSceneTitle" title="Bu sahneyi Sahne Kitabına kaydet" data-i18n="play.saveSceneBtn">💾 Sahneyi Kaydet</button>
@@ -238,7 +233,7 @@
             <div id="camera-hud" class="camera-hud" role="region" data-i18n-aria-label="play.cameraControls" aria-label="Panoramik kamera kontrolleri" hidden>
               <button id="camera-pan-left" class="camera-pan-btn" type="button" data-i18n-title="play.cameraPanLeft" title="Kamerayı sola kaydır (Shift+Sol, PageUp)" data-i18n-aria-label="play.cameraPanLeft" aria-label="Kamerayı sola kaydır">◀</button>
               <div class="camera-slider-track">
-                <input id="camera-slider" class="camera-slider" type="range" min="0" max="0" step="10" value="0" aria-label="Camera position">
+                <input id="camera-slider" class="camera-slider" type="range" min="0" max="0" step="10" value="0" data-i18n-aria-label="play.cameraSliderAria" aria-label="Panoramic camera position">
               </div>
               <button id="camera-pan-right" class="camera-pan-btn" type="button" data-i18n-title="play.cameraPanRight" title="Kamerayı sağa kaydır (Shift+Sağ, PageDown)" data-i18n-aria-label="play.cameraPanRight" aria-label="Kamerayı sağa kaydır">▶</button>
               <div id="stage-minimap" class="stage-minimap" data-i18n-title="play.minimapTitle" title="Kamerayı konumlandırmak için tıklayın veya sürükleyin" data-i18n-aria-label="play.minimapAria" aria-label="Sahne mini harita genel bakışı" role="slider" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0">
@@ -249,10 +244,16 @@
             </div>
           </div>
 
-          <aside class="paper-panel spawn-panel" aria-labelledby="tray-title">
-            <div class="panel-heading"><div><span class="eyebrow" data-i18n="play.trayEyebrow">Sahne Tepsisi</span><h2 id="tray-title" data-i18n="play.trayTitle">Sahneye ekleyici</h2><p class="panel-copy" data-i18n="play.trayCopy">Öğeleri sahneye tıklayın veya sürükleyin.</p></div><span class="panel-sticker" aria-hidden="true">✦</span></div>
-            <div id="spawn-tabs" class="tab-list" role="tablist" data-i18n-aria-label="play.trayCategoriesAria" aria-label="Sahne tepsisi kategorileri"></div>
-            <div id="spawn-items" class="spawn-list"></div>
+          <aside class="play-rail" aria-label="Sahne araçları">
+            <section class="paper-panel spawn-panel" aria-labelledby="tray-title">
+              <div class="panel-heading"><div><span class="eyebrow" data-i18n="play.trayEyebrow">Sahne Tepsisi</span><h2 id="tray-title" data-i18n="play.trayTitle">Sahneye ekleyici</h2><p class="panel-copy" data-i18n="play.trayCopy">Öğeleri sahneye tıklayın veya sürükleyin.</p></div><span class="panel-sticker" aria-hidden="true">✦</span></div>
+              <div id="spawn-tabs" class="tab-list" role="tablist" data-i18n-aria-label="play.trayCategoriesAria" aria-label="Sahne tepsisi kategorileri"></div>
+              <div id="spawn-items" class="spawn-list"></div>
+            </section>
+            <div class="paper-panel scene-rail-actions" aria-label="Sahne seçenekleri">
+              <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
+              <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)" data-i18n="play.outlineBtn">📋 Katmanlar</button>
+            </div>
           </aside>
         </div>
         <div id="play-status" class="visible-status" role="status" aria-live="polite"></div>
@@ -397,9 +398,12 @@
                   </label>
                   <label for="paint-reference-model"><strong data-i18n="paint.referenceModelLabel">Referans Model</strong></label>
                   <select id="paint-reference-model">
+                    <option value="doll_baby_a" data-i18n="models.doll_baby_a">Bebek</option>
+                    <option value="doll_chibi_a" data-i18n="models.doll_chibi_a">Çocuk</option>
                     <option value="doll_classic_a" data-i18n="models.doll_classic_a">Klasik</option>
                     <option value="doll_classic_b" data-i18n="models.doll_classic_b">Neşeli</option>
-                    <option value="doll_chibi_a" data-i18n="models.doll_chibi_a">Chibi</option>
+                    <option value="doll_adult_a" data-i18n="models.doll_adult_a">Yetişkin</option>
+                    <option value="doll_elder_a" data-i18n="models.doll_elder_a">Yaşlı</option>
                   </select>
                   <div class="reference-opacity-row">
                     <label for="paint-reference-opacity"><strong data-i18n="paint.opacityLabel">Opaklık</strong></label>
@@ -426,7 +430,7 @@
 
     <footer id="app-footer" class="app-footer">
       <div class="app-footer-inner">
-        <span class="app-footer-version">Paper Doll Studio <strong>v1.15</strong></span>
+        <span class="app-footer-version">Paper Doll Studio <strong>v1.16</strong></span>
         <span class="footer-divider" aria-hidden="true">·</span>
         <button id="footer-hard-reset-btn" class="text-button inline-refresh-btn" type="button" data-i18n-title="app.clearingCache" title="Önbelleği temizle ve en son sürümü yeniden yükle" data-i18n="app.hardReset">🔄 Yenile ve Önbelleği Temizle</button>
       </div>
@@ -440,6 +444,30 @@
         <div class="button-row end">
           <button id="confirm-cancel" value="cancel" class="button secondary" data-i18n="confirmDialog.cancel">İptal</button>
           <button id="confirm-ok" value="ok" class="button danger-fill" data-i18n="confirmDialog.ok">Devam Et</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="alert-dialog" class="confirm-dialog" role="alertdialog" aria-labelledby="alert-title" aria-describedby="alert-message">
+      <form method="dialog">
+        <span class="eyebrow danger-eyebrow" data-i18n="alertDialog.eyebrow">Bildirim</span>
+        <h2 id="alert-title" data-i18n="alertDialog.defaultTitle">Bir sorun oluştu</h2>
+        <p id="alert-message"></p>
+        <div class="button-row end">
+          <button id="alert-ok" value="ok" class="button primary" data-i18n="alertDialog.ok">Tamam</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="prompt-dialog" class="confirm-dialog" aria-labelledby="prompt-title">
+      <form id="prompt-form" method="dialog">
+        <h2 id="prompt-title"></h2>
+        <label class="prompt-field" for="prompt-input"><span id="prompt-message"></span>
+          <input id="prompt-input" type="text" autocomplete="off">
+        </label>
+        <div class="button-row end">
+          <button id="prompt-cancel" value="cancel" type="button" class="button secondary" data-i18n="promptDialog.cancel">Vazgeç</button>
+          <button id="prompt-ok" value="ok" class="button primary" data-i18n="promptDialog.ok">Kaydet</button>
         </div>
       </form>
     </dialog>
@@ -516,7 +544,7 @@
             <p class="panel-copy" data-i18n="projectDialog.updateCopy">Geçici tarayıcı komut dosyası önbelleklerini temizlemek veya en yeni stüdyo sürümünü yeniden yüklemek isterseniz, tam sıfırlama yapabilirsiniz. Depolamadaki kayıtlı bebekler ve sahneler güvende kalır.</p>
           </div>
           <div class="export-meta-row">
-            <span class="app-version-badge">Paper Doll Studio <strong>v1.15</strong></span>
+            <span class="app-version-badge">Paper Doll Studio <strong>v1.16</strong></span>
             <button id="project-hard-reset-btn" class="button secondary" type="button" data-i18n-title="projectDialog.forceReloadBtn" title="Önbelleğe alınan komut dosyalarını temizle ve uygulamayı yeniden yükle" data-i18n="projectDialog.forceReloadBtn">🔄 Zorla Yenile ve Önbelleği Temizle</button>
           </div>
         </section>
@@ -625,6 +653,7 @@
         <div class="paint-save-preview-wrap">
           <div id="paint-save-thumb" class="paint-save-thumb" role="img" data-i18n-aria-label="paintSaveDialog.thumbAria" aria-label="Çizim küçük resim önizlemesi"></div>
         </div>
+        <p id="paint-save-fit-note" class="paint-save-fit-note" data-i18n="paintSaveDialog.fitNote" hidden>🎨 Bu özel çizim tüm bebek modelleriyle uyumlu olacaktır.</p>
         <label for="paint-artwork-name" data-i18n="paintSaveDialog.label">Çizim Adı</label>
         <input id="paint-artwork-name" type="text" inputmode="text" name="artworkName" maxlength="30" data-i18n-placeholder="paintSaveDialog.placeholder" placeholder="Özel Tişörtüm" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
         <div class="button-row end">

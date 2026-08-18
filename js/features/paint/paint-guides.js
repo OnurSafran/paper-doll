@@ -1,14 +1,28 @@
 const LOGICAL_WIDTH = 300;
 const LOGICAL_HEIGHT = 450;
 
-export const REFERENCE_MODELS = Object.freeze([
-  Object.freeze({ id: 'doll_classic_a', label: 'Classic' }),
-  Object.freeze({ id: 'doll_classic_b', label: 'Joy' }),
-  Object.freeze({ id: 'doll_chibi_a', label: 'Chibi' }),
-  Object.freeze({ id: 'doll_baby_a', label: 'Baby' }),
-  Object.freeze({ id: 'doll_adult_a', label: 'Adult' }),
-  Object.freeze({ id: 'doll_elder_a', label: 'Elder' })
-]);
+import { t } from '../../core/i18n.js';
+import { REFERENCE_DOLL_IDS } from '../../domain/vocabulary.js';
+
+const GUIDE_LABEL_KEYS = Object.freeze({
+  'Head contour': 'headContour',
+  Crown: 'crown',
+  Hairline: 'hairline',
+  'Left ear': 'leftEar',
+  'Right ear': 'rightEar',
+  Neck: 'neck',
+  Shoulders: 'shoulders',
+  Bust: 'bust',
+  Waist: 'waist',
+  'Hem range': 'hemRange',
+  Hip: 'hip',
+  Knee: 'knee',
+  'Left foot': 'leftFoot',
+  'Right foot': 'rightFoot',
+  'Left ankle': 'leftAnkle',
+  'Right ankle': 'rightAnkle',
+  Ground: 'ground'
+});
 
 const MODEL_TRANSFORMS = Object.freeze({
   doll_classic_a: Object.freeze({ xScale: 1, yScale: 1, xOffset: 0, yOffset: 0 }),
@@ -75,13 +89,15 @@ export function getReferenceGuides(slot, modelId) {
   const definitions = SLOT_GUIDES[slot] || [];
   const transform = MODEL_TRANSFORMS[modelId] || MODEL_TRANSFORMS.doll_classic_a;
   return definitions.map((guide) => {
+    const labelKey = GUIDE_LABEL_KEYS[guide.label];
+    const label = labelKey ? t(`paint.guideLabels.${labelKey}`) : guide.label;
     if (guide.type === 'line') {
-      return { ...guide, x1: transformX(guide.x1, transform), y1: transformY(guide.y1, transform), x2: transformX(guide.x2, transform), y2: transformY(guide.y2, transform) };
+      return { ...guide, label, x1: transformX(guide.x1, transform), y1: transformY(guide.y1, transform), x2: transformX(guide.x2, transform), y2: transformY(guide.y2, transform) };
     }
     if (guide.type === 'ellipse') {
-      return { ...guide, cx: transformX(guide.cx, transform), cy: transformY(guide.cy, transform), rx: guide.rx * transform.xScale, ry: guide.ry * transform.yScale };
+      return { ...guide, label, cx: transformX(guide.cx, transform), cy: transformY(guide.cy, transform), rx: guide.rx * transform.xScale, ry: guide.ry * transform.yScale };
     }
-    return { ...guide, x: transformX(guide.x, transform), y: transformY(guide.y, transform) };
+    return { ...guide, label, x: transformX(guide.x, transform), y: transformY(guide.y, transform) };
   });
 }
 

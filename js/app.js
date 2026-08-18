@@ -9,7 +9,8 @@ import { clientToLogical } from './core/coordinate-space.js';
 import { loadAssetSvg } from './core/svg-loader.js';
 import { createProjectRepository, loadProject, STORAGE_KEY } from './services/project-repository.js';
 import { createCustomArtRepository } from './services/custom-art-repository.js';
-import { applyMouthExpression, createExportService } from './services/export-service.js';
+import { createExportService } from './services/export-service.js';
+import { applyMouthExpression } from './core/mouth-expression.js';
 import { createVoicePuppetryService } from './services/voice-puppetry.js';
 import { createDesignerView, previewCustomColor } from './features/designer/designer-view.js';
 import { createPaintView } from './features/paint/paint-view.js';
@@ -18,7 +19,7 @@ import { createSceneOutlineView } from './features/play/scene-outline-view.js';
 import { createSceneBookView } from './features/scene-book/scene-book-view.js';
 import { persistedProjection } from './core/state-schema.js';
 import { classifyError, executeSafeTeardown } from './core/error-boundary.js';
-import { DEFAULT_EXPRESSION, LIMITS } from './domain/vocabulary.js';
+import { CLEARABLE_OUTFIT_SLOTS, DEFAULT_EXPRESSION, LIMITS } from './domain/vocabulary.js';
 import {
   clearProjectBackup,
   exportProjectPackage,
@@ -46,6 +47,7 @@ const loaded = loadProject(storageRef, getAsset);
 const customArtRepo = createCustomArtRepository();
 const store = createAppStore(loaded.envelope, { getAsset, assets: ASSETS });
 const getEffectiveAsset = (id) => createAssetRegistry(store ? store.getState().customAssets : loaded.envelope.customAssets).getAsset(id);
+const getEffectiveAssetsByKind = (kind) => createAssetRegistry(store ? store.getState().customAssets : loaded.envelope.customAssets).assetsByKind(kind);
 const storage = createProjectRepository({
   storage: storageRef,
   initialRevision: loaded.envelope?.revision ?? 1,
@@ -106,6 +108,70 @@ function askConfirm(title, message) {
   return result;
 }
 
+let alertQueue = Promise.resolve();
+
+function showAlert(message, title = t('alertDialog.defaultTitle')) {
+  const show = () => new Promise((resolve) => {
+    const dialog = $('#alert-dialog');
+    dialog.returnValue = '';
+    $('#alert-title').textContent = title;
+    $('#alert-message').textContent = message;
+    const ok = $('#alert-ok');
+    const onOk = () => { cleanup(); resolve(); };
+    const onClose = () => { cleanup(); resolve(); };
+    function cleanup() {
+      ok.removeEventListener('click', onOk);
+      dialog.removeEventListener('close', onClose);
+      if (dialog.open) dialog.close();
+    }
+    ok.addEventListener('click', onOk);
+    dialog.addEventListener('close', onClose);
+    dialog.showModal();
+    ok.focus();
+  });
+  const result = alertQueue.then(show, show);
+  alertQueue = result.then(() => undefined, () => undefined);
+  return result;
+}
+
+let promptQueue = Promise.resolve();
+
+function askPrompt(title, message, initialValue = '') {
+  const show = () => new Promise((resolve) => {
+    const dialog = $('#prompt-dialog');
+    if (!dialog) { resolve(null); return; }
+    dialog.returnValue = '';
+    $('#prompt-title').textContent = title;
+    $('#prompt-message').textContent = message;
+    const input = $('#prompt-input');
+    const form = $('#prompt-form');
+    const cancel = $('#prompt-cancel');
+    input.value = initialValue;
+    let settled = false;
+    const finish = (value) => { if (settled) return; settled = true; cleanup(); resolve(value); };
+    // Submit rather than the OK button's click: Enter inside the field reaches the
+    // form directly, so the prompt does not depend on implicit-submission quirks.
+    const onSubmit = (event) => { event.preventDefault(); finish(input.value); };
+    const onCancel = () => finish(null);
+    const onClose = () => finish(dialog.returnValue === 'ok' ? input.value : null);
+    function cleanup() {
+      form.removeEventListener('submit', onSubmit);
+      cancel.removeEventListener('click', onCancel);
+      dialog.removeEventListener('close', onClose);
+      if (dialog.open) dialog.close();
+    }
+    form.addEventListener('submit', onSubmit);
+    cancel.addEventListener('click', onCancel);
+    dialog.addEventListener('close', onClose);
+    dialog.showModal();
+    input.focus();
+    input.select?.();
+  });
+  const result = promptQueue.then(show, show);
+  promptQueue = result.then(() => undefined, () => undefined);
+  return result;
+}
+
 let pendingPaintContext = null;
 
 function openPaintStudio(options = {}) {
@@ -118,10 +184,12 @@ const designerView = createDesignerView({
   $,
   $$,
   askConfirm,
+  askPrompt,
   miniButton,
   customArtRepo,
   openPaintStudio,
-  getAsset: getEffectiveAsset
+  getAsset: getEffectiveAsset,
+  getAssetsByKind: getEffectiveAssetsByKind
 });
 
 const sceneOutlineView = createSceneOutlineView({
@@ -129,7 +197,8 @@ const sceneOutlineView = createSceneOutlineView({
   $,
   $$,
   askConfirm,
-  miniButton
+  miniButton,
+  getAsset: getEffectiveAsset
 });
 
 const playView = createPlayView({
@@ -141,7 +210,8 @@ const playView = createPlayView({
   openSceneOutlineDialog: () => sceneOutlineView.openSceneOutlineDialog(),
   customArtRepo,
   openPaintStudio,
-  getAsset: getEffectiveAsset
+  getAsset: getEffectiveAsset,
+  getAssetsByKind: getEffectiveAssetsByKind
 });
 
 const sceneBookView = createSceneBookView({
@@ -149,6 +219,7 @@ const sceneBookView = createSceneBookView({
   $,
   $$,
   askConfirm,
+  askPrompt,
   miniButton,
   customArtRepo,
   getAsset: getEffectiveAsset
@@ -158,6 +229,8 @@ const paintView = createPaintView({
   rootElement: document,
   store,
   customArtRepo,
+  askConfirm,
+  showAlert,
   assetRegistry: {
     getAsset: (id) => getEffectiveAsset(id),
     getCategoryAssets: (category, slot) => {
@@ -182,7 +255,7 @@ const voiceService = createVoicePuppetryService({
       e.kind === 'character' && (e.instanceId === currentSelected || !currentSelected)
     );
     if (targetCharacter) {
-      const domEntity = findSceneSkinSvg(targetCharacter.instanceId);
+      const domEntity = findSceneSkinSvg(targetCharacter.instanceId, $$);
       if (domEntity) {
         const baseFallback = targetCharacter.expression || DEFAULT_EXPRESSION;
         applyMouthExpression(domEntity, viseme === DEFAULT_EXPRESSION ? baseFallback : viseme);
@@ -195,7 +268,7 @@ const voiceService = createVoicePuppetryService({
       const state = store.getState();
       for (const entity of state.currentScene.entities) {
         if (entity.kind === 'character') {
-          const domEntity = findSceneSkinSvg(entity.instanceId);
+          const domEntity = findSceneSkinSvg(entity.instanceId, $$);
           if (domEntity) applyMouthExpression(domEntity, entity.expression || DEFAULT_EXPRESSION);
         }
       }
@@ -263,7 +336,7 @@ store.subscribe(({ action, state, persist }) => {
   }
   if (action.type === 'scene/setDollExpression') {
     const targetId = action.instanceId ?? state.ui.selectedEntityId;
-    const domSkin = findSceneSkinSvg(targetId);
+    const domSkin = findSceneSkinSvg(targetId, $$);
     if (domSkin) applyMouthExpression(domSkin, action.expression);
     playView.renderSelectedActions(state);
     return;
@@ -411,7 +484,7 @@ function wireStaticEvents() {
   $('#remove-piece').addEventListener('click', () => store.dispatch({ type: 'designer/remove' }));
   $('#shuffle-outfit').addEventListener('click', () => store.dispatch({ type: 'designer/shuffle' }));
   $('#clear-outfit').addEventListener('click', async () => {
-    const dressed = ['top', 'bottom', 'dress', 'shoes', 'accessory'].some((slot) => store.getState().designer.draft.slots[slot]);
+    const dressed = CLEARABLE_OUTFIT_SLOTS.some((slot) => store.getState().designer.draft.slots[slot]);
     if (!dressed || await askConfirm(t('designer.clearOutfitTitle'), t('designer.clearOutfitMessage'))) {
       store.dispatch({ type: 'designer/clearOutfit' });
     }
@@ -423,8 +496,6 @@ function wireStaticEvents() {
   });
   $('#designer-mode-wardrobe')?.addEventListener('click', () => store.dispatch({ type: 'designer/setActiveTab', tab: 'wardrobe' }));
   $('#designer-mode-face')?.addEventListener('click', () => store.dispatch({ type: 'designer/setActiveTab', tab: 'face' }));
-  $('#reset-face')?.addEventListener('click', () => store.dispatch({ type: 'designer/resetFace' }));
-  $('#clear-face-detail')?.addEventListener('click', () => store.dispatch({ type: 'designer/clearFaceDetail' }));
   $('#reset-doll').addEventListener('click', async () => {
     if (!store.getState().designer.dirty || await askConfirm(t('designer.resetDollTitle'), t('designer.resetDollMessage'))) {
       store.dispatch({ type: 'designer/reset' });

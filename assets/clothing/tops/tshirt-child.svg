@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_tshirt_child">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M124 113 L105 145 L119 151 L132 126 Z" fill="var(--asset-color-primary, #78add2)"/>
+    <path class="tint-primary" d="M176 113 L195 145 L181 151 L168 126 Z" fill="var(--asset-color-primary, #78add2)"/>
+    <path class="tint-primary" d="M124 112 C136 118 164 118 176 112 L180 196 C162 199 138 199 120 196 Z" fill="var(--asset-color-primary, #78add2)"/>
+    <path d="M121 140 Q150 145 179 140 M121 158 Q150 163 179 158 M136 114 Q150 124 164 114" fill="none" stroke="#fffdf7" stroke-width="3"/>
+  </g>
+</svg>

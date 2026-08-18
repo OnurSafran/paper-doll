@@ -19,6 +19,34 @@ const playJs = readFileSync(new URL('../js/features/play/play-view.js', import.m
 const designerJs = readFileSync(new URL('../js/features/designer/designer-view.js', import.meta.url), 'utf8');
 const sceneBookJs = readFileSync(new URL('../js/features/scene-book/scene-book-view.js', import.meta.url), 'utf8');
 
+test('every view built in app.js receives the registry-backed asset resolvers it declares', () => {
+  // Guards PLR-1: createPlayView declared getAssetsByKind but app.js only passed it to
+  // createDesignerView, so Play silently fell back to the built-in catalog and lost custom props.
+  const viewModules = {
+    createDesignerView: designerJs,
+    createPlayView: playJs,
+    createSceneOutlineView: readFileSync(new URL('../js/features/play/scene-outline-view.js', import.meta.url), 'utf8'),
+    createSceneBookView: readFileSync(new URL('../js/features/scene-book/scene-book-view.js', import.meta.url), 'utf8')
+  };
+  const effective = { getAsset: 'getEffectiveAsset', getAssetsByKind: 'getEffectiveAssetsByKind' };
+
+  for (const [factory, source] of Object.entries(viewModules)) {
+    const declaration = source.slice(source.indexOf(`export function ${factory}({`));
+    const declaredParams = declaration.slice(0, declaration.indexOf('}'));
+    const call = js.slice(js.indexOf(`${factory}({`));
+    const callArgs = call.slice(0, call.indexOf('});'));
+
+    for (const [param, expected] of Object.entries(effective)) {
+      if (!new RegExp(`\\b${param}\\b`).test(declaredParams)) continue;
+      assert.match(
+        callArgs,
+        new RegExp(`${param}:\\s*${expected}`),
+        `${factory} declares ${param} but app.js does not pass ${expected}`
+      );
+    }
+  }
+});
+
 test('app shell keeps unique IDs and no remote runtime dependencies', () => {
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length);
@@ -29,7 +57,7 @@ test('stage-first UI exposes the visual spawner and derived scene HUD hooks', ()
   for (const id of ['spawn-items', 'play-stage', 'scene-name-chip', 'scene-count-chip']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(css, /grid-template-areas:\s*"scene spawn"/);
+  assert.match(css, /grid-template-areas:\s*"scene rail"/);
   assert.match(css, /\.spawn-list\s*{[^}]*grid-template-columns:\s*repeat\(2/s);
 });
 
@@ -62,6 +90,33 @@ test('Designer uses one viewport workspace with a deliberate scrolling rail', ()
   assert.match(css, /#designer-screen\s*{[^}]*height:\s*calc\(100dvh - var\(--app-header-height\)\)[^}]*overflow:\s*hidden/s);
   assert.match(css, /\.designer-sidebar\s*{[^}]*overflow-y:\s*auto/s);
   assert.match(css, /--app-header-height:\s*58px/);
+});
+
+test('Designer sidebar follows the requested hierarchy and consistent face spacing', () => {
+  const order = [
+    html.indexOf('id="dollbox-title"'),
+    html.indexOf('id="doll-colors-title"'),
+    html.indexOf('id="wardrobe-panel-section"')
+  ];
+  assert.ok(order.every((position) => position >= 0));
+  assert.ok(order[0] < order[1] && order[1] < order[2]);
+  assert.match(css, /\.face-panel\s*{[^}]*padding:\s*0\.85rem/s);
+});
+
+test('Face mode tab has a full-width, touch-friendly hit area', () => {
+  assert.match(html, /id="designer-mode-face"[^>]*role="tab"/);
+  assert.match(css, /\.designer-mode-tabs\s*{[^}]*width:\s*100%/s);
+  assert.match(css, /\.designer-mode-tabs \.mode-tab\s*{[^}]*min-height:\s*48px/s);
+  assert.match(css, /\.designer-mode-tabs \.mode-tab\s*{[^}]*min-width:\s*0/s);
+  assert.match(css, /\.designer-mode-tabs \.mode-tab\s*{[^}]*touch-action:\s*manipulation/s);
+});
+
+test('scene rail groups tray tools and keeps microphone centered', () => {
+  assert.match(html, /class="play-rail"[\s\S]*id="spawn-tabs"[\s\S]*id="scene-templates-btn"[\s\S]*id="scene-outline-btn"/);
+  assert.match(html, /class="meta-action-group scene-meta-center"[\s\S]*id="voice-puppetry-btn"/);
+  assert.match(html, /class="meta-action-group scene-meta-right(?:\s|\")/);
+  assert.match(css, /\.play-grid\s*{[^}]*grid-template-areas:\s*"scene rail"/s);
+  assert.match(css, /\.scene-meta-center\s*{[^}]*justify-self:\s*center/s);
 });
 
 test('history controls and export button expose accessible semantics and touch targets', () => {
@@ -237,7 +292,7 @@ test('panoramic stages and camera navigation expose accessible HUD, slider, mini
   assert.match(playJs, /minimap\.addEventListener\('keydown'/);
   assert.match(playJs, /minimap-bg-panel/);
   assert.match(playJs, /function syncCamera\(/);
-  assert.match(playJs, /entityRoot\.replaceChildren\(stagedEntities\);\s*renderCameraHud\(state\);/);
+  assert.match(playJs, /entityRoot\.replaceChildren\(\.\.\.nextElements\);/);
+  assert.match(playJs, /renderCameraHud\(state\);/);
   assert.match(js, /clientToLogical\(event\.clientX, event\.clientY, playStage\.getBoundingClientRect\(\), cameraX\)/);
 });
-

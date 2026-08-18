@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_slacks_adult">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M119 198 L148 198 L146 336 Q132 351 113 337 Z" fill="var(--asset-color-primary, #50627a)"/>
+    <path class="tint-primary" d="M152 198 L181 198 L187 337 Q168 351 154 336 Z" fill="var(--asset-color-primary, #50627a)"/>
+    <path d="M119 198 Q150 210 181 198 L181 224 Q150 236 119 224 Z" fill="var(--asset-color-secondary, #e9edf2)"/>
+    <path d="M150 211 L150 336" fill="none" opacity="0.45"/>
+    <path d="M125 229 L140 229 M160 229 L175 229" fill="none" opacity="0.45"/>
+    <circle cx="150" cy="214" r="2.5" fill="#fff"/>
+  </g>
+</svg>

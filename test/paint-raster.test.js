@@ -58,8 +58,10 @@ test('floodFillImageData fills contiguous matching regions within tolerance', ()
   const imgData = { width, height, data };
   const fillBlue = { r: 0, g: 0, b: 255, a: 255 };
 
-  const changed = floodFillImageData(imgData, 1, 1, fillBlue, 10);
+  const bounds = {};
+  const changed = floodFillImageData(imgData, 1, 1, fillBlue, 10, bounds);
   assert.equal(changed, true);
+  assert.deepEqual(bounds, { x: 1, y: 1, right: 2, bottom: 2 });
 
   // Check center 2x2 is now blue
   for (const y of [1, 2]) {
@@ -75,6 +77,27 @@ test('floodFillImageData fills contiguous matching regions within tolerance', ()
   // Check (0,0) is still untouched black transparent
   assert.equal(data[0], 0);
   assert.equal(data[3], 0);
+});
+
+test('scanline flood fill follows neighboring spans across a wide region', () => {
+  const width = 5;
+  const height = 3;
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let i = 0; i < width * height; i += 1) data[i * 4 + 3] = 255;
+
+  const target = [[1, 1], [2, 1], [3, 1], [3, 0], [1, 2]];
+  for (const [x, y] of target) {
+    const idx = (y * width + x) * 4;
+    data[idx] = 255;
+    data[idx + 1] = 0;
+    data[idx + 2] = 0;
+  }
+  const changed = floodFillImageData({ width, height, data }, 1, 1, { r: 0, g: 0, b: 255, a: 255 });
+  assert.equal(changed, true);
+  for (const [x, y] of target) {
+    const idx = (y * width + x) * 4;
+    assert.equal(data[idx + 2], 255);
+  }
 });
 
 test('computeNonTransparentBounds accurately finds bounding boxes and aspect ratios', () => {

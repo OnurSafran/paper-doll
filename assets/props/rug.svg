@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_rug">
   <g id="prop" stroke="#2d261e" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
-    <ellipse cx="500" cy="500" rx="440" ry="180" fill="#fde2e4"/>
-    <ellipse cx="500" cy="500" rx="360" ry="140" fill="#e8e8e4" stroke-dasharray="24 16"/>
-    <ellipse cx="500" cy="500" rx="260" ry="100" fill="#d8e2dc"/>
-    <ellipse cx="500" cy="500" rx="150" ry="60" fill="#ffe5d9"/>
+    <ellipse cx="500" cy="700" rx="440" ry="180" fill="#fde2e4"/>
+    <ellipse cx="500" cy="700" rx="360" ry="140" fill="#e8e8e4" stroke-dasharray="24 16"/>
+    <ellipse cx="500" cy="700" rx="260" ry="100" fill="#d8e2dc"/>
+    <ellipse cx="500" cy="700" rx="150" ry="60" fill="#ffe5d9"/>
+    <path d="M115 700 Q180 640 245 700 M755 700 Q820 640 885 700" fill="none" stroke="#f2b7c1" stroke-width="12"/>
   </g>
 </svg>

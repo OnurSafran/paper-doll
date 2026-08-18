@@ -1,6 +1,6 @@
 # Quality and Release Plan
 
-Updated: 2026-08-17
+Updated: 2026-08-19
 
 Character Customization Gates 0–5: **complete**. Automated tests, asset validation, and source contracts are green. Hosted-device evidence is still required before family release.
 
@@ -8,16 +8,16 @@ Character Customization Gates 0–5: **complete**. Automated tests, asset valida
 
 | Check | Current result | What it proves |
 |:--|:--|:--|
-| `node --test` | 277 pass, 0 fail | Existing domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, and library coverage plus modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, and resting-face restoration. |
-| Asset validator | 112 pass | All 112 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 58 wearables, 7 backgrounds, 22 props). |
-| Documentation validator | 10 pass, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
+| `node --test` | 315 pass, 0 fail | Existing domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, and library coverage plus modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, resting-face restoration, Designer/Paint hardening, Play hardening, and complete built-in asset-name coverage. |
+| Asset validator | 141 pass | All 141 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 87 wearables, 7 backgrounds, 22 props). |
+| Documentation validator | 8 canonical documents, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. The validator walks every tracked `.md` file, so its printed count rises with non-canonical notes such as `review/`. |
 | PWA shell validation | Pass | Manifest, service-worker syntax, and all offline app-shell assets validate. |
 
 ## Character Customization & Custom Paint Evidence
 
 | Evidence | Result | Notes |
 |:--|:--|:--|
-| `npm run check` | Pass | 277 tests, documentation validation, and 112 cataloged SVG assets passed on 2026-08-18. |
+| `npm run check` | Pass | 315 tests, documentation validation, cache-busting validation, and 141 cataloged SVG assets passed on 2026-08-19. |
 | Modular Face Customization (Gates 0–1) | Pass | 19 face SVGs, iris palette, schema v4 migration, resting-face restoration, and full undo/redo pass automated test suites. |
 | Body Models & Fit Families (Gate 2) | Pass | 6 base dolls (Baby, Child, Teen Classic A/B, Adult, Elder), fit-family filtering, presentation style discovery filters pass tests. |
 | Expanded Catalog & Shuffle (Gate 3) | Pass | Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage wardrobe items pass tests. |
@@ -27,6 +27,45 @@ Character Customization Gates 0–5: **complete**. Automated tests, asset valida
 | Project transfer contracts | Pass | Package validation, SHA-256 artwork integrity, Replace/Merge, collision rewriting, and missing/corrupt artwork behavior are covered by tests. |
 | Browser/device manual matrix | Open | Must be run against hosted Chrome, Safari, Firefox, Edge, and the target iPad; source tests do not substitute for this evidence. |
 | Hosted iPad Home Screen offline journey | Blocked | No hosted URL and target iPad evidence is present in this workspace. Follow the smoke test in [OFFLINE-PWA.md](OFFLINE-PWA.md) and record the result here. |
+
+## Designer and Paint hardening pass (2026-08-18)
+
+A source review of `js/features/designer/` and `js/features/paint/` recorded 41 findings in `review/ISSUES.md`. All 41 are closed, along with 5 follow-ups found while verifying the fixes. Contract-visible outcomes:
+
+| Area | Change | Evidence |
+|:--|:--|:--|
+| Catalog discovery | Built-in and custom wearables now share one filter (`matchesDiscoveryFilters`), so untagged custom artwork is reachable under the `unsorted` style. | `discovery filters keep untagged custom descriptors in the unsorted style` |
+| Fit warnings | Incompatible equipped items render labeled fit-warning placeholders instead of disappearing, satisfying D-031. | `setBaseDoll retains compatible items and preserves incompatible references` |
+| Fit checks | Accessory and all five modular face layers are compatibility-checked on render, matching the wardrobe layers. | `face-customization` suite |
+| Paint selection | The select tool responds to pointer input; the marquee previously never left a zero-area rectangle. | Manual; see open coverage gap below |
+| Paint history | History byte ceiling raised so the documented 20-step undo depth is reachable for both wearable and prop canvases. | `paint-session` suite |
+| Paint dialogs | All native `alert()`/`confirm()` replaced with the app's accessible dialog service; zero `innerHTML` assignments remain in the view. | `paint-ui` suite |
+| Localization | Cutout prompts, canvas and palette ARIA, alignment guide labels, and reference model names resolve through `i18n`; label-by-string-surgery removed. | `i18n` suite |
+| Reference models | Paint exposes all 6 base dolls, satisfying the D-033 claim; `REFERENCE_DOLL_IDS` centralized in `domain/vocabulary.js`. | `paint-guides` suite |
+| Shared modules | `core/preview-viewboxes.js` and `core/mouth-expression.js` extracted; the Designer no longer imports rendering helpers from `services/export-service.js`. | Source contract |
+
+### Follow-up items (all closed 2026-08-18)
+
+| ID | Item | Resolution | Evidence |
+|:--|:--|:--|:--|
+| N-1 | `preset/update` left a stale Dollbox thumbnail on J-03 | Render gate keys on `updatedAt`, not just id and name | `Dollbox re-renders when preset/update replaces the draft under the same name`; verified in-browser |
+| N-2 | Dollbox did not re-translate on language switch | Active language added to the gate signature | `Dollbox re-renders on language change so row actions are translated`; verified in-browser |
+| N-3 | Fit-warning placeholder was hardcoded English | `designer.fitWarningPlaceholder` added to both locales | Verified in-browser in `tr` and `en` |
+| N-4 | Two indistinguishable "Teen" reference models | Picker labels switched to per-model `models.*` names | Verified: 6 unique labels in both locales |
+| N-5 | Fit-warning placeholders rendered stacked on one another, illegibly | Warnings offset by index, clipped to one line, full text kept in tooltip and accessible name | Verified in-browser: 4 warnings, 0 overlaps |
+
+**Coverage gap closed**: `test/paint-selection-pointer.test.js` drives the real `pointerdown → pointermove → pointerup` sequence through `createPaintView`, and `test/dollbox-render-gate.test.js` covers the render gate. Both suites were confirmed to fail when their defects are reintroduced and pass once fixed.
+
+### Browser verification (2026-08-18, Chromium, local HTTP)
+
+| Journey | Result |
+|:--|:--|
+| Preset rename via the new prompt dialog: open, prefill, submit, cancel, Escape, blank input | Pass — only a non-empty submit renames |
+| Focus returns to the invoking Dollbox action after rename | Pass |
+| `preset/update` under an unchanged name refreshes the card image | Pass |
+| Language toggle re-translates Dollbox actions and reference model names | Pass |
+| Fit warnings on model switch: legible, non-overlapping, localized | Pass |
+| Console errors during the above | None |
 
 ### Custom Paint required journeys
 
@@ -76,7 +115,7 @@ CP-01–CP-15 are covered by the current feature, domain, storage, portability, 
 |:--|:--|:--|:--:|
 | J-01 | Equip top → dress → bottom | Top and bottom auto-clear on dress equip; bottom clears on dress; announced politely via live region. | Pass |
 | J-02 | Recolor skin/hair/garment; save/reopen | Palette tokens and sanitized hex values survive store projection, serialization, and reload. | Pass |
-| J-03 | Save/update/rename/delete preset | Unique preset IDs persist up to 50 items; deleting a preset leaves existing scene snapshots intact. | Pass |
+| J-03 | Save/update/rename/delete preset | Unique preset IDs persist up to 50 items; deleting a preset leaves existing scene snapshots intact; the Dollbox card image refreshes after Update; rename uses the in-app prompt dialog and restores focus. | Pass |
 | J-04 | Add two dolls and one prop | Visual spawner creates independent reachable instances with unique generated IDs. | Pass |
 | J-05 | Move/flip/scale/layer/duplicate/delete | Coordinate transforms compose cleanly, clamp within stage bounds, and maintain contiguous order. | Pass |
 | J-06 | Change background and refresh | Current scene background and entities reload exactly; transient selection clears. | Pass |

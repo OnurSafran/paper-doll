@@ -28,6 +28,8 @@ import {
   sanitizeEnvelope
 } from '../js/core/state-schema.js';
 import { createAppStore } from '../js/core/app-store.js';
+import { renderDollInto } from '../js/features/designer/designer-view.js';
+import { t } from '../js/core/i18n.js';
 
 test('vocabulary defines face groups, iris colors, fit families, and styles', () => {
   assert.deepEqual([...FACE_GROUPS], ['eyes', 'eyebrows', 'nose', 'mouth', 'detail']);
@@ -129,6 +131,9 @@ test('outfit rules creates default face for dolls and handles face mutations', (
   assert.equal(changedEyes.changed, true);
   assert.equal(changedEyes.draft.face.eyes.assetId, 'eyes_sparkle');
   assert.equal(changedEyes.draft.face.eyes.irisColor, 'cocoa');
+  const toggledEyes = setFaceFeature(changedEyes.draft, 'eyes', 'eyes_sparkle', getAsset);
+  assert.equal(toggledEyes.changed, true);
+  assert.equal(toggledEyes.draft.face.eyes.assetId, 'eyes_classic');
   const invalidEyes = setFaceFeature(draft, 'eyes', 'nose_dot', getAsset);
   assert.equal(invalidEyes.changed, false);
 
@@ -146,6 +151,9 @@ test('outfit rules creates default face for dolls and handles face mutations', (
   const withDetail = setFaceFeature(changedNose.draft, 'detail', 'detail_blush');
   assert.equal(withDetail.changed, true);
   assert.equal(withDetail.draft.face.detail.assetId, 'detail_blush');
+  const toggledDetail = setFaceFeature(withDetail.draft, 'detail', 'detail_blush', getAsset);
+  assert.equal(toggledDetail.changed, true);
+  assert.equal(toggledDetail.draft.face.detail, null);
   const clearedDetail = clearFaceDetail(withDetail.draft);
   assert.equal(clearedDetail.changed, true);
   assert.equal(clearedDetail.draft.face.detail, null);
@@ -156,6 +164,107 @@ test('outfit rules creates default face for dolls and handles face mutations', (
   assert.equal(restored.draft.face.eyes.assetId, 'eyes_classic');
   assert.equal(restored.draft.face.eyes.irisColor, 'cocoa');
   assert.equal(restored.draft.face.detail, null); // doll_classic_a default has no detail
+});
+
+test('required face groups restore a selected model default while optional detail can clear', () => {
+  const defaults = createDefaultFace('doll_classic_a');
+  const alternatives = {
+    eyes: 'eyes_sparkle',
+    eyebrows: 'brows_arched',
+    nose: 'nose_button',
+    mouth: 'mouth_open_smile'
+  };
+
+  for (const [group, assetId] of Object.entries(alternatives)) {
+    const selected = setFaceFeature(createStarterDraft(), group, assetId, getAsset);
+    const repeated = setFaceFeature(selected.draft, group, assetId, getAsset);
+    assert.equal(repeated.changed, true);
+    assert.equal(repeated.draft.face[group].assetId, defaults[group].assetId, `${group} restores its model default`);
+  }
+});
+
+test('renderDollInto keeps baked default face visible and hides incompatible clothing layers', async () => {
+  const draft = createStarterDraft();
+  draft.slots = { hair: null, top: null, bottom: { assetId: 'top_coat_adult', color: 'charcoal' }, dress: null, shoes: null, accessory: { assetId: 'accessory_bib_baby', color: 'cocoa' } };
+  const renderedLayers = [];
+  const bakedFace = { style: { display: '' } };
+  const fakeContainer = {
+    replaceChildren(...nodes) { renderedLayers.push(...nodes); },
+    append(...nodes) { renderedLayers.push(...nodes); }
+  };
+  const origDocument = globalThis.document;
+
+  const makeElement = (tag) => {
+    const element = {
+      localName: tag,
+      dataset: {},
+      className: '',
+      style: {
+        zIndex: '',
+        setProperty() {}
+      },
+      children: [],
+      append(...nodes) { this.children.push(...nodes); },
+      setAttribute() {},
+      querySelector(selector) {
+        return selector === '#baked-face' && tag === 'svg' ? bakedFace : null;
+      }
+    };
+    return element;
+  };
+
+  globalThis.document = {
+    createElement: (tag) => makeElement(tag),
+    createElementNS: (ns, tag) => makeElement(tag)
+  };
+
+  try {
+    await renderDollInto(fakeContainer, draft, {
+      getAsset,
+      loadAssetSvg: async () => makeElement('svg')
+    });
+
+    const skinLayer = renderedLayers.find((layer) => layer.dataset.slot === 'skin');
+    assert.ok(skinLayer);
+    assert.equal(bakedFace.style.display, '', 'default baked face remains visible');
+    const bottomPlaceholder = renderedLayers.find((layer) => layer.dataset.slot === 'bottom');
+    const accessoryPlaceholder = renderedLayers.find((layer) => layer.dataset.slot === 'accessory');
+    assert.equal(bottomPlaceholder.className, 'doll-layer');
+    assert.equal(accessoryPlaceholder.className, 'doll-layer');
+    assert.equal(bottomPlaceholder.children?.[0]?.className, 'asset-placeholder fit-warning-placeholder');
+    assert.equal(accessoryPlaceholder.children?.[0]?.className, 'asset-placeholder fit-warning-placeholder');
+    const warningSummary = renderedLayers.find((node) => node.className === 'fit-warning-summary');
+    assert.ok(warningSummary, 'incompatible pieces should share one expandable warning');
+    assert.equal(warningSummary.children?.[0]?.textContent, t('designer.fitWarningSummary', { count: 2 }));
+  } finally {
+    if (origDocument === undefined) delete globalThis.document;
+    else globalThis.document = origDocument;
+  }
+});
+
+test('renderDollInto filters face layers by the active doll fit family', async () => {
+  const draft = createStarterDraft();
+  draft.baseDollId = 'doll_baby_a';
+  const renderedLayers = [];
+  const fakeContainer = { replaceChildren(...nodes) { renderedLayers.push(...nodes); } };
+  const origDocument = globalThis.document;
+  const makeElement = (tag) => ({
+    localName: tag, dataset: {}, className: '', children: [], style: { setProperty() {}, display: '' }, append(...nodes) { this.children.push(...nodes); }, setAttribute() {},
+    querySelector() { return null; }
+  });
+  const originalEyes = getAsset('eyes_classic');
+  const getAssetWithTeenOnlyEyes = (id) => id === 'eyes_classic'
+    ? { ...originalEyes, supportedFitFamilies: ['teen'] }
+    : getAsset(id);
+  globalThis.document = { createElement: makeElement, createElementNS: (ns, tag) => makeElement(tag) };
+  try {
+    await renderDollInto(fakeContainer, draft, { getAsset: getAssetWithTeenOnlyEyes, loadAssetSvg: async () => makeElement('svg') });
+    const eyesPlaceholder = renderedLayers.find((layer) => layer.dataset.slot === 'face-eyes');
+    assert.equal(eyesPlaceholder.children[0].className, 'asset-placeholder fit-warning-placeholder');
+  } finally {
+    if (origDocument === undefined) delete globalThis.document;
+    else globalThis.document = origDocument;
+  }
 });
 
 test('state schema v4 sanitization and v3 migration', () => {
@@ -363,6 +472,40 @@ test('createExportDollSvg renders face layers in exact visual hierarchy', async 
     assert.ok(browsIdx < detailIdx, 'brows before detail');
     assert.ok(detailIdx < noseIdx, 'detail before nose');
     assert.ok(noseIdx < mouthIdx, 'nose before mouth');
+  } finally {
+    if (origDocument === undefined) delete globalThis.document;
+    else globalThis.document = origDocument;
+  }
+});
+
+test('createExportDollSvg keeps the baked default face visible', async () => {
+  const origDocument = globalThis.document;
+  const bakedFace = { style: { display: '' } };
+  const makeElement = () => ({
+    style: { setProperty() {} },
+    setAttribute() {},
+    appendChild() {}
+  });
+  const clone = {
+    firstChild: null,
+    querySelector(selector) {
+      return selector === '#baked-face' ? bakedFace : null;
+    }
+  };
+  const fakeLoadSvg = async () => ({ cloneNode: () => clone });
+
+  globalThis.document = {
+    createElementNS() {
+      return makeElement();
+    }
+  };
+
+  try {
+    const { createExportDollSvg } = await import('../js/services/export-service.js');
+    const draft = createStarterDraft();
+    draft.slots = { hair: null, top: null, bottom: null, dress: null, shoes: null, accessory: null };
+    await createExportDollSvg(draft, 'neutral', { loadAssetSvg: fakeLoadSvg });
+    assert.equal(bakedFace.style.display, '', 'default baked face remains visible in exports');
   } finally {
     if (origDocument === undefined) delete globalThis.document;
     else globalThis.document = origDocument;

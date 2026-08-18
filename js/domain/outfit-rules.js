@@ -1,4 +1,5 @@
 import {
+  CLEARABLE_OUTFIT_SLOTS,
   DEFAULT_BASE_DOLL_ID,
   DEFAULT_GARMENT_COLOR,
   DEFAULT_IRIS_COLOR,
@@ -9,7 +10,7 @@ import {
   OUTFIT_SLOTS
 } from './vocabulary.js';
 
-export { OUTFIT_SLOTS, isOutfitSlot, FACE_GROUPS, isFaceGroup };
+export { OUTFIT_SLOTS, CLEARABLE_OUTFIT_SLOTS, isOutfitSlot, FACE_GROUPS, isFaceGroup };
 
 export const DEFAULT_FACE_BY_DOLL = Object.freeze({
   doll_classic_a: Object.freeze({
@@ -178,7 +179,7 @@ export function removeSlot(draft, slot) {
 
 export function clearOutfit(draft) {
   const next = cloneDraft(draft);
-  for (const slot of ['top', 'bottom', 'dress', 'shoes', 'accessory']) next.slots[slot] = null;
+  for (const slot of CLEARABLE_OUTFIT_SLOTS) next.slots[slot] = null;
   return next;
 }
 
@@ -189,6 +190,23 @@ export function setFaceFeature(draft, group, assetId, getAsset = () => undefined
     return { draft, changed: false, code: 'INVALID_FACE_ASSET' };
   }
   const next = cloneDraft(draft);
+  const current = next.face[group];
+  if (current?.assetId === assetId) {
+    if (group === 'detail') {
+      next.face.detail = null;
+      return { draft: next, changed: true, mode: 'cleared' };
+    }
+
+    const defaultFace = createDefaultFace(next.baseDollId);
+    const defaultFeature = defaultFace[group];
+    const restoredFeature = group === 'eyes'
+      ? { ...defaultFeature, irisColor: current.irisColor || defaultFeature.irisColor }
+      : { ...defaultFeature };
+    const changed = JSON.stringify(current) !== JSON.stringify(restoredFeature);
+    next.face[group] = restoredFeature;
+    return { draft: next, changed, mode: changed ? 'defaulted' : 'unchanged' };
+  }
+
   if (group === 'eyes') {
     const currentIris = next.face.eyes?.irisColor || DEFAULT_IRIS_COLOR;
     next.face.eyes = { assetId, irisColor: currentIris };
@@ -197,7 +215,7 @@ export function setFaceFeature(draft, group, assetId, getAsset = () => undefined
   } else {
     next.face[group] = { assetId };
   }
-  return { draft: next, changed: true };
+  return { draft: next, changed: true, mode: 'selected' };
 }
 
 export function setIrisColor(draft, color) {

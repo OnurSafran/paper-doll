@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_suit_adult">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M121 111 C116 143 114 171 116 199 L104 329 Q150 345 196 329 L184 199 C186 171 184 143 179 111 Z" fill="var(--asset-color-primary, #50627a)"/>
+    <path d="M121 112 L138 154 L150 143 L162 154 L179 112" fill="var(--asset-color-secondary, #e9edf2)"/>
+    <path d="M150 143 L142 174 L150 183 L158 174 Z" fill="var(--asset-color-accent, #bd4f5b)"/>
+    <path d="M150 183 L150 327" fill="none" opacity="0.45"/>
+    <path d="M112 293 Q150 301 188 293" fill="none" opacity="0.45"/>
+    <circle cx="150" cy="203" r="2.5" fill="#fff"/>
+    <circle cx="150" cy="222" r="2.5" fill="#fff"/>
+  </g>
+</svg>

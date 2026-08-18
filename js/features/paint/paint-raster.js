@@ -117,9 +117,9 @@ function colorMatches(data, idx, target, tolerance) {
 }
 
 /**
- * Pure 4-way stack-based flood fill on an ImageData instance.
+ * Scanline flood fill. The stack stores spans instead of individual pixels.
  */
-export function floodFillImageData(imageData, startX, startY, fillRgba, tolerance = 16) {
+export function floodFillImageData(imageData, startX, startY, fillRgba, tolerance = 16, bounds = null) {
   const { width, height, data } = imageData;
   const sx = Math.floor(startX);
   const sy = Math.floor(startY);
@@ -143,48 +143,84 @@ export function floodFillImageData(imageData, startX, startY, fillRgba, toleranc
     return false;
   }
 
-  const visited = new Uint8Array(width * height);
-  const stack = [sx, sy];
-
-  while (stack.length > 0) {
-    const y = stack.pop();
-    const x = stack.pop();
-    const pos = y * width + x;
-
-    if (visited[pos]) continue;
-    visited[pos] = 1;
-
-    const idx = pos * 4;
-    if (colorMatches(data, idx, targetRgba, tolerance)) {
+  const stack = [];
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+  let filledLeft = 0;
+  let filledRight = 0;
+  const fillSpan = (seedX, y) => {
+    if (!colorMatches(data, (y * width + seedX) * 4, targetRgba, tolerance)) return false;
+    let left = seedX;
+    let right = seedX;
+    while (left > 0 && colorMatches(data, (y * width + left - 1) * 4, targetRgba, tolerance)) left -= 1;
+    while (right < width - 1 && colorMatches(data, (y * width + right + 1) * 4, targetRgba, tolerance)) right += 1;
+    for (let x = left; x <= right; x += 1) {
+      const idx = (y * width + x) * 4;
       data[idx] = fillRgba.r;
       data[idx + 1] = fillRgba.g;
       data[idx + 2] = fillRgba.b;
       data[idx + 3] = fillRgba.a;
+    }
+    minX = Math.min(minX, left);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, right);
+    maxY = Math.max(maxY, y);
+    filledLeft = left;
+    filledRight = right;
+    return true;
+  };
+  const queueNeighborSpans = (y, left, right) => {
+    if (y < 0 || y >= height) return;
+    let x = left;
+    while (x <= right) {
+      if (colorMatches(data, (y * width + x) * 4, targetRgba, tolerance)) {
+        const spanStart = x;
+        while (x <= right && colorMatches(data, (y * width + x) * 4, targetRgba, tolerance)) x += 1;
+        stack.push(spanStart, x - 1, y);
+      }
+      x += 1;
+    }
+  };
 
-      if (x > 0 && !visited[pos - 1]) stack.push(x - 1, y);
-      if (x < width - 1 && !visited[pos + 1]) stack.push(x + 1, y);
-      if (y > 0 && !visited[pos - width]) stack.push(x, y - 1);
-      if (y < height - 1 && !visited[pos + width]) stack.push(x, y + 1);
+  fillSpan(sx, sy);
+  queueNeighborSpans(sy - 1, filledLeft, filledRight);
+  queueNeighborSpans(sy + 1, filledLeft, filledRight);
+
+  while (stack.length > 0) {
+    const y = stack.pop();
+    const right = stack.pop();
+    const left = stack.pop();
+    if (fillSpan(Math.floor((left + right) / 2), y)) {
+      queueNeighborSpans(y - 1, filledLeft, filledRight);
+      queueNeighborSpans(y + 1, filledLeft, filledRight);
     }
   }
+  if (bounds && maxX >= 0) Object.assign(bounds, { x: minX, y: minY, right: maxX, bottom: maxY });
   return true;
 }
 
 /**
  * Executes a flood fill on a canvas context with optional mirror reflection.
  */
-export function executeFloodFill(ctx, startX, startY, colorHex, { tolerance = 16, mirror = false, axisX = 150 } = {}) {
+export function executeFloodFill(ctx, startX, startY, colorHex, {
+  tolerance = 16,
+  mirror = false,
+  axisX = 150,
+  bounds = null
+} = {}) {
   if (!ctx) return false;
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
   const imgData = ctx.getImageData(0, 0, width, height);
   const fillRgba = hexToRgba(colorHex, 255);
 
-  let changed = floodFillImageData(imgData, startX, startY, fillRgba, tolerance);
+  let changed = floodFillImageData(imgData, startX, startY, fillRgba, tolerance, bounds);
   if (mirror) {
     const mirroredX = 2 * axisX - startX;
     if (mirroredX >= 0 && mirroredX < width) {
-      const mirrorChanged = floodFillImageData(imgData, mirroredX, startY, fillRgba, tolerance);
+      const mirrorChanged = floodFillImageData(imgData, mirroredX, startY, fillRgba, tolerance, bounds);
       changed = changed || mirrorChanged;
     }
   }

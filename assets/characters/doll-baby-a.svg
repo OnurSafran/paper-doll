@@ -1,40 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="doll_baby_a">
   <g id="body" class="outline-shape" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <!-- Chubby Baby Neck -->
-    <rect class="skin-fill" x="142" y="94" width="16" height="18" rx="4" fill="var(--skin-color, #fcd7b6)"/>
+    <rect class="skin-fill" x="140" y="94" width="20" height="18" rx="5" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Chubby Baby Torso -->
-    <path class="skin-fill" d="M124 110 C114 135 114 165 118 200 C120 215 126 226 132 232 L168 232 C174 226 180 215 182 200 C186 165 186 135 176 110 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M121 110 C112 136 111 171 116 205 C118 221 125 234 133 240 L167 240 C175 234 182 221 184 205 C189 171 188 136 179 110 C166 116 134 116 121 110 Z" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Cute Soft Pastel Yellow Diaper Undergarment -->
-    <path d="M118 195 C135 202 165 202 182 195 L178 230 C165 236 135 236 122 230 Z" fill="#fff3cd" stroke="#2d261e" stroke-width="2"/>
+    <path d="M117 201 C135 208 165 208 183 201 L179 237 C165 243 135 243 121 237 Z" fill="#fff3cd" stroke="#2d261e" stroke-width="2"/>
+    <path d="M123 211 C137 216 163 216 177 211" fill="none" stroke="#e7c96a" stroke-width="1.5"/>
     
     <!-- Short Rounded Baby Legs -->
     <!-- Left Leg -->
-    <path class="skin-fill" d="M130 230 C128 265 126 300 128 340 L144 340 C146 300 148 265 146 230 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M129 237 C126 269 124 303 127 338 C128 343 133 346 144 345 C146 309 149 270 147 237 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Leg -->
-    <path class="skin-fill" d="M154 230 C152 265 154 300 156 340 L172 340 C174 300 172 265 170 230 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M153 237 C151 270 154 309 156 345 C167 346 172 343 173 338 C176 303 174 269 171 237 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Left Little Foot -->
-    <path class="skin-fill" d="M126 340 C123 350 118 358 114 362 C120 366 136 366 144 362 L144 340 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M127 338 C124 349 118 359 113 363 C120 368 137 368 145 363 L144 340 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Little Foot -->
-    <path class="skin-fill" d="M156 340 L156 362 C164 366 180 366 186 362 C182 358 177 350 174 340 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M156 340 L155 363 C163 368 180 368 187 363 C182 359 176 349 173 338 Z" fill="var(--skin-color, #fcd7b6)"/>
 
     <!-- Chubby Baby Arms -->
     <!-- Left Arm -->
-    <path class="skin-fill" d="M124 112 C110 132 100 158 98 185 C96 193 102 196 106 192 C110 165 118 140 128 122 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M122 112 C109 132 99 158 97 184 C95 193 101 198 106 193 C111 165 119 140 130 122 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Arm -->
-    <path class="skin-fill" d="M176 112 C190 132 200 158 202 185 C204 193 198 196 194 192 C190 165 182 140 172 122 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M178 112 C191 132 201 158 203 184 C205 193 199 198 194 193 C189 165 181 140 170 122 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Left Little Hand -->
-    <circle class="skin-fill" cx="99" cy="192" r="6.5" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="98" cy="193" r="7" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Little Hand -->
-    <circle class="skin-fill" cx="201" cy="192" r="6.5" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="202" cy="193" r="7" fill="var(--skin-color, #fcd7b6)"/>
+
+    <!-- Soft baby dimples and toe creases -->
+    <path d="M95 187 Q99 189 102 187" fill="none" stroke="#c98c70" stroke-width="1.4" opacity="0.45"/>
+    <path d="M198 187 Q202 189 205 187" fill="none" stroke="#c98c70" stroke-width="1.4" opacity="0.45"/>
+    <path d="M117 359 Q123 362 128 360 M172 360 Q178 362 184 359" fill="none" stroke="#c98c70" stroke-width="1.2" opacity="0.38"/>
 
     <!-- Round Baby Head -->
-    <ellipse class="skin-fill" cx="150" cy="64" rx="33" ry="38" fill="var(--skin-color, #fcd7b6)"/>
+    <ellipse class="skin-fill" cx="150" cy="64" rx="35" ry="40" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Cute Ears -->
-    <circle class="skin-fill" cx="117" cy="66" r="5" fill="var(--skin-color, #fcd7b6)"/>
-    <circle class="skin-fill" cx="183" cy="66" r="5" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="115" cy="66" r="5.5" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="185" cy="66" r="5.5" fill="var(--skin-color, #fcd7b6)"/>
 
     <!-- Face Details -->
     <g id="baked-face">

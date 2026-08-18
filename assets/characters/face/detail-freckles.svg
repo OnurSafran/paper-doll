@@ -3,8 +3,10 @@
     <!-- Sweet Freckles -->
     <circle cx="134" cy="69" r="1" fill="#c97a63" stroke="none"/>
     <circle cx="138" cy="68" r="0.9" fill="#c97a63" stroke="none"/>
+    <circle cx="130" cy="70" r="0.7" fill="#c97a63" stroke="none"/>
     <circle cx="162" cy="68" r="0.9" fill="#c97a63" stroke="none"/>
     <circle cx="166" cy="69" r="1" fill="#c97a63" stroke="none"/>
+    <circle cx="170" cy="70" r="0.7" fill="#c97a63" stroke="none"/>
     <circle cx="150" cy="68" r="0.8" fill="#c97a63" stroke="none"/>
   </g>
 </svg>

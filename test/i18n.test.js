@@ -21,6 +21,7 @@ import {
   LANGUAGE_STORAGE_KEY
 } from '../js/core/i18n.js';
 import { getPaletteColorName } from '../js/core/palette.js';
+import { ASSETS } from '../js/core/asset-catalog.js';
 
 test('i18n system defaults to Turkish (tr) with complete dictionary', () => {
   localStorage.clear();
@@ -86,6 +87,16 @@ test('all keys in Turkish dictionary exist in English dictionary', () => {
 
   assert.deepEqual(missingInEn, [], `Keys missing in English dictionary: ${missingInEn.join(', ')}`);
   assert.deepEqual(missingInTr, [], `Keys missing in Turkish dictionary: ${missingInTr.join(', ')}`);
+});
+
+test('every built-in catalog asset has a localized name in both languages', () => {
+  for (const language of ['tr', 'en']) {
+    setLanguage(language);
+    for (const asset of ASSETS) {
+      const label = t(`assets.${asset.id}`);
+      assert.ok(label && label !== `assets.${asset.id}`, `${language} is missing assets.${asset.id}`);
+    }
+  }
 });
 
 test('updateDomTranslations preserves inline HTML formatting in rich strings', () => {
@@ -181,4 +192,3 @@ test('validateArtworkName error messages adapt to active language', () => {
   assert.equal(enTooLong.valid, false);
   assert.equal(enTooLong.error, 'Name is too long (maximum 30 characters).');
 });
-

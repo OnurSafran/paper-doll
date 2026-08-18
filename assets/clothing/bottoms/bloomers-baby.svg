@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_bloomers_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M118 198 C136 205 164 205 182 198 L180 250 Q166 266 151 246 L150 226 Q149 246 134 266 Q119 250 120 230 Z" fill="var(--asset-color-primary, #fff3cd)"/>
+    <path d="M121 213 Q150 220 179 213" fill="none" stroke="#e7c96a" stroke-width="2"/>
+    <circle cx="135" cy="240" r="3" fill="#ffd166" stroke="none"/>
+    <circle cx="165" cy="240" r="3" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

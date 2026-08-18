@@ -1,9 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_bicycle">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <circle cx="245" cy="720" r="145" stroke="#457b9d"/>
-    <circle cx="755" cy="720" r="145" stroke="#457b9d"/>
-    <path d="M245 720 L410 420 L570 720 L245 720 L500 720 L410 420 L650 420 L755 720" stroke="#f06c5c"/>
+    <circle cx="245" cy="780" r="150" stroke="#457b9d"/>
+    <circle cx="755" cy="780" r="150" stroke="#457b9d"/>
+    <circle cx="245" cy="780" r="18" stroke="#f2aa35" stroke-width="10"/>
+    <circle cx="755" cy="780" r="18" stroke="#f2aa35" stroke-width="10"/>
+    <path d="M245 780 L410 420 L570 780 L245 780 L500 780 L410 420 L650 420 L755 780" stroke="#f06c5c"/>
     <path d="M410 420 L370 350 L300 350 M650 420 L700 350 L770 350" stroke="#2a9d8f"/>
-    <path d="M570 720 L650 420" stroke="#f2aa35"/>
+    <path d="M570 780 L650 420" stroke="#f2aa35"/>
+    <!-- Wheel spokes and drivetrain -->
+    <path d="M245 630 L245 930 M95 780 L395 780 M139 674 L351 886 M139 886 L351 674" stroke="#b7c9d6" stroke-width="8"/>
+    <path d="M755 630 L755 930 M605 780 L905 780 M649 674 L861 886 M649 886 L861 674" stroke="#b7c9d6" stroke-width="8"/>
+    <circle cx="500" cy="780" r="28" stroke="#f2aa35" stroke-width="10"/>
+    <path d="M500 780 L455 735 M500 780 L548 825" stroke="#2d261e" stroke-width="12"/>
+    <!-- Seat, handlebar, and bell -->
+    <path d="M390 420 L365 330 M350 330 Q390 310 430 330" stroke="#2d261e" stroke-width="14"/>
+    <path d="M650 420 L690 330 Q730 315 770 330" stroke="#2d261e" stroke-width="14"/>
+    <ellipse cx="390" cy="318" rx="50" ry="16" fill="#3c342d" stroke="none"/>
+    <circle cx="690" cy="322" r="13" fill="#ffd166" stroke="#2d261e" stroke-width="8"/>
   </g>
 </svg>

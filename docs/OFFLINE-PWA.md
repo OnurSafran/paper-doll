@@ -27,7 +27,7 @@ Run this on the installed Home Screen app, after one successful online load:
 2. Export the project JSON and keep it outside the app.
 3. Enable Airplane Mode, force-close the Home Screen app, reopen it, and confirm My Art, the equipped top, and the scene prop render.
 4. Refresh/reopen once more, then export the project again. The export must complete without network access.
-5. Restore connectivity before testing a service-worker update. After changing `CACHE_NAME`, load once online, reopen, and repeat the offline check.
+5. Restore connectivity before testing a service-worker update. Run `npm run validate:cache` before publishing, then load once online, reopen, and repeat the offline check.
 
 Record device model, iPadOS/Safari version, host URL, date, cache version, and pass/fail notes in `docs/QUALITY.md`. Do not mark this journey passed from a desktop browser run.
 
@@ -36,7 +36,7 @@ Record device model, iPadOS/Safari version, host URL, date, cache version, and p
 The Home Screen icon and URL remain unchanged. To publish an update:
 
 1. Upload the changed project files to the same host.
-2. Change `CACHE_NAME` in `sw.js`, for example from `paper-doll-studio-v1` to `paper-doll-studio-v2`.
+2. Run `npm run validate:cache`. It checks content-fingerprinted CSS imports and verifies that `CACHE_NAME` matches the current app-shell fingerprint.
 3. Open the app on the iPad while online. Safari checks the service worker, downloads the new cache, and removes the old cache.
 4. Close and reopen the app if the old screen remains visible during the first update.
 

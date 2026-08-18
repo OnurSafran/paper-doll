@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_sandals_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M124 337 C120 350 114 360 109 365 C117 370 138 370 146 365 L146 342 C138 338 131 338 124 337 Z" fill="var(--asset-color-primary, #8fcfbd)"/>
+    <path class="tint-primary" d="M154 342 L154 365 C162 370 183 370 191 365 C186 360 180 350 176 337 C169 338 162 338 154 342 Z" fill="var(--asset-color-primary, #8fcfbd)"/>
+    <path d="M120 349 L143 349 M157 349 L180 349" stroke="#ffd166" stroke-width="3"/>
+  </g>
+</svg>

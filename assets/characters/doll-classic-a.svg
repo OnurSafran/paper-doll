@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="doll_classic_a">
   <g id="body" class="outline-shape" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Neck -->
-    <rect class="skin-fill" x="141" y="90" width="18" height="24" rx="4" fill="var(--skin-color, #fcd7b6)"/>
+    <!-- Teen Neck -->
+    <rect class="skin-fill" x="142" y="90" width="16" height="24" rx="4" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Torso -->
-    <path class="skin-fill" d="M126 112 C120 135 120 160 122 195 C124 210 130 220 134 228 L166 228 C170 220 176 210 178 195 C180 160 180 135 174 112 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M126 112 C120 136 120 163 122 195 C124 211 130 222 135 230 L165 230 C170 222 176 211 178 195 C180 163 180 136 174 112 C163 118 137 118 126 112 Z" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Cute Pastel Undergarments -->
     <path d="M125 125 C135 140 165 140 175 125 L173 155 C165 158 135 158 127 155 Z" fill="#ffe5ec" stroke="#2d261e" stroke-width="2"/>
@@ -12,30 +12,33 @@
     
     <!-- Legs & Feet -->
     <!-- Left Leg -->
-    <path class="skin-fill" d="M132 225 C130 270 128 320 130 375 L144 375 C145 320 148 270 147 225 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M133 228 C130 273 128 326 130 381 L144 381 C145 327 148 273 147 228 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Leg -->
-    <path class="skin-fill" d="M153 225 C152 270 155 320 156 375 L170 375 C172 320 170 270 168 225 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M153 228 C152 273 155 327 156 381 L170 381 C172 326 170 273 168 228 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Left Foot -->
-    <path class="skin-fill" d="M128 375 C125 385 120 395 116 398 C122 402 138 402 144 398 L144 375 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M128 381 C125 391 120 401 115 405 C122 410 138 410 144 405 L144 381 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Foot -->
-    <path class="skin-fill" d="M156 375 L156 398 C162 402 178 402 184 398 C180 395 175 385 172 375 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M156 381 L156 405 C162 410 179 410 185 405 C181 401 176 391 172 381 Z" fill="var(--skin-color, #fcd7b6)"/>
 
     <!-- Arms -->
     <!-- Left Arm -->
-    <path class="skin-fill" d="M126 114 C112 140 102 170 98 205 C96 215 102 218 106 214 C110 180 118 150 130 125 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M126 114 C113 140 103 171 98 205 C96 215 102 219 106 214 C111 180 119 150 130 125 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Arm -->
-    <path class="skin-fill" d="M174 114 C188 140 198 170 202 205 C204 215 198 218 194 214 C190 180 182 150 170 125 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <path class="skin-fill" d="M174 114 C187 140 197 171 202 205 C204 215 198 219 194 214 C189 180 181 150 170 125 Z" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Left Hand -->
-    <circle class="skin-fill" cx="99" cy="214" r="7" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="99" cy="215" r="7" fill="var(--skin-color, #fcd7b6)"/>
     <!-- Right Hand -->
-    <circle class="skin-fill" cx="201" cy="214" r="7" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="201" cy="215" r="7" fill="var(--skin-color, #fcd7b6)"/>
+
+    <!-- Light knee contour for the unstyled reference body -->
+    <path d="M132 326 Q138 329 143 326 M157 326 Q162 329 168 326" fill="none" stroke="#c98c70" stroke-width="1.3" opacity="0.3"/>
 
     <!-- Head -->
-    <ellipse class="skin-fill" cx="150" cy="62" rx="30" ry="36" fill="var(--skin-color, #fcd7b6)"/>
+    <ellipse class="skin-fill" cx="150" cy="62" rx="29" ry="35" fill="var(--skin-color, #fcd7b6)"/>
     
     <!-- Cute Ears -->
-    <circle class="skin-fill" cx="119" cy="64" r="5" fill="var(--skin-color, #fcd7b6)"/>
-    <circle class="skin-fill" cx="181" cy="64" r="5" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="120" cy="64" r="4.8" fill="var(--skin-color, #fcd7b6)"/>
+    <circle class="skin-fill" cx="180" cy="64" r="4.8" fill="var(--skin-color, #fcd7b6)"/>
 
     <!-- Face Details -->
     <g id="baked-face">

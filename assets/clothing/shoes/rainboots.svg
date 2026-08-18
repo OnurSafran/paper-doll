@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_rainboots">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path class="tint-primary" d="M128 369 L147 369 L147 395 Q143 405 125 405 L112 401 Q118 388 128 369 Z"/>
-    <path class="tint-primary" d="M153 369 L172 369 Q182 388 188 401 L175 405 Q157 405 153 395 Z"/>
+    <path class="tint-primary" d="M128 369 L147 369 L147 401 Q143 411 125 411 L111 406 Q118 388 128 369 Z"/>
+    <path class="tint-primary" d="M153 369 L172 369 Q182 388 189 406 L175 411 Q157 411 153 401 Z"/>
     <path fill="#fff4d6" d="M125 377 L148 377 M152 377 L175 377"/>
   </g>
 </svg>

@@ -38,9 +38,9 @@ test('catalog contains all 19 modular face features across 5 face groups', () =>
   assert.ok(getAsset('mouth_smirk'));
 });
 
-test('catalog contains all 58 wearables with valid fitFamily declarations', () => {
+test('catalog contains all 87 wearables with valid fitFamily declarations', () => {
   const wearables = ASSETS.filter((a) => a.kind === 'wearable');
-  assert.equal(wearables.length, 58);
+  assert.equal(wearables.length, 87);
 
   for (const item of wearables) {
     assert.ok(Array.isArray(item.supportedFitFamilies), `${item.id} has supportedFitFamilies array`);
@@ -56,6 +56,24 @@ test('catalog contains all 58 wearables with valid fitFamily declarations', () =
   assert.ok(getAsset('hair_short_slick'));
   assert.ok(getAsset('bottom_trousers_classic'));
   assert.ok(getAsset('shoes_oxfords_classic'));
+});
+
+test('every life stage has at least two starter options in every wearable slot', () => {
+  const expectedMinimums = Object.fromEntries(FIT_FAMILIES.map((fitFamily) => [fitFamily, {
+    top: 2,
+    bottom: 2,
+    dress: 2,
+    shoes: 2,
+    hair: 2,
+    accessory: 2
+  }]));
+
+  for (const [fitFamily, slots] of Object.entries(expectedMinimums)) {
+    for (const [slot, minimum] of Object.entries(slots)) {
+      const count = wearablesBySlot(slot).filter((item) => item.supportedFitFamilies.includes(fitFamily)).length;
+      assert.ok(count >= minimum, `${fitFamily} should have at least ${minimum} ${slot} options (found ${count})`);
+    }
+  }
 });
 
 test('designer/shuffle produces strictly compatible outfits across all 5 life-stage dolls', () => {

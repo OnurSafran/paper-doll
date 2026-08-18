@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { createDefaultEnvelope } from '../js/core/state-schema.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { createDesignerView } from '../js/features/designer/designer-view.js';
-import { createPlayView } from '../js/features/play/play-view.js';
+import { createPlayView, getContextRingFocusAction } from '../js/features/play/play-view.js';
+import { createSceneOutlineView } from '../js/features/play/scene-outline-view.js';
+import { t } from '../js/core/i18n.js';
+import { assetsByKind, getAsset } from '../js/core/asset-catalog.js';
 
 function createMockElement(tagName = 'div') {
   const el = {
@@ -104,6 +107,23 @@ test('Designer view + Paint item button invokes openPaintStudio without Referenc
   });
 });
 
+test('Designer view does not rebuild Dollbox rows for unrelated renders', async () => {
+  setupMockDom();
+  const store = createAppStore(createDefaultEnvelope());
+  const elements = {};
+  const $ = (sel) => {
+    if (!elements[sel]) elements[sel] = createMockElement(sel);
+    return elements[sel];
+  };
+  const view = createDesignerView({ store, $, $$: () => [], askConfirm: async () => true, miniButton: () => createMockElement(), customArtRepo: {} });
+  store.dispatch({ type: 'preset/save', name: 'One' });
+  await view.render();
+  const firstRow = elements['#dollbox-list'].children[0];
+  store.dispatch({ type: 'designer/setSkin', color: 'honey' });
+  await view.render();
+  assert.equal(elements['#dollbox-list'].children[0], firstRow);
+});
+
 test('Play view + Paint Prop button invokes openPaintStudio without ReferenceError', async () => {
   setupMockDom();
   const store = createAppStore(createDefaultEnvelope());
@@ -144,6 +164,57 @@ test('Play view + Paint Prop button invokes openPaintStudio without ReferenceErr
     itemType: 'prop',
     originContext: 'play'
   });
+});
+
+test('Play spawn tray lists custom props through the injected asset resolver', async () => {
+  setupMockDom();
+  const store = createAppStore(createDefaultEnvelope());
+  const elements = {};
+  const $ = (sel) => {
+    if (!elements[sel]) elements[sel] = createMockElement(sel);
+    return elements[sel];
+  };
+  const $$ = (sel) => [$(sel)];
+
+  const customProp = {
+    id: 'custom_painted_chair',
+    name: 'My Painted Chair',
+    kind: 'prop',
+    custom: true,
+    format: 'image/png',
+    status: 'available',
+    libraryVisible: true,
+    viewBox: [0, 0, 300, 300],
+    logicalWidth: 300,
+    logicalHeight: 300
+  };
+
+  const playView = createPlayView({
+    store,
+    $,
+    $$,
+    renderDollInto: async () => {},
+    askConfirm: async () => true,
+    openSceneOutlineDialog: () => {},
+    customArtRepo: {},
+    openPaintStudio: () => {},
+    getAsset: (id) => (id === customProp.id ? customProp : getAsset(id)),
+    getAssetsByKind: (kind) => (kind === 'prop' ? [...assetsByKind(kind), customProp] : assetsByKind(kind))
+  });
+
+  await playView.render();
+  const tabs = elements['#spawn-tabs']?.children || [];
+  const propsTab = tabs.find((tab) => tab.id === 'spawn-tab-props');
+  propsTab?._listeners?.click?.[0]?.({});
+  await playView.render();
+
+  const spawnItems = elements['#spawn-items']?.children || [];
+  const customCard = spawnItems.find((card) => card.className?.includes('is-custom-spawn-item'));
+  assert.ok(customCard, 'custom prop reaches the spawn tray');
+  assert.ok(
+    JSON.stringify(customCard).includes('My Painted Chair'),
+    'custom prop card is labelled with the artwork name'
+  );
 });
 
 test('Spawning a prop when a doll is selected does NOT silently attach the prop to the doll', () => {
@@ -191,4 +262,112 @@ test('Spawning a prop with explicit targetEntityId correctly attaches to target'
   assert.ok(prop, 'Prop spawned');
   assert.equal(prop.attachedTo, dollId, 'Prop attached to specified target');
   assert.deepEqual(prop.attachOffset, { dx: 20, dy: -20 });
+});
+
+test('Scene Outline labels each bubble style and resolves custom prop names', () => {
+  setupMockDom();
+  const store = createAppStore(createDefaultEnvelope());
+  const elements = {};
+  const $ = (sel) => {
+    if (!elements[sel]) elements[sel] = createMockElement(sel);
+    return elements[sel];
+  };
+  const getAsset = (id) => id === 'custom_prop_1' ? { id, name: 'Painted Lamp' } : undefined;
+  const view = createSceneOutlineView({
+    store,
+    $,
+    $$: () => [],
+    askConfirm: async () => true,
+    miniButton: () => createMockElement('button'),
+    getAsset
+  });
+
+  view.renderSceneOutline({
+    currentScene: {
+      entities: [
+        { instanceId: 'speech', kind: 'bubble', bubbleStyle: 'speech', text: 'Hi', order: 1 },
+        { instanceId: 'thought', kind: 'bubble', bubbleStyle: 'thought', text: 'Hmm', order: 2 },
+        { instanceId: 'shout', kind: 'bubble', bubbleStyle: 'shout', text: 'Hey', order: 3 },
+        { instanceId: 'caption', kind: 'bubble', bubbleStyle: 'caption', text: 'Scene', order: 4 },
+        { instanceId: 'custom-prop', kind: 'prop', sourceId: 'custom_prop_1', order: 5 }
+      ]
+    },
+    presets: [],
+    ui: {}
+  });
+
+  const rows = elements['#scene-outline-list'].children;
+  assert.equal(rows.length, 5);
+  const titles = rows.map((row) => row.children[2].children[0].textContent);
+  assert.ok(titles.includes(`${t('play.bubbleSpeech')}: "Hi"`));
+  assert.ok(titles.includes(`${t('play.bubbleThought')}: "Hmm"`));
+  assert.ok(titles.includes(`${t('play.bubbleShout')}: "Hey"`));
+  assert.ok(titles.includes(`${t('play.bubbleCaption')}: "Scene"`));
+  assert.ok(titles.includes('Painted Lamp'));
+});
+
+test('Play restores context-ring action focus after a ring rebuild', () => {
+  const activeElement = {
+    dataset: { action: 'larger' },
+    closest: (selector) => selector === '.context-ring' ? {} : null
+  };
+  assert.equal(getContextRingFocusAction(activeElement), 'larger');
+  assert.equal(getContextRingFocusAction({ dataset: { action: 'larger' }, closest: () => null }), null);
+});
+
+test('Play stage shortcuts ignore browser modifiers and report pinned keyboard moves', () => {
+  const store = createAppStore({
+    ...createDefaultEnvelope(),
+    currentScene: {
+      sceneId: 'keyboard-scene',
+      title: 'Keyboard',
+      backgroundId: 'bg_bedroom',
+      stageWidth: 1600,
+      cameraX: 0,
+      entities: [{
+        instanceId: 'pinned-prop',
+        kind: 'prop',
+        sourceId: 'prop_chair',
+        x: 800,
+        y: 770,
+        scale: 1,
+        pinned: true,
+        order: 1
+      }]
+    }
+  });
+  const view = createPlayView({
+    store,
+    $: () => createMockElement(),
+    $$: () => [],
+    renderDollInto: async () => {},
+    askConfirm: async () => true,
+    openSceneOutlineDialog: () => {},
+    customArtRepo: {}
+  });
+  store.dispatch({ type: 'ui/selectEntity', instanceId: 'pinned-prop' });
+
+  const event = {
+    key: 'd',
+    ctrlKey: true,
+    metaKey: false,
+    altKey: false,
+    shiftKey: false,
+    target: { matches: () => false },
+    preventDefault: () => { throw new Error('Ctrl+D should remain a browser shortcut'); }
+  };
+  assert.doesNotThrow(() => view.handleStageKeydown(event));
+  assert.equal(store.getState().currentScene.entities.length, 1);
+
+  view.handleStageKeydown({
+    key: 'ArrowRight',
+    ctrlKey: false,
+    metaKey: false,
+    altKey: false,
+    shiftKey: false,
+    target: { matches: () => false },
+    preventDefault: () => {}
+  });
+  assert.equal(store.getState().currentScene.entities[0].x, 800);
+  assert.equal(store.getState().ui.message, t('play.pinnedMoveBlocked'));
 });

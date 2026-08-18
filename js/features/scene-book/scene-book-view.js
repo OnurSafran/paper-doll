@@ -193,6 +193,7 @@ export function createSceneBookView({
   $,
   $$,
   askConfirm,
+  askPrompt = (_title, message, initialValue) => window.prompt(message, initialValue),
   miniButton,
   customArtRepo,
   getAsset = getBuiltinAsset
@@ -258,8 +259,8 @@ export function createSceneBookView({
         }
       });
 
-      const renameBtn = miniButton('Aa', t('sceneBook.renameTitle', { title: scene.title }), () => {
-        const nextTitle = window.prompt(t('sceneBook.renamePrompt'), scene.title);
+      const renameBtn = miniButton('Aa', t('sceneBook.renameTitle', { title: scene.title }), async () => {
+        const nextTitle = await askPrompt(t('sceneBook.renameTitle', { title: scene.title }), t('sceneBook.renamePrompt'), scene.title);
         if (nextTitle != null && nextTitle.trim()) {
           store.dispatch({ type: 'scene/renameLibraryScene', sceneId: scene.sceneId, name: nextTitle });
           void renderSceneLibrary();

@@ -2,5 +2,6 @@
   <g id="face-feature">
     <!-- Open Smile -->
     <path d="M144 71 C144 78 156 78 156 71 Z" fill="#e76f51" stroke="#2d261e" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M145 72 C148 74 152 74 155 72 C154 74 146 74 145 72 Z" fill="#fffdf7" stroke="none"/>
   </g>
 </svg>

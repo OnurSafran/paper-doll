@@ -475,8 +475,13 @@ function reduce(state, action, context) {
       if (!res.changed) return null;
       const asset = context.getAsset(action.assetId);
       const featureName = assetName(asset, t('designer.unknownAsset'));
+      const feedback = res.mode === 'cleared'
+        ? t('designer.faceDetailCleared')
+        : res.mode === 'defaulted'
+          ? t('designer.defaultFaceRestored')
+          : t('designer.faceFeatureUpdated', { name: featureName });
       return {
-        state: message(t('designer.faceFeatureUpdated', { name: featureName }), {
+        state: message(feedback, {
           ...state,
           designer: {
             ...state.designer,
@@ -536,7 +541,8 @@ function reduce(state, action, context) {
       const res = setBaseDoll(state.designer.draft, action.baseDollId, context.getAsset);
       if (!res.changed) return null;
       const dollAsset = context.getAsset(action.baseDollId);
-      const dollName = t(`models.${action.baseDollId}`) || dollAsset?.name || t('designer.unknownAsset');
+      const lifeStage = dollAsset?.lifeStages?.[0];
+      const dollName = (lifeStage && t(`lifeStages.${lifeStage}`)) || t(`models.${action.baseDollId}`) || dollAsset?.name || t('designer.unknownAsset');
       const msg = res.incompatibleSlots.length > 0
         ? t('designer.baseDollChangedFit', { name: dollName })
         : t('designer.baseDollChanged', { name: dollName });
@@ -662,7 +668,7 @@ function reduce(state, action, context) {
       }
       nextScene.cameraX = clampCameraX(nextScene.cameraX, action.stageWidth);
       return {
-        state: message(`Stage width set to ${action.stageWidth}px.`, {
+        state: message(t('play.statusStageWidth', { width: action.stageWidth }), {
           ...state,
           currentScene: touchScene(nextScene, context.now)
         }),
@@ -700,11 +706,11 @@ function reduce(state, action, context) {
     }
 
     case 'scene/spawnCharacter': { 
-      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message('Scene is full.'), result: { ok: false, code: 'LIMIT' } };
+      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message(t('play.statusSceneFull')), result: { ok: false, code: 'LIMIT' } };
       const preset = state.presets.find((item) => item.presetId === action.presetId);
       if (!preset) return null;
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
-      if (!instanceId) return { state: message('The scene item could not be assigned a safe ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!instanceId) return { state: message(t('play.statusSafeId')), result: { ok: false, code: 'ID_FAILED' } };
       const scene = addEntity(state.currentScene, {
         instanceId,
         kind: 'character',
@@ -713,15 +719,15 @@ function reduce(state, action, context) {
         x: action.x,
         y: action.y
       }, context.getAsset);
-      return { state: message(`${preset.name} added to the scene.`, { ...state, currentScene: scene }), persist: true };
+      return { state: message(t('play.statusCharacterAdded', { name: preset.name }), { ...state, currentScene: scene }), persist: true };
     }
 
     case 'scene/spawnProp': {
       const asset = context.getAsset(action.assetId);
       if (!asset || asset.kind !== 'prop') return null;
-      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message('Scene is full.'), result: { ok: false, code: 'LIMIT' } };
+      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message(t('play.statusSceneFull')), result: { ok: false, code: 'LIMIT' } };
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
-      if (!instanceId) return { state: message('The scene item could not be assigned a safe ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!instanceId) return { state: message(t('play.statusSafeId')), result: { ok: false, code: 'ID_FAILED' } };
 
       const targetId = action.targetEntityId ?? null;
       const target = targetId ? state.currentScene.entities.find((e) => e.instanceId === targetId) : null;
@@ -733,13 +739,13 @@ function reduce(state, action, context) {
       const scene = addEntity(state.currentScene, {
         instanceId, kind: 'prop', sourceId: asset.id, x: spawnX, y: spawnY, attachedTo, attachOffset
       }, context.getAsset);
-      return { state: message(`${asset.name} added to the scene.`, { ...state, currentScene: scene }), persist: true };
+      return { state: message(t('play.statusPropAdded', { name: asset.name }), { ...state, currentScene: scene }), persist: true };
     }
 
     case 'scene/spawnBubble': {
-      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message('Scene is full.'), result: { ok: false, code: 'LIMIT' } };
+      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message(t('play.statusSceneFull')), result: { ok: false, code: 'LIMIT' } };
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
-      if (!instanceId) return { state: message('The speech bubble could not be assigned a safe ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!instanceId) return { state: message(t('play.statusBubbleId')), result: { ok: false, code: 'ID_FAILED' } };
 
       const text = typeof action.text === 'string' ? (normalizeDisplayName(action.text, LIMITS.MAX_BUBBLE_TEXT_LENGTH) || DEFAULT_BUBBLE_TEXT) : DEFAULT_BUBBLE_TEXT;
       const bubbleStyle = isBubbleStyle(action.bubbleStyle) ? action.bubbleStyle : DEFAULT_BUBBLE_STYLE;
@@ -780,7 +786,7 @@ function reduce(state, action, context) {
       }, context.getAsset);
 
       return {
-        state: message('Speech bubble added to the scene.', {
+        state: message(t('play.statusBubbleAdded'), {
           ...state,
           currentScene: scene,
           ui: { ...state.ui, selectedEntityId: instanceId }
@@ -834,7 +840,7 @@ function reduce(state, action, context) {
       if (scene === state.currentScene) return null;
       const remainingSelected = (state.ui.selectedEntityIds || []).filter((id) => id !== action.instanceId);
       return {
-        state: message('Item removed from the scene.', {
+        state: message(t('play.statusItemRemoved'), {
           ...state,
           currentScene: scene,
           ui: {
@@ -856,7 +862,7 @@ function reduce(state, action, context) {
       const idSet = new Set(targetIds);
       const remainingSelected = (state.ui.selectedEntityIds || []).filter((id) => !idSet.has(id));
       return {
-        state: message(`${targetIds.length} item${targetIds.length === 1 ? '' : 's'} removed from scene.`, {
+        state: message(t('play.statusItemsRemoved', { count: targetIds.length }), {
           ...state,
           currentScene: scene,
           ui: {
@@ -875,7 +881,7 @@ function reduce(state, action, context) {
         : (state.ui.selectedEntityIds.length >= 2 ? state.ui.selectedEntityIds : state.currentScene.entities.map((e) => e.instanceId));
       const scene = alignEntities(state.currentScene, targetIds, action.alignment, context.getAsset);
       return scene === state.currentScene ? null : {
-        state: message(`Aligned items (${action.alignment}).`, { ...state, currentScene: scene }),
+        state: message(t('play.statusItemsAligned', { alignment: t(`play.alignmentModes.${action.alignment}`) }), { ...state, currentScene: scene }),
         persist: true
       };
     }
@@ -906,7 +912,7 @@ function reduce(state, action, context) {
       const nextPinned = !target.pinned;
       const scene = setEntityPinned(state.currentScene, instanceId, nextPinned);
       return {
-        state: message(nextPinned ? 'Item pinned to scene.' : 'Item unpinned.', {
+        state: message(t(nextPinned ? 'play.statusItemPinned' : 'play.statusItemUnpinned'), {
           ...state,
           currentScene: scene
         }),
@@ -920,7 +926,7 @@ function reduce(state, action, context) {
       if (!targetIds.length) return null;
       const scene = togglePinEntities(state.currentScene, targetIds, action.pinned);
       return scene === state.currentScene ? null : {
-        state: message('Scene item pinning updated.', { ...state, currentScene: scene }),
+        state: message(t('play.statusPinningUpdated'), { ...state, currentScene: scene }),
         persist: true
       };
     }
@@ -931,7 +937,7 @@ function reduce(state, action, context) {
       const scene = attachEntity(state.currentScene, childId, parentId);
       if (scene === state.currentScene) return null;
       return {
-        state: message('Item attached.', { ...state, currentScene: scene }),
+        state: message(t('play.statusItemAttached'), { ...state, currentScene: scene }),
         persist: true
       };
     }
@@ -941,20 +947,20 @@ function reduce(state, action, context) {
       const scene = detachEntity(state.currentScene, childId);
       if (scene === state.currentScene) return null;
       return {
-        state: message('Item detached.', { ...state, currentScene: scene }),
+        state: message(t('play.statusItemDetached'), { ...state, currentScene: scene }),
         persist: true
       };
     }
     case 'scene/duplicateEntity': {
       if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES || !state.currentScene.entities.some((entity) => entity.instanceId === action.instanceId)) {
-        return { state: message('That item could not be duplicated.'), result: { ok: false, code: 'LIMIT_OR_NOT_FOUND' } };
+        return { state: message(t('play.statusDuplicateFailed')), result: { ok: false, code: 'LIMIT_OR_NOT_FOUND' } };
       }
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
-      if (!instanceId) return { state: message('The duplicate could not be assigned a safe ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!instanceId) return { state: message(t('play.statusDuplicateId')), result: { ok: false, code: 'ID_FAILED' } };
       const scene = duplicateEntity(state.currentScene, action.instanceId, instanceId, context.getAsset);
       const duplicate = scene.entities.at(-1);
       return {
-        state: message('Scene item duplicated.', {
+        state: message(t('play.statusItemDuplicated'), {
           ...state,
           currentScene: scene,
           ui: { ...state.ui, selectedEntityId: duplicate.instanceId, selectedEntityIds: [duplicate.instanceId] }
@@ -965,10 +971,10 @@ function reduce(state, action, context) {
     }
     case 'scene/duplicateCurrentToLibrary': {
       if (state.scenes.length >= LIMITS.MAX_SCENES) {
-        return { state: message('Scene library is full.'), result: { ok: false, code: 'LIMIT' } };
+        return { state: message(t('play.statusSceneLibraryFullShort')), result: { ok: false, code: 'LIMIT' } };
       }
       const sceneId = nextUniqueId(context.makeId, state.scenes.map((s) => s.sceneId));
-      if (!sceneId) return { state: message('Could not assign a safe scene ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!sceneId) return { state: message(t('play.statusSceneId')), result: { ok: false, code: 'ID_FAILED' } };
       const stamp = context.now().toISOString();
       const baseTitle = state.currentScene.title !== 'Current Scene' ? state.currentScene.title : 'My Scene';
       const title = truncateGraphemes(action.name || `${baseTitle} (Copy)`, LIMITS.MAX_SCENE_TITLE_LENGTH);
@@ -977,7 +983,7 @@ function reduce(state, action, context) {
         const instanceId = nextUniqueId(context.makeId, [...entityIdMap.values()]);
         if (!instanceId) {
           return {
-            state: message('Could not assign safe item IDs to scene copy. Try again.'),
+            state: message(t('play.statusSceneCopyId')),
             result: { ok: false, code: 'ID_FAILED' }
           };
         }
@@ -999,7 +1005,7 @@ function reduce(state, action, context) {
         entities: clonedEntities
       };
       return {
-        state: message(`"${title}" saved as copy in Scene Book.`, {
+        state: message(t('play.statusSceneSavedCopy', { title }), {
           ...state,
           scenes: [...state.scenes, clonedScene],
           ui: { ...state.ui, activeSceneLibraryId: sceneId }
@@ -1010,9 +1016,9 @@ function reduce(state, action, context) {
     }
     case 'scene/loadTemplate': {
       const templateScene = instantiateSceneTemplate(action.templateId, context.makeId, state.designer.draft || createStarterDraft(), context.now);
-      if (!templateScene) return { state: message('The template could not be assigned safe IDs. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!templateScene) return { state: message(t('play.statusSceneId')), result: { ok: false, code: 'ID_FAILED' } };
       return {
-        state: message(`Loaded template "${templateScene.title}".`, {
+        state: message(t('play.statusTemplateLoaded', { title: templateScene.title }), {
           ...state,
           currentScene: templateScene,
           ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null }
@@ -1023,9 +1029,9 @@ function reduce(state, action, context) {
     }
     case 'scene/new': {
       const sceneId = nextUniqueId(context.makeId, []);
-      if (!sceneId) return { state: message('The new scene could not be assigned a safe ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!sceneId) return { state: message(t('play.statusSceneId')), result: { ok: false, code: 'ID_FAILED' } };
       return {
-        state: message('A new scene is ready.', { ...state, currentScene: createEmptyScene(sceneId, context.now), ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null } }),
+        state: message(t('play.statusNewScene'), { ...state, currentScene: createEmptyScene(sceneId, context.now), ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null } }),
         persist: true
       };
     }
@@ -1053,10 +1059,10 @@ function reduce(state, action, context) {
     }
     case 'scene/saveToLibrary': {
       const title = normalizeDisplayName(action.name, LIMITS.MAX_SCENE_TITLE_LENGTH) ?? (state.currentScene.title !== 'Current Scene' ? state.currentScene.title : 'My Scene');
-      if (!title) return { state: message('Please enter a scene title.'), result: { ok: false, code: 'INVALID_NAME' } };
-      if (state.scenes.length >= LIMITS.MAX_SCENES) return { state: message(`Scene library is full (max ${LIMITS.MAX_SCENES} scenes). Delete a scene first.`), result: { ok: false, code: 'LIMIT' } };
+      if (!title) return { state: message(t('play.statusSceneTitleRequired')), result: { ok: false, code: 'INVALID_NAME' } };
+      if (state.scenes.length >= LIMITS.MAX_SCENES) return { state: message(t('play.statusSceneLibraryFull')), result: { ok: false, code: 'LIMIT' } };
       const sceneId = nextUniqueId(context.makeId, state.scenes.map((s) => s.sceneId));
-      if (!sceneId) return { state: message('Could not assign a scene ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!sceneId) return { state: message(t('play.statusSceneId')), result: { ok: false, code: 'ID_FAILED' } };
       const stamp = context.now().toISOString();
       const clonedCurrent = cloneScene(state.currentScene);
       const savedScene = {
@@ -1067,7 +1073,7 @@ function reduce(state, action, context) {
         updatedAt: stamp
       };
       return {
-        state: message(`"${title}" saved to Scene Library.`, {
+        state: message(t('play.statusSceneSaved', { title }), {
           ...state,
           scenes: [...state.scenes, savedScene],
           currentScene: { ...state.currentScene, title, sceneId },
@@ -1080,7 +1086,7 @@ function reduce(state, action, context) {
     case 'scene/updateLibraryScene': {
       const id = action.sceneId ?? state.ui.activeSceneLibraryId ?? state.currentScene.sceneId;
       const index = state.scenes.findIndex((s) => s.sceneId === id);
-      if (index < 0) return { state: message('That saved scene no longer exists in your library.'), result: { ok: false, code: 'NOT_FOUND' } };
+      if (index < 0) return { state: message(t('play.statusSavedSceneMissing')), result: { ok: false, code: 'NOT_FOUND' } };
       const title = normalizeDisplayName(action.name, LIMITS.MAX_SCENE_TITLE_LENGTH) ?? state.scenes[index].title;
       const stamp = context.now().toISOString();
       const clonedCurrent = cloneScene(state.currentScene);
@@ -1094,7 +1100,7 @@ function reduce(state, action, context) {
       const scenes = [...state.scenes];
       scenes[index] = updated;
       return {
-        state: message(`"${title}" updated.`, {
+          state: message(t('play.statusSceneUpdated', { title }), {
           ...state,
           scenes,
           currentScene: { ...state.currentScene, title }
@@ -1105,10 +1111,10 @@ function reduce(state, action, context) {
     }
     case 'scene/loadFromLibrary': {
       const found = state.scenes.find((s) => s.sceneId === action.sceneId);
-      if (!found) return { state: message('That saved scene was not found.'), result: { ok: false, code: 'NOT_FOUND' } };
+      if (!found) return { state: message(t('play.statusSavedSceneMissing')), result: { ok: false, code: 'NOT_FOUND' } };
       const loadedScene = cloneScene(found);
       return {
-        state: message(`"${found.title}" loaded to stage.`, {
+        state: message(t('play.statusSceneLoaded', { title: found.title }), {
           ...state,
           currentScene: loadedScene,
           ui: { ...state.ui, activeSceneLibraryId: found.sceneId, selectedEntityId: null, selectedEntityIds: [] }
@@ -1128,18 +1134,18 @@ function reduce(state, action, context) {
         ? { ...state.currentScene, title }
         : state.currentScene;
       return {
-        state: message('Scene renamed.', { ...state, scenes, currentScene: activeCurrent }),
+        state: message(t('play.statusSceneRenamed'), { ...state, scenes, currentScene: activeCurrent }),
         persist: true
       };
     }
     case 'scene/duplicateLibraryScene': {
-      if (state.scenes.length >= LIMITS.MAX_SCENES) return { state: message('Scene library is full.'), result: { ok: false, code: 'LIMIT' } };
+      if (state.scenes.length >= LIMITS.MAX_SCENES) return { state: message(t('play.statusSceneLibraryFull')), result: { ok: false, code: 'LIMIT' } };
       const original = state.scenes.find((s) => s.sceneId === action.sceneId);
       if (!original) return null;
       const sceneId = nextUniqueId(context.makeId, state.scenes.map((s) => s.sceneId));
       if (!sceneId) {
         return {
-          state: message('The scene copy could not be assigned a safe ID. Try again.'),
+          state: message(t('play.statusSceneId')),
           result: { ok: false, code: 'ID_FAILED' }
         };
       }
@@ -1149,7 +1155,7 @@ function reduce(state, action, context) {
         const instanceId = nextUniqueId(context.makeId, [...entityIdMap.values()]);
         if (!instanceId) {
           return {
-            state: message('The scene copy could not be assigned safe item IDs. Try again.'),
+            state: message(t('play.statusSafeId')),
             result: { ok: false, code: 'ID_FAILED' }
           };
         }
@@ -1171,7 +1177,7 @@ function reduce(state, action, context) {
         entities: clonedEntities
       };
       return {
-        state: message(`"${cloned.title}" duplicated.`, { ...state, scenes: [...state.scenes, cloned] }),
+        state: message(t('play.statusSceneDuplicated', { title: cloned.title }), { ...state, scenes: [...state.scenes, cloned] }),
         persist: true,
         result: { ok: true, sceneId }
       };
@@ -1180,7 +1186,7 @@ function reduce(state, action, context) {
       const scenes = state.scenes.filter((s) => s.sceneId !== action.sceneId);
       if (scenes.length === state.scenes.length) return null;
       return {
-        state: message('Scene removed from library. Active stage is unchanged.', {
+        state: message(t('play.statusSceneRemoved'), {
           ...state,
           scenes,
           ui: {

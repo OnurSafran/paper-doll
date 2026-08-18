@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_leggings_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M124 220 C138 225 162 225 176 220 L174 345 L157 345 L150 250 L143 345 L126 345 Z" fill="var(--asset-color-primary, #d8e2dc)"/>
+    <path d="M130 235 Q150 241 170 235 M132 315 L143 315 M157 315 L168 315" fill="none" stroke="#fffdf7" stroke-width="2" opacity="0.8"/>
+  </g>
+</svg>

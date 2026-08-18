@@ -151,6 +151,60 @@
   overflow: visible;
 }
 
+.asset-placeholder {
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  transform: translateX(-50%);
+  max-width: 90%;
+  padding: 0.2rem 0.55rem;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: rgba(255, 253, 249, 0.94);
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Incompatible layers keep a labeled placeholder for non-summary consumers;
+   the visible warning is consolidated into one expandable stage badge. */
+.fit-warning-placeholder {
+  display: none;
+}
+
+.fit-warning-summary {
+  position: absolute;
+  z-index: 90;
+  top: 4%;
+  left: 50%;
+  width: min(92%, 320px);
+  transform: translateX(-50%);
+  color: var(--coral-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  pointer-events: auto;
+}
+
+.fit-warning-summary summary {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--coral-dark);
+  border-radius: 10px;
+  background: rgba(255, 253, 249, 0.96);
+  cursor: pointer;
+  text-align: center;
+}
+
+.fit-warning-summary ul {
+  margin: 0.25rem 0 0;
+  padding: 0.45rem 0.8rem 0.45rem 1.7rem;
+  border: 1px solid var(--coral-dark);
+  border-radius: 10px;
+  background: rgba(255, 253, 249, 0.98);
+  text-align: left;
+}
+
 .paper-stand {
   position: absolute;
   z-index: 1;
@@ -184,6 +238,11 @@
 }
 
 .wardrobe-panel {
+  flex: 0 0 auto;
+  padding: 0.85rem;
+}
+
+.face-panel {
   flex: 0 0 auto;
   padding: 0.85rem;
 }
@@ -564,16 +623,24 @@ input:focus, select:focus, textarea:focus {
 
 /* Designer Mode Navigation & Face Customization */
 .designer-mode-tabs {
+  width: 100%;
+  gap: 0.5rem;
   margin-bottom: 0.5rem;
   padding-bottom: 0.15rem;
 }
 
 .designer-mode-tabs .mode-tab {
   flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-size: 0.86rem;
   border-radius: var(--radius-sm);
   background: var(--paper-warm);
+  touch-action: manipulation;
 }
 
 .designer-mode-tabs .mode-tab.is-active,

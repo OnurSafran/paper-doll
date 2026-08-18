@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_bob_child">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M112 58 C102 85 102 120 110 145 C120 154 132 154 140 142 L160 142 C168 154 180 154 190 145 C198 120 198 85 188 58 Z" fill="var(--hair-color, #8b5e34)"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M116 62 C112 35 128 20 150 20 C172 20 188 35 184 62 C174 47 162 43 150 43 C138 43 126 47 116 62 Z" fill="var(--hair-color, #8b5e34)"/>
+    <path d="M133 43 Q142 55 150 43 Q158 55 167 43" fill="none" stroke="#d4a373" stroke-width="3"/>
+  </g>
+</svg>

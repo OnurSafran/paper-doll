@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_hoodie_child">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M132 110 Q150 96 168 110 L164 126 Q150 132 136 126 Z" fill="var(--asset-color-primary, #8fcfbd)"/>
+    <path class="tint-primary" d="M124 113 L101 164 L114 169 L130 128 Z" fill="var(--asset-color-primary, #8fcfbd)"/>
+    <path class="tint-primary" d="M176 113 L199 164 L186 169 L170 128 Z" fill="var(--asset-color-primary, #8fcfbd)"/>
+    <path class="tint-primary" d="M124 114 C136 119 164 119 176 114 L180 208 C162 212 138 212 120 208 Z" fill="var(--asset-color-primary, #8fcfbd)"/>
+    <path d="M132 174 L168 174 L166 198 L134 198 Z" fill="#ffffff" opacity="0.24" stroke="#2d261e" stroke-width="1.5"/>
+  </g>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="hair_curls_child">
+  <g id="hairBack" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <circle class="hair-fill" cx="117" cy="72" r="17" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="110" cy="102" r="16" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="183" cy="72" r="17" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="190" cy="102" r="16" fill="var(--hair-color, #654735)"/>
+  </g>
+  <g id="hairFront" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round">
+    <path class="hair-fill" d="M116 62 C114 34 128 18 150 18 C172 18 186 34 184 62 C176 47 164 40 150 40 C136 40 124 47 116 62 Z" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="133" cy="38" r="12" fill="var(--hair-color, #654735)"/>
+    <circle class="hair-fill" cx="167" cy="38" r="12" fill="var(--hair-color, #654735)"/>
+  </g>
+</svg>

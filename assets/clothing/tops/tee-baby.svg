@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="top_tee_baby">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M121 112 L100 148 L114 155 L132 124 Z" fill="var(--asset-color-primary, #a8dadc)"/>
+    <path class="tint-primary" d="M179 112 L200 148 L186 155 L168 124 Z" fill="var(--asset-color-primary, #a8dadc)"/>
+    <path class="tint-primary" d="M121 112 C136 120 164 120 179 112 L184 213 C164 219 136 219 116 213 Z" fill="var(--asset-color-primary, #a8dadc)"/>
+    <path d="M116 145 Q150 152 184 145" fill="none" stroke="#fffdf7" stroke-width="4"/>
+    <circle cx="150" cy="180" r="12" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

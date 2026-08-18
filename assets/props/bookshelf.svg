@@ -32,6 +32,9 @@
     <rect x="420" y="450" width="65" height="190" rx="6" fill="#2a9d8f"/>
     <rect x="650" y="460" width="50" height="180" rx="6" fill="#e76f51"/>
     <rect x="705" y="450" width="55" height="190" rx="6" fill="#ffd166"/>
+    <circle cx="585" cy="530" r="52" fill="#78add2" stroke="#ffd166" stroke-width="12"/>
+    <path d="M550 585 Q585 560 620 585 L635 610 L535 610 Z" fill="#8b5e34" stroke="none"/>
+    <path d="M585 480 L585 580 M535 530 L635 530" fill="none" stroke="#cbe3ef" stroke-width="6"/>
 
     <!-- Bottom Shelf: Book Stacks -->
     <!-- Flat Stack -->

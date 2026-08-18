@@ -12,45 +12,47 @@
 
 ## Current topology
 
-```text
-index.html
-└── js/app.js
-    ├── core/app-store.js
-    ├── core/state-schema.js
-    ├── core/storage-adapter.js
-    ├── core/asset-catalog.js
-    ├── core/svg-loader.js
-    ├── core/coordinate-space.js
-    ├── core/pointer-controller.js
-    └── domain/
-        ├── outfit-rules.js
-        └── scene-rules.js
-```
-
-The store/domain split is sound. The browser layer is too concentrated: `app.js` currently combines bootstrap, Designer, Play, Scene Book, dialogs, export, voice analysis, focus, and cross-tab coordination.
-
-## Target topology
-
-Adopt this as behavior-preserving extractions, not a rewrite:
+The extraction described by D-019 is complete: `app.js` is bootstrap and routing, and each feature owns its own view module.
 
 ```text
-js/app.js                          bootstrap and routes
-js/features/designer/             Designer view and Dollbox
-js/features/play/                 stage, tray, selection, actions
-js/features/scene-book/           dialogs and derived previews
-js/services/project-repository.js load/save/revision/recovery/conflicts
-js/services/export-service.js     immutable-snapshot PNG export
-js/services/voice-puppetry.js     microphone/AudioContext lifecycle
-js/domain/vocabulary.js           expressions, slots, limits, enums
-js/core/app-store.js              commands, subscriptions, history
-js/core/state-schema.js           validation and migration
+js/app.js                            bootstrap, routes, cross-tab coordination
+js/features/designer/                Designer view and Dollbox
+js/features/paint/                   Paint Studio view, session, raster ops, guides
+js/features/play/                    stage, tray, selection, actions
+js/features/scene-book/              dialogs and derived previews
+js/services/project-repository.js    load/save/revision/recovery/conflicts
+js/services/custom-art-repository.js IndexedDB artwork, drafts, staging, backups, trash
+js/services/project-portability.js   versioned export/import bundling
+js/services/export-service.js        immutable-snapshot PNG export
+js/services/voice-puppetry.js        microphone/AudioContext lifecycle
+js/domain/vocabulary.js              expressions, slots, limits, enums, reference doll IDs
+js/domain/outfit-rules.js            equip, fit, and face compatibility rules
+js/domain/scene-rules.js             scene geometry, clamping, alignment
+js/domain/scene-templates.js         curated storytelling starters
+js/core/app-store.js                 commands, subscriptions, history
+js/core/state-schema.js              validation and migration
+js/core/asset-catalog.js             catalog lookup and discovery filtering
+js/core/asset-registry.js            unified built-in and custom descriptors
+js/core/preview-viewboxes.js         shared slot preview viewBoxes
+js/core/mouth-expression.js          expression mutation shared by render and export
+js/core/i18n.js                      Turkish/English strings and DOM translation
+js/core/svg-loader.js                validated same-origin SVG loading and caching
+js/core/coordinate-space.js          logical/client conversion
+js/core/pointer-controller.js        pointer session lifecycle
+js/core/palette.js                   palette tokens and normalization
+js/core/storage-adapter.js           guarded localStorage access
+js/core/error-boundary.js            top-level error and rejection handling
 ```
 
 ### Dependency rules
 
 - Feature views dispatch commands; they do not mutate state or write storage.
 - Services accept plain data and injected browser capabilities; they do not query feature DOM.
-- Persisted enums have one definition in `domain/vocabulary.js`.
+- Persisted enums have one definition in `domain/vocabulary.js`. Slot lists, reference doll IDs, and tool/shape vocabularies are imported, never re-declared in a feature module.
+- Shared rendering helpers live in `core/`. A feature view never imports a helper from `services/`.
+- Catalog fit and style filtering happens in `core/asset-catalog.js`; views pass parameters instead of re-implementing predicates.
+- Views raise prompts through the injected dialog service, never `alert`/`confirm`/`prompt` (D-035).
+- A view that registers window-level listeners exposes a teardown that removes them.
 - The repository is the only owner of serialized envelope revisions and conflict checks.
 - Export snapshots state once; later edits cannot affect the in-flight result.
 - Voice frames are ephemeral DOM previews. Only explicit static-expression commands persist.
@@ -171,7 +173,7 @@ Scene entities support two stickiness mechanisms: **Scene Fixture Pinning** and 
 
 ## Offline PWA and browser storage
 
-The application is served as an installable PWA. `manifest.webmanifest` defines the standalone Home Screen experience, while `sw.js` caches the HTML shell, JavaScript modules, styles, icon, and cataloged SVG assets. The service worker is cache-first for app resources and uses the cached `index.html` as the navigation fallback when offline. Future hosted releases must increment `CACHE_NAME` so installed iPads activate a new cache.
+The application is served as an installable PWA. `manifest.webmanifest` defines the standalone Home Screen experience, while `sw.js` caches the HTML shell, JavaScript modules, styles, icon, and cataloged SVG assets. The service worker is cache-first for app resources and uses the cached `index.html` as the navigation fallback when offline. Future hosted releases must pass `npm run validate:cache`, which fingerprints the app shell and ensures installed iPads activate a new cache when shell content changes.
 
 Current project state uses guarded `localStorage` persistence. A future Custom Paint Studio may use IndexedDB for larger origin-local artwork records, but it must remain separate from the small validated project envelope. Project portability must explicitly export/import custom artwork before that feature is considered complete.
 
@@ -238,10 +240,14 @@ Add top-level `error` and `unhandledrejection` handling that records stable priv
 
 ## Architecture migration order
 
-1. Centralize expressions, limits, and other persisted enums.
-2. Fix expression round trips and asset-aware clamping.
-3. Extract project repository; then migrate revisions.
-4. Extract export and voice services.
-5. Split Designer, Play, and Scene Book feature modules.
-6. Add project portability and story tools.
-7. Begin panoramic stages or custom paint only after the prior boundaries are stable.
+Steps 1–7 are complete; the list is retained as the record of the order the boundaries were established.
+
+1. Centralize expressions, limits, and other persisted enums. — Done
+2. Fix expression round trips and asset-aware clamping. — Done
+3. Extract project repository; then migrate revisions. — Done
+4. Extract export and voice services. — Done
+5. Split Designer, Play, and Scene Book feature modules. — Done
+6. Add project portability and story tools. — Done
+7. Begin panoramic stages or custom paint only after the prior boundaries are stable. — Done
+
+Subsequent work follows the dependency rules above rather than this sequence. The 2026-08-18 Designer/Paint hardening pass added `core/preview-viewboxes.js` and `core/mouth-expression.js` and moved reference doll IDs into `domain/vocabulary.js` under those rules.

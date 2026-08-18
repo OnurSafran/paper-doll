@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_wrap_adult">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M121 111 C116 143 114 171 116 199 L103 333 Q150 354 197 333 L184 199 C186 171 184 143 179 111 Z" fill="var(--asset-color-primary, #d8a7b1)"/>
+    <path d="M121 113 L150 152 L179 113" fill="none"/>
+    <path d="M150 151 L132 211 L168 211 Z" fill="var(--asset-color-secondary, #f7d6da)"/>
+    <path d="M150 151 L176 197" fill="none"/>
+    <path d="M108 294 Q150 307 192 294" fill="none" opacity="0.55"/>
+    <path d="M112 326 Q150 338 188 326" fill="none" opacity="0.55"/>
+    <circle cx="150" cy="177" r="3" fill="#fff"/>
+  </g>
+</svg>

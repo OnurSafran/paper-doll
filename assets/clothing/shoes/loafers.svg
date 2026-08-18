@@ -4,14 +4,14 @@
     <rect x="127" y="358" width="18" height="22" rx="3" fill="#ffffff"/>
     <line x1="127" y1="364" x2="145" y2="364" stroke="#e0fbfc" stroke-width="2"/>
     <!-- Left Loafer Shoe -->
-    <path class="tint-primary" d="M127 380 C123 388 116 394 114 398 C120 403 140 403 146 398 L146 380 Z" fill="var(--asset-color-primary, #654735)"/>
-    <path d="M125 385 C132 388 140 388 145 385" fill="none" stroke="#ffd166" stroke-width="2"/>
+    <path class="tint-primary" d="M127 380 C123 391 116 402 113 407 C120 412 140 412 146 407 L146 380 Z" fill="var(--asset-color-primary, #654735)"/>
+    <path d="M125 394 C132 397 140 397 145 394" fill="none" stroke="#ffd166" stroke-width="2"/>
 
     <!-- Right White Folded Sock -->
     <rect x="155" y="358" width="18" height="22" rx="3" fill="#ffffff"/>
     <line x1="155" y1="364" x2="173" y2="364" stroke="#e0fbfc" stroke-width="2"/>
     <!-- Right Loafer Shoe -->
-    <path class="tint-primary" d="M154 380 L154 398 C160 403 180 403 186 398 C184 394 177 388 173 380 Z" fill="var(--asset-color-primary, #654735)"/>
-    <path d="M155 385 C160 388 168 388 175 385" fill="none" stroke="#ffd166" stroke-width="2"/>
+    <path class="tint-primary" d="M154 380 L154 407 C160 412 181 412 187 407 C184 402 177 391 173 380 Z" fill="var(--asset-color-primary, #654735)"/>
+    <path d="M155 394 C160 397 168 397 175 394" fill="none" stroke="#ffd166" stroke-width="2"/>
   </g>
 </svg>

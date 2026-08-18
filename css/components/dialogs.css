@@ -27,6 +27,25 @@ dialog::backdrop {
   font-weight: 800;
 }
 
+.prompt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.75rem 0 1rem;
+  font-weight: 600;
+}
+
+.prompt-field input {
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 500;
+  background: var(--paper);
+  color: var(--ink);
+}
+
 .library-dialog {
   max-width: min(900px, 94vw);
   width: 100%;

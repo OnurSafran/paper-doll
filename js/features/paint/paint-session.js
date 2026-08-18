@@ -7,14 +7,28 @@
 import {
   CUSTOM_WEARABLE_DIMENSIONS,
   CUSTOM_PROP_DIMENSIONS,
-  LIMITS
+  LIMITS,
+  OUTFIT_SLOTS,
+  REFERENCE_DOLL_IDS
 } from '../../domain/vocabulary.js';
 import { t } from '../../core/i18n.js';
 
 export const MAX_HISTORY_STEPS = 20;
-export const MAX_HISTORY_BYTES = 32 * 1024 * 1024; // 32 MB
-export const WEARABLE_PAINT_SLOTS = Object.freeze(['top', 'bottom', 'dress', 'shoes', 'hair', 'accessory']);
-export const REFERENCE_DOLL_IDS = Object.freeze(['doll_classic_a', 'doll_classic_b', 'doll_chibi_a', 'doll_baby_a', 'doll_adult_a', 'doll_elder_a']);
+// Twenty full prop snapshots require 80 MB; keep the byte bound above that
+// ceiling so the documented step limit is the effective limit for both modes.
+export const MAX_HISTORY_BYTES = 96 * 1024 * 1024; // 96 MB
+export const WEARABLE_PAINT_SLOTS = OUTFIT_SLOTS;
+export { REFERENCE_DOLL_IDS };
+
+const SLOT_LABEL_KEYS = Object.freeze({
+  top: 'slotTop', bottom: 'slotBottom', dress: 'slotDress', shoes: 'slotShoes', hair: 'slotHair', accessory: 'slotAccessory'
+});
+
+function defaultArtworkName(itemType, slot) {
+  if (itemType === 'prop') return t('paint.defaultPropName');
+  const slotLabel = t(`paint.${SLOT_LABEL_KEYS[slot] || SLOT_LABEL_KEYS.top}`);
+  return t('paint.defaultWearableName', { slot: slotLabel });
+}
 
 /**
  * Validates a custom artwork name.
@@ -87,7 +101,7 @@ export function createPaintSession(initialState = {}) {
     color: typeof initialState.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(initialState.color) ? initialState.color : '#e76f51',
     mirror: Boolean(initialState.mirror),
     zoom: [1, 2, 'fit'].includes(initialState.zoom) ? initialState.zoom : 1,
-    name: initialState.name || (itemType === 'wearable' ? `My ${slot}` : 'My Prop'),
+    name: initialState.name || defaultArtworkName(itemType, slot),
     nameIsGenerated: initialState.nameIsGenerated == null ? !initialState.name : Boolean(initialState.nameIsGenerated),
     dirty: false,
     originContext: initialState.originContext || null // 'designer' | 'play' | 'library' | null
@@ -130,9 +144,10 @@ export function createPaintSession(initialState = {}) {
     if (state.itemType !== 'wearable' || !WEARABLE_PAINT_SLOTS.includes(nextSlot) || nextSlot === state.slot) {
       return false;
     }
-    const name = state.nameIsGenerated ? `My ${nextSlot}` : state.name;
-    metadataDirty = true;
-    state = { ...state, slot: nextSlot, name, cutoutAssetId: null, dirty: true };
+    const name = state.nameIsGenerated ? defaultArtworkName('wearable', nextSlot) : state.name;
+    const hasUnsavedArtwork = undoStack.length > 0 || redoStack.length > 0 || metadataDirty;
+    if (!state.nameIsGenerated) metadataDirty = true;
+    state = { ...state, slot: nextSlot, name, cutoutAssetId: null, dirty: hasUnsavedArtwork || !state.nameIsGenerated };
     return true;
   }
 
@@ -210,9 +225,12 @@ export function createPaintSession(initialState = {}) {
   }
 
   function setName(name) {
-    if (name === state.name && !state.nameIsGenerated) return;
+    const result = validateArtworkName(name);
+    if (!result.valid) return false;
+    if (result.name === state.name && !state.nameIsGenerated) return true;
     metadataDirty = true;
-    state = { ...state, name, nameIsGenerated: false, dirty: true };
+    state = { ...state, name: result.name, nameIsGenerated: false, dirty: true };
+    return true;
   }
 
   function markDirty(dirty = true) {
@@ -237,6 +255,14 @@ export function createPaintSession(initialState = {}) {
 
   function canRedo() {
     return redoStack.length > 0;
+  }
+
+  function peekUndo() {
+    return undoStack[undoStack.length - 1] || null;
+  }
+
+  function peekRedo() {
+    return redoStack[redoStack.length - 1] || null;
   }
 
   function undo(currentImageData) {
@@ -299,6 +325,8 @@ export function createPaintSession(initialState = {}) {
     pushHistory,
     canUndo,
     canRedo,
+    peekUndo,
+    peekRedo,
     undo,
     redo,
     clearHistory

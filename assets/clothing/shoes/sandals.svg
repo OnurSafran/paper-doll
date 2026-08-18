@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="shoes_sandals">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
-    <path class="tint-primary" d="M128 380 C124 388 118 395 114 398 C120 403 140 403 146 398 L146 385 C140 382 134 382 128 380 Z" fill="var(--asset-color-primary, #264653)"/>
+    <path class="tint-primary" d="M128 380 C124 391 118 402 113 407 C120 412 140 412 146 407 L146 385 C140 382 134 382 128 380 Z" fill="var(--asset-color-primary, #264653)"/>
     <line x1="126" y1="384" x2="144" y2="384" stroke="#2d261e" stroke-width="2"/>
-    <path class="tint-primary" d="M154 385 L154 398 C160 403 180 403 186 398 C182 395 176 388 172 380 C166 382 160 382 154 385 Z" fill="var(--asset-color-primary, #264653)"/>
+    <path class="tint-primary" d="M154 385 L154 407 C160 412 181 412 187 407 C182 402 176 391 172 380 C166 382 160 382 154 385 Z" fill="var(--asset-color-primary, #264653)"/>
     <line x1="156" y1="384" x2="174" y2="384" stroke="#2d261e" stroke-width="2"/>
   </g>
 </svg>

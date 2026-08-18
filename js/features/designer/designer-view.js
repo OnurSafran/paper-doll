@@ -3,14 +3,15 @@
  * Owns wardrobe palettes, dress-up layers, swatch picking, and Dollbox presets.
  */
 
-import { assetsByKind, facesByGroup, getOfferedWearables, wearablesBySlot, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
+import { assetsByKind, facesByGroup, getOfferedWearables, matchesDiscoveryFilters, wearablesBySlot, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, PALETTE, paletteValue, SKIN_COLORS } from '../../core/palette.js';
 import { loadAssetSvg, makeAssetPlaceholder } from '../../core/svg-loader.js';
-import { DEFAULT_EXPRESSION, FACE_GROUPS, PRESENTATION_STYLES, isCustomAssetId } from '../../domain/vocabulary.js';
-import { isDefaultFace, isWearableCompatible } from '../../domain/outfit-rules.js';
+import { DEFAULT_EXPRESSION, FACE_GROUPS, FIT_FAMILIES, PRESENTATION_STYLES, isCustomAssetId } from '../../domain/vocabulary.js';
+import { isDefaultFace, isFaceCompatible, isWearableCompatible } from '../../domain/outfit-rules.js';
 import { customAssetToDescriptor } from '../../core/asset-registry.js';
-import { applyMouthExpression } from '../../services/export-service.js';
-import { assetName, t } from '../../core/i18n.js';
+import { applyMouthExpression } from '../../core/mouth-expression.js';
+import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
+import { SLOT_PREVIEW_VIEWBOX } from '../../core/preview-viewboxes.js';
 
 export const WARDROBE_SLOTS = [
   ['top', 'Tops'],
@@ -26,14 +27,7 @@ export function describeOutfit(draft, getAsset = getBuiltinAsset) {
   return names.length ? t('designer.outfitWearing', { items: names.join(', ') }) : t('designer.outfitEmpty');
 }
 
-export const SLOT_PREVIEW_VIEWBOX = Object.freeze({
-  top: '80 85 140 125',
-  bottom: '90 170 120 180',
-  dress: '60 105 180 270',
-  shoes: '105 345 90 70',
-  hair: '70 15 160 175',
-  accessory: '90 0 120 80'
-});
+export { SLOT_PREVIEW_VIEWBOX } from '../../core/preview-viewboxes.js';
 
 export const FACE_PREVIEW_VIEWBOX = Object.freeze({
   eyes: '115 42 70 32',
@@ -43,33 +37,46 @@ export const FACE_PREVIEW_VIEWBOX = Object.freeze({
   detail: '120 54 60 30'
 });
 
-export async function appendAsset(container, assetId, { color, isPreview = false, customArtRepo, getAsset = getBuiltinAsset, loadAssetSvg: injectedLoadSvg } = {}) {
+function createCustomArtSvg(url) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 300 450');
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', '100%');
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+  image.setAttribute('href', url);
+  image.setAttribute('x', '0');
+  image.setAttribute('y', '0');
+  image.setAttribute('width', '300');
+  image.setAttribute('height', '450');
+  image.setAttribute('preserveAspectRatio', 'none');
+  svg.appendChild(image);
+  return svg;
+}
+
+export function dollsForLifeStagePicker(dollAssets = assetsByKind('doll')) {
+  const representativeByStage = new Map();
+  for (const asset of dollAssets) {
+    const lifeStage = asset.lifeStages?.[0];
+    if (lifeStage && !representativeByStage.has(lifeStage)) representativeByStage.set(lifeStage, asset);
+  }
+  return FIT_FAMILIES.map((lifeStage) => representativeByStage.get(lifeStage)).filter(Boolean);
+}
+
+export async function appendAsset(container, assetId, { color, isPreview = false, customArtRepo, getCustomArtUrl, getAsset = getBuiltinAsset, loadAssetSvg: injectedLoadSvg } = {}) {
   try {
     if (isCustomAssetId(assetId)) {
-      const url = await customArtRepo?.getTrackedObjectUrl?.(assetId);
+      const url = await customArtRepo?.getTrackedObjectUrl?.(assetId) || await getCustomArtUrl?.(assetId);
       if (url) {
         if (isPreview) {
           const img = document.createElement('img');
           img.src = url;
-        img.alt = assetName(getAsset(assetId), 'Custom art');
+          img.alt = assetName(getAsset(assetId), 'Custom art');
           img.className = 'custom-art-card-thumb';
           container.append(img);
           return;
         }
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 300 450');
-        svg.setAttribute('width', '100%');
-        svg.setAttribute('height', '100%');
-        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        img.setAttribute('href', url);
-        img.setAttribute('x', '0');
-        img.setAttribute('y', '0');
-        img.setAttribute('width', '300');
-        img.setAttribute('height', '450');
-        img.setAttribute('preserveAspectRatio', 'none');
-        svg.appendChild(img);
-        container.append(svg);
+        container.append(createCustomArtSvg(url));
         return;
       }
     }
@@ -77,7 +84,6 @@ export async function appendAsset(container, assetId, { color, isPreview = false
     const svg = await loadSvg(assetId);
     const asset = getAsset(assetId);
     container.style.setProperty('--asset-color-primary', paletteValue(color ?? asset?.defaultColors?.primary, 'coral'));
-    container.style.setProperty('--hair-color', paletteValue(color ?? asset?.defaultColors?.primary, 'brown'));
     if (asset?.kind === 'face' && asset.faceGroup === 'eyes') {
       container.style.setProperty('--iris-color', paletteValue(color, 'cocoa'));
     }
@@ -98,12 +104,14 @@ export async function renderAssetPreview(container, asset, options = {}) {
     color: options.color ?? asset.defaultColors?.primary,
     isPreview: true,
     customArtRepo: options.customArtRepo,
+    getCustomArtUrl: options.getCustomArtUrl,
     getAsset: options.getAsset
   });
 }
 
 export async function renderDollInto(container, draft, options = {}) {
   const customArtRepo = options.customArtRepo;
+  const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
   const getAsset = options.getAsset ?? getBuiltinAsset;
   const layers = [];
   const hair = draft?.slots?.hair;
@@ -122,19 +130,23 @@ export async function renderDollInto(container, draft, options = {}) {
 
   const face = draft?.face;
   if (face && !showBakedFace) {
-    if (face.eyes) layers.push([22, face.eyes.assetId, null, null, 'face-eyes', false, face.eyes.irisColor]);
-    if (face.eyebrows) layers.push([24, face.eyebrows.assetId, null, null, 'face-eyebrows', false]);
-    if (face.detail) layers.push([25, face.detail.assetId, null, null, 'face-detail', false]);
-    if (face.nose) layers.push([26, face.nose.assetId, null, null, 'face-nose', false]);
-    if (face.mouth) layers.push([28, face.mouth.assetId, null, null, 'face-mouth', false]);
+    if (face.eyes) layers.push([22, face.eyes.assetId, null, null, 'face-eyes', !isFaceCompatible(draft, getAsset(face.eyes.assetId), getAsset), face.eyes.irisColor]);
+    if (face.eyebrows) layers.push([24, face.eyebrows.assetId, null, null, 'face-eyebrows', !isFaceCompatible(draft, getAsset(face.eyebrows.assetId), getAsset)]);
+    if (face.detail) layers.push([25, face.detail.assetId, null, null, 'face-detail', !isFaceCompatible(draft, getAsset(face.detail.assetId), getAsset)]);
+    if (face.nose) layers.push([26, face.nose.assetId, null, null, 'face-nose', !isFaceCompatible(draft, getAsset(face.nose.assetId), getAsset)]);
+    if (face.mouth) layers.push([28, face.mouth.assetId, null, null, 'face-mouth', !isFaceCompatible(draft, getAsset(face.mouth.assetId), getAsset)]);
   }
 
   for (const [slot, order] of [['bottom', 30], ['shoes', 35], ['top', 40], ['dress', 45]]) addWearableLayer(slot, order);
   if (hair) addWearableLayer('hair', 70, 'hairFront');
   const accessory = draft?.slots?.accessory;
-  if (accessory) layers.push([80, accessory.assetId, accessory.color, null, 'accessory']);
+  if (accessory) {
+    const asset = getAsset(accessory.assetId);
+    layers.push([80, accessory.assetId, accessory.color, null, 'accessory', !isWearableCompatible(draft, asset, getAsset)]);
+  }
 
-  const nodes = await Promise.all(layers.map(async ([order, id, color, group, slot, incompatible, extra]) => {
+  const fitWarningNames = [];
+  const nodes = (await Promise.all(layers.map(async ([order, id, color, group, slot, incompatible, extra]) => {
     const layer = document.createElement('span');
     layer.className = 'doll-layer';
     layer.dataset.slot = slot;
@@ -143,7 +155,16 @@ export async function renderDollInto(container, draft, options = {}) {
     layer.style.setProperty('--hair-color', paletteValue(color, 'brown'));
     layer.style.setProperty('--asset-color-primary', paletteValue(color, 'coral'));
     if (incompatible) {
-      layer.append(makeAssetPlaceholder(t('designer.incompatibleAsset', { name: assetName(getAsset(id), 'Asset') })));
+      const displayName = assetName(getAsset(id), 'Asset');
+      const warningText = t('designer.fitWarningPlaceholder', { name: displayName });
+      fitWarningNames.push(displayName);
+      const placeholder = makeAssetPlaceholder(warningText);
+      placeholder.className += ' fit-warning-placeholder';
+      placeholder.textContent = '⚠️';
+      placeholder.setAttribute('aria-label', warningText);
+      placeholder.hidden = true;
+      placeholder.title = warningText;
+      layer.append(placeholder);
       return layer;
     }
     if (slot === 'face-eyes' && extra) {
@@ -153,24 +174,11 @@ export async function renderDollInto(container, draft, options = {}) {
       if (isCustomAssetId(id)) {
         const url = await customArtRepo?.getTrackedObjectUrl?.(id) || await options.getCustomArtUrl?.(id);
         if (url) {
-          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          svg.setAttribute('viewBox', '0 0 300 450');
-          svg.setAttribute('width', '100%');
-          svg.setAttribute('height', '100%');
-          svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-          const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-          image.setAttribute('href', url);
-          image.setAttribute('x', '0');
-          image.setAttribute('y', '0');
-          image.setAttribute('width', '300');
-          image.setAttribute('height', '450');
-          image.setAttribute('preserveAspectRatio', 'none');
-          svg.appendChild(image);
-          layer.append(svg);
+          layer.append(createCustomArtSvg(url));
           return layer;
         }
       }
-      const svg = await loadAssetSvg(id);
+      const svg = await loadSvg(id);
       if (group) {
         for (const candidate of ['hairBack', 'hairFront']) {
           const node = svg.querySelector(`#${candidate}`);
@@ -179,7 +187,7 @@ export async function renderDollInto(container, draft, options = {}) {
       }
       if (slot === 'skin') {
         const baked = svg.querySelector('#baked-face');
-        if (baked && face) {
+        if (baked && face && !showBakedFace) {
           baked.style.display = 'none';
         } else if (!face) {
           applyMouthExpression(svg, expression);
@@ -195,16 +203,80 @@ export async function renderDollInto(container, draft, options = {}) {
       layer.append(makeAssetPlaceholder(assetName(getAsset(id), 'Asset')));
     }
     return layer;
-  }));
+  })));
   container.replaceChildren(...nodes);
+  if (fitWarningNames.length && typeof container.append === 'function') {
+    const details = document.createElement('details');
+    details.className = 'fit-warning-summary';
+    const summary = document.createElement('summary');
+    summary.textContent = t('designer.fitWarningSummary', { count: fitWarningNames.length });
+    details.append(summary);
+    const list = document.createElement('ul');
+    for (const name of fitWarningNames) {
+      const item = document.createElement('li');
+      item.textContent = t('designer.fitWarningPlaceholder', { name });
+      list.append(item);
+    }
+    details.append(list);
+    container.append(details);
+  }
 }
 
-export function previewCustomColor(color, slot = 'top') {
+export function previewCustomColor(color, slot = 'top', queryAll = (selector) => document.querySelectorAll(selector)) {
   if (!/^#[0-9a-f]{6}$/i.test(color)) return;
-  const layers = document.querySelectorAll(`#doll-stage .doll-layer[data-slot="${slot}"]`);
+  const layers = queryAll(`#doll-stage .doll-layer[data-slot="${slot}"]`);
   for (const layer of layers) {
     layer.style.setProperty(slot === 'hair' ? '--hair-color' : '--asset-color-primary', color);
   }
+}
+
+function sameDollLayerStructure(previousDraft, nextDraft) {
+  if (!previousDraft || !nextDraft || previousDraft.baseDollId !== nextDraft.baseDollId) return false;
+  if ((previousDraft.expression || DEFAULT_EXPRESSION) !== (nextDraft.expression || DEFAULT_EXPRESSION)) return false;
+  for (const [slot] of WARDROBE_SLOTS) {
+    if (previousDraft.slots?.[slot]?.assetId !== nextDraft.slots?.[slot]?.assetId) return false;
+  }
+  for (const group of FACE_GROUPS) {
+    if (previousDraft.face?.[group]?.assetId !== nextDraft.face?.[group]?.assetId) return false;
+  }
+  return isDefaultFace(previousDraft.face, previousDraft.baseDollId) ===
+    isDefaultFace(nextDraft.face, nextDraft.baseDollId);
+}
+
+/**
+ * Applies color-only draft changes to an existing doll stage.
+ * Returns false when the layer tree must be rebuilt.
+ */
+export function patchDollColors(container, previousDraft, nextDraft) {
+  if (!sameDollLayerStructure(previousDraft, nextDraft)) return false;
+  const layers = Array.from(container?.querySelectorAll?.('.doll-layer') || []);
+  const setLayers = (slot, property, value) => {
+    for (const layer of layers) {
+      if (layer.dataset.slot === slot) layer.style.setProperty(property, value);
+    }
+  };
+
+  if (previousDraft.skinTone !== nextDraft.skinTone) {
+    const value = paletteValue(nextDraft.skinTone, 'peach');
+    for (const layer of layers) layer.style.setProperty('--skin-color', value);
+  }
+
+  for (const [slot] of WARDROBE_SLOTS) {
+    const previousItem = previousDraft.slots?.[slot];
+    const nextItem = nextDraft.slots?.[slot];
+    if (previousItem?.color === nextItem?.color) continue;
+    setLayers(slot, slot === 'hair' ? '--hair-color' : '--asset-color-primary', paletteValue(
+      nextItem?.color,
+      slot === 'hair' ? 'brown' : 'coral'
+    ));
+  }
+
+  const previousIris = previousDraft.face?.eyes?.irisColor;
+  const nextIris = nextDraft.face?.eyes?.irisColor;
+  if (previousIris !== nextIris) {
+    setLayers('face-eyes', '--iris-color', paletteValue(nextIris, 'cocoa'));
+  }
+  return true;
 }
 
 export function createDesignerView({
@@ -212,26 +284,36 @@ export function createDesignerView({
   $,
   $$,
   askConfirm,
+  askPrompt = (_title, message, initialValue) => window.prompt(message, initialValue),
   miniButton,
   customArtRepo,
   openPaintStudio,
   getAsset = getBuiltinAsset
 }) {
   let designerRenderToken = 0;
+  let dollboxSignature = null;
+  let dollboxRenderToken = 0;
+  let lastRenderedDraft = null;
+  let lastRenderedLanguage = null;
 
   function renderSwatches(container, tokens, selected, onSelect) {
+    if (!container) return;
+    const focusedToken = document.activeElement?.closest?.('.swatch')?.dataset.token;
     container.replaceChildren(...tokens.map((token) => {
       const colorName = t('colors.' + token) || PALETTE[token]?.name || token;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'swatch';
+      button.dataset.token = token;
       button.style.setProperty('--swatch', paletteValue(token));
       button.setAttribute('aria-label', colorName);
       button.setAttribute('aria-pressed', String(token === selected));
       button.title = colorName;
       button.addEventListener('click', () => onSelect(token));
+      bindRovingKeydown(button, tokens, selected, onSelect, () => container.querySelector('[aria-pressed="true"]'));
       return button;
     }));
+    if (focusedToken) requestAnimationFrame(() => container.querySelector(`[data-token="${focusedToken}"]`)?.focus());
   }
 
   function bindRovingKeydown(button, values, selected, onSelect, query) {
@@ -281,6 +363,7 @@ export function createDesignerView({
     const styleNav = $('#style-filter-nav');
     if (styleNav) {
       const activeStyle = state.designer.selectedStyleFilter || 'all';
+      const focusedStyle = document.activeElement?.closest?.('#style-filter-nav [data-style]')?.dataset.style;
       styleNav.replaceChildren(...PRESENTATION_STYLES.map((style) => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -296,6 +379,9 @@ export function createDesignerView({
         }, () => styleNav.querySelector('[aria-checked="true"]'));
         return btn;
       }));
+      if (focusedStyle) requestAnimationFrame(() => {
+        if (token === designerRenderToken) styleNav.querySelector(`[data-style="${focusedStyle}"]`)?.focus();
+      });
     }
 
     const activeStyle = state.designer.selectedStyleFilter || 'all';
@@ -304,10 +390,10 @@ export function createDesignerView({
     const customs = (state.customAssets || [])
       .filter((a) => a.kind === 'wearable' && a.slot === state.designer.selectedSlot && a.status === 'available' && a.libraryVisible !== false)
       .map(customAssetToDescriptor)
-      .filter((asset) => (!targetFit || !asset.supportedFitFamilies || asset.supportedFitFamilies.includes(targetFit)) &&
-        (activeStyle === 'all' || asset.presentationStyles?.includes(activeStyle)));
+      .filter((asset) => matchesDiscoveryFilters(asset, targetFit || 'teen', activeStyle));
     const allWearables = [...builtins, ...customs];
 
+    const focusedAssetId = document.activeElement?.closest?.('#wardrobe-items [data-asset-id]')?.dataset.assetId;
     const cards = allWearables.map((asset) => {
       const button = document.createElement('button');
       button.type = 'button';
@@ -332,7 +418,7 @@ export function createDesignerView({
       }
       button.addEventListener('click', () => {
         const currentEquipped = state.designer.draft.slots[asset.slot]?.assetId;
-        if (currentEquipped === asset.id && !['skin', 'hair'].includes(asset.slot)) {
+        if (currentEquipped === asset.id && asset.slot !== 'hair') {
           store.dispatch({ type: 'designer/remove', slot: asset.slot });
         } else {
           store.dispatch({ type: 'designer/equip', assetId: asset.id });
@@ -348,7 +434,7 @@ export function createDesignerView({
       return button;
     });
 
-    if (['top', 'bottom', 'dress', 'shoes', 'hair', 'accessory'].includes(state.designer.selectedSlot)) {
+    if (WARDROBE_SLOTS.some(([slot]) => slot === state.designer.selectedSlot)) {
       const slotName = t('wardrobeSlots.' + state.designer.selectedSlot) || state.designer.selectedSlot;
       const paintBtn = document.createElement('button');
       paintBtn.type = 'button';
@@ -393,6 +479,9 @@ export function createDesignerView({
     }
 
     items.replaceChildren(...cards);
+    if (focusedAssetId) requestAnimationFrame(() => {
+      if (token === designerRenderToken) items.querySelector(`[data-asset-id="${focusedAssetId}"]`)?.focus();
+    });
   }
 
   function renderFace(state, token) {
@@ -440,7 +529,8 @@ export function createDesignerView({
       }
     }
 
-    const faceAssets = facesByGroup(selectedGroup);
+    const focusedAssetId = document.activeElement?.closest?.('#face-items [data-asset-id]')?.dataset.assetId;
+    const faceAssets = facesByGroup(selectedGroup, getAsset(draft.baseDollId)?.fitFamily || 'teen');
     const cards = faceAssets.map((asset) => {
       const isSelected = face?.[selectedGroup]?.assetId === asset.id;
       const button = document.createElement('button');
@@ -466,48 +556,58 @@ export function createDesignerView({
     });
 
     items.replaceChildren(...cards);
+    if (focusedAssetId) requestAnimationFrame(() => {
+      if (token === designerRenderToken) items.querySelector(`[data-asset-id="${focusedAssetId}"]`)?.focus();
+    });
   }
 
   function renderDollModels(container, selectedDollId) {
     if (!container) return;
-    const dollAssets = assetsByKind('doll');
+    const focusedDollId = document.activeElement?.closest?.('.model-picker-btn')?.dataset.assetId;
+    const dollAssets = dollsForLifeStagePicker();
+    const selectedDoll = getBuiltinAsset(selectedDollId);
+    const selectedLifeStage = selectedDoll?.lifeStages?.[0];
     container.replaceChildren(...dollAssets.map((asset) => {
-      const modelName = t('models.' + asset.id) || asset.name;
-      const lifeStage = asset.lifeStages?.[0] ? t(`lifeStages.${asset.lifeStages[0]}`) : '';
-      const modelLabel = lifeStage ? `${modelName} — ${lifeStage}` : modelName;
+      const lifeStage = asset.lifeStages?.[0];
+      const modelLabel = lifeStage ? t(`lifeStages.${lifeStage}`) : asset.name;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'model-picker-btn';
+      button.dataset.assetId = asset.id;
       button.setAttribute('aria-label', modelLabel);
-      button.setAttribute('aria-pressed', String(asset.id === selectedDollId));
+      button.setAttribute('aria-pressed', String(asset.id === selectedDollId || lifeStage === selectedLifeStage));
       button.title = modelLabel;
       button.textContent = modelLabel;
       button.addEventListener('click', () => store.dispatch({ type: 'designer/setBaseDoll', baseDollId: asset.id }));
       return button;
     }));
+    if (focusedDollId) requestAnimationFrame(() => container.querySelector(`[data-asset-id="${focusedDollId}"]`)?.focus());
   }
 
   function renderPalettes(state) {
     const draft = state.designer.draft;
     renderDollModels($('#doll-model-palette'), draft.baseDollId);
-    renderSwatches($('#skin-palette'), SKIN_COLORS, draft.skinTone, (color) => store.dispatch({ type: 'designer/setSkin', color }));
+    const skinPalette = $('#skin-palette');
+    if (skinPalette) renderSwatches(skinPalette, SKIN_COLORS, draft.skinTone, (color) => store.dispatch({ type: 'designer/setSkin', color }));
+    const hairPalette = $('#hair-palette');
     if (draft.slots.hair) {
       if (isCustomAssetId(draft.slots.hair.assetId)) {
-        $('#hair-palette').replaceChildren(Object.assign(document.createElement('p'), {
+        hairPalette?.replaceChildren(Object.assign(document.createElement('p'), {
           textContent: t('designer.customArtColorNote'),
           className: 'empty-note custom-art-note'
         }));
       } else {
-        renderSwatches($('#hair-palette'), HAIR_COLORS, draft.slots.hair.color, (color) => store.dispatch({ type: 'designer/setColor', slot: 'hair', color }));
+        if (hairPalette) renderSwatches(hairPalette, HAIR_COLORS, draft.slots.hair.color, (color) => store.dispatch({ type: 'designer/setColor', slot: 'hair', color }));
       }
     } else {
-      $('#hair-palette').replaceChildren(Object.assign(document.createElement('span'), { className: 'empty-note compact-note', textContent: t('designer.equipHairFirst') }));
+      hairPalette?.replaceChildren(Object.assign(document.createElement('span'), { className: 'empty-note compact-note', textContent: t('designer.equipHairFirst') }));
     }
     const slot = state.designer.selectedSlot;
     const selectedItem = draft.slots[slot];
     const isCustom = selectedItem && isCustomAssetId(selectedItem.assetId);
     const colors = slot === 'hair' ? HAIR_COLORS : GARMENT_COLORS;
     const container = $('#piece-palette');
+    if (!container) return;
     if (!selectedItem) {
       container.replaceChildren(Object.assign(document.createElement('p'), { textContent: t('designer.choosePieceFirst'), className: 'empty-note' }));
     } else if (isCustom) {
@@ -519,16 +619,38 @@ export function createDesignerView({
       renderSwatches(container, colors, selectedItem.color, (color) => store.dispatch({ type: 'designer/setColor', slot, color }));
     }
     const custom = $('#custom-color');
-    custom.disabled = !selectedItem || isCustom;
-    custom.value = paletteValue(selectedItem?.color, slot === 'hair' ? 'brown' : 'coral');
+    if (custom) {
+      custom.disabled = !selectedItem || isCustom;
+      custom.value = paletteValue(selectedItem?.color, slot === 'hair' ? 'brown' : 'coral');
+    }
   }
 
-  function renderDollbox(state, token) {
+  function renderDollbox(state) {
     const list = $('#dollbox-list');
+    if (!list) return;
+    // `updatedAt` must stay in the signature: preset/update keeps the same id and
+    // name while replacing the whole draft, so appearance-only edits would
+    // otherwise leave a stale card image. Language is included because the row
+    // actions are localized.
+    const signature = JSON.stringify({
+      language: getCurrentLanguage(),
+      presets: state.presets.map(({ presetId, name, updatedAt }) => [presetId, name, updatedAt ?? null])
+    });
+    if (signature === dollboxSignature) return;
+    dollboxSignature = signature;
+    const token = ++dollboxRenderToken;
+    const focusedAction = document.activeElement?.closest?.('#dollbox-list [data-preset-action]');
+    const focusedPresetId = focusedAction?.dataset.presetId;
+    const focusedActionName = focusedAction?.dataset.presetAction;
     if (!state.presets.length) {
       list.replaceChildren(Object.assign(document.createElement('p'), { className: 'empty-note', textContent: t('designer.emptyDollbox') }));
       return;
     }
+    const tagAction = (button, presetId, action) => {
+      button.dataset.presetAction = action;
+      button.dataset.presetId = presetId;
+      return button;
+    };
     list.replaceChildren(...state.presets.map((preset) => {
       const row = document.createElement('article');
       row.className = 'dollbox-item';
@@ -542,25 +664,28 @@ export function createDesignerView({
       const actions = document.createElement('div');
       actions.className = 'mini-actions';
       actions.append(
-        miniButton('✎', t('designer.openInDesigner', { name: preset.name }), () => store.dispatch({ type: 'preset/load', presetId: preset.presetId })),
-        miniButton('Aa', t('designer.renameTitle', { name: preset.name }), () => {
-          const nextName = window.prompt(t('designer.renamePrompt'), preset.name);
+        tagAction(miniButton('✎', t('designer.openInDesigner', { name: preset.name }), () => store.dispatch({ type: 'preset/load', presetId: preset.presetId })), preset.presetId, 'load'),
+        tagAction(miniButton('Aa', t('designer.renameTitle', { name: preset.name }), async () => {
+          const nextName = await askPrompt(t('designer.renameTitle', { name: preset.name }), t('designer.renamePrompt'), preset.name);
           if (nextName != null && nextName.trim()) {
             store.dispatch({ type: 'preset/rename', presetId: preset.presetId, name: nextName });
           }
-        }),
-        miniButton('×', t('designer.deleteConfirmTitle', { name: preset.name }), async () => {
+        }), preset.presetId, 'rename'),
+        tagAction(miniButton('×', t('designer.deleteConfirmTitle', { name: preset.name }), async () => {
           if (await askConfirm(t('designer.deleteConfirmTitle', { name: preset.name }), t('designer.deleteConfirmMessage'))) {
             store.dispatch({ type: 'preset/delete', presetId: preset.presetId });
           }
-        })
+        }), preset.presetId, 'delete')
       );
       row.append(preview, name, actions);
       void renderDollInto(preview, preset, { customArtRepo, getAsset }).then(() => {
-        if (token !== designerRenderToken) preview.replaceChildren();
+        if (token !== dollboxRenderToken) preview.replaceChildren();
       });
       return row;
     }));
+    if (focusedPresetId && focusedActionName) {
+      list.querySelector(`[data-preset-id="${focusedPresetId}"][data-preset-action="${focusedActionName}"]`)?.focus();
+    }
   }
 
   async function render(state = store.getState()) {
@@ -592,7 +717,7 @@ export function createDesignerView({
     }
 
     renderPalettes(state);
-    renderDollbox(state, token);
+    renderDollbox(state);
     const pieceCount = Object.values(draft.slots).filter(Boolean).length;
     $('#outfit-count').textContent = t('designer.outfitCount', { count: pieceCount });
     $('#remove-piece').disabled = !draft.slots[state.designer.selectedSlot];
@@ -603,10 +728,18 @@ export function createDesignerView({
     $('#update-preset').disabled = !editing;
 
     const stage = $('#doll-stage');
+    const language = getCurrentLanguage();
+    if (lastRenderedLanguage === language && patchDollColors(stage, lastRenderedDraft, draft)) {
+      lastRenderedDraft = draft;
+      stage.setAttribute('aria-label', describeOutfit(draft, getAsset));
+      return;
+    }
     const stagedDoll = document.createElement('div');
     await renderDollInto(stagedDoll, draft, { customArtRepo, getAsset });
     if (token !== designerRenderToken) return;
     stage.replaceChildren(...stagedDoll.childNodes);
+    lastRenderedDraft = draft;
+    lastRenderedLanguage = language;
     stage.setAttribute('aria-label', describeOutfit(draft, getAsset));
   }
 

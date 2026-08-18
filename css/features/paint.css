@@ -832,6 +832,13 @@
   object-fit: contain;
 }
 
+.paint-save-fit-note {
+  margin: 0.5rem 0 0.8rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 /* My Art Library & Impact Dialog Styles */
 .myart-dialog {
   max-width: min(90vw, 840px);

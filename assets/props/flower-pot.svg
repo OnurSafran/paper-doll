@@ -6,5 +6,7 @@
     <circle cx="650" cy="120" r="55" fill="#709f5e"/>
     <path d="M300 500 L700 500 L635 850 L365 850 Z" fill="#e76f51"/>
     <path d="M280 500 L720 500 L700 570 L300 570 Z" fill="#f2aa35"/>
+    <path d="M390 600 L410 820 M500 590 L500 830 M610 600 L590 820" fill="none" stroke="#f4a261" stroke-width="12" opacity="0.7"/>
+    <path d="M470 300 Q500 270 530 300" fill="none" stroke="#8fb27d" stroke-width="10"/>
   </g>
 </svg>

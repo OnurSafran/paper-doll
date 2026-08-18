@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_jeans_child">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M125 182 C140 185 160 185 175 182 L173 232 L170 370 L155 370 L150 240 L145 370 L130 370 L127 232 Z" fill="var(--asset-color-primary, #457b9d)"/>
+    <path d="M130 197 Q137 202 143 214 M170 197 Q163 202 157 214 M150 184 L150 220" fill="none" stroke="#e9c46a" stroke-width="1.8"/>
+    <path d="M132 350 L143 350 M157 350 L168 350" fill="none" stroke="#b7d4e4" stroke-width="2"/>
+  </g>
+</svg>

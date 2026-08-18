@@ -4,8 +4,9 @@
  * layer management, multi-selection toggles, pinning, and deletion.
  */
 
-import { getAsset } from '../../core/asset-catalog.js';
-import { t } from '../../core/i18n.js';
+import { getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
+import { bubbleStyleLabelKey } from '../../domain/vocabulary.js';
+import { assetName, t } from '../../core/i18n.js';
 
 const escapeCss = (val) => globalThis.CSS?.escape ? CSS.escape(String(val)) : String(val).replace(/["\\]/g, '\\$&');
 
@@ -14,7 +15,8 @@ export function createSceneOutlineView({
   $,
   $$,
   askConfirm,
-  miniButton
+  miniButton,
+  getAsset = getBuiltinAsset
 }) {
   function renderSceneOutline(state = store.getState()) {
     const list = $('#scene-outline-list');
@@ -68,13 +70,13 @@ export function createSceneOutlineView({
         labelText = preset?.name || (entity.sourceId === 'demo_emma' ? 'Emma' : t('play.savedDoll'));
       } else if (entity.kind === 'bubble') {
         icon.textContent = entity.bubbleStyle === 'thought' ? '💭' : (entity.bubbleStyle === 'shout' ? '💥' : (entity.bubbleStyle === 'caption' ? '📜' : '💬'));
-        labelText = `${t('play.bubbleSpeech')}: "${entity.text?.slice(0, 22) || 'Hello'}${entity.text?.length > 22 ? '...' : ''}"`;
+        labelText = `${t(bubbleStyleLabelKey(entity.bubbleStyle))}: "${entity.text?.slice(0, 22) || t('play.bubblePresetSpeechText')}${entity.text?.length > 22 ? '...' : ''}"`;
       } else {
         icon.textContent = '🪑';
-        labelText = getAsset(entity.sourceId)?.name || t('play.sceneProp');
+        labelText = assetName(getAsset(entity.sourceId), t('play.sceneProp'));
       }
 
-      selectBox.setAttribute('aria-label', `Select ${labelText} in outline`);
+      selectBox.setAttribute('aria-label', t('play.selectOutlineAria', { name: labelText }));
 
       const info = document.createElement('div');
       info.className = 'outline-info';

@@ -4,10 +4,12 @@
     <ellipse cx="135" cy="59" rx="4.5" ry="6" fill="var(--iris-color, #2d261e)" stroke="none"/>
     <circle cx="134" cy="56.5" r="2" fill="#ffffff" stroke="none"/>
     <circle cx="137" cy="61.5" r="1.2" fill="#ffffff" stroke="none"/>
+    <path d="M130 52 C134 50 138 50 142 52" fill="none" stroke="#2d261e" stroke-width="1.5" stroke-linecap="round"/>
     
     <!-- Right Eye -->
     <ellipse cx="165" cy="59" rx="4.5" ry="6" fill="var(--iris-color, #2d261e)" stroke="none"/>
     <circle cx="164" cy="56.5" r="2" fill="#ffffff" stroke="none"/>
     <circle cx="167" cy="61.5" r="1.2" fill="#ffffff" stroke="none"/>
+    <path d="M158 52 C162 50 166 50 170 52" fill="none" stroke="#2d261e" stroke-width="1.5" stroke-linecap="round"/>
   </g>
 </svg>

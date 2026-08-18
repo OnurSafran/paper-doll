@@ -19,9 +19,31 @@
     display: flex;
     flex-direction: column;
   }
+  .play-rail {
+    order: 2;
+  }
   .paint-grid {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .paint-heading {
+    align-items: center;
+    text-align: center;
+  }
+  .paint-heading-primary,
+  .paint-heading-secondary {
+    justify-content: center;
+  }
+  .paint-title-group {
+    margin-right: 0;
+    justify-content: center;
+  }
+  .paint-stage-column,
+  .paint-sidebar {
+    width: 100%;
+    max-width: 760px;
   }
   #designer-screen {
     height: auto;

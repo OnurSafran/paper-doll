@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_knit_elder">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M122 112 C117 143 115 174 118 204 L108 326 Q150 344 192 326 L182 204 C185 174 183 143 178 112 Z" fill="var(--asset-color-primary, #b9876b)"/>
+    <path d="M122 118 Q150 135 178 118" fill="none"/>
+    <path d="M126 151 L174 151 M123 170 L177 170 M121 189 L179 189" fill="none" opacity="0.45"/>
+    <path d="M110 283 Q150 295 190 283" fill="none" opacity="0.5"/>
+    <path d="M113 316 Q150 329 187 316" fill="none" opacity="0.5"/>
+    <path d="M134 215 Q150 229 166 215 L166 249 Q150 263 134 249 Z" fill="var(--asset-color-secondary, #e9c7a9)"/>
+  </g>
+</svg>

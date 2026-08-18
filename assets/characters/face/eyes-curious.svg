@@ -5,10 +5,12 @@
     <circle cx="136" cy="60" r="3.2" fill="var(--iris-color, #2d261e)"/>
     <circle cx="135" cy="58.5" r="1.4" fill="#ffffff"/>
     <circle cx="137.5" cy="61.5" r="0.8" fill="#ffffff"/>
+    <path d="M130 53 L127 51 M131 52 L129 49" fill="none" stroke="#2d261e" stroke-width="1.4" stroke-linecap="round"/>
     <!-- Right Eye White & Iris -->
     <ellipse cx="164" cy="60" rx="5" ry="6.5" fill="#ffffff" stroke="#2d261e" stroke-width="2"/>
     <circle cx="164" cy="60" r="3.2" fill="var(--iris-color, #2d261e)"/>
     <circle cx="163" cy="58.5" r="1.4" fill="#ffffff"/>
     <circle cx="165.5" cy="61.5" r="0.8" fill="#ffffff"/>
+    <path d="M170 53 L173 51 M169 52 L171 49" fill="none" stroke="#2d261e" stroke-width="1.4" stroke-linecap="round"/>
   </g>
 </svg>

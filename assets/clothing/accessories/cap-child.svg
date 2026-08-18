@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_cap_child">
+  <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <path class="tint-primary" d="M116 48 C118 22 132 10 153 10 C173 10 186 24 186 48 C165 38 140 38 116 48 Z" fill="var(--asset-color-primary, #78add2)"/>
+    <path class="tint-primary" d="M150 45 Q190 42 207 56 Q183 66 150 58 Z" fill="var(--asset-color-primary, #78add2)"/>
+    <circle cx="153" cy="13" r="5" fill="#ffd166" stroke="none"/>
+  </g>
+</svg>

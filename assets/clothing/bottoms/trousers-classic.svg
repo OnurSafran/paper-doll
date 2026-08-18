@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_trousers_classic">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
     <!-- Classic Tailored Trousers -->
-    <path class="tint-primary" d="M124 198 C140 202 160 202 176 198 L180 230 L174 380 L156 380 L150 250 L144 380 L126 380 L120 230 Z" fill="var(--asset-color-primary, #4a4e69)"/>
+    <path class="tint-primary" d="M124 198 C140 202 160 202 176 198 L180 230 L173 389 L155 389 L150 250 L145 389 L127 389 L120 230 Z" fill="var(--asset-color-primary, #4a4e69)"/>
     <!-- Crease lines -->
-    <line x1="135" y1="230" x2="135" y2="378" stroke="#2d261e" stroke-width="1.5" opacity="0.6"/>
-    <line x1="165" y1="230" x2="165" y2="378" stroke="#2d261e" stroke-width="1.5" opacity="0.6"/>
+    <line x1="135" y1="230" x2="135" y2="386" stroke="#2d261e" stroke-width="1.5" opacity="0.6"/>
+    <line x1="165" y1="230" x2="165" y2="386" stroke="#2d261e" stroke-width="1.5" opacity="0.6"/>
     <!-- Belt line -->
     <path d="M124 204 C140 208 160 208 176 204" fill="none" stroke="#2d261e" stroke-width="1.8"/>
   </g>

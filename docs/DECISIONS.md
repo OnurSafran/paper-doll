@@ -32,6 +32,8 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-026 | Multi-selection, compound batch movement, and visual alignment domain rules. | Implemented | Pure geometric alignment and multi-select drag with single undo/redo atomicity and accessible outline. |
 | D-027 | Curated storytelling scene templates with fresh ID remapping. | Implemented | Inspires user storytelling with 5 themed starters that instantiate cleanly without ID collisions. |
 | D-029 | Gate 4 evidence separates automated contracts from hosted-device proof. | Implemented | Desktop checks cannot substitute for an installed iPad offline run or cross-browser transfer evidence. |
+| D-034 | Player-painted wearables declare every fit family; catalog discovery uses one shared filter. | Implemented | Replaces the single-family stamp that made custom art invisible on five of six bodies. |
+| D-035 | Feature views raise prompts through the injected dialog service, never `alert`/`confirm`/`prompt`. | Implemented | Native dialogs are unstyled, untranslatable, and blocking, and break the documented `alertdialog` accessibility contract. |
 
 ## Decision details
 
@@ -97,8 +99,20 @@ The base doll catalog expands to 6 stylized models covering 5 distinct life stag
 
 ### D-032 — Fit-Aware Randomization and Expanded Face & Wardrobe Catalog
 
-The Designer randomization algorithm (`designer/shuffle`) enforces strict fit-family compatibility by evaluating the active doll's `fitFamily`. Wearables with incompatible `supportedFitFamilies` are excluded from random selection, ensuring life stages like Baby, Child, Adult, and Elder only receive suitable garments. Randomization also samples harmonious facial features (eyes with randomized iris colors, eyebrows, noses, mouths, and details), producing diverse, appealing characters without generating invalid combinations. The catalog expands with 7 expressive face features and 5 life-stage specific hair and wardrobe assets (total 112 cataloged SVGs).
+The Designer randomization algorithm (`designer/shuffle`) enforces strict fit-family compatibility by evaluating the active doll's `fitFamily`. Wearables with incompatible `supportedFitFamilies` are excluded from random selection, ensuring life stages like Baby, Child, Adult, and Elder only receive suitable garments. Randomization also samples harmonious facial features (eyes with randomized iris colors, eyebrows, noses, mouths, and details), producing diverse, appealing characters without generating invalid combinations. The catalog now provides at least two starter choices in every wearable slot for each life stage, with 19 face assets and 87 wearable assets across 141 cataloged SVGs.
 
 ### D-033 — Single-Layer Custom Hair Architecture and Paint Pipeline
 
 Custom player-drawn hair is structured as a single-layer wearable asset (`slot: 'hair'`) with standard `300 × 450` logical / `600 × 900` backing transparent PNG dimensions, matching the architecture of other wearable slots (`top`, `bottom`, `dress`, `shoes`, `accessory`). Custom hair renders over the character's head and face at Layer 70 (`hairFront`), while Layer 10 (`hairBack`) is skipped for custom raster hair. This avoids dual-canvas cognitive friction, split-layer undo complexity, and multi-blob storage overhead while supporting short cuts, curls, afros, topknots, buns, braids, and hats. Paint Studio provides hairline, crown, ear, and head contour reference guides for all 6 base doll models, with seamless "Save & Wear" workflow in Designer and complete project export/import portability.
+
+### D-034 — Custom artwork fit families and shared discovery filtering
+
+Custom wearables saved from Paint Studio previously recorded `supportedFitFamilies` as the single fit family of whichever reference body happened to be active on the canvas, which hid the artwork on the other five life stages with no indication at paint time. Player-painted wearables now declare all of `FIT_FAMILIES`; the reference model remains a drawing aid, not a compatibility constraint.
+
+Catalog discovery is likewise unified. `matchesDiscoveryFilters(asset, fitFamily, styleFilter)` in `core/asset-catalog.js` is the single filter for built-in and custom descriptors, so the `unsorted` style keeps returning items that carry no `presentationStyles`, regardless of origin. Feature views must not re-implement fit or style filtering inline.
+
+### D-035 — Prompts go through the injected dialog service
+
+Feature views raise confirmations, alerts, and text prompts through the injected dialog service (`askConfirm`, `showAlert`) rather than `window.alert`, `window.confirm`, or `window.prompt`. Native dialogs cannot be translated or styled, block the main thread, render as browser chrome outside the shell in an installed iPad PWA, and bypass the `<dialog role="alertdialog">` semantics asserted in the accessibility matrix.
+
+Paint Studio, the Dollbox rename control, and the Scene Book rename control were all converted in the 2026-08-18 hardening pass. `askPrompt` in `app.js` supplies a queued `#prompt-dialog` implementation alongside `askConfirm` and `showAlert`; views accept it by injection and keep a native fallback only for the case where no service is supplied.

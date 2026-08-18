@@ -3,9 +3,11 @@
     <!-- Left Eye -->
     <ellipse cx="136" cy="60" rx="3.5" ry="5" fill="var(--iris-color, #2d261e)" stroke="none"/>
     <circle cx="135" cy="58" r="1.5" fill="#ffffff" stroke="none"/>
+    <path d="M131 54 C134 52 139 52 142 54" fill="none" stroke="#2d261e" stroke-width="1.4" stroke-linecap="round"/>
     
     <!-- Right Eye -->
     <ellipse cx="164" cy="60" rx="3.5" ry="5" fill="var(--iris-color, #2d261e)" stroke="none"/>
     <circle cx="163" cy="58" r="1.5" fill="#ffffff" stroke="none"/>
+    <path d="M158 54 C161 52 166 52 169 54" fill="none" stroke="#2d261e" stroke-width="1.4" stroke-linecap="round"/>
   </g>
 </svg>

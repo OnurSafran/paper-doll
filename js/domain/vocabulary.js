@@ -28,9 +28,19 @@ export const OUTFIT_SLOTS = Object.freeze([
   'accessory'
 ]);
 
+export const REFERENCE_DOLL_IDS = Object.freeze([
+  'doll_classic_a', 'doll_classic_b', 'doll_chibi_a', 'doll_baby_a', 'doll_adult_a', 'doll_elder_a'
+]);
+
 export function isOutfitSlot(value) {
   return typeof value === 'string' && OUTFIT_SLOTS.includes(value);
 }
+
+/**
+ * Slots emptied by "take off". Hair is deliberately excluded: it reads as part of
+ * the character rather than the outfit, so clearing an outfit leaves it in place.
+ */
+export const CLEARABLE_OUTFIT_SLOTS = Object.freeze(OUTFIT_SLOTS.filter((slot) => slot !== 'hair'));
 
 export const ENTITY_KINDS = Object.freeze([
   'character',
@@ -54,6 +64,15 @@ export const DEFAULT_BUBBLE_TEXT = 'Hello!';
 
 export function isBubbleStyle(value) {
   return typeof value === 'string' && BUBBLE_STYLES.includes(value);
+}
+
+/** Translation key for a bubble style's display name. Unknown styles fall back to the default style. */
+export function bubbleStyleLabelKey(style) {
+  return `play.bubble${capitalize(isBubbleStyle(style) ? style : DEFAULT_BUBBLE_STYLE)}`;
+}
+
+function capitalize(value) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 export const FACE_GROUPS = Object.freeze([

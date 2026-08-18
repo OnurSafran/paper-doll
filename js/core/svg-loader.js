@@ -75,10 +75,11 @@ export function makeAssetPlaceholder(label) {
   node.className = 'asset-placeholder';
   node.textContent = label;
   node.setAttribute('role', 'img');
-  node.setAttribute('aria-label', `${label} unavailable`);
+  node.setAttribute('aria-label', t('assets.unavailable', { name: label }));
   return node;
 }
 
 function assetError(code, message) {
   return Object.assign(new Error(message), { code });
 }
+import { t } from './i18n.js';

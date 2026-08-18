@@ -6,6 +6,7 @@ import {
   MAX_HISTORY_STEPS,
   MAX_HISTORY_BYTES
 } from '../js/features/paint/paint-session.js';
+import { t } from '../js/core/i18n.js';
 
 test('validateArtworkName rejects empty or oversized names', () => {
   assert.equal(validateArtworkName('').valid, false);
@@ -14,6 +15,14 @@ test('validateArtworkName rejects empty or oversized names', () => {
 
   const longName = 'a'.repeat(35);
   assert.equal(validateArtworkName(longName).valid, false);
+});
+
+test('paint session validates names at the model boundary', () => {
+  const session = createPaintSession();
+  assert.equal(session.setName('   '), false);
+  assert.equal(session.getState().name, t('paint.defaultWearableName', { slot: t('paint.slotTop') }));
+  assert.equal(session.setName('  Finished top  '), true);
+  assert.equal(session.getState().name, 'Finished top');
 });
 
 test('createPaintSession initializes with sound defaults for wearables', () => {
@@ -91,12 +100,15 @@ test('createPaintSession manages tool, shape, color, brush, and mirror state mut
 
 test('wearable slot changes preserve raster history and generated-name semantics', () => {
   const session = createPaintSession({ itemType: 'wearable', slot: 'top' });
+  const pristine = createPaintSession({ itemType: 'wearable', slot: 'top' });
+  assert.equal(pristine.setSlot('dress'), true);
+  assert.equal(pristine.getState().dirty, false);
   const snapshot = { id: 'paint-before-slot-change' };
   session.pushHistory(snapshot);
 
   assert.equal(session.setSlot('dress'), true);
   assert.equal(session.getState().slot, 'dress');
-  assert.equal(session.getState().name, 'My dress');
+  assert.equal(session.getState().name, t('paint.defaultWearableName', { slot: t('paint.slotDress') }));
   assert.equal(session.getState().dirty, true);
   assert.equal(session.canUndo(), true);
   assert.equal(session.undo({ id: 'current' }), snapshot);
@@ -163,7 +175,7 @@ test('createPaintSession enforces bounded Undo/Redo stack with maximum 20 steps'
     session.undo();
     count++;
   }
-  assert.equal(count <= MAX_HISTORY_STEPS, true);
+  assert.equal(count, MAX_HISTORY_STEPS);
 });
 
 test('createPaintSession enforces the combined history memory budget', () => {
