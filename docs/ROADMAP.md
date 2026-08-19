@@ -7,7 +7,7 @@ This is the single authority for implementation status, open work, and delivery 
 ## Current snapshot
 
 - Working dependency-free Designer and Play vertical slice
-- 6 base dolls across 5 life stages (Baby, Child, Teen, Adult, Elder), 19 modular face features, 87 wearable/hair/accessory assets, 7 backgrounds, and 22 props
+- 6 base dolls across 5 life stages (Baby, Child, Teen, Adult, Elder), 19 modular face features, 87 wearable/hair/accessory assets, 8 backgrounds, and 22 props
 - Dollbox, Scene Book, current-scene autosave/reload, and local schema migration (v4 modular face)
 - Pointer/keyboard scene editing, bounded Undo/Redo, and PNG export
 - Seven in-session expressions and strictly local voice puppetry
@@ -18,12 +18,13 @@ This is the single authority for implementation status, open work, and delivery 
   - Gate 2: 6 base doll models across 5 life stages, fit-family wardrobe filtering, retention on model switch
   - Gate 3: Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage hair/garments
   - Gate 4: Single-layer custom hair architecture with Layer 70 rendering, Paint Studio guides for all 6 models, and portability
-  - Gate 5: 315 automated tests passing, 141 cataloged SVGs validated, complete release evidence and documentation
-- 315 automated tests passing
-- 141 cataloged SVG files passing asset validation
+  - Gate 5: 322 automated tests passing, 142 cataloged SVGs validated, complete release evidence and documentation
+- 322 automated tests passing
+- 142 cataloged SVG files passing asset validation
 - Catalog assets carry `added_date`, `creator`, `concept`, `dlc`, and `source` provenance metadata; current content pack is `core`
+- Props are grouped in Play by `Home`, `Outdoors`, `Creative`, `Fun`, and derived `My Art`; custom prop collection membership is persisted and editable from My Art
 - Installable offline PWA shell with Turkish in-app guide
-- Documentation validation passing with 8 canonical documents
+- Documentation validation passing with 9 canonical documents
 - Designer and Paint source hardening pass complete (2026-08-18): all 41 reviewed findings closed, plus 5 follow-ups found during verification; remaining non-defect observations are tracked in the improvement backlog below
 - Play hardening complete (2026-08-19): all 20 findings (PL-1 to PL-20) closed, plus the PLR-1 regression found during verification. Verification was done against source and at runtime, not against fix descriptions — 16 findings held on first check, 4 did not, and all were closed the same day. R-06 and R-07 are both closed; 315 automated tests pass
 - Gates A–D complete; Gate E asset expansion complete; Custom Paint Gates 0–3 complete; Character Customization Gates 0–5 complete; Play hardening (Gate F) complete; hosted iPad smoke test remains before family release
@@ -34,7 +35,7 @@ This is the single authority for implementation status, open work, and delivery 
 |:--|:--|:--|
 | Domain/store | Implemented | Shared vocabulary, injected time/identity, and validated generated IDs are centralized. |
 | Schema/storage | Implemented | Monotonic revision guards, post-write race detection, and recovery/availability reporting are complete. |
-| Asset pipeline | Implemented | Add clone-ID scoping before patterns/definitions. Core asset provenance metadata and ordinary SVG expansion are in place. |
+| Asset pipeline | Implemented | Add clone-ID scoping before patterns/definitions. Core asset provenance metadata, prop collections, custom collection persistence, and ordinary SVG expansion are in place. |
 | Designer/Dollbox | Implemented | Modular feature architecture extracted cleanly. Hardening pass closed shared catalog filtering, fit-aware layers, focus restoration, the Dollbox render gate, and the in-app rename prompt. Complete real-browser accessibility journey. |
 | Play/Scene Book | Implemented | Modular feature architecture extracted cleanly. Full entity thumbnails; panoramic world & camera navigation. Hardening pass closed panoramic move clamping, Scene Outline labelling, custom-prop discovery, render patching, context-ring focus, keyboard and wheel input, full Play localization, and the consistency backlog. Composition-root asset-resolver wiring is now covered by a source contract test. |
 | Undo/Redo | Implemented | Verify longer mixed-domain journeys and history semantics. |
@@ -139,7 +140,7 @@ Ordered by player impact. Sourced from the 2026-08-18 Play review; full detail i
 1. [x] Close R-06 (PL-1) and add the two panoramic movement regression tests.
 2. [x] Fix the Scene Outline labelling defects: per-style bubble names (PL-2) and injected `getAsset` so custom props keep their name (PL-3).
 3. [x] Restore keyboard reachability: context-ring focus after its own actions (PL-8) and modifier-aware stage shortcuts (PL-10).
-4. [x] Localize the Play surface: all `scene/*` reducer messages, per-mode alignment phrasing, tray/entity/outline accessible names, `BUBBLE_PRESETS`, the camera slider label, and `assets.*` entries for all 22 props, 7 backgrounds, and 6 dolls with `assetName()` applied at every call site (PL-4, PL-5, PL-6).
+4. [x] Localize the Play surface: all `scene/*` reducer messages, per-mode alignment phrasing, tray/entity/outline accessible names, `BUBBLE_PRESETS`, the camera slider label, and `assets.*` entries for all 22 props, 8 backgrounds, and 6 dolls with `assetName()` applied at every call site (PL-4, PL-5, PL-6).
 5. [x] Patch-render the Play surface instead of rebuilding it per mutation, following the I-05 pattern and gating the spawn tray (PL-7).
 6. [x] Correct panoramic input details: wheel handler claims only horizontal gestures (PL-9), and tray spawns respect `cameraX` (PL-11).
 7. [x] Clear the consistency backlog: PL-13 to PL-20, including a single `bubbleStyleLabelKey` in `domain/vocabulary.js` replacing three copies of the bubble label map (PL-14).

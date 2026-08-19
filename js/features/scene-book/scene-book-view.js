@@ -11,7 +11,8 @@ import { getEntityBounds } from '../../domain/scene-rules.js';
 import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION, defaultMakeId, isCustomAssetId } from '../../domain/vocabulary.js';
 import { createStarterDraft } from '../../domain/outfit-rules.js';
 import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../../domain/scene-templates.js';
-import { t } from '../../core/i18n.js';
+import { assetName, t } from '../../core/i18n.js';
+import { getBackgroundLayout } from '../../core/background-layout.js';
 
 /**
  * Creates a high-fidelity composite vector SVG representing a full scene (background + entities).
@@ -20,6 +21,7 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
   const getAssetFn = options.getAsset ?? getBuiltinAsset;
   const customArtRepo = options.customArtRepo;
+  const enforceFit = options.enforceFit ?? false;
   const stageWidth = Number(scene?.stageWidth) || 1600;
 
   const rootSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -39,14 +41,14 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
     const bvw = Number.isFinite(vbParts[2]) && vbParts[2] > 0 ? vbParts[2] : 800;
     const bvh = Number.isFinite(vbParts[3]) && vbParts[3] > 0 ? vbParts[3] : 500;
 
-    const bgScale = Math.max(1600 / bvw, 900 / bvh);
-    const bgBaseOffsetX = (1600 - bvw * bgScale) / 2 - bvx * bgScale;
-    const bgOffsetY = (900 - bvh * bgScale) / 2 - bvy * bgScale;
-
-    for (let x = 0; x < stageWidth; x += 1600) {
+    const layout = getBackgroundLayout(getAssetFn(scene.backgroundId), stageWidth);
+    for (const tileX of layout.tilePositions) {
       const bgG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       bgG.setAttribute('class', 'scene-thumb-bg');
-      bgG.setAttribute('transform', `translate(${x + bgBaseOffsetX}, ${bgOffsetY}) scale(${bgScale})`);
+      const bgScale = Math.max(layout.tileWidth / bvw, 900 / bvh);
+      const bgOffsetX = tileX + (layout.tileWidth - bvw * bgScale) / 2 - bvx * bgScale;
+      const bgOffsetY = (900 - bvh * bgScale) / 2 - bvy * bgScale;
+      bgG.setAttribute('transform', `translate(${bgOffsetX}, ${bgOffsetY}) scale(${bgScale}, ${bgScale})`);
       const clone = bgSvg.cloneNode(true);
       while (clone.firstChild) bgG.appendChild(clone.firstChild);
       rootSvg.appendChild(bgG);
@@ -72,7 +74,7 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
         const dollSvg = await createExportDollSvg(
           entity.characterSnapshot || {},
           entity.expression || DEFAULT_EXPRESSION,
-          { loadAssetSvg: loadSvg, customArtRepo, getAsset: getAssetFn }
+          { loadAssetSvg: loadSvg, customArtRepo, getAsset: getAssetFn, enforceFit }
         );
         const dollG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const scaleX = CHARACTER_DIMENSIONS.BASE_WIDTH / 300;
@@ -237,7 +239,7 @@ export function createSceneBookView({
 
       const meta = document.createElement('div');
       meta.className = 'scene-card-meta';
-      const bgName = getAsset(scene.backgroundId)?.name ?? 'Scene';
+      const bgName = assetName(getAsset(scene.backgroundId), t('play.paperScene'));
       const updatedDate = new Date(scene.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
       meta.textContent = t('sceneBook.metaInfo', { bg: bgName, count: scene.entities.length, date: updatedDate });
 

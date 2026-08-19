@@ -15,8 +15,8 @@
 /* Feature Screens & Layouts */
 @import './features/header.css?v=4bf96bb6';
 @import './features/designer.css?v=d17b1cb3';
-@import './features/play.css?v=f54a1d16';
-@import './features/paint.css?v=76a6656f';
+@import './features/play.css?v=a974a343';
+@import './features/paint.css?v=d4825b95';
 
 /* Global Responsive & Accessibility Queries */
 @import './responsive/responsive.css?v=2e0ce50b';

@@ -36,6 +36,14 @@
       "added_date": "2026-08-14"
     },
     {
+      "scope": "assets/backgrounds/moonlit-meadow.svg",
+      "method": "project-authored SVG primitives and paths",
+      "creator": "Paper Doll Studio",
+      "concept": "moonlit meadow panorama",
+      "dlc": "core",
+      "added_date": "2026-08-19"
+    },
+    {
       "scope": "assets/props",
       "method": "project-authored SVG primitives and paths",
       "creator": "Paper Doll Studio",

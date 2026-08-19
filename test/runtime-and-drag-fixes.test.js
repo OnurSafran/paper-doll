@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { createDefaultEnvelope } from '../js/core/state-schema.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { createDesignerView } from '../js/features/designer/designer-view.js';
-import { createPlayView, getContextRingFocusAction } from '../js/features/play/play-view.js';
+import { createPlayView, getContextRingFocusAction, sceneEntityRenderKey } from '../js/features/play/play-view.js';
 import { createSceneOutlineView } from '../js/features/play/scene-outline-view.js';
-import { t } from '../js/core/i18n.js';
+import { getCurrentLanguage, setLanguage, t } from '../js/core/i18n.js';
 import { assetsByKind, getAsset } from '../js/core/asset-catalog.js';
 
 function createMockElement(tagName = 'div') {
@@ -68,6 +68,26 @@ function setupMockDom() {
   globalThis.requestAnimationFrame = (fn) => setTimeout(fn, 0);
   globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
 }
+
+test('Play character render keys change when the language changes', () => {
+  const originalLanguage = getCurrentLanguage();
+  const entity = {
+    kind: 'character',
+    sourceId: 'preset-1',
+    characterSnapshot: { baseDollId: 'doll_classic_a', slots: {} },
+    expression: 'neutral'
+  };
+
+  try {
+    setLanguage('tr');
+    const turkishKey = sceneEntityRenderKey(entity);
+    setLanguage('en');
+    const englishKey = sceneEntityRenderKey(entity);
+    assert.notEqual(turkishKey, englishKey);
+  } finally {
+    setLanguage(originalLanguage);
+  }
+});
 
 test('Designer view + Paint item button invokes openPaintStudio without ReferenceError', async () => {
   setupMockDom();

@@ -50,7 +50,7 @@ js/core/error-boundary.js            top-level error and rejection handling
 - Services accept plain data and injected browser capabilities; they do not query feature DOM.
 - Persisted enums have one definition in `domain/vocabulary.js`. Slot lists, reference doll IDs, and tool/shape vocabularies are imported, never re-declared in a feature module.
 - Shared rendering helpers live in `core/`. A feature view never imports a helper from `services/`.
-- Catalog fit and style filtering happens in `core/asset-catalog.js`; views pass parameters instead of re-implementing predicates.
+- Catalog fit, style, and prop-collection filtering happens in `core/asset-catalog.js` and the unified `core/asset-registry.js`; views pass parameters instead of re-implementing predicates.
 - Views raise prompts through the injected dialog service, never `alert`/`confirm`/`prompt` (D-035).
 - A view that registers window-level listeners exposes a teardown that removes them.
 - The repository is the only owner of serialized envelope revisions and conflict checks.
@@ -82,6 +82,12 @@ js/core/error-boundary.js            top-level error and rejection handling
 
 Persist `settings`, `customAssets`, `presets`, `scenes`, and `currentScene`. Do not persist UI selection, voice-active state, drag previews, render tokens, object URLs, audio frames, or history stacks.
 
+Custom prop records may persist a validated `collections` array containing the
+thematic IDs `home`, `outdoors`, `creative`, and `fun`. My Art is derived from
+custom ownership and is not stored as a user-editable collection. The
+`customAsset/setCollections` command is the only mutation path for these values;
+the registry exposes them through the same descriptor contract as built-in props.
+
 ### Layer Stacking Order
 - 10: `hairBack` (built-in SVG back hair)
 - 20: `skin` (doll body base model; `#baked-face` hidden when modular face exists)
@@ -109,7 +115,7 @@ History snapshots only domain state. A pointer drag updates transient preview co
 - Parsed SVG templates are cached; every use receives an independent clone.
 - Collections render from stable IDs and restore focus when the focused item remains.
 - Unknown assets render labeled placeholders and remain selectable/removable.
-- Scene Book and export derive from state; thumbnails are never persisted.
+- Scene Book and export derive from state; thumbnails are never persisted. Background layout uses the asset's declared native width (`1600`, `3200`, or `4800`) and repeats or crops it without non-uniform stretching.
 
 ### Outfit composition
 

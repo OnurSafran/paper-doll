@@ -25,6 +25,7 @@ import { getAsset } from '../js/core/asset-catalog.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { createExportService } from '../js/services/export-service.js';
 import { createCompositeSceneThumbnailSvg } from '../js/features/scene-book/scene-book-view.js';
+import { getBackgroundLayout } from '../js/core/background-layout.js';
 
 test('Panoramic vocabulary defines valid stage widths and camera constants', () => {
   assert.deepEqual(STAGE_WIDTHS, [1600, 3200, 4800]);
@@ -40,6 +41,33 @@ test('Panoramic vocabulary defines valid stage widths and camera constants', () 
   assert.ok(CAMERA_CONSTANTS.STEP > 0);
   assert.ok(CAMERA_CONSTANTS.EDGE_ZONE > 0);
   assert.ok(CAMERA_CONSTANTS.EDGE_SPEED > 0);
+});
+
+test('background layouts repeat native tiles without stretching them', () => {
+  assert.deepEqual(getBackgroundLayout(getAsset('bg_bedroom'), 4800), {
+    stageWidth: 4800,
+    tileWidth: 1600,
+    tileCount: 3,
+    tilePercent: 33.33333333333333,
+    centered: false,
+    tilePositions: [0, 1600, 3200]
+  });
+  assert.deepEqual(getBackgroundLayout(getAsset('bg_moonlit_meadow'), 3200), {
+    stageWidth: 3200,
+    tileWidth: 3200,
+    tileCount: 1,
+    tilePercent: 100,
+    centered: false,
+    tilePositions: [0]
+  });
+  assert.deepEqual(getBackgroundLayout(getAsset('bg_moonlit_meadow'), 1600), {
+    stageWidth: 1600,
+    tileWidth: 3200,
+    tileCount: 1,
+    tilePercent: 200,
+    centered: true,
+    tilePositions: [-800]
+  });
 });
 
 test('clampCameraX clamps camera position within [0, stageWidth - 1600]', () => {
@@ -362,7 +390,7 @@ test('undo and redo preserve the latest camera position without adding camera hi
   assert.equal(store.getState().currentScene.cameraX, 1200);
 });
 
-test('Export service creates canvas with panoramic dimensions and tiles background', async () => {
+test('Export service repeats normal backgrounds and preserves native panoramas', async () => {
   const exportService = createExportService({
     loadAssetSvg: async () => {
       const el = {
@@ -400,14 +428,26 @@ test('Export service creates canvas with panoramic dimensions and tiles backgrou
   await exportService.renderSceneToCanvas(wideScene, fakeCanvas);
   assert.equal(fakeCanvas.width, 3200);
   assert.equal(fakeCanvas.height, 900);
-  // Background drawn 2 times for 3200 width (at x=0 and x=1600)
   const bgDraws = drawnCalls.filter((call) => call[3] === 1600 && call[4] === 900);
   assert.equal(bgDraws.length, 2);
-  assert.equal(bgDraws[0][1], 0); // x=0
-  assert.equal(bgDraws[1][1], 1600); // x=1600
+  assert.equal(bgDraws[0][1], 0);
+  assert.equal(bgDraws[1][1], 1600);
+
+  drawnCalls.length = 0;
+  await exportService.renderSceneToCanvas({
+    sceneId: 'export-panorama',
+    title: 'Native Panorama',
+    backgroundId: 'bg_moonlit_meadow',
+    stageWidth: 3200,
+    cameraX: 0,
+    entities: []
+  }, fakeCanvas);
+  const panoramaDraws = drawnCalls.filter((call) => call[3] === 3200 && call[4] === 900);
+  assert.equal(panoramaDraws.length, 1);
+  assert.equal(panoramaDraws[0][1], 0);
 });
 
-test('Scene Book composite thumbnail SVG creates wide viewBox and tiled background', async () => {
+test('Scene Book composite thumbnail SVG repeats normal backgrounds at native width', async () => {
   globalThis.document = {
     createElementNS(ns, tag) {
       const attrs = new Map();
@@ -471,4 +511,9 @@ test('Scene Book composite thumbnail SVG creates wide viewBox and tiled backgrou
 
   const svg = await createCompositeSceneThumbnailSvg(wideScene, { loadAssetSvg: fakeLoadSvg });
   assert.equal(svg.getAttribute('viewBox'), '0 0 4800 900');
+  assert.equal(svg.children.length, 3);
+  assert.equal(svg.children[0].getAttribute('class'), 'scene-thumb-bg');
+  assert.equal(svg.children[0].getAttribute('transform'), 'translate(0, -50) scale(2, 2)');
+  assert.equal(svg.children[1].getAttribute('transform'), 'translate(1600, -50) scale(2, 2)');
+  assert.equal(svg.children[2].getAttribute('transform'), 'translate(3200, -50) scale(2, 2)');
 });

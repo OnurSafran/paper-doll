@@ -64,6 +64,7 @@ import {
   isFaceGroup,
   isOutfitSlot,
   isPresentationStyle,
+  isPropCollection,
   isStageWidth,
   isValidId,
   LIMITS,
@@ -1232,6 +1233,22 @@ function reduce(state, action, context) {
       nextCustoms[index] = updated;
       return {
         state: message(`Artwork renamed to "${name}".`, { ...state, customAssets: nextCustoms }),
+        persist: true,
+        result: { ok: true }
+      };
+    }
+
+    case 'customAsset/setCollections': {
+      const index = state.customAssets.findIndex((a) => a.assetId === action.assetId);
+      if (index < 0 || state.customAssets[index].kind !== 'prop' || !Array.isArray(action.collections)) {
+        return { state: message('Invalid custom artwork collections.'), result: { ok: false, code: 'INVALID_COLLECTIONS' } };
+      }
+      const collections = [...new Set(action.collections.filter(isPropCollection))];
+      const updated = { ...state.customAssets[index], collections, updatedAt: context.now().toISOString() };
+      const nextCustoms = [...state.customAssets];
+      nextCustoms[index] = updated;
+      return {
+        state: message(`Artwork collections updated.`, { ...state, customAssets: nextCustoms }),
         persist: true,
         result: { ok: true }
       };

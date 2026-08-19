@@ -1,10 +1,11 @@
 {
   "name": "paper-doll-studio",
-  "version": "0.1.2",
+  "version": "1.16.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
+    "build:backgrounds": "node scripts/build-backgrounds.mjs",
     "validate:docs": "node scripts/validate-docs.mjs",
     "validate:assets": "node scripts/validate-assets.mjs",
     "validate:cache": "node scripts/validate-cache-busting.mjs",

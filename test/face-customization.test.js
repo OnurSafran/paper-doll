@@ -236,6 +236,17 @@ test('renderDollInto keeps baked default face visible and hides incompatible clo
     const warningSummary = renderedLayers.find((node) => node.className === 'fit-warning-summary');
     assert.ok(warningSummary, 'incompatible pieces should share one expandable warning');
     assert.equal(warningSummary.children?.[0]?.textContent, t('designer.fitWarningSummary', { count: 2 }));
+
+    renderedLayers.length = 0;
+    await renderDollInto(fakeContainer, draft, {
+      getAsset,
+      enforceFit: false,
+      loadAssetSvg: async () => makeElement('svg')
+    });
+    assert.equal(renderedLayers.some((node) => node.className === 'fit-warning-summary'), false,
+      'free-form render contexts should not show Designer fit warnings');
+    assert.equal(renderedLayers.find((layer) => layer.dataset.slot === 'bottom')?.children?.[0]?.localName, 'svg',
+      'free-form render contexts should keep the saved clothing visible');
   } finally {
     if (origDocument === undefined) delete globalThis.document;
     else globalThis.document = origDocument;
@@ -472,6 +483,24 @@ test('createExportDollSvg renders face layers in exact visual hierarchy', async 
     assert.ok(browsIdx < detailIdx, 'brows before detail');
     assert.ok(detailIdx < noseIdx, 'detail before nose');
     assert.ok(noseIdx < mouthIdx, 'nose before mouth');
+
+    loadedIds.length = 0;
+    const freeFormDraft = createStarterDraft();
+    freeFormDraft.baseDollId = 'doll_baby_a';
+    freeFormDraft.slots = {
+      hair: null,
+      top: { assetId: 'top_coat_adult', color: 'charcoal' },
+      bottom: null,
+      dress: null,
+      shoes: null,
+      accessory: null
+    };
+    await createExportDollSvg(freeFormDraft, 'neutral', {
+      loadAssetSvg: fakeLoadSvg,
+      enforceFit: false
+    });
+    assert.ok(loadedIds.includes('top_coat_adult'),
+      'free-form exports should keep saved clothing that does not fit the active model');
   } finally {
     if (origDocument === undefined) delete globalThis.document;
     else globalThis.document = origDocument;

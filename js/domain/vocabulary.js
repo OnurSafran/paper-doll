@@ -123,6 +123,17 @@ export function isAssetKind(value) {
   return typeof value === 'string' && ASSET_KINDS.includes(value);
 }
 
+export const PROP_COLLECTION_IDS = Object.freeze([
+  'home',
+  'outdoors',
+  'creative',
+  'fun'
+]);
+
+export function isPropCollection(value) {
+  return typeof value === 'string' && PROP_COLLECTION_IDS.includes(value);
+}
+
 export const REDUCED_MOTION_OPTIONS = Object.freeze([
   'system',
   'reduce',

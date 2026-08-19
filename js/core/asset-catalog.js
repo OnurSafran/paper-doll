@@ -1,4 +1,4 @@
-import { FIT_FAMILIES } from '../domain/vocabulary.js';
+import { FIT_FAMILIES, isPropCollection } from '../domain/vocabulary.js';
 
 const dollViewBox = [0, 0, 300, 450];
 const NEW_CORE_ASSET_IDS = new Set([
@@ -7,6 +7,7 @@ const NEW_CORE_ASSET_IDS = new Set([
   'accessory_hairclip', 'accessory_flower', 'prop_bicycle', 'prop_kite',
   'prop_camera', 'prop_flower_pot', 'prop_mailbox', 'prop_picnic_blanket'
 ]);
+const PANORAMIC_CORE_ASSET_IDS = new Set(['bg_moonlit_meadow', 'bg_snowy_village', 'bg_city_sunset', 'bg_candy_land']);
 const ASSET_CREATOR = 'Paper Doll Studio';
 const NEW_ASSET_CREATOR = '5.6 Luna';
 
@@ -140,42 +141,46 @@ export const ASSETS = Object.freeze([
   wearable('accessory_bonnet_baby', 'accessory', 'Soft baby bonnet', 'assets/clothing/accessories/bonnet-baby.svg', 'lavender', ['garment'], ['baby'], ['neutral']),
   wearable('accessory_rattle_baby', 'accessory', 'Baby rattle', 'assets/clothing/accessories/rattle-baby.svg', 'marigold', ['garment'], ['baby'], ['neutral']),
 
-  { id: 'bg_bedroom', kind: 'background', name: 'Cozy bedroom', path: 'assets/backgrounds/bedroom.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
-  { id: 'bg_park', kind: 'background', name: 'Sunny park', path: 'assets/backgrounds/park.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
-  { id: 'bg_atelier', kind: 'background', name: 'Creative atelier', path: 'assets/backgrounds/atelier.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
-  { id: 'bg_beach', kind: 'background', name: 'Sunny beach', path: 'assets/backgrounds/beach.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
-  { id: 'bg_cafe', kind: 'background', name: 'Cozy cafe & bakery', path: 'assets/backgrounds/cafe.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
-  { id: 'bg_forest', kind: 'background', name: 'Enchanted forest', path: 'assets/backgrounds/forest.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
-  { id: 'bg_library', kind: 'background', name: 'Vintage library', path: 'assets/backgrounds/library.svg', viewBox: [0, 0, 800, 500], requiredGroups: ['background'] },
+  { id: 'bg_bedroom', kind: 'background', name: 'Cozy bedroom', path: 'assets/backgrounds/bedroom.svg', viewBox: [0, 0, 1600, 900], backgroundWidth: 1600, requiredGroups: ['background'] },
+  { id: 'bg_park', kind: 'background', name: 'Sunny park', path: 'assets/backgrounds/park.svg', viewBox: [0, 0, 1600, 900], backgroundWidth: 1600, requiredGroups: ['background'] },
+  { id: 'bg_atelier', kind: 'background', name: 'Creative atelier', path: 'assets/backgrounds/atelier.svg', viewBox: [0, 0, 1600, 900], backgroundWidth: 1600, requiredGroups: ['background'] },
+  { id: 'bg_beach', kind: 'background', name: 'Sunny beach', path: 'assets/backgrounds/beach.svg', viewBox: [0, 0, 1600, 900], backgroundWidth: 1600, requiredGroups: ['background'] },
+  { id: 'bg_cafe', kind: 'background', name: 'Cozy cafe & bakery', path: 'assets/backgrounds/cafe.svg', viewBox: [0, 0, 1600, 900], backgroundWidth: 1600, requiredGroups: ['background'] },
+  { id: 'bg_forest', kind: 'background', name: 'Enchanted forest', path: 'assets/backgrounds/forest.svg', viewBox: [0, 0, 1600, 900], backgroundWidth: 1600, requiredGroups: ['background'] },
+  { id: 'bg_library', kind: 'background', name: 'Vintage library', path: 'assets/backgrounds/library.svg', viewBox: [0, 0, 1600, 900], backgroundWidth: 1600, requiredGroups: ['background'] },
+  { id: 'bg_moonlit_meadow', kind: 'background', name: 'Moonlit meadow', path: 'assets/backgrounds/moonlit-meadow.svg', viewBox: [0, 0, 3200, 900], backgroundWidth: 3200, requiredGroups: ['background'] },
+  { id: 'bg_snowy_village', kind: 'background', name: 'Snowy village', path: 'assets/backgrounds/snowy-village.svg', viewBox: [0, 0, 3200, 900], backgroundWidth: 3200, requiredGroups: ['background'] },
+  { id: 'bg_city_sunset', kind: 'background', name: 'Rooftop sunset', path: 'assets/backgrounds/city-sunset.svg', viewBox: [0, 0, 3200, 900], backgroundWidth: 3200, requiredGroups: ['background'] },
+  { id: 'bg_candy_land', kind: 'background', name: 'Candy land', path: 'assets/backgrounds/candy-land.svg', viewBox: [0, 0, 4800, 900], backgroundWidth: 4800, requiredGroups: ['background'] },
 
-  prop('prop_chair', 'Armchair', 'assets/props/chair.svg', 240, 270),
-  prop('prop_table', 'Cafe table', 'assets/props/table.svg', 250, 230),
-  prop('prop_plant', 'Monstera plant', 'assets/props/plant.svg', 200, 270),
-  prop('prop_lamp', 'Floor lamp', 'assets/props/lamp.svg', 160, 360),
-  prop('prop_rug', 'Pastel rug', 'assets/props/rug.svg', 380, 140),
-  prop('prop_tea_set', 'Tea set', 'assets/props/tea-set.svg', 170, 120),
-  prop('prop_easel', 'Art easel', 'assets/props/easel.svg', 220, 290),
-  prop('prop_bookshelf', 'Cozy bookshelf', 'assets/props/bookshelf.svg', 260, 320),
-  prop('prop_cat', 'Sleeping cat', 'assets/props/cat.svg', 180, 130),
-  prop('prop_picnic_basket', 'Picnic basket', 'assets/props/picnic-basket.svg', 190, 160),
-  prop('prop_umbrella', 'Beach parasol', 'assets/props/umbrella.svg', 260, 340),
-  prop('prop_balloons', 'Balloons bunch', 'assets/props/balloons.svg', 210, 310),
-  prop('prop_cake', 'Celebration cake', 'assets/props/cake.svg', 170, 170),
-  prop('prop_guitar', 'Acoustic guitar', 'assets/props/guitar.svg', 180, 300),
-  prop('prop_painting', 'Wall art frame', 'assets/props/painting.svg', 220, 180),
-  prop('prop_bench', 'Garden bench', 'assets/props/bench.svg', 300, 200),
-  prop('prop_bicycle', 'Garden bicycle', 'assets/props/bicycle.svg', 300, 220),
-  prop('prop_kite', 'Colorful kite', 'assets/props/kite.svg', 200, 260),
-  prop('prop_camera', 'Little camera', 'assets/props/camera.svg', 180, 140),
-  prop('prop_flower_pot', 'Flower pot', 'assets/props/flower-pot.svg', 180, 220),
-  prop('prop_mailbox', 'Garden mailbox', 'assets/props/mailbox.svg', 220, 220),
-  prop('prop_picnic_blanket', 'Picnic blanket', 'assets/props/picnic-blanket.svg', 360, 160)
+  prop('prop_chair', 'Armchair', 'assets/props/chair.svg', 240, 270, ['home']),
+  prop('prop_table', 'Cafe table', 'assets/props/table.svg', 250, 230, ['home']),
+  prop('prop_plant', 'Monstera plant', 'assets/props/plant.svg', 200, 270, ['home']),
+  prop('prop_lamp', 'Floor lamp', 'assets/props/lamp.svg', 160, 360, ['home']),
+  prop('prop_rug', 'Pastel rug', 'assets/props/rug.svg', 380, 140, ['home']),
+  prop('prop_tea_set', 'Tea set', 'assets/props/tea-set.svg', 170, 120, ['home']),
+  prop('prop_easel', 'Art easel', 'assets/props/easel.svg', 220, 290, ['creative']),
+  prop('prop_bookshelf', 'Cozy bookshelf', 'assets/props/bookshelf.svg', 260, 320, ['home']),
+  prop('prop_cat', 'Sleeping cat', 'assets/props/cat.svg', 180, 130, ['home']),
+  prop('prop_picnic_basket', 'Picnic basket', 'assets/props/picnic-basket.svg', 190, 160, ['fun']),
+  prop('prop_umbrella', 'Beach parasol', 'assets/props/umbrella.svg', 260, 340, ['outdoors']),
+  prop('prop_balloons', 'Balloons bunch', 'assets/props/balloons.svg', 210, 310, ['fun']),
+  prop('prop_cake', 'Celebration cake', 'assets/props/cake.svg', 170, 170, ['fun']),
+  prop('prop_guitar', 'Acoustic guitar', 'assets/props/guitar.svg', 180, 300, ['creative']),
+  prop('prop_painting', 'Wall art frame', 'assets/props/painting.svg', 220, 180, ['creative']),
+  prop('prop_bench', 'Garden bench', 'assets/props/bench.svg', 300, 200, ['outdoors']),
+  prop('prop_bicycle', 'Garden bicycle', 'assets/props/bicycle.svg', 300, 220, ['outdoors']),
+  prop('prop_kite', 'Colorful kite', 'assets/props/kite.svg', 200, 260, ['fun']),
+  prop('prop_camera', 'Little camera', 'assets/props/camera.svg', 180, 140, ['creative']),
+  prop('prop_flower_pot', 'Flower pot', 'assets/props/flower-pot.svg', 180, 220, ['outdoors']),
+  prop('prop_mailbox', 'Garden mailbox', 'assets/props/mailbox.svg', 220, 220, ['outdoors']),
+  prop('prop_picnic_blanket', 'Picnic blanket', 'assets/props/picnic-blanket.svg', 360, 160, ['fun'])
 ].map((asset) => Object.freeze({
   ...asset,
   metadata: Object.freeze({
-    added_date: NEW_CORE_ASSET_IDS.has(asset.id) ? '2026-08-16' : '2026-08-14',
-    creator: NEW_CORE_ASSET_IDS.has(asset.id) ? NEW_ASSET_CREATOR : ASSET_CREATOR,
-    concept: NEW_CORE_ASSET_IDS.has(asset.id) ? 'weekend garden' : 'core',
+    added_date: PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? '2026-08-19' : NEW_CORE_ASSET_IDS.has(asset.id) ? '2026-08-16' : '2026-08-14',
+    creator: PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? ASSET_CREATOR : NEW_CORE_ASSET_IDS.has(asset.id) ? NEW_ASSET_CREATOR : ASSET_CREATOR,
+    concept: PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? 'seamless panorama' : NEW_CORE_ASSET_IDS.has(asset.id) ? 'weekend garden' : 'core',
     dlc: 'core',
     source: 'project-authored SVG primitives and paths'
   })
@@ -187,8 +192,24 @@ export function getAsset(id) {
   return byId.get(id);
 }
 
-export function assetsByKind(kind) {
+export function assetsByKind(kind, { collectionId = null } = {}) {
+  if (collectionId) return assetsByCollection(kind, collectionId);
   return ASSETS.filter((asset) => asset.kind === kind);
+}
+
+export const PROP_COLLECTIONS = Object.freeze([
+  Object.freeze({ id: 'home', labelKey: 'play.propCollectionHome' }),
+  Object.freeze({ id: 'outdoors', labelKey: 'play.propCollectionOutdoors' }),
+  Object.freeze({ id: 'creative', labelKey: 'play.propCollectionCreative' }),
+  Object.freeze({ id: 'fun', labelKey: 'play.propCollectionFun' }),
+  Object.freeze({ id: 'my-art', labelKey: 'play.propCollectionMyArt', customOnly: true })
+]);
+
+export function assetsByCollection(kind, collectionId) {
+  if (kind !== 'prop') return [];
+  if (collectionId === 'my-art') return [];
+  if (!isPropCollection(collectionId)) return [];
+  return ASSETS.filter((asset) => asset.kind === kind && asset.collections?.includes(collectionId));
 }
 
 export function dolls() {
@@ -238,9 +259,10 @@ function wearable(id, slot, name, path, color, requiredGroups = ['garment'], sup
   };
 }
 
-function prop(id, name, path, displayWidth, displayHeight) {
+function prop(id, name, path, displayWidth, displayHeight, collections = []) {
   return {
     id, kind: 'prop', name, path, viewBox: [0, 0, 1000, 1000], requiredGroups: ['prop'],
-    displayWidth, displayHeight, groundAnchor: { x: 0.5, y: 1.0 }, defaultScale: 1
+    displayWidth, displayHeight, collections: Object.freeze([...collections]),
+    groundAnchor: { x: 0.5, y: 1.0 }, defaultScale: 1
   };
 }

@@ -61,6 +61,31 @@ test('AppStore handles customAsset/add, customAsset/rename, customAsset/remove, 
   assert.equal(store.getState().customAssets[0].status, 'available');
 });
 
+test('custom props retain validated collection assignments while My Art remains automatic', () => {
+  const store = createAppStore(createDefaultEnvelope(), { getAsset });
+  const customProp = {
+    assetId: 'custom_prop_collection_test',
+    name: 'Collection Test',
+    kind: 'prop',
+    collections: ['home', 'outdoors', 'not-a-collection'],
+    displayWidth: 200,
+    displayHeight: 200,
+    groundAnchor: { x: 0.5, y: 1 },
+    sha256: '1234567890ab',
+    libraryVisible: true,
+    status: 'available'
+  };
+
+  assert.equal(store.dispatch({ type: 'customAsset/add', asset: customProp }).ok, true);
+  assert.deepEqual(store.getState().customAssets[0].collections, ['home', 'outdoors']);
+  assert.equal(store.dispatch({
+    type: 'customAsset/setCollections',
+    assetId: customProp.assetId,
+    collections: ['creative', 'creative', 'unknown']
+  }).ok, true);
+  assert.deepEqual(store.getState().customAssets[0].collections, ['creative']);
+});
+
 test('AppStore equips custom wearable and prevents palette tinting on custom art', () => {
   const store = createAppStore(createDefaultEnvelope(), { getAsset });
 

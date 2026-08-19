@@ -30,7 +30,8 @@ export function customAssetToDescriptor(asset) {
       metadata: Object.freeze({
         creator: 'Player',
         format: 'image/png',
-        sha256: asset.sha256
+        sha256: asset.sha256,
+        source: 'player-created artwork'
       })
     });
   }
@@ -46,12 +47,14 @@ export function customAssetToDescriptor(asset) {
       groundAnchor: Object.freeze(asset.groundAnchor ? { ...asset.groundAnchor } : { x: 0.5, y: 1.0 }),
       viewBox: [0, 0, 1000, 1000],
       defaultScale: 1,
+      collections: Object.freeze([...(asset.collections || [])]),
       libraryVisible: asset.libraryVisible !== false,
       status: asset.status || 'available',
       metadata: Object.freeze({
         creator: 'Player',
         format: 'image/png',
-        sha256: asset.sha256
+        sha256: asset.sha256,
+        source: 'player-created artwork'
       })
     });
   }
@@ -87,12 +90,15 @@ export function createAssetRegistry(customAssets = []) {
     return undefined;
   }
 
-  function assetsByKind(kind, { includeHidden = false } = {}) {
+  function assetsByKind(kind, { includeHidden = false, collectionId = null } = {}) {
     const builtins = ASSETS.filter((a) => a.kind === kind);
     const customs = [...customMap.values()].filter((a) =>
       a.kind === kind && (includeHidden || (a.libraryVisible !== false && a.status === 'available'))
     );
-    return [...builtins, ...customs];
+    const sources = [...builtins, ...customs];
+    if (!collectionId) return sources;
+    if (collectionId === 'my-art') return customs;
+    return sources.filter((asset) => asset.collections?.includes(collectionId));
   }
 
   function wearablesBySlot(slot, { includeHidden = false } = {}) {

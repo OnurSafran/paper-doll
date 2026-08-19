@@ -26,6 +26,9 @@ for (const asset of ASSETS) {
   if (asset.kind === 'wearable' && !isColorValue(asset.defaultColors?.primary)) {
     failures.push(`${asset.id}: invalid default color ${String(asset.defaultColors?.primary)}`);
   }
+  if (asset.kind === 'background' && ![1600, 3200, 4800].includes(asset.backgroundWidth)) {
+    failures.push(`${asset.id}: backgroundWidth must be one of 1600, 3200, or 4800`);
+  }
   if (!asset.path.startsWith('assets/') || asset.path.includes('..')) {
     failures.push(`${asset.id}: unsafe catalog path ${asset.path}`);
     continue;
@@ -76,7 +79,7 @@ const inventory = {
   prop: ASSETS.filter((asset) => asset.kind === 'prop').length,
   face: ASSETS.filter((asset) => asset.kind === 'face').length
 };
-const expected = { doll: 6, wearable: 87, background: 7, prop: 22, face: 19 };
+const expected = { doll: 6, wearable: 87, background: 11, prop: 22, face: 19 };
 for (const [kind, count] of Object.entries(expected)) {
   if (inventory[kind] !== count) failures.push(`catalog: expected ${count} ${kind} assets, found ${inventory[kind]}`);
 }

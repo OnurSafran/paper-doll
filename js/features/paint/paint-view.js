@@ -262,7 +262,7 @@ export function createPaintView({
       type: state.itemType === 'wearable' ? t('paint.wearableTypeBtn') : t('paint.propTypeLabel'),
       tool: t('paint.toolLabels.' + state.tool) || state.tool,
       zoom: state.zoom === 2 ? '2x' : '1x',
-      status: state.dirty ? t('paint.unsavedStatus') : t('paint.savedStatus')
+      status: state.dirty ? t('paint.unsavedStatus') : t('paint.cleanStatus')
     }));
 
     if (itemBadge) {

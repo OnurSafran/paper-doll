@@ -21,6 +21,7 @@ import {
   isFaceGroup,
   isFitFamily,
   isPresentationStyle,
+  isPropCollection,
   isReducedMotionOption,
   isStageWidth,
   isValidId,
@@ -88,6 +89,7 @@ export function cloneCustomAsset(asset) {
   if (!asset || typeof asset !== 'object') return null;
   return {
     ...asset,
+    ...(Array.isArray(asset.collections) ? { collections: [...asset.collections] } : {}),
     ...(asset.groundAnchor ? { groundAnchor: { ...asset.groundAnchor } } : {})
   };
 }
@@ -173,6 +175,9 @@ export function sanitizeCustomAsset(candidate) {
       ? candidate.presentationStyles.filter((style) => isPresentationStyle(style) && style !== 'all')
       : ['neutral', 'feminine', 'masculine'])
     : undefined;
+  const collections = kind === 'prop' && Array.isArray(candidate.collections)
+    ? [...new Set(candidate.collections.filter(isPropCollection))]
+    : [];
 
   return {
     assetId: candidate.assetId,
@@ -190,6 +195,7 @@ export function sanitizeCustomAsset(candidate) {
     updatedAt,
     libraryVisible,
     status,
+    collections,
     ...(kind === 'wearable' ? { supportedFitFamilies, presentationStyles } : {}),
     ...(kind === 'prop' ? { displayWidth, displayHeight, groundAnchor } : {})
   };

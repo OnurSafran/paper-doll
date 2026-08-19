@@ -4,20 +4,22 @@
  * batch transforms, alignment, and quick controls.
  */
 
-import { assetsByKind, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
+import { assetsByKind, getAsset as getBuiltinAsset, PROP_COLLECTIONS } from '../../core/asset-catalog.js';
 import { clientToLogical } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, getEntityBounds } from '../../domain/scene-rules.js';
 import { PointerController } from '../../core/pointer-controller.js?v=2';
 import { CAMERA_CONSTANTS, DEFAULT_EXPRESSION, DEFAULT_STAGE_WIDTH, VIEWPORT_HEIGHT, VIEWPORT_WIDTH, bubbleStyleLabelKey, isCustomAssetId } from '../../domain/vocabulary.js';
 import { appendAsset, renderAssetPreview } from '../designer/designer-view.js';
+import { getBackgroundLayout } from '../../core/background-layout.js';
 import { createBubbleSvg } from '../../services/export-service.js';
 import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
 
 
 const escapeCss = (val) => globalThis.CSS?.escape ? CSS.escape(String(val)) : String(val).replace(/["\\]/g, '\\$&');
 
-function sceneEntityRenderKey(entity) {
+export function sceneEntityRenderKey(entity) {
   return JSON.stringify({
+    language: getCurrentLanguage(),
     kind: entity.kind,
     sourceId: entity.sourceId,
     characterSnapshot: entity.kind === 'character' ? entity.characterSnapshot : null,
@@ -58,10 +60,11 @@ export function createPlayView({
   customArtRepo,
   openPaintStudio,
   getAsset = getBuiltinAsset,
-  getAssetsByKind = (kind) => assetsByKind(kind)
+  getAssetsByKind = (kind, options) => assetsByKind(kind, options)
 }) {
   let playRenderToken = 0;
   let spawnTab = 'characters';
+  let propCollection = 'home';
   let spawnTraySignature = null;
   let pointerController = null;
   const previewPoints = new Map();
@@ -317,16 +320,18 @@ export function createPlayView({
 
   function renderSpawnTray(state, token) {
     const tabs = $('#spawn-tabs');
+    const collectionTabs = $('#spawn-collection-tabs');
     const list = $('#spawn-items');
     if (!tabs || !list) return;
 
     const traySignature = JSON.stringify({
       language: getCurrentLanguage(),
       tab: spawnTab,
+      propCollection,
       presets: state.presets.map((preset) => [preset.presetId, preset.name, preset.updatedAt, preset.characterSnapshot]),
       customProps: (state.customAssets || [])
         .filter((asset) => asset.kind === 'prop')
-        .map((asset) => [asset.assetId, asset.name, asset.status, asset.libraryVisible, asset.updatedAt])
+        .map((asset) => [asset.assetId, asset.name, asset.status, asset.libraryVisible, asset.updatedAt, asset.collections])
     });
     if (traySignature === spawnTraySignature) return;
     spawnTraySignature = traySignature;
@@ -344,11 +349,28 @@ export function createPlayView({
       button.addEventListener('click', () => { spawnTab = id; void render(); });
       return button;
     }));
+    if (collectionTabs) {
+      collectionTabs.hidden = spawnTab !== 'props';
+      collectionTabs.replaceChildren(...(spawnTab === 'props' ? PROP_COLLECTIONS.map(({ id, labelKey }) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.role = 'tab';
+        button.id = `spawn-collection-tab-${id}`;
+        button.setAttribute('aria-controls', 'spawn-items');
+        button.setAttribute('aria-selected', String(propCollection === id));
+        button.tabIndex = propCollection === id ? 0 : -1;
+        button.textContent = t(labelKey);
+        button.addEventListener('click', () => { propCollection = id; void render(); });
+        return button;
+      }) : []));
+    }
     if (focusedTabId) requestAnimationFrame(() => {
       if (token === playRenderToken) $(`#${focusedTabId}`)?.focus();
     });
 
-    list.setAttribute('aria-labelledby', `spawn-tab-${spawnTab}`);
+    list.setAttribute('aria-labelledby', spawnTab === 'props'
+      ? `spawn-collection-tab-${propCollection}`
+      : `spawn-tab-${spawnTab}`);
     if (spawnTab === 'characters' && !state.presets.length) {
       const empty = document.createElement('div');
       empty.className = 'tray-empty';
@@ -404,7 +426,9 @@ export function createPlayView({
       return;
     }
 
-    const sources = spawnTab === 'characters' ? state.presets : getAssetsByKind('prop');
+    const sources = spawnTab === 'characters'
+      ? state.presets
+      : getAssetsByKind('prop', { collectionId: propCollection });
 
     const cards = sources.map((source) => {
       const card = document.createElement('button');
@@ -442,7 +466,7 @@ export function createPlayView({
       card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
 
       if (spawnTab === 'characters') {
-        void renderDollInto(thumb, source, { customArtRepo, getAsset }).then(() => { if (token !== playRenderToken) thumb.replaceChildren(); });
+        void renderDollInto(thumb, source, { customArtRepo, getAsset, enforceFit: false }).then(() => { if (token !== playRenderToken) thumb.replaceChildren(); });
       } else {
         void renderAssetPreview(thumb, source, { customArtRepo, getAsset });
       }
@@ -575,7 +599,7 @@ export function createPlayView({
       ['togglePin', selected.pinned ? '📌' : '📍', selected.pinned ? t('play.unpin') : t('play.pin')],
       ...(selected.attachedTo ? [['detach', '⛓️', t('play.detach')]] : []),
       ['duplicate', '⧉', t('play.duplicate')],
-      ['delete', '×', t('play.delete')]
+      ['delete', '×', t('play.deleteItem')]
     ];
     ring.append(...controls.map(([action, symbol, label]) => {
       const button = document.createElement('button');
@@ -631,7 +655,9 @@ export function createPlayView({
       canvas.className = 'scene-character-canvas';
       await renderDollInto(canvas, entity.characterSnapshot, {
         expression: entity.expression || DEFAULT_EXPRESSION,
-        customArtRepo
+        customArtRepo,
+        getAsset,
+        enforceFit: false
       });
       visual.append(canvas);
       const preset = store.getState().presets.find((item) => item.presetId === entity.sourceId);
@@ -964,16 +990,17 @@ export function createPlayView({
     if (minimap) {
       const minimapBg = $('#minimap-bg');
       const background = getAsset(state.currentScene.backgroundId);
-      const panelCount = Math.max(1, Math.round(stageWidth / VIEWPORT_WIDTH));
-      const mapKey = `${background?.id ?? ''}:${panelCount}`;
+      const mapKey = `${background?.id ?? ''}:${stageWidth}`;
       if (includeSceneMap && minimapBg && background && minimapBg.dataset.mapKey !== mapKey) {
-        const panels = Array.from({ length: panelCount }, () => {
+        const layout = getBackgroundLayout(background, stageWidth);
+        minimapBg.style.justifyContent = layout.centered ? 'center' : 'flex-start';
+        minimapBg.replaceChildren(...layout.tilePositions.map(() => {
           const panel = document.createElement('span');
           panel.className = 'minimap-bg-panel';
+          panel.style.flex = `0 0 ${layout.tilePercent}%`;
           panel.style.backgroundImage = `url("${background.path}")`;
           return panel;
-        });
-        minimapBg.replaceChildren(...panels);
+        }));
         minimapBg.dataset.mapKey = mapKey;
       }
       const lensWidthPct = (VIEWPORT_WIDTH / stageWidth) * 100;
@@ -1029,15 +1056,18 @@ export function createPlayView({
     if (widthChip) widthChip.textContent = `${stageWidth}px`;
 
     const background = $('#scene-background');
-    const numPanels = Math.max(1, Math.round(stageWidth / VIEWPORT_WIDTH));
-    const backgroundRenderKey = `${state.currentScene.backgroundId}:${numPanels}`;
+    const backgroundRenderKey = `${state.currentScene.backgroundId}:${stageWidth}`;
     if (background && background.dataset.renderKey !== backgroundRenderKey) {
-      const panels = await Promise.all(Array.from({ length: numPanels }, async () => {
+      const layout = getBackgroundLayout(currentBackground, stageWidth);
+      background.style.justifyContent = layout.centered ? 'center' : 'flex-start';
+      const panels = [];
+      for (const _ of layout.tilePositions) {
         const panel = document.createElement('div');
         panel.className = 'scene-bg-panel';
+        panel.style.flex = `0 0 ${layout.tilePercent}%`;
         await appendAsset(panel, state.currentScene.backgroundId, {});
-        return panel;
-      }));
+        panels.push(panel);
+      }
       if (token !== playRenderToken) return;
       background.replaceChildren(...panels);
       background.dataset.renderKey = backgroundRenderKey;

@@ -89,6 +89,28 @@ test('all keys in Turkish dictionary exist in English dictionary', () => {
   assert.deepEqual(missingInTr, [], `Keys missing in Turkish dictionary: ${missingInTr.join(', ')}`);
 });
 
+test('translation placeholders stay aligned between languages', () => {
+  function collectEntries(obj, prefix = '') {
+    return Object.entries(obj).flatMap(([key, value]) => {
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+      return value && typeof value === 'object'
+        ? collectEntries(value, fullKey)
+        : [[fullKey, String(value)]];
+    });
+  }
+
+  const english = Object.fromEntries(collectEntries(TRANSLATIONS.en));
+  const placeholders = (value) => [...value.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();
+
+  for (const [key, turkishValue] of collectEntries(TRANSLATIONS.tr)) {
+    assert.deepEqual(
+      placeholders(turkishValue),
+      placeholders(english[key]),
+      `Placeholder mismatch for ${key}`
+    );
+  }
+});
+
 test('every built-in catalog asset has a localized name in both languages', () => {
   for (const language of ['tr', 'en']) {
     setLanguage(language);

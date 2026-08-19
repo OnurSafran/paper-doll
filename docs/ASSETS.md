@@ -31,9 +31,15 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 
 ### Backgrounds
 
-- `viewBox="0 0 800 500"`
+- Standard backgrounds use `viewBox="0 0 1600 900"`, matching the stage tile exactly so crop-to-fill neither crops nor stretches them. Native panoramas use a wider stage-sized viewBox such as `viewBox="0 0 3200 900"` or `viewBox="0 0 4800 900"`.
+- Every background declares `backgroundWidth` as exactly `1600`, `3200`, or `4800` logical units.
 - Full bleed; runtime uses crop-to-fill for the `1600 × 900` stage.
-- Important content avoids the outer 50 source units.
+- Backgrounds repeat at their native tile size on wider stages, so **every background must tile seamlessly**: the right edge has to meet the left edge with no visible join.
+  - Horizons and ground contours are authored as cubic waves with a flat tangent at every node, an even number of segments, and identical start/end heights. Their outlines are drawn as separate `fill="none"` paths with `stroke-linecap="butt"`, so no vertical stroke ever lands on the seam.
+  - Repeating textures (wallpaper stripes, brick bonds, floor planks, awning stripes, tiles, fence posts) use a period that divides the tile width evenly and starts in phase at `x = 0`.
+  - Set pieces that would be cut by an edge are drawn twice, once at `x` and once at `x ± tileWidth`, so the two halves rejoin across the seam.
+- Important content avoids the outer 50 source units unless it is a deliberate seam-straddling pair.
+- Background SVGs are generated: edit `scripts/backgrounds/*.mjs` and run `npm run build:backgrounds`, then `npm run check`. Do not hand-edit the files in `assets/backgrounds`.
 
 ### Props
 
@@ -98,12 +104,22 @@ Internal referenced IDs require per-clone scoping before pattern/definition feat
   kind: 'prop',
   path: 'assets/props/chair.svg',
   viewBox: [0, 0, 1000, 1000],
+  collections: ['home'],
   displayWidth: 240,
   displayHeight: 270,
   groundAnchor: { x: 0.5, y: 1.0 },
   defaultScale: 1
 }
 ```
+
+Props use short, curated collection IDs for discovery in Play: `home`, `outdoors`,
+`creative`, and `fun`. `collections` is an array so an asset may appear in more
+than one collection without duplicating its descriptor. `my-art` is a derived
+collection for player-created props and is not stored in the array.
+
+Custom prop metadata persists the same thematic IDs in `state.customAssets[].collections`.
+Every custom asset is automatically discoverable through My Art; users may edit
+thematic collection membership from the My Art card. An empty thematic list is valid.
 
 Every catalog asset also carries immutable provenance metadata:
 
@@ -117,9 +133,11 @@ metadata: {
 }
 ```
 
-`dlc: 'core'` identifies content shipped in the current product rather than a
-future optional pack. New themed batches may use a more specific `concept`
-while remaining part of the core DLC until the product adds pack selection.
+`metadata.dlc` is the content-pack marker: `core` identifies content shipped in
+the current product, while a future optional pack can use its stable DLC ID.
+`metadata.source` remains provenance, such as the authoring pipeline or player
+creation path; it is not the pack marker. The current UI does not expose DLC
+badges or text yet, but the metadata is ready for that feature.
 
 Catalog IDs are persisted identifiers. Labels/files may change without changing IDs. Removing an ID requires migration or an explicit placeholder policy.
 
@@ -127,10 +145,10 @@ Catalog IDs are persisted identifiers. Labels/files may change without changing 
 
 - 6 base dolls: classic, joy, chibi, baby, adult, and elder
 - 15 tops, 13 bottoms, 14 dresses, 12 shoe pairs, 15 hairstyles, 18 accessories
-- 7 backgrounds: bedroom, park, atelier, beach, cafe, forest, library
+- 11 backgrounds: bedroom, park, atelier, beach, cafe, forest, and library as seamless `1600 × 900` tiles, plus the moonlit meadow, snowy village, and rooftop sunset `3200` panoramas and the `4800` candy land panorama
 - 22 props: chair, table, plant, lamp, rug, tea set, easel, bookshelf, cat, picnic basket, umbrella, balloons, cake, guitar, painting, bench, bicycle, kite, camera, flower pot, mailbox, picnic blanket
 
-Total: 141 cataloged SVG files, including 87 wearable/hair/accessory assets, 6 base dolls, 19 face assets, 7 backgrounds, and 22 props.
+Total: 145 cataloged SVG files, including 87 wearable/hair/accessory assets, 6 base dolls, 19 face assets, 11 backgrounds, and 22 props.
 
 ## Production and acceptance
 

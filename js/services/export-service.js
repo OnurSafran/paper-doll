@@ -11,6 +11,7 @@ import { t } from '../core/i18n.js';
 import { getEntityBounds } from '../domain/scene-rules.js';
 import { isDefaultFace, isWearableCompatible } from '../domain/outfit-rules.js';
 import { applyMouthExpression } from '../core/mouth-expression.js';
+import { getBackgroundLayout } from '../core/background-layout.js';
 export { applyMouthExpression } from '../core/mouth-expression.js';
 import {
   CHARACTER_DIMENSIONS,
@@ -62,6 +63,8 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
   const resolveAsset = options.getAsset ?? getAsset;
   const customArtRepo = options.customArtRepo;
+  const enforceFit = options.enforceFit !== false;
+  const canRenderWearable = (item) => item && (!enforceFit || isWearableCompatible(draft, resolveAsset(item.assetId), resolveAsset));
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 300 450');
   svg.setAttribute('width', '300');
@@ -71,7 +74,7 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
   const layers = [];
   const hair = draft?.slots?.hair;
   const showBakedFace = isDefaultFace(draft?.face, draft?.baseDollId) && expression === DEFAULT_EXPRESSION;
-  if (hair && isWearableCompatible(draft, resolveAsset(hair.assetId), resolveAsset) && !isCustomAssetId(hair.assetId)) {
+  if (hair && canRenderWearable(hair) && !isCustomAssetId(hair.assetId)) {
     layers.push([10, hair.assetId, hair.color, 'hairBack', 'hair']);
   }
   layers.push([20, draft?.baseDollId || DEFAULT_BASE_DOLL_ID, null, null, 'skin']);
@@ -87,15 +90,15 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
 
   for (const [slot, order] of [['bottom', 30], ['shoes', 35], ['top', 40], ['dress', 45]]) {
     const item = draft?.slots?.[slot];
-    if (item && isWearableCompatible(draft, resolveAsset(item.assetId), resolveAsset)) {
+    if (canRenderWearable(item)) {
       layers.push([order, item.assetId, item.color, null, slot]);
     }
   }
-  if (hair && isWearableCompatible(draft, resolveAsset(hair.assetId), resolveAsset)) {
+  if (canRenderWearable(hair)) {
     layers.push([70, hair.assetId, hair.color, 'hairFront', 'hair']);
   }
   const accessory = draft?.slots?.accessory;
-  if (accessory && isWearableCompatible(draft, resolveAsset(accessory.assetId), resolveAsset)) {
+  if (canRenderWearable(accessory)) {
     layers.push([80, accessory.assetId, accessory.color, null, 'accessory']);
   }
 
@@ -413,10 +416,11 @@ export function createExportService(options = {}) {
     if (!ctx) throw new Error('Could not acquire 2D canvas context');
 
     try {
+      const layout = getBackgroundLayout(getAssetFn(snapshot.backgroundId), stageWidth);
       const bgSvg = await loadSvgFn(snapshot.backgroundId);
-      const bgImg = await toImageFn(bgSvg, LIMITS.STAGE_WIDTH, LIMITS.STAGE_HEIGHT);
-      for (let x = 0; x < stageWidth; x += LIMITS.STAGE_WIDTH) {
-        ctx.drawImage(bgImg, x, 0, LIMITS.STAGE_WIDTH, LIMITS.STAGE_HEIGHT);
+      const bgImg = await toImageFn(bgSvg, layout.tileWidth, LIMITS.STAGE_HEIGHT);
+      for (const tileX of layout.tilePositions) {
+        ctx.drawImage(bgImg, tileX, 0, layout.tileWidth, LIMITS.STAGE_HEIGHT);
       }
     } catch {
       ctx.fillStyle = '#f6efe4';
@@ -435,7 +439,8 @@ export function createExportService(options = {}) {
         const dollSvg = await createExportDollSvg(entity.characterSnapshot, entity.expression || DEFAULT_EXPRESSION, {
           loadAssetSvg: loadSvgFn,
           customArtRepo,
-          getAsset: getAssetFn
+          getAsset: getAssetFn,
+          enforceFit: false
         });
         const dollImg = await toImageFn(dollSvg, 300, 450);
         ctx.drawImage(

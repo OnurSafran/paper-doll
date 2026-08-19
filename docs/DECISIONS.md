@@ -34,12 +34,14 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-029 | Gate 4 evidence separates automated contracts from hosted-device proof. | Implemented | Desktop checks cannot substitute for an installed iPad offline run or cross-browser transfer evidence. |
 | D-034 | Player-painted wearables declare every fit family; catalog discovery uses one shared filter. | Implemented | Replaces the single-family stamp that made custom art invisible on five of six bodies. |
 | D-035 | Feature views raise prompts through the injected dialog service, never `alert`/`confirm`/`prompt`. | Implemented | Native dialogs are unstyled, untranslatable, and blocking, and break the documented `alertdialog` accessibility contract. |
+| D-036 | Prop discovery uses short multi-membership collections (`home`, `outdoors`, `creative`, `fun`) plus derived `my-art`; content-pack provenance stays in `metadata.dlc`. | Implemented | Short thematic labels fit the current inventory, allow future overlap, and keep catalog placement separate from DLC ownership. |
+| D-037 | Backgrounds declare a native width of `1600`, `3200`, or `4800`; wide scenes repeat or crop that native background without stretching it in Play, export, Scene Book, or the minimap. | Implemented | A single stretched copy distorts normal backgrounds; native-width tiling preserves the authored artwork while allowing optional wide panoramas. |
 
 ## Decision details
 
 ### D-017 — Panoramic camera
 
-Scenes support `1600 × 900`, `3200 × 900`, and `4800 × 900` logical canvas widths. Entity `(x, y)` is stored as an absolute logical coordinate in `[0, stageWidth] × [0, 900]`. `cameraX` is clamped within `[0, stageWidth - 1600]` and persisted with the scene record without creating duplicate undo entries. The camera navigation HUD features stepper buttons, range slider, and interactive minimap lens. Edge auto-panning smoothly translates `cameraX` when dragging entities near viewport boundaries. Downsizing re-clamps entities safely into bounds with a single undoable step. Export and Scene Book thumbnails tile backgrounds across wide stage canvases.
+Scenes support `1600 × 900`, `3200 × 900`, and `4800 × 900` logical canvas widths. Entity `(x, y)` is stored as an absolute logical coordinate in `[0, stageWidth] × [0, 900]`. `cameraX` is clamped within `[0, stageWidth - 1600]` and persisted with the scene record without creating duplicate undo entries. The camera navigation HUD features stepper buttons, range slider, and interactive minimap lens. Edge auto-panning smoothly translates `cameraX` when dragging entities near viewport boundaries. Downsizing re-clamps entities safely into bounds with a single undoable step. Play, export, and Scene Book use the selected background's native width and preserve its aspect ratio while repeating or cropping it as needed.
 
 ### D-018 — Custom item deletion
 
@@ -99,7 +101,7 @@ The base doll catalog expands to 6 stylized models covering 5 distinct life stag
 
 ### D-032 — Fit-Aware Randomization and Expanded Face & Wardrobe Catalog
 
-The Designer randomization algorithm (`designer/shuffle`) enforces strict fit-family compatibility by evaluating the active doll's `fitFamily`. Wearables with incompatible `supportedFitFamilies` are excluded from random selection, ensuring life stages like Baby, Child, Adult, and Elder only receive suitable garments. Randomization also samples harmonious facial features (eyes with randomized iris colors, eyebrows, noses, mouths, and details), producing diverse, appealing characters without generating invalid combinations. The catalog now provides at least two starter choices in every wearable slot for each life stage, with 19 face assets and 87 wearable assets across 141 cataloged SVGs.
+The Designer randomization algorithm (`designer/shuffle`) enforces strict fit-family compatibility by evaluating the active doll's `fitFamily`. Wearables with incompatible `supportedFitFamilies` are excluded from random selection, ensuring life stages like Baby, Child, Adult, and Elder only receive suitable garments. Randomization also samples harmonious facial features (eyes with randomized iris colors, eyebrows, noses, mouths, and details), producing diverse, appealing characters without generating invalid combinations. The catalog now provides at least two starter choices in every wearable slot for each life stage, with 19 face assets and 87 wearable assets across 142 cataloged SVGs.
 
 ### D-033 — Single-Layer Custom Hair Architecture and Paint Pipeline
 
@@ -116,3 +118,26 @@ Catalog discovery is likewise unified. `matchesDiscoveryFilters(asset, fitFamily
 Feature views raise confirmations, alerts, and text prompts through the injected dialog service (`askConfirm`, `showAlert`) rather than `window.alert`, `window.confirm`, or `window.prompt`. Native dialogs cannot be translated or styled, block the main thread, render as browser chrome outside the shell in an installed iPad PWA, and bypass the `<dialog role="alertdialog">` semantics asserted in the accessibility matrix.
 
 Paint Studio, the Dollbox rename control, and the Scene Book rename control were all converted in the 2026-08-18 hardening pass. `askPrompt` in `app.js` supplies a queued `#prompt-dialog` implementation alongside `askConfirm` and `showAlert`; views accept it by injection and keep a native fallback only for the case where no service is supplied.
+
+### D-036 — Prop collections and content-pack provenance
+
+Built-in props carry a `collections` array with the short discovery IDs `home`,
+`outdoors`, `creative`, and `fun`. The Play tray renders one collection at a time;
+there is no visible global `all` collection. Player-created props are always
+available in the derived `my-art` collection and can also be assigned to any
+number of thematic collections from My Art. The persisted custom-asset field is
+validated and excludes the derived `my-art` ID.
+
+Built-in provenance already has two separate meanings: `metadata.dlc` identifies
+the content pack (`core` today, a stable DLC ID later), and `metadata.source`
+describes how the asset was produced. Custom descriptors expose the same source
+distinction as `player-created artwork`. DLC badges or text are intentionally a
+later presentation feature; no visual source marker is added in this change.
+
+### D-037 — Native-width panoramic backgrounds
+
+The first panoramic implementation stretched one copy of the selected background
+to the full `stageWidth × 900` canvas. That distorted normal backgrounds. Each
+background now declares a native width of `1600`, `3200`, or `4800`; Play, the
+minimap, PNG export, and Scene Book share the same repeat-or-crop layout rule and
+never non-uniformly stretch the artwork.

@@ -8,16 +8,16 @@ Character Customization Gates 0–5: **complete**. Automated tests, asset valida
 
 | Check | Current result | What it proves |
 |:--|:--|:--|
-| `node --test` | 315 pass, 0 fail | Existing domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, and library coverage plus modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, resting-face restoration, Designer/Paint hardening, Play hardening, and complete built-in asset-name coverage. |
-| Asset validator | 141 pass | All 141 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 87 wearables, 7 backgrounds, 22 props). |
-| Documentation validator | 8 canonical documents, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. The validator walks every tracked `.md` file, so its printed count rises with non-canonical notes such as `review/`. |
+| `node --test` | 322 pass, 0 fail | Existing domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, and library coverage plus modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, resting-face restoration, Designer/Paint hardening, Play hardening, native-width panoramic backgrounds, and complete built-in asset-name coverage. |
+| Asset validator | 142 pass | All 142 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 87 wearables, 8 backgrounds, 22 props). |
+| Documentation validator | 9 canonical documents, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. The validator walks every tracked `.md` file, so its printed count rises with non-canonical notes such as `review/`. |
 | PWA shell validation | Pass | Manifest, service-worker syntax, and all offline app-shell assets validate. |
 
 ## Character Customization & Custom Paint Evidence
 
 | Evidence | Result | Notes |
 |:--|:--|:--|
-| `npm run check` | Pass | 315 tests, documentation validation, cache-busting validation, and 141 cataloged SVG assets passed on 2026-08-19. |
+| `npm run check` | Pass | 322 tests, documentation validation, cache-busting validation, and 142 cataloged SVG assets passed on 2026-08-19. |
 | Modular Face Customization (Gates 0–1) | Pass | 19 face SVGs, iris palette, schema v4 migration, resting-face restoration, and full undo/redo pass automated test suites. |
 | Body Models & Fit Families (Gate 2) | Pass | 6 base dolls (Baby, Child, Teen Classic A/B, Adult, Elder), fit-family filtering, presentation style discovery filters pass tests. |
 | Expanded Catalog & Shuffle (Gate 3) | Pass | Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage wardrobe items pass tests. |
@@ -88,7 +88,7 @@ CP-01–CP-15 are covered by the current feature, domain, storage, portability, 
 |:--|:--|:--|
 | Outfit | Complete | Every slot; dress conflicts; remove/reset/clear/shuffle; stale asset; color normalization. |
 | Schema | Complete | Versions/migration; partial/whole corruption; limits; timestamps; monotonic revision; pinned and attachment DAG validation; bubble entity sanitization; multi-selection state schema; panoramic stageWidth and cameraX state. |
-| Panoramic | Complete | `1600`, `3200`, `4800` widths; persisted `cameraX` clamping; slider/stepper/minimap/wheel/keyboard navigation; live edge auto-pan; absolute coordinate invariant; entity re-clamping on downsize; wide-canvas background tiling and PNG export. |
+| Panoramic | Complete | `1600`, `3200`, `4800` widths; persisted `cameraX` clamping; slider/stepper/minimap/wheel/keyboard navigation; live edge auto-pan; absolute coordinate invariant; entity re-clamping on downsize; native-width background repetition/cropping and PNG export. |
 | Bubbles | Complete | Speech, thought, shout, and caption styles; word wrapping; dynamic height bounds; 120-grapheme limits; character auto-attachment; procedural SVG composition; PNG canvas export parity. |
 | Stickiness | Complete | Pinned scenery immovable by pointer; hierarchical parent-child delta moves; compound boundary clamping; DAG cycle prevention; detach on parent delete. |
 | Multi-select | Complete | Shift+click selection; multi-drag preview and compound move; batch scaling, flipping, deletion, and pin toggling; 8 alignment & distribution modes (`left`, `center`, `right`, `top`, `middle`, `bottom`, `distribute-h`, `distribute-v`) with atomic single-step undo/redo. |
@@ -105,7 +105,7 @@ CP-01–CP-15 are covered by the current feature, domain, storage, portability, 
 | Scene | Complete | Unique spawn ID retry; move/scale/flip/order/duplicate/delete/pin/attach/detach/bubble/align/batch/stage-width/camera mutations; 40-entity limit enforcement. |
 | Autosave | Complete | Debounced coalescing; commit-only persistence; flush and cancel handlers. |
 | Assets | Complete | Catalog IDs, viewBox, required groups, attribute sanitizer rejecting scripts/foreignObject/handlers. |
-| Export | Complete | Isolated canvas composition, wide panoramic dimensions, background tiling, layout parity, bubble procedural SVG rasterization, placeholder fallback, progress reporting. |
+| Export | Complete | Isolated canvas composition, wide panoramic dimensions, native-width background repetition/cropping, layout parity, bubble procedural SVG rasterization, placeholder fallback, progress reporting. |
 | Audio | Complete | Permission denial handling, stale request rejection, teardown on route/visibility/pagehide/error. |
 | Error recovery | Complete | Privacy-safe error code classification (`ERR_STORAGE_QUOTA`, `ERR_MEDIA_PERMISSION`, `ERR_RUNTIME_TYPE`, `ERR_RUNTIME`), safe teardown, storage persistence abort, accessible alertdialog. |
 

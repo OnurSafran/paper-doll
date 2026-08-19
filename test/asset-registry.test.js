@@ -70,6 +70,7 @@ test('createAssetRegistry unifies built-in catalog and custom assets', () => {
       assetId: 'custom_prop_tree',
       name: 'Magic Tree',
       kind: 'prop',
+      collections: ['outdoors'],
       libraryVisible: true,
       status: 'available'
     }
@@ -103,4 +104,6 @@ test('createAssetRegistry unifies built-in catalog and custom assets', () => {
   const props = registry.assetsByKind('prop');
   assert.ok(props.some((p) => p.id === 'custom_prop_tree'));
   assert.ok(props.some((p) => p.id === 'prop_chair'));
+  assert.deepEqual(registry.assetsByKind('prop', { collectionId: 'outdoors' }).map((p) => p.id), ['prop_umbrella', 'prop_bench', 'prop_bicycle', 'prop_flower_pot', 'prop_mailbox', 'custom_prop_tree']);
+  assert.deepEqual(registry.assetsByKind('prop', { collectionId: 'my-art' }).map((p) => p.id), ['custom_prop_tree']);
 });

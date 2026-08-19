@@ -61,8 +61,8 @@
             </div>
           </div>
 
-          <aside class="designer-sidebar" aria-label="Designer controls">
-            <div id="designer-mode-nav" class="tab-list designer-mode-tabs" role="tablist" aria-label="Designer panels">
+          <aside class="designer-sidebar" data-i18n-aria-label="designer.sidebarAria" aria-label="Tasarımcı kontrolleri">
+            <div id="designer-mode-nav" class="tab-list designer-mode-tabs" role="tablist" data-i18n-aria-label="designer.modeTabsAria" aria-label="Tasarımcı panelleri">
               <button id="designer-mode-wardrobe" type="button" role="tab" class="mode-tab is-active" aria-selected="true" aria-controls="wardrobe-panel-section" data-i18n="designer.tabWardrobe">👗 Gardırop</button>
               <button id="designer-mode-face" type="button" role="tab" class="mode-tab" aria-selected="false" aria-controls="face-panel-section" data-i18n="designer.tabFace">😊 Yüz</button>
             </div>
@@ -244,13 +244,14 @@
             </div>
           </div>
 
-          <aside class="play-rail" aria-label="Sahne araçları">
+          <aside class="play-rail" data-i18n-aria-label="play.railAria" aria-label="Sahne araçları">
             <section class="paper-panel spawn-panel" aria-labelledby="tray-title">
               <div class="panel-heading"><div><span class="eyebrow" data-i18n="play.trayEyebrow">Sahne Tepsisi</span><h2 id="tray-title" data-i18n="play.trayTitle">Sahneye ekleyici</h2><p class="panel-copy" data-i18n="play.trayCopy">Öğeleri sahneye tıklayın veya sürükleyin.</p></div><span class="panel-sticker" aria-hidden="true">✦</span></div>
               <div id="spawn-tabs" class="tab-list" role="tablist" data-i18n-aria-label="play.trayCategoriesAria" aria-label="Sahne tepsisi kategorileri"></div>
+              <div id="spawn-collection-tabs" class="tab-list prop-collection-tabs" role="tablist" data-i18n-aria-label="play.propCollectionsAria" aria-label="Eşya koleksiyonları" hidden></div>
               <div id="spawn-items" class="spawn-list"></div>
             </section>
-            <div class="paper-panel scene-rail-actions" aria-label="Sahne seçenekleri">
+            <div class="paper-panel scene-rail-actions" data-i18n-aria-label="play.sceneActionsAria" aria-label="Sahne seçenekleri">
               <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
               <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)" data-i18n="play.outlineBtn">📋 Katmanlar</button>
             </div>
@@ -288,7 +289,7 @@
               <div id="paint-canvas-stage" class="paint-canvas-stage">
                 <div id="paint-guide-layer" class="paint-guide-layer" aria-hidden="true"></div>
                 <div class="paint-canvas-wrapper">
-                  <canvas id="paint-canvas" tabindex="0" role="img" data-i18n-aria-label="paint.canvasAria" aria-label="Sanat eseri çizim tuvali. Boyamak için fare/kalem/dokunma veya klavye yön tuşları ve Boşluk tuşunu kullanın."></canvas>
+                  <canvas id="paint-canvas" tabindex="0" role="img" data-i18n-aria-label="paint.canvasAriaDefault" aria-label="Sanat eseri çizim tuvali. Boyamak için fare/kalem/dokunma veya klavye yön tuşları ve Boşluk tuşunu kullanın."></canvas>
                   <div id="paint-selection-outline" class="paint-selection-outline" aria-hidden="true"></div>
                   <div id="paint-cursor" class="paint-virtual-cursor" aria-hidden="true"></div>
                 </div>
@@ -699,7 +700,7 @@
       </div>
       <div class="myart-dialog-body">
         <div class="myart-header-row">
-          <div class="myart-tabs" role="tablist" aria-label="My Art categories">
+          <div class="myart-tabs" role="tablist" data-i18n-aria-label="paintMyArtDialog.tabsAria" aria-label="Çizimlerim kategorileri">
             <button id="myart-tab-all" class="myart-tab-btn active" role="tab" aria-selected="true" data-tab="all" type="button" data-i18n="paintMyArtDialog.tabAll">Tüm Çizimler</button>
             <button id="myart-tab-wearable" class="myart-tab-btn" role="tab" aria-selected="false" data-tab="wearable" type="button" data-i18n="paintMyArtDialog.tabWearable">👗 Kıyafetler</button>
             <button id="myart-tab-prop" class="myart-tab-btn" role="tab" aria-selected="false" data-tab="prop" type="button" data-i18n="paintMyArtDialog.tabProp">🧸 Eşyalar</button>
@@ -743,6 +744,22 @@
         <div class="button-row end">
           <button id="paint-rename-cancel-btn" type="button" class="button secondary" data-i18n="paintRenameDialog.cancelBtn">İptal</button>
           <button id="paint-rename-save-btn" type="submit" class="button primary" data-i18n="paintRenameDialog.saveBtn">Adı Kaydet</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="paint-collections-dialog" class="confirm-dialog" aria-labelledby="collections-dialog-title">
+      <form id="paint-collections-form">
+        <span class="eyebrow" data-i18n="paintMyArtDialog.eyebrow">Özel Stüdyo Koleksiyonu</span>
+        <h2 id="collections-dialog-title" data-i18n="paintMyArtDialog.editCollectionsTitle">Eşya koleksiyonlarını düzenle</h2>
+        <p class="panel-copy" data-i18n="paintMyArtDialog.collectionsCopy">Bu özel eşyayı bir veya daha fazla koleksiyonda göster.</p>
+        <fieldset class="collection-options">
+          <legend data-i18n="paintMyArtDialog.collectionsLabel">Koleksiyonlar</legend>
+          <div id="paint-collections-options"></div>
+        </fieldset>
+        <div class="button-row end">
+          <button id="paint-collections-cancel-btn" type="button" class="button secondary" data-i18n="paintMyArtDialog.collectionsCancelBtn">İptal</button>
+          <button id="paint-collections-save-btn" type="submit" class="button primary" data-i18n="paintMyArtDialog.collectionsSaveBtn">Koleksiyonları Kaydet</button>
         </div>
       </form>
     </dialog>

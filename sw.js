@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paper-doll-studio-v4d457821';
+const CACHE_NAME = 'paper-doll-studio-v77c466c0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -13,8 +13,8 @@ const APP_SHELL = [
   './css/components/footer.css?v=c27c124b',
   './css/features/header.css?v=4bf96bb6',
   './css/features/designer.css?v=d17b1cb3',
-  './css/features/play.css?v=f54a1d16',
-  './css/features/paint.css?v=76a6656f',
+  './css/features/play.css?v=a974a343',
+  './css/features/paint.css?v=d4825b95',
   './css/responsive/responsive.css?v=2e0ce50b',
   './js/app.js?v=4',
   './js/core/app-store.js',
@@ -80,6 +80,10 @@ const APP_SHELL = [
   './assets/backgrounds/cafe.svg',
   './assets/backgrounds/forest.svg',
   './assets/backgrounds/library.svg',
+  './assets/backgrounds/moonlit-meadow.svg',
+  './assets/backgrounds/snowy-village.svg',
+  './assets/backgrounds/city-sunset.svg',
+  './assets/backgrounds/candy-land.svg',
   './assets/props/chair.svg',
   './assets/props/table.svg',
   './assets/props/lamp.svg',

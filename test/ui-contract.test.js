@@ -167,6 +167,17 @@ test('dialogs, export coordinates, drag cleanup, and voice puppetry enforce safe
   assert.match(js, /stopVoicePuppetry\(\)/);
 });
 
+test('free-form Play and export renderers keep saved incompatible clothing', () => {
+  assert.match(playJs, /enforceFit:\s*false/);
+  assert.match(exportJs, /enforceFit:\s*false/);
+  assert.match(sceneBookJs, /const enforceFit = options\.enforceFit \?\? false/);
+});
+
+test('Scene Book localizes background metadata through assetName', () => {
+  assert.match(sceneBookJs, /import \{ assetName, t \} from .*core\/i18n\.js/);
+  assert.match(sceneBookJs, /assetName\(getAsset\(scene\.backgroundId\), t\('play\.paperScene'\)\)/);
+});
+
 test('project portability and backup controls expose accessible dialogs, dropzones, and handlers', () => {
   assert.match(html, /id="project-menu-btn"/);
   assert.match(html, /id="project-dialog"/);

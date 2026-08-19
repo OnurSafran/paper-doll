@@ -113,6 +113,7 @@ export async function renderDollInto(container, draft, options = {}) {
   const customArtRepo = options.customArtRepo;
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
   const getAsset = options.getAsset ?? getBuiltinAsset;
+  const enforceFit = options.enforceFit !== false;
   const layers = [];
   const hair = draft?.slots?.hair;
   const expression = options.expression || draft.expression || DEFAULT_EXPRESSION;
@@ -121,20 +122,20 @@ export async function renderDollInto(container, draft, options = {}) {
     const item = draft?.slots?.[slot];
     if (!item) return;
     const asset = getAsset(item.assetId);
-    layers.push([order, item.assetId, item.color, group, slot, !isWearableCompatible(draft, asset, getAsset)]);
+    layers.push([order, item.assetId, item.color, group, slot, enforceFit && !isWearableCompatible(draft, asset, getAsset)]);
   };
-  if (hair && !isCustomAssetId(hair.assetId) && isWearableCompatible(draft, getAsset(hair.assetId), getAsset)) {
+  if (hair && !isCustomAssetId(hair.assetId) && (!enforceFit || isWearableCompatible(draft, getAsset(hair.assetId), getAsset))) {
     layers.push([10, hair.assetId, hair.color, 'hairBack', 'hair', false]);
   }
   layers.push([20, draft?.baseDollId, null, null, 'skin']);
 
   const face = draft?.face;
   if (face && !showBakedFace) {
-    if (face.eyes) layers.push([22, face.eyes.assetId, null, null, 'face-eyes', !isFaceCompatible(draft, getAsset(face.eyes.assetId), getAsset), face.eyes.irisColor]);
-    if (face.eyebrows) layers.push([24, face.eyebrows.assetId, null, null, 'face-eyebrows', !isFaceCompatible(draft, getAsset(face.eyebrows.assetId), getAsset)]);
-    if (face.detail) layers.push([25, face.detail.assetId, null, null, 'face-detail', !isFaceCompatible(draft, getAsset(face.detail.assetId), getAsset)]);
-    if (face.nose) layers.push([26, face.nose.assetId, null, null, 'face-nose', !isFaceCompatible(draft, getAsset(face.nose.assetId), getAsset)]);
-    if (face.mouth) layers.push([28, face.mouth.assetId, null, null, 'face-mouth', !isFaceCompatible(draft, getAsset(face.mouth.assetId), getAsset)]);
+    if (face.eyes) layers.push([22, face.eyes.assetId, null, null, 'face-eyes', enforceFit && !isFaceCompatible(draft, getAsset(face.eyes.assetId), getAsset), face.eyes.irisColor]);
+    if (face.eyebrows) layers.push([24, face.eyebrows.assetId, null, null, 'face-eyebrows', enforceFit && !isFaceCompatible(draft, getAsset(face.eyebrows.assetId), getAsset)]);
+    if (face.detail) layers.push([25, face.detail.assetId, null, null, 'face-detail', enforceFit && !isFaceCompatible(draft, getAsset(face.detail.assetId), getAsset)]);
+    if (face.nose) layers.push([26, face.nose.assetId, null, null, 'face-nose', enforceFit && !isFaceCompatible(draft, getAsset(face.nose.assetId), getAsset)]);
+    if (face.mouth) layers.push([28, face.mouth.assetId, null, null, 'face-mouth', enforceFit && !isFaceCompatible(draft, getAsset(face.mouth.assetId), getAsset)]);
   }
 
   for (const [slot, order] of [['bottom', 30], ['shoes', 35], ['top', 40], ['dress', 45]]) addWearableLayer(slot, order);
@@ -205,7 +206,7 @@ export async function renderDollInto(container, draft, options = {}) {
     return layer;
   })));
   container.replaceChildren(...nodes);
-  if (fitWarningNames.length && typeof container.append === 'function') {
+  if (enforceFit && fitWarningNames.length && typeof container.append === 'function') {
     const details = document.createElement('details');
     details.className = 'fit-warning-summary';
     const summary = document.createElement('summary');

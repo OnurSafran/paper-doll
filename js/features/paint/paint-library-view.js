@@ -3,6 +3,7 @@
  */
 
 import { countAssetUses, slotLabel } from '../../domain/outfit-rules.js';
+import { PROP_COLLECTIONS } from '../../core/asset-catalog.js';
 import { t } from '../../core/i18n.js';
 import { validateArtworkName } from './paint-session.js';
 import { captureHistorySnapshot } from './paint-history.js';
@@ -42,10 +43,15 @@ export function createPaintLibraryView({
   const renameForm = rootElement.querySelector('#paint-rename-form');
   const renameInput = rootElement.querySelector('#paint-rename-input');
   const renameCancelBtn = rootElement.querySelector('#paint-rename-cancel-btn');
+  const collectionsDialog = rootElement.querySelector('#paint-collections-dialog');
+  const collectionsForm = rootElement.querySelector('#paint-collections-form');
+  const collectionsOptions = rootElement.querySelector('#paint-collections-options');
+  const collectionsCancelBtn = rootElement.querySelector('#paint-collections-cancel-btn');
 
   let currentMyArtTab = 'all';
   let activeImpactAsset = null;
   let activeRenameAsset = null;
+  let activeCollectionsAsset = null;
 
   function renderMyArtCards() {
     if (!myArtGrid) return;
@@ -181,6 +187,16 @@ export function createPaintLibraryView({
         renameBtn.title = t('paintMyArtDialog.renameTitle');
         renameBtn.addEventListener('click', () => openRenameDialog(asset));
         actions.appendChild(renameBtn);
+
+        if (asset.kind === 'prop') {
+          const collectionsBtn = document.createElement('button');
+          collectionsBtn.type = 'button';
+          collectionsBtn.className = 'button secondary myart-card-btn';
+          collectionsBtn.textContent = '🏷️ ' + t('paintMyArtDialog.editCollections');
+          collectionsBtn.title = t('paintMyArtDialog.editCollectionsTitle');
+          collectionsBtn.addEventListener('click', () => openCollectionsDialog(asset));
+          actions.appendChild(collectionsBtn);
+        }
 
         const impactBtn = doc.createElement('button');
         impactBtn.type = 'button';
@@ -378,6 +394,38 @@ export function createPaintLibraryView({
     announceStatus(t('paintMyArtDialog.renamedStatus', { name: validation.name }));
   }
 
+  function openCollectionsDialog(asset) {
+    if (!collectionsDialog || !collectionsOptions || !asset || asset.kind !== 'prop') return;
+    activeCollectionsAsset = asset;
+    collectionsOptions.replaceChildren();
+    for (const { id, labelKey } of PROP_COLLECTIONS.filter((collection) => !collection.customOnly)) {
+      const label = doc.createElement('label');
+      label.className = 'collection-option';
+      const input = doc.createElement('input');
+      input.type = 'checkbox';
+      input.name = 'collection';
+      input.value = id;
+      input.checked = asset.collections?.includes(id) === true;
+      const text = doc.createElement('span');
+      text.textContent = t(labelKey);
+      label.append(input, text);
+      collectionsOptions.appendChild(label);
+    }
+    collectionsDialog.showModal();
+  }
+
+  function handleSaveCollections(event) {
+    event?.preventDefault?.();
+    if (!activeCollectionsAsset || !collectionsOptions) return;
+    const collections = [...collectionsOptions.querySelectorAll('input[name="collection"]:checked')].map((input) => input.value);
+    const result = store.dispatch({ type: 'customAsset/setCollections', assetId: activeCollectionsAsset.assetId, collections });
+    if (!result?.ok) return;
+    collectionsDialog?.close();
+    activeCollectionsAsset = null;
+    renderMyArtCards();
+    announceStatus(t('paintMyArtDialog.collectionsUpdatedStatus'));
+  }
+
   async function handleRestoreArtwork(assetId) {
     if (!assetId) return;
     try {
@@ -469,6 +517,8 @@ export function createPaintLibraryView({
     });
     renameCancelBtn?.addEventListener('click', () => renameDialog?.close());
     renameForm?.addEventListener('submit', handleSaveRename);
+    collectionsCancelBtn?.addEventListener('click', () => collectionsDialog?.close());
+    collectionsForm?.addEventListener('submit', handleSaveCollections);
   }
 
   function refreshLanguage() {

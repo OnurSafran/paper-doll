@@ -47,7 +47,7 @@ const loaded = loadProject(storageRef, getAsset);
 const customArtRepo = createCustomArtRepository();
 const store = createAppStore(loaded.envelope, { getAsset, assets: ASSETS });
 const getEffectiveAsset = (id) => createAssetRegistry(store ? store.getState().customAssets : loaded.envelope.customAssets).getAsset(id);
-const getEffectiveAssetsByKind = (kind) => createAssetRegistry(store ? store.getState().customAssets : loaded.envelope.customAssets).assetsByKind(kind);
+const getEffectiveAssetsByKind = (kind, options) => createAssetRegistry(store ? store.getState().customAssets : loaded.envelope.customAssets).assetsByKind(kind, options);
 const storage = createProjectRepository({
   storage: storageRef,
   initialRevision: loaded.envelope?.revision ?? 1,

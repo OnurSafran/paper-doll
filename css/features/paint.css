@@ -2,6 +2,28 @@
    Paper Doll Studio - Paint Studio Stylesheet
    ========================================================================== */
 
+.collection-options {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.collection-options legend {
+  padding: 0 0.3rem;
+  font-weight: 800;
+}
+
+.collection-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem;
+  cursor: pointer;
+}
+
 .paint-heading {
   display: flex;
   flex-direction: column;
