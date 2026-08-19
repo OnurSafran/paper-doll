@@ -7,7 +7,6 @@
       <path d="M0 130A130 130 0 0 1 260 130L260 380L0 380Z" fill="#cfe7f2" stroke="#ffffff" stroke-width="14" stroke-linejoin="round"/>
       <path d="M0 130A130 130 0 0 1 260 130L260 380L0 380Z" fill="none" stroke="#2d261e" stroke-width="5" stroke-linejoin="round"/>
       <path d="M130 4 130 380M6 130 254 130M6 260 254 260" fill="none" stroke="#ffffff" stroke-width="9"/>
-      <path d="M32 44q-10 60 6 108" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
       <path d="M-34 -6q40 200 12 386L-72 380 -72 -6Z" fill="#f3b8bf" stroke="#2d261e" stroke-width="5" stroke-linejoin="round"/>
       <path d="M294 -6q-40 200 -12 386L332 380 332 -6Z" fill="#f3b8bf" stroke="#2d261e" stroke-width="5" stroke-linejoin="round"/>
     </g>
@@ -15,7 +14,6 @@
       <path d="M0 130A130 130 0 0 1 260 130L260 380L0 380Z" fill="#cfe7f2" stroke="#ffffff" stroke-width="14" stroke-linejoin="round"/>
       <path d="M0 130A130 130 0 0 1 260 130L260 380L0 380Z" fill="none" stroke="#2d261e" stroke-width="5" stroke-linejoin="round"/>
       <path d="M130 4 130 380M6 130 254 130M6 260 254 260" fill="none" stroke="#ffffff" stroke-width="9"/>
-      <path d="M32 44q-10 60 6 108" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
       <path d="M-34 -6q40 200 12 386L-72 380 -72 -6Z" fill="#f3b8bf" stroke="#2d261e" stroke-width="5" stroke-linejoin="round"/>
       <path d="M294 -6q-40 200 -12 386L332 380 332 -6Z" fill="#f3b8bf" stroke="#2d261e" stroke-width="5" stroke-linejoin="round"/>
     </g>

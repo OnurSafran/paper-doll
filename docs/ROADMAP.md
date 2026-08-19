@@ -131,7 +131,7 @@ Every extraction is independently reviewable and behavior-preserving. Do not com
 6. [x] Panoramic stages and camera navigation (`1600`, `3200`, `4800` widths with persisted cameraX, minimap, steppers, trackpad/wheel, edge auto-pan)
 7. World map and scene transitions
 8. Custom paint studio (implementation complete; hosted-device and cross-browser evidence in progress)
-9. Pose/gesture animation after export and reduced-motion contracts are defined
+9. Pose/gesture animation — see [PRD: Character Expressions, Poses, and Looping Scene Animation](PRD-POSE-GESTURE-ANIMATION.md); implementation follows the phased delivery plan after export and reduced-motion contracts are defined
 
 ### Gate F — Play hardening (Completed)
 

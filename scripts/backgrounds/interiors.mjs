@@ -88,7 +88,6 @@ export function bedroom() {
       <path d="M0 130A130 130 0 0 1 260 130L260 380L0 380Z" fill="#cfe7f2" stroke="#ffffff" stroke-width="14" stroke-linejoin="round"/>
       <path d="M0 130A130 130 0 0 1 260 130L260 380L0 380Z" fill="none" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
       <path d="M130 4 130 380M6 130 254 130M6 260 254 260" fill="none" stroke="#ffffff" stroke-width="9"/>
-      <path d="M32 44q-10 60 6 108" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
       <path d="M-34 -6q40 200 12 386L-72 380 -72 -6Z" fill="#f3b8bf" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
       <path d="M294 -6q-40 200 -12 386L332 380 332 -6Z" fill="#f3b8bf" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
     </g>`);
@@ -222,11 +221,6 @@ export function cafe() {
       <rect x="0" y="0" width="460" height="360" rx="12" fill="none" stroke="${INK}" stroke-width="5"/>
       <path d="M230 0 230 360M0 170 460 170" fill="none" stroke="#9a6b45" stroke-width="10"/>
       <path d="M52 26 172 250M92 26 152 138" fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" opacity="0.75"/>
-      <g transform="translate(268 196)">
-        <path d="M0 96 12 24 128 24 140 96Z" fill="#f6c9a8" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
-        <path d="M18 24q26 -26 52 0q26 -26 52 0" fill="#f9dfc0" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
-        <circle cx="42" cy="60" r="10" fill="#ef476f" stroke="none"/><circle cx="76" cy="72" r="9" fill="#ef476f" stroke="none"/><circle cx="104" cy="56" r="8" fill="#ef476f" stroke="none"/>
-      </g>
     </g>`);
   }
 
@@ -340,7 +334,8 @@ export function library() {
           i += 1;
         }
         if ((row + seed) % 3 !== 1) {
-          items.push(`<path d="M${R(x + 6)} ${y + 108}L${R(x + 20)} ${y + 40}L${R(x + 48)} ${y + 48}L${R(x + 34)} ${y + 108}Z" fill="${bookColors[(i + 3) % bookColors.length]}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`);
+          const leaningBookX = Math.min(x + 6, 460);
+          items.push(`<path d="M${R(leaningBookX)} ${y + 108}L${R(leaningBookX + 14)} ${y + 40}L${R(leaningBookX + 42)} ${y + 48}L${R(leaningBookX + 28)} ${y + 108}Z" fill="${bookColors[(i + 3) % bookColors.length]}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`);
           x += 54;
         }
         if (keepsake) {

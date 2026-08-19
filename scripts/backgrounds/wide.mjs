@@ -220,7 +220,7 @@ function lollipop(cx, baseY, h, r, disc, swirl) {
     `<g>${stripes.join('')}</g>`,
     `<rect x="${R(cx - stickW / 2)}" y="${R(stickTop)}" width="${R(stickW)}" height="${R(baseY - stickTop)}" rx="${R(stickW / 2)}" fill="none" stroke="${INK}" stroke-width="6"/>`,
     `<circle cx="${R(cx)}" cy="${R(topY + r)}" r="${R(r)}" fill="${disc}" stroke="${INK}" stroke-width="6"/>`,
-    `<path d="M${R(cx)} ${R(topY + r)}m0 ${R(-r * 0.68)}a${R(r * 0.68)} ${R(r * 0.68)} 0 1 1 ${R(-r * 0.48)} ${R(r * 0.2)}a${R(r * 0.42)} ${R(r * 0.42)} 0 1 0 ${R(r * 0.3)} ${R(r * 0.28)}" fill="none" stroke="${swirl}" stroke-width="${R(sw)}" stroke-linecap="round"/>`
+    `<path d="M${R(cx)} ${R(topY + r - r * 0.68)}A${R(r * 0.68)} ${R(r * 0.68)} 0 1 1 ${R(cx - r * 0.48)} ${R(topY + r + r * 0.2)}A${R(r * 0.42)} ${R(r * 0.42)} 0 1 0 ${R(cx - r * 0.08)} ${R(topY + r + r * 0.42)}" fill="none" stroke="${swirl}" stroke-width="${R(sw)}" stroke-linecap="round"/>`
   ].join('');
 }
 

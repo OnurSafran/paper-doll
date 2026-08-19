@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paper-doll-studio-v77c466c0';
+const CACHE_NAME = 'paper-doll-studio-ve239b262';
 const APP_SHELL = [
   './',
   './index.html',
