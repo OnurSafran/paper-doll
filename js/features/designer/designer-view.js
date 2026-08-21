@@ -3,10 +3,10 @@
  * Owns wardrobe palettes, dress-up layers, swatch picking, and Dollbox presets.
  */
 
-import { assetsByKind, facesByGroup, getOfferedWearables, matchesDiscoveryFilters, wearablesBySlot, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
+import { assetsByKind, facesByGroup, getLimbBoundChannel, getOfferedWearables, isHeadBoundLayer, matchesDiscoveryFilters, wearablesBySlot, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, PALETTE, paletteValue, SKIN_COLORS } from '../../core/palette.js';
 import { loadAssetSvg, makeAssetPlaceholder } from '../../core/svg-loader.js';
-import { DEFAULT_EXPRESSION, FACE_GROUPS, FIT_FAMILIES, PRESENTATION_STYLES, isCustomAssetId } from '../../domain/vocabulary.js';
+import { DEFAULT_BASE_DOLL_ID, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, FACE_GROUPS, FIT_FAMILIES, PRESENTATION_STYLES, isCustomAssetId } from '../../domain/vocabulary.js';
 import { isDefaultFace, isFaceCompatible, isWearableCompatible } from '../../domain/outfit-rules.js';
 import { customAssetToDescriptor } from '../../core/asset-registry.js';
 import { applyMouthExpression } from '../../core/mouth-expression.js';
@@ -110,14 +110,39 @@ export async function renderAssetPreview(container, asset, options = {}) {
 }
 
 export async function renderDollInto(container, draft, options = {}) {
-  const customArtRepo = options.customArtRepo;
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
   const getAsset = options.getAsset ?? getBuiltinAsset;
+  const customArtRepo = options.customArtRepo;
   const enforceFit = options.enforceFit !== false;
   const layers = [];
   const hair = draft?.slots?.hair;
-  const expression = options.expression || draft.expression || DEFAULT_EXPRESSION;
+  const expression = options.expression ?? draft.expression ?? DEFAULT_EXPRESSION;
+  const expressionIntensity = options.expressionIntensity ?? draft.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY;
   const showBakedFace = isDefaultFace(draft?.face, draft?.baseDollId) && expression === DEFAULT_EXPRESSION;
+
+  const baseDollAsset = getAsset(draft?.baseDollId || DEFAULT_BASE_DOLL_ID);
+  const headPivot = baseDollAsset?.headPivot || { x: 150, y: 90 };
+  const shoulderLeftPivot = baseDollAsset?.shoulderLeftPivot || { x: 126, y: 120 };
+  const shoulderRightPivot = baseDollAsset?.shoulderRightPivot || { x: 174, y: 120 };
+  const hipLeftPivot = baseDollAsset?.hipLeftPivot || { x: 138, y: 230 };
+  const hipRightPivot = baseDollAsset?.hipRightPivot || { x: 162, y: 230 };
+
+  if (typeof container?.style?.setProperty === 'function') {
+    container.style.setProperty('--head-pivot-x', `${headPivot.x}px`);
+    container.style.setProperty('--head-pivot-y', `${headPivot.y}px`);
+    container.style.setProperty('--head-pivot-pct-x', `${((headPivot.x / 300) * 100).toFixed(4)}%`);
+    container.style.setProperty('--head-pivot-pct-y', `${((headPivot.y / 450) * 100).toFixed(4)}%`);
+
+    container.style.setProperty('--shoulder-left-pivot-pct-x', `${((shoulderLeftPivot.x / 300) * 100).toFixed(4)}%`);
+    container.style.setProperty('--shoulder-left-pivot-pct-y', `${((shoulderLeftPivot.y / 450) * 100).toFixed(4)}%`);
+    container.style.setProperty('--shoulder-right-pivot-pct-x', `${((shoulderRightPivot.x / 300) * 100).toFixed(4)}%`);
+    container.style.setProperty('--shoulder-right-pivot-pct-y', `${((shoulderRightPivot.y / 450) * 100).toFixed(4)}%`);
+    container.style.setProperty('--hip-left-pivot-pct-x', `${((hipLeftPivot.x / 300) * 100).toFixed(4)}%`);
+    container.style.setProperty('--hip-left-pivot-pct-y', `${((hipLeftPivot.y / 450) * 100).toFixed(4)}%`);
+    container.style.setProperty('--hip-right-pivot-pct-x', `${((hipRightPivot.x / 300) * 100).toFixed(4)}%`);
+    container.style.setProperty('--hip-right-pivot-pct-y', `${((hipRightPivot.y / 450) * 100).toFixed(4)}%`);
+  }
+
   const addWearableLayer = (slot, order, group = null) => {
     const item = draft?.slots?.[slot];
     if (!item) return;
@@ -127,7 +152,13 @@ export async function renderDollInto(container, draft, options = {}) {
   if (hair && !isCustomAssetId(hair.assetId) && (!enforceFit || isWearableCompatible(draft, getAsset(hair.assetId), getAsset))) {
     layers.push([10, hair.assetId, hair.color, 'hairBack', 'hair', false]);
   }
-  layers.push([20, draft?.baseDollId, null, null, 'skin']);
+  const customFullId = draft?.customArtId || (isCustomAssetId(draft?.baseDollId) ? draft?.baseDollId : null) || (draft?.kind === 'custom_full' ? (draft?.customArtId || draft?.baseDollId) : null);
+  const isCustomFull = Boolean(draft?.kind === 'custom_full' || customFullId);
+  if (isCustomFull && customFullId) {
+    layers.push([20, customFullId, null, null, 'skin', false]);
+  } else {
+    layers.push([20, draft?.baseDollId, null, null, 'skin']);
+  }
 
   const face = draft?.face;
   if (face && !showBakedFace) {
@@ -149,7 +180,18 @@ export async function renderDollInto(container, draft, options = {}) {
   const fitWarningNames = [];
   const nodes = (await Promise.all(layers.map(async ([order, id, color, group, slot, incompatible, extra]) => {
     const layer = document.createElement('span');
-    layer.className = 'doll-layer';
+    const isHead = isHeadBoundLayer(slot, id, getAsset);
+    const limbChannel = getLimbBoundChannel(slot, id, getAsset);
+    const limbClass = limbChannel === 'armLeft'
+      ? ' doll-layer-arm-left'
+      : limbChannel === 'armRight'
+        ? ' doll-layer-arm-right'
+        : limbChannel === 'legLeft'
+          ? ' doll-layer-leg-left'
+          : limbChannel === 'legRight'
+            ? ' doll-layer-leg-right'
+            : '';
+    layer.className = `doll-layer${isHead ? ' doll-layer-head' : ''}${limbClass}`;
     layer.dataset.slot = slot;
     layer.style.zIndex = String(order);
     layer.style.setProperty('--skin-color', paletteValue(draft.skinTone, 'peach'));
@@ -191,12 +233,12 @@ export async function renderDollInto(container, draft, options = {}) {
         if (baked && face && !showBakedFace) {
           baked.style.display = 'none';
         } else if (!face) {
-          applyMouthExpression(svg, expression);
+          applyMouthExpression(svg, expression, expressionIntensity);
         }
       }
       if (slot === 'face-mouth') {
         if (expression && expression !== 'neutral') {
-          applyMouthExpression(svg, expression);
+          applyMouthExpression(svg, expression, expressionIntensity);
         }
       }
       layer.append(svg);

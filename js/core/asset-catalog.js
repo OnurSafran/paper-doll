@@ -11,13 +11,182 @@ const PANORAMIC_CORE_ASSET_IDS = new Set(['bg_moonlit_meadow', 'bg_snowy_village
 const ASSET_CREATOR = 'Paper Doll Studio';
 const NEW_ASSET_CREATOR = '5.6 Luna';
 
+export const HEAD_ACCESSORY_IDS = Object.freeze(new Set([
+  'accessory_hat', 'accessory_glasses', 'accessory_bow', 'accessory_beret',
+  'accessory_crown', 'accessory_headphones', 'accessory_cat_ears', 'accessory_ribbon',
+  'accessory_hairclip', 'accessory_flower', 'accessory_pacifier_baby',
+  'accessory_spectacles_elder', 'accessory_cap_child', 'accessory_bonnet_baby'
+]));
+
+export function isHeadBoundLayer(slot, assetId, getAssetFn = getAsset) {
+  if (slot === 'hair' || slot === 'face-eyes' || slot === 'face-eyebrows' ||
+      slot === 'face-detail' || slot === 'face-nose' || slot === 'face-mouth') {
+    return true;
+  }
+  if (slot === 'accessory' && assetId) {
+    const asset = typeof getAssetFn === 'function' ? getAssetFn(assetId) : null;
+    if (asset?.poseChannel === 'head') return true;
+    return HEAD_ACCESSORY_IDS.has(assetId);
+  }
+  const asset = typeof getAssetFn === 'function' && assetId ? getAssetFn(assetId) : null;
+  return asset?.kind === 'face' || asset?.poseChannel === 'head';
+}
+
+export const LIMB_ACCESSORY_IDS = Object.freeze(new Map([
+  ['accessory_rattle_baby', 'armRight']
+]));
+
+export function getLimbBoundChannel(slot, assetId, getAssetFn = getAsset) {
+  if (slot === 'accessory' && assetId) {
+    const mapped = LIMB_ACCESSORY_IDS.get(assetId);
+    if (mapped) return mapped;
+    const asset = typeof getAssetFn === 'function' ? getAssetFn(assetId) : null;
+    if (asset?.poseChannel === 'armLeft' || asset?.poseChannel === 'armRight' ||
+        asset?.poseChannel === 'legLeft' || asset?.poseChannel === 'legRight') {
+      return asset.poseChannel;
+    }
+  }
+  return null;
+}
+
+export function isLimbBoundLayer(slot, assetId, getAssetFn = getAsset) {
+  return Boolean(getLimbBoundChannel(slot, assetId, getAssetFn));
+}
+
+export function hasRigidWearableForLimb(draft, limbChannel, getAssetFn = getAsset) {
+  if (!draft?.slots) return false;
+  const resolveAsset = typeof getAssetFn === 'function' ? getAssetFn : getAsset;
+  if (limbChannel === 'armLeft' || limbChannel === 'armRight') {
+    const top = draft.slots.top ? resolveAsset(draft.slots.top.assetId) : null;
+    const dress = draft.slots.dress ? resolveAsset(draft.slots.dress.assetId) : null;
+    if (top && (top.poseSupport ?? 'rigid') === 'rigid') return true;
+    if (dress && (dress.poseSupport ?? 'rigid') === 'rigid') return true;
+  }
+  if (limbChannel === 'legLeft' || limbChannel === 'legRight') {
+    const bottom = draft.slots.bottom ? resolveAsset(draft.slots.bottom.assetId) : null;
+    const dress = draft.slots.dress ? resolveAsset(draft.slots.dress.assetId) : null;
+    const shoes = draft.slots.shoes ? resolveAsset(draft.slots.shoes.assetId) : null;
+    if (bottom && (bottom.poseSupport ?? 'rigid') === 'rigid') return true;
+    if (dress && (dress.poseSupport ?? 'rigid') === 'rigid') return true;
+    if (shoes && (shoes.poseSupport ?? 'rigid') === 'rigid') return true;
+  }
+  return false;
+}
+
+const dollRequiredGroups = Object.freeze([
+  'body',
+  'pose-root',
+  'pose-head',
+  'pose-arm-left',
+  'pose-arm-right',
+  'pose-leg-left',
+  'pose-leg-right',
+  'torso'
+]);
+
 export const ASSETS = Object.freeze([
-  { id: 'doll_classic_a', kind: 'doll', name: 'Classic doll', path: 'assets/characters/doll-classic-a.svg', viewBox: dollViewBox, requiredGroups: ['body'], fitFamily: 'teen', lifeStages: ['teen'], presentationStyles: ['neutral'] },
-  { id: 'doll_classic_b', kind: 'doll', name: 'Joy doll', path: 'assets/characters/doll-classic-b.svg', viewBox: dollViewBox, requiredGroups: ['body'], fitFamily: 'teen', lifeStages: ['teen'], presentationStyles: ['neutral'] },
-  { id: 'doll_chibi_a', kind: 'doll', name: 'Chibi doll', path: 'assets/characters/doll-chibi-a.svg', viewBox: dollViewBox, requiredGroups: ['body'], fitFamily: 'child', lifeStages: ['child'], presentationStyles: ['neutral'] },
-  { id: 'doll_baby_a', kind: 'doll', name: 'Baby doll', path: 'assets/characters/doll-baby-a.svg', viewBox: dollViewBox, requiredGroups: ['body'], fitFamily: 'baby', lifeStages: ['baby'], presentationStyles: ['neutral'] },
-  { id: 'doll_adult_a', kind: 'doll', name: 'Adult doll', path: 'assets/characters/doll-adult-a.svg', viewBox: dollViewBox, requiredGroups: ['body'], fitFamily: 'adult', lifeStages: ['adult'], presentationStyles: ['neutral'] },
-  { id: 'doll_elder_a', kind: 'doll', name: 'Elder doll', path: 'assets/characters/doll-elder-a.svg', viewBox: dollViewBox, requiredGroups: ['body'], fitFamily: 'elder', lifeStages: ['elder'], presentationStyles: ['neutral'] },
+  {
+    id: 'doll_classic_a',
+    kind: 'doll',
+    name: 'Classic doll',
+    path: 'assets/characters/doll-classic-a.svg',
+    viewBox: dollViewBox,
+    requiredGroups: dollRequiredGroups,
+    fitFamily: 'teen',
+    lifeStages: ['teen'],
+    presentationStyles: ['neutral'],
+    poseSupport: 'full',
+    headPivot: Object.freeze({ x: 150, y: 90 }),
+    shoulderLeftPivot: Object.freeze({ x: 126, y: 120 }),
+    shoulderRightPivot: Object.freeze({ x: 174, y: 120 }),
+    hipLeftPivot: Object.freeze({ x: 138, y: 230 }),
+    hipRightPivot: Object.freeze({ x: 162, y: 230 })
+  },
+  {
+    id: 'doll_classic_b',
+    kind: 'doll',
+    name: 'Joy doll',
+    path: 'assets/characters/doll-classic-b.svg',
+    viewBox: dollViewBox,
+    requiredGroups: dollRequiredGroups,
+    fitFamily: 'teen',
+    lifeStages: ['teen'],
+    presentationStyles: ['neutral'],
+    poseSupport: 'full',
+    headPivot: Object.freeze({ x: 150, y: 90 }),
+    shoulderLeftPivot: Object.freeze({ x: 124, y: 120 }),
+    shoulderRightPivot: Object.freeze({ x: 176, y: 120 }),
+    hipLeftPivot: Object.freeze({ x: 138, y: 230 }),
+    hipRightPivot: Object.freeze({ x: 162, y: 230 })
+  },
+  {
+    id: 'doll_chibi_a',
+    kind: 'doll',
+    name: 'Chibi doll',
+    path: 'assets/characters/doll-chibi-a.svg',
+    viewBox: dollViewBox,
+    requiredGroups: dollRequiredGroups,
+    fitFamily: 'child',
+    lifeStages: ['child'],
+    presentationStyles: ['neutral'],
+    poseSupport: 'full',
+    headPivot: Object.freeze({ x: 150, y: 91 }),
+    shoulderLeftPivot: Object.freeze({ x: 124, y: 120 }),
+    shoulderRightPivot: Object.freeze({ x: 176, y: 120 }),
+    hipLeftPivot: Object.freeze({ x: 138, y: 230 }),
+    hipRightPivot: Object.freeze({ x: 162, y: 230 })
+  },
+  {
+    id: 'doll_baby_a',
+    kind: 'doll',
+    name: 'Baby doll',
+    path: 'assets/characters/doll-baby-a.svg',
+    viewBox: dollViewBox,
+    requiredGroups: dollRequiredGroups,
+    fitFamily: 'baby',
+    lifeStages: ['baby'],
+    presentationStyles: ['neutral'],
+    poseSupport: 'full',
+    headPivot: Object.freeze({ x: 150, y: 94 }),
+    shoulderLeftPivot: Object.freeze({ x: 122, y: 118 }),
+    shoulderRightPivot: Object.freeze({ x: 178, y: 118 }),
+    hipLeftPivot: Object.freeze({ x: 138, y: 240 }),
+    hipRightPivot: Object.freeze({ x: 162, y: 240 })
+  },
+  {
+    id: 'doll_adult_a',
+    kind: 'doll',
+    name: 'Adult doll',
+    path: 'assets/characters/doll-adult-a.svg',
+    viewBox: dollViewBox,
+    requiredGroups: dollRequiredGroups,
+    fitFamily: 'adult',
+    lifeStages: ['adult'],
+    presentationStyles: ['neutral'],
+    poseSupport: 'full',
+    headPivot: Object.freeze({ x: 150, y: 88 }),
+    shoulderLeftPivot: Object.freeze({ x: 121, y: 116 }),
+    shoulderRightPivot: Object.freeze({ x: 179, y: 116 }),
+    hipLeftPivot: Object.freeze({ x: 138, y: 236 }),
+    hipRightPivot: Object.freeze({ x: 162, y: 236 })
+  },
+  {
+    id: 'doll_elder_a',
+    kind: 'doll',
+    name: 'Elder doll',
+    path: 'assets/characters/doll-elder-a.svg',
+    viewBox: dollViewBox,
+    requiredGroups: dollRequiredGroups,
+    fitFamily: 'elder',
+    lifeStages: ['elder'],
+    presentationStyles: ['neutral'],
+    poseSupport: 'full',
+    headPivot: Object.freeze({ x: 150, y: 90 }),
+    shoulderLeftPivot: Object.freeze({ x: 124, y: 118 }),
+    shoulderRightPivot: Object.freeze({ x: 176, y: 118 }),
+    hipLeftPivot: Object.freeze({ x: 138, y: 234 }),
+    hipRightPivot: Object.freeze({ x: 162, y: 234 })
+  },
 
   // Face Features - Eyes
   face('eyes_classic', 'eyes', 'Classic eyes', 'assets/characters/face/eyes-classic.svg'),
@@ -250,12 +419,13 @@ function face(id, faceGroup, name, path, requiredGroups = ['face-feature']) {
   };
 }
 
-function wearable(id, slot, name, path, color, requiredGroups = ['garment'], supportedFitFamilies = ['teen'], presentationStyles = ['neutral']) {
+function wearable(id, slot, name, path, color, requiredGroups = ['garment'], supportedFitFamilies = ['teen'], presentationStyles = ['neutral'], poseSupport = 'rigid') {
   return {
     id, kind: 'wearable', slot, name, path, viewBox: dollViewBox,
     tintable: true, defaultColors: { primary: color }, requiredGroups,
     supportedFitFamilies,
-    presentationStyles
+    presentationStyles,
+    poseSupport
   };
 }
 

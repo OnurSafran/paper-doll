@@ -19,6 +19,186 @@ export function isExpression(value) {
   return typeof value === 'string' && EXPRESSIONS.includes(value);
 }
 
+export const EXPRESSION_INTENSITY_LEVELS = Object.freeze({
+  subtle: 0.35,
+  normal: 0.65,
+  amplified: 1.0
+});
+
+export const DEFAULT_EXPRESSION_INTENSITY = 0.65;
+
+export function isExpressionIntensity(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
+}
+
+export const POSE_SUPPORT_LEVELS = Object.freeze([
+  'rigid',
+  'basic',
+  'full'
+]);
+
+export const DEFAULT_POSE_SUPPORT = 'rigid';
+
+export function isPoseSupportLevel(value) {
+  return typeof value === 'string' && POSE_SUPPORT_LEVELS.includes(value);
+}
+
+export const STATIC_POSES = Object.freeze([
+  'rest',
+  'lean_left',
+  'lean_right',
+  'look_left',
+  'look_right',
+  'tilt_left',
+  'tilt_right',
+  'wave',
+  'point',
+  'hands_on_hips',
+  'arms_up'
+]);
+
+export const SAFE_STATIC_POSES = Object.freeze([
+  'rest',
+  'lean_left',
+  'lean_right',
+  'look_left',
+  'look_right',
+  'tilt_left',
+  'tilt_right'
+]);
+
+export const DEFAULT_STATIC_POSE = 'rest';
+
+export function isStaticPose(value) {
+  return typeof value === 'string' && STATIC_POSES.includes(value);
+}
+
+export function isSafeStaticPose(value) {
+  return typeof value === 'string' && SAFE_STATIC_POSES.includes(value);
+}
+
+export const MOTION_CLIP_IDS = Object.freeze([
+  'none',
+  'idle',
+  'happy_bounce',
+  'nod',
+  'sway',
+  'curious_tilt',
+  'look_around',
+  'wave',
+  'point',
+  'clap',
+  'jump',
+  'dance',
+  'hello',
+  'celebrate'
+]);
+
+export const SAFE_MOTION_CLIP_IDS = Object.freeze([
+  'none',
+  'idle',
+  'happy_bounce',
+  'sway',
+  'hello',
+  'celebrate',
+  'nod',
+  'look_around'
+]);
+
+export const DEFAULT_MOTION_CLIP_ID = 'none';
+
+export function isMotionClipId(value) {
+  return typeof value === 'string' && MOTION_CLIP_IDS.includes(value);
+}
+
+export function isSafeMotionClipId(value) {
+  return typeof value === 'string' && SAFE_MOTION_CLIP_IDS.includes(value);
+}
+
+export const MOTION_PROFILES = Object.freeze([
+  'root',
+  'root-head'
+]);
+
+export const DEFAULT_MOTION_PROFILE = 'root-head';
+
+export function isMotionProfile(value) {
+  return typeof value === 'string' && MOTION_PROFILES.includes(value);
+}
+
+export const POSE_CHANNELS = Object.freeze([
+  'root',
+  'head',
+  'armLeft',
+  'armRight',
+  'legLeft',
+  'legRight',
+  'expression'
+]);
+
+export const MOTION_INTENSITY_LEVELS = Object.freeze({
+  subtle: 0.5,
+  normal: 1.0,
+  strong: 1.5
+});
+
+export const DEFAULT_MOTION_INTENSITY = 1.0;
+
+export function isMotionIntensity(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0.1 && value <= 3.0;
+}
+
+export const PHASE_OFFSETS = Object.freeze([
+  0,
+  0.25,
+  0.5,
+  0.75
+]);
+
+export const DEFAULT_PHASE_OFFSET = 0;
+
+export function isPhaseOffset(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
+}
+
+export const PLAYBACK_RATES = Object.freeze([
+  0.5,
+  0.75,
+  1.0,
+  1.25,
+  1.5,
+  2.0
+]);
+
+export const DEFAULT_PLAYBACK_RATE = 1.0;
+
+export function isPlaybackRate(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0.25 && value <= 4.0;
+}
+
+export const ATTACH_JOINTS = Object.freeze([
+  'root',
+  'head',
+  'armLeft',
+  'armRight',
+  'legLeft',
+  'legRight'
+]);
+
+export const DEFAULT_ATTACH_JOINT = 'root';
+
+export function isAttachJoint(value) {
+  return typeof value === 'string' && ATTACH_JOINTS.includes(value);
+}
+
+
+export const DEFAULT_SCENE_ANIMATION_SETTINGS = Object.freeze({
+  enabled: false,
+  loop: true,
+  playbackRate: 1.0
+});
+
+
 export const OUTFIT_SLOTS = Object.freeze([
   'hair',
   'top',

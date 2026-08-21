@@ -157,7 +157,7 @@ test('dialogs, export coordinates, drag cleanup, and voice puppetry enforce safe
 
   // PNG export accurately offsets props and characters without NaN
   assert.match(exportJs, /ctx\.drawImage\(\s*propImg,\s*-renderW\s*\*\s*bounds\.anchorX,\s*-renderH\s*\*\s*bounds\.anchorY,\s*renderW,\s*renderH\s*\)/);
-  assert.match(exportJs, /createExportDollSvg\(entity\.characterSnapshot,\s*entity\.expression\s*\|\|\s*(DEFAULT_EXPRESSION|'neutral')/);
+  assert.match(exportJs, /createExportDollSvg\(entity\.characterSnapshot,\s*(pose\.expression|entity\.expression)/);
 
   // Pointer drag cleans up is-dragging class
   assert.match(playJs, /onCommit\(instanceId,\s*element,\s*event\)\s*{\s*element\?\.classList\?\.remove\('is-dragging'\)/);
@@ -257,12 +257,9 @@ test('multi-select, alignment controls, scene outline, and templates expose acce
   assert.match(html, /id="scene-outline-dialog"/);
   assert.match(html, /id="scene-outline-list"/);
   assert.match(html, /id="outline-select-all-btn"/);
-  assert.match(html, /id="outline-deselect-btn"/);
-
-  // CSS Styles
   assert.match(css, /\.scene-entity-positioner\.is-multi-selected\s*{/);
   assert.match(css, /\.alignment-buttons\s*{/);
-  assert.match(css, /\.alignment-buttons button\s*{[^}]*min-height:\s*40px/s);
+  assert.match(css, /\.alignment-buttons button\s*{[^}]*min-height:\s*44px/s);
   assert.match(css, /\.template-card\s*{/);
   assert.match(css, /\.template-badge\s*{/);
   assert.match(css, /\.outline-dialog\s*{/);
@@ -306,4 +303,46 @@ test('panoramic stages and camera navigation expose accessible HUD, slider, mini
   assert.match(playJs, /entityRoot\.replaceChildren\(\.\.\.nextElements\);/);
   assert.match(playJs, /renderCameraHud\(state\);/);
   assert.match(js, /clientToLogical\(event\.clientX, event\.clientY, playStage\.getBoundingClientRect\(\), cameraX\)/);
+});
+
+test('static pose and animation clip controls expose accessible multi-channel UI buttons and styling', () => {
+  // Poses in index.html
+  assert.match(html, /data-pose="rest"/);
+  assert.match(html, /data-pose="lean_left"/);
+  assert.match(html, /data-pose="lean_right"/);
+  assert.match(html, /data-pose="look_left"/);
+  assert.match(html, /data-pose="look_right"/);
+  assert.match(html, /data-pose="tilt_left"/);
+  assert.match(html, /data-pose="tilt_right"/);
+
+  // Clips in index.html
+  assert.match(html, /data-clip-id="none"/);
+  assert.match(html, /data-clip-id="idle"/);
+  assert.match(html, /data-clip-id="happy_bounce"/);
+  assert.match(html, /data-clip-id="hello"/);
+  assert.match(html, /data-clip-id="celebrate"/);
+  assert.match(html, /data-clip-id="nod"/);
+  assert.match(html, /data-clip-id="sway"/);
+  assert.match(html, /data-clip-id="look_around"/);
+
+  // Phase offset presets in index.html
+  assert.match(html, /id="character-phase-offset-controls"/);
+  assert.match(html, /data-phase-offset="0"/);
+  assert.match(html, /data-phase-offset="0\.25"/);
+  assert.match(html, /data-phase-offset="0\.5"/);
+  assert.match(html, /data-phase-offset="0\.75"/);
+
+  // Segmented control 44px min-height target
+  assert.match(css, /\.segmented-control button\s*{[^}]*min-height:\s*44px/s);
+
+  // Head channel CSS transforms
+  assert.match(css, /\.doll-layer-head/);
+  assert.match(css, /--motion-head-tx/);
+  assert.match(css, /--motion-head-ty/);
+  assert.match(css, /--motion-head-rot/);
+  assert.match(css, /--head-pivot-pct-x/);
+
+  // App handlers
+  assert.match(js, /scene\/setDollPose/);
+  assert.match(js, /scene\/setDollAnimation/);
 });

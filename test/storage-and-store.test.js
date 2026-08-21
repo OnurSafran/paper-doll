@@ -28,17 +28,17 @@ test('invalid child presets are skipped without discarding valid sections', () =
 test('malformed JSON loads safe defaults', () => {
   const storage = memoryStorage({ [STORAGE_KEY]: '{broken' });
   const result = loadEnvelope(storage, getAsset);
-  assert.equal(result.envelope.schemaVersion, 4);
+  assert.equal(result.envelope.schemaVersion, 6);
   assert.equal(result.available, false);
   assert.match(result.warnings[0], /could not be read/);
   assert.equal([...storage.data.keys()].some((key) => key.startsWith('paperDollStudio.quarantine.')), true);
 });
 
-test('version 1 data migrates to version 4 without losing presets', () => {
+test('version 1 data migrates to version 6 without losing presets', () => {
   const legacy = createDefaultEnvelope();
   legacy.schemaVersion = 1;
   const result = sanitizeEnvelope(legacy, getAsset);
-  assert.equal(result.envelope.schemaVersion, 4);
+  assert.equal(result.envelope.schemaVersion, 6);
   assert.match(result.warnings[0], /upgraded/);
 });
 

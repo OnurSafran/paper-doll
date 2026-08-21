@@ -61,15 +61,18 @@ test('executeSafeTeardown runs all callbacks safely and collects warnings if any
   let audioStopped = false;
   let exportCancelled = false;
   let storageCancelled = false;
+  let animationStopped = false;
 
   const result = executeSafeTeardown({
     cancelPointer: () => { pointerCancelled = true; },
     stopAudio: () => { throw new Error('Audio hardware busy'); },
+    stopAnimation: () => { animationStopped = true; },
     cancelExport: () => { exportCancelled = true; },
     cancelStorage: () => { storageCancelled = true; }
   });
 
   assert.equal(pointerCancelled, true);
+  assert.equal(animationStopped, true);
   assert.equal(exportCancelled, true);
   assert.equal(storageCancelled, true);
   assert.equal(result.ok, true);

@@ -33,7 +33,7 @@ export function classifyError(error) {
   return 'ERR_RUNTIME';
 }
 
-export function executeSafeTeardown({ cancelPointer, stopAudio, cancelExport, cancelStorage, onNotify } = {}) {
+export function executeSafeTeardown({ cancelPointer, stopAudio, stopAnimation, cancelExport, cancelStorage, onNotify } = {}) {
   const warnings = [];
 
   if (typeof cancelPointer === 'function') {
@@ -57,6 +57,14 @@ export function executeSafeTeardown({ cancelPointer, stopAudio, cancelExport, ca
       cancelExport();
     } catch (err) {
       warnings.push(`Export cancel failed: ${err?.message || 'unknown'}`);
+    }
+  }
+
+  if (typeof stopAnimation === 'function') {
+    try {
+      stopAnimation();
+    } catch (err) {
+      warnings.push(`Animation teardown failed: ${err?.message || 'unknown'}`);
     }
   }
 

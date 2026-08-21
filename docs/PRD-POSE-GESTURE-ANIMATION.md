@@ -1,8 +1,8 @@
 # PRD — Character Expressions, Poses, and Looping Scene Animation
 
-Status: Proposed
+Status: In Progress (Phase 0, Phase 1 & Phase 2 Completed)
 
-Updated: 2026-08-19
+Updated: 2026-08-20
 
 ## 1. Product goal
 
@@ -116,8 +116,10 @@ layouts. Existing movement and expression controls remain available.
 ### 5.2 Behavior
 
 - Opening Play does not start sound or microphone capture.
-- Visual animation may autoplay only after the product decision is explicit; the
-  initial recommendation is to start it only when the player presses Play.
+- Selecting a non-None animation clip for a character intentionally auto-starts scene
+  playback (`scene.animationSettings.enabled: true`) to give immediate visual feedback
+  of the chosen motion. Opening Play or resetting the scene preserves authored state
+  without forced auto-play.
 - Clips loop seamlessly.
 - Each character can use a different clip.
 - Phase offsets prevent unwanted synchronization.
@@ -394,7 +396,7 @@ Animation frames never schedule persistence or consume history capacity.
 
 ## 13. Delivery phases
 
-### Phase 0 — Contracts and visual prototype
+### Phase 0 — Contracts and visual prototype (Completed)
 
 Deliver:
 
@@ -402,7 +404,7 @@ Deliver:
 - Reduced-motion runtime contract.
 - One prototype rigid clip: idle-breathe or happy-bounce.
 - One static-frame evaluator used by DOM and export tests.
-- Decision on whether Play auto-starts animation.
+- Decision on whether Play auto-starts animation: Approved policy is that selecting a non-None clip auto-starts playback for immediate feedback, while opening Play preserves authored settings.
 
 Exit criteria:
 
@@ -411,7 +413,7 @@ Exit criteria:
 - Reduced motion disables movement.
 - Existing test baseline remains green.
 
-### Phase 1 — Rigid motion MVP
+### Phase 1 — Rigid motion MVP (Completed)
 
 Deliver:
 
@@ -547,3 +549,230 @@ Approve this as a multi-phase initiative:
 This reaches the desired looping-doll experience without blocking on a complete
 asset rewrite, while preserving a credible path to expressive body animation.
 
+## 17. Scope amendment — rigid-safe animation only
+
+Updated: 2026-08-21
+
+This amendment supersedes the earlier references to future rigged assets,
+articulated limb gestures, rigged clothing variants, and a pose-aware asset
+expansion. The product will support two asset types for animation:
+
+1. Custom/full-body painted art.
+2. Current rigid clothing layered on the built-in modular dolls.
+
+The product will not add, require, or plan for future pose-aware clothing,
+pose-aware custom artwork, arm/leg deformation, physics-based cloth, or true
+limb gestures. Existing pose groups and limb channels may remain in the code for
+backward compatibility and safe fallback handling, but they are not user-facing
+capabilities and must not be required for release.
+
+### 17.1 Asset animation profiles
+
+Animation capability is derived from the rendered asset composition. It is not
+determined only by the selected clip.
+
+#### Custom/full-body painted art
+
+Custom art that represents a whole character or a full-body raster layer is a
+single rigid visual. It supports:
+
+- Root translation, rotation, and small scale changes.
+- Whole-character bounce, sway, lean, and greeting motion.
+- Expression modulation only when a separate modular face layer exists.
+- Deterministic still rendering through PNG export and Scene Book.
+
+It does not support:
+
+- Independent head, arm, hand, leg, foot, or clothing deformation.
+- Raster mesh deformation, redrawing, masking, or per-frame image processing.
+- Animation that requires the painted image to remain attached to an unseen
+  joint.
+
+Full-body custom art should use a `root` motion profile. A custom hair or
+head-only asset may continue to use its existing head-bound layer behavior, but
+custom artwork must never be treated as limb-capable.
+
+> [!NOTE]
+> **Paint Studio authoring vs standalone artwork**:
+> The user-facing Paint Studio workflow currently authors modular custom wearables (dresses, tops, bottoms, hair, hats, accessories) and custom scene props. When equipped on a modular doll, custom wearables follow the rigid clothing kinematic model (`root-head` profile) where the clothing layer rigidly moves with the doll root.
+> The engine's `root` motion profile is fully implemented and enforced in `resolveMotionProfile` and `evaluateCharacterPose` to protect any standalone full-body raster character artwork (`custom_full` or `isCustomArt`) against head, arm, and leg deformations.
+
+#### Current rigid clothing
+
+Current tops, bottoms, dresses, shoes, accessories, and custom raster wearables
+remain independent rigid layers under the character motion wrapper. They support:
+
+- Root motion applied to the complete dressed doll.
+- Small whole-character bounce, sway, lean, and greeting motion.
+- Existing head motion for the modular base head and explicitly head-bound hair
+  or accessories where that behavior is already safe.
+- Existing expression and voice priority rules.
+
+They do not support:
+
+- Arm-left, arm-right, leg-left, or leg-right channels.
+- Static poses that require independently positioned hands or legs.
+- A clip label that implies waving, pointing, clapping, kicking, or a true
+  articulated dance.
+
+All current clothing remains `rigid` for animation purposes. No new clothing
+metadata, joint IDs, pivots, or pose-aware SVG groups are required.
+
+### 17.2 Rigid-safe motion catalog
+
+The supported catalog must use motion that remains coherent when every clothing
+layer follows the root. The UI labels should describe the visible result rather
+than imply a limb action.
+
+| User-facing label | Internal intent | Channels | Notes |
+|:--|:--|:--|:--|
+| Idle / Breathe | `idle` | root, optional head, expression | Very small periodic motion. |
+| Happy bounce | `happy-bounce` | root, optional head, expression | Vertical bounce with bounded squash/stretch. |
+| Gentle sway | `sway` | root, optional head | Side-to-side movement. |
+| Hello | `hello` | root, optional head, expression | Fake wave made from lean, head tilt, and smile. |
+| Bouncy celebration | `celebrate` | root, optional head, expression | Safe replacement for clap or jump. |
+| Nod | `nod` | optional head, expression | Available only for modular head-capable compositions. |
+| Look around | `look-around` | optional head | Available only for modular head-capable compositions. |
+| None | `none` | none | Canonical static frame. |
+
+`Rhythmic sway` may be offered as an alternative to `dance` if the product wants
+a stronger performance label. It must remain clear that the motion is whole-body
+sway and bounce, not a limb dance.
+
+The following actions are not advertised or selectable for these asset types:
+
+- Wave, point, clap, kick, and hands-on-hips.
+- Arms-up and other hand-specific static poses.
+- Any animation whose primary visual claim depends on an independent limb.
+
+### 17.3 Fake greeting and dance limits
+
+The rigid-safe clips must stay inside conservative bounds so that outlines,
+shoes, hair, custom art, and attached scene items do not appear to detach or
+leak outside the authored character area.
+
+Recommended maximum values at normal intensity:
+
+- Root x: ±6 px.
+- Root y: ±10 px for a bounce; ±3 px for sway or greeting.
+- Root rotation: ±4°.
+- Root scale: 0.98–1.02.
+- Head x/y: ±3 px when head motion is supported.
+- Head rotation: ±6° when head motion is supported.
+- Expression intensity multiplier: 1.0–1.15.
+
+The `hello` clip should use a short alternating root lean, a small head tilt when
+available, and a temporary smile or expression-intensity increase. It must not
+move an arm channel that is subsequently zeroed by rigid fallback. The
+`celebrate` clip should use a bounce and sway combination rather than clap or
+hand movement.
+
+### 17.4 Clip compatibility and legacy migration
+
+Every persisted or imported clip must resolve to a rigid-safe clip before it is
+rendered. New scenes may persist only the rigid-safe catalog IDs.
+
+Legacy IDs remain accepted at the state boundary so older projects do not fail to
+load. They are normalized as follows:
+
+~~~js
+const RIGID_CLIP_FALLBACKS = {
+  wave: 'hello',
+  point: 'look-around',
+  clap: 'celebrate',
+  dance: 'sway',
+  jump: 'happy-bounce'
+};
+
+const RIGID_POSE_FALLBACKS = {
+  wave: 'lean_left',
+  point: 'look_right',
+  hands_on_hips: 'rest',
+  arms_up: 'rest'
+};
+~~~
+
+The exact fallback may be changed during localization or usability review, but
+the result must never claim that the original limb action occurred. A legacy
+clip may either be migrated to its safe replacement or produce a visible
+whole-body fallback status; it must not silently render a broken partial pose.
+
+The resolver should use a small derived profile rather than inspecting every
+frame:
+
+~~~js
+{
+  motionProfile: 'root',       // full-body custom artwork
+  safeClips: ['none', 'idle', 'happy-bounce', 'sway', 'hello', 'celebrate']
+}
+
+{
+  motionProfile: 'root-head',  // modular doll with rigid clothing
+  safeClips: ['none', 'idle', 'happy-bounce', 'sway', 'hello', 'celebrate', 'nod', 'look-around']
+}
+~~~
+
+The profile is derived runtime data and must not be persisted as a second source
+of truth. Persist the authored safe `clipId`; persist no current frame or
+per-frame fallback state.
+
+### 17.5 Renderer and clothing recommendations
+
+- Keep all current clothing layers below one character motion wrapper so root
+  transforms move the complete outfit together.
+- Keep head-bound selectors limited to the existing modular head, hair, and
+  head-accessory cases. Do not infer head capability from arbitrary custom PNG
+  content.
+- Keep arm and leg CSS variables available as defensive no-op channels, but do
+  not include them in rigid-safe clips.
+- Keep the rigid clothing fallback in the evaluator as a safety net for legacy
+  clips and imported projects.
+- Do not apply an arm or leg transform to an entire shirt, dress, shoe pair, or
+  full-body custom image. That causes torso rotation, clothing separation, or
+  visible leaks.
+- Use transform and custom-property updates during playback. Do not rebuild
+  SVG layers, reload assets, or redraw raster images per frame.
+- Keep root amplitudes inside the existing character box. If a clip needs a
+  larger movement, add a new authored static bound before increasing it.
+- Preserve the existing scene positioner, flip wrapper, attachment kinematics,
+  voice priority, reduced-motion behavior, and deterministic export path.
+
+### 17.6 UI recommendations
+
+- Show only the safe clip list for the selected composition.
+- Remove limb-specific controls instead of showing controls that produce no
+  visible result.
+- Use labels such as `Hello`, `Gentle sway`, and `Bouncy celebration`; do not
+  label root-only motion `Wave`, `Clap`, or `Dance` without a clarifying whole-
+  body description.
+- If a legacy project is downgraded, show a short non-blocking message such as
+  “This animation uses a whole-body version for this artwork.”
+- Keep static pose controls limited to rest, lean, look, and tilt poses that are
+  visually valid for the composition.
+- Do not make animation required for understanding, editing, selecting, or
+  exporting custom artwork.
+
+### 17.7 Verification and acceptance criteria
+
+- Custom/full-body painted art remains visually coherent for every safe clip at
+  subtle, normal, and strong intensity.
+- Current rigid clothing, including tops, bottoms, dresses, shoes, hair,
+  accessories, and custom raster wearables, moves together with the root.
+- No supported safe clip produces non-zero arm or leg transforms.
+- Legacy wave, point, clap, dance, jump, and limb poses load through a
+  deterministic rigid-safe fallback.
+- Play, pause, reset, reduced motion, Scene Book, and PNG export use the same
+  evaluated static frame.
+- Safe clips do not change saved scene coordinates, history, attachments, or
+  project portability data.
+- A full-body custom image never receives a head, arm, or leg transform.
+- Automated tests cover clip filtering, legacy migration, rigid clothing, custom
+  raster artwork, export parity, reduced motion, and maximum transform bounds.
+
+### 17.8 Final recommendation
+
+Ship a deliberately bounded whole-body animation product. Keep the runtime
+channels and rigid fallback defensive, but remove limb-specific promises from the
+catalog and UI. The strongest safe experience is a small set of polished clips—
+idle, bounce, sway, hello, celebration, nod, and look-around—whose names match
+what users can see on both built-in outfits and custom painted artwork.

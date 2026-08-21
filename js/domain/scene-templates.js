@@ -3,8 +3,24 @@
  * Single authority for curated storytelling scene templates and template instantiation.
  */
 
-import { DEFAULT_EXPRESSION, defaultMakeId, defaultNow, isValidId, LIMITS } from './vocabulary.js';
+import {
+  DEFAULT_ATTACH_JOINT,
+  DEFAULT_EXPRESSION,
+  DEFAULT_EXPRESSION_INTENSITY,
+  DEFAULT_MOTION_CLIP_ID,
+  DEFAULT_MOTION_INTENSITY,
+  DEFAULT_PHASE_OFFSET,
+  DEFAULT_PLAYBACK_RATE,
+  DEFAULT_SCENE_ANIMATION_SETTINGS,
+  DEFAULT_STAGE_WIDTH,
+  DEFAULT_STATIC_POSE,
+  defaultMakeId,
+  defaultNow,
+  isValidId,
+  LIMITS
+} from './vocabulary.js';
 import { createStarterDraft } from './outfit-rules.js';
+import { resolveMotionProfile, resolveSafeClipId, resolveSafePoseId } from './animation-clips.js';
 
 export const SCENE_TEMPLATES = Object.freeze([
   {
@@ -359,13 +375,27 @@ export function instantiateSceneTemplate(templateId, makeId = defaultMakeId, def
       order: def.order,
       pinned: Boolean(def.pinned),
       attachedTo,
-      attachOffset: def.attachOffset ? { ...def.attachOffset } : null
+      attachOffset: def.attachOffset ? { ...def.attachOffset } : null,
+      attachJoint: def.attachJoint || DEFAULT_ATTACH_JOINT
     };
 
     if (def.kind === 'character') {
+      const motionProfile = resolveMotionProfile({
+        ...base,
+        characterSnapshot: charSnapshot,
+        isCustomArt: Boolean(def.isCustomArt)
+      });
       return {
         ...base,
         expression: def.expression || DEFAULT_EXPRESSION,
+        expressionIntensity: def.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY,
+        pose: resolveSafePoseId(def.pose || DEFAULT_STATIC_POSE, motionProfile),
+        animation: {
+          clipId: resolveSafeClipId(def.animation?.clipId || DEFAULT_MOTION_CLIP_ID, motionProfile),
+          enabled: Boolean(def.animation?.enabled),
+          intensity: def.animation?.intensity ?? DEFAULT_MOTION_INTENSITY,
+          phaseOffset: def.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET
+        },
         characterSnapshot: JSON.parse(JSON.stringify(charSnapshot))
       };
     }
@@ -388,6 +418,13 @@ export function instantiateSceneTemplate(templateId, makeId = defaultMakeId, def
     backgroundId: template.backgroundId,
     createdAt: now().toISOString(),
     updatedAt: now().toISOString(),
+    stageWidth: template.stageWidth || DEFAULT_STAGE_WIDTH,
+    cameraX: 0,
+    animationSettings: template.animationSettings ? {
+      enabled: Boolean(template.animationSettings.enabled),
+      loop: template.animationSettings.loop !== false,
+      playbackRate: template.animationSettings.playbackRate ?? DEFAULT_PLAYBACK_RATE
+    } : { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
     entities
   };
 }

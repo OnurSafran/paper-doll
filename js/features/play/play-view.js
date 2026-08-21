@@ -8,7 +8,9 @@ import { assetsByKind, getAsset as getBuiltinAsset, PROP_COLLECTIONS } from '../
 import { clientToLogical } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, getEntityBounds } from '../../domain/scene-rules.js';
 import { PointerController } from '../../core/pointer-controller.js?v=2';
-import { CAMERA_CONSTANTS, DEFAULT_EXPRESSION, DEFAULT_STAGE_WIDTH, VIEWPORT_HEIGHT, VIEWPORT_WIDTH, bubbleStyleLabelKey, isCustomAssetId } from '../../domain/vocabulary.js';
+import { CAMERA_CONSTANTS, CHARACTER_DIMENSIONS, DEFAULT_ATTACH_JOINT, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_MOTION_CLIP_ID, DEFAULT_MOTION_INTENSITY, DEFAULT_PHASE_OFFSET, DEFAULT_PLAYBACK_RATE, DEFAULT_STAGE_WIDTH, DEFAULT_STATIC_POSE, VIEWPORT_HEIGHT, VIEWPORT_WIDTH, bubbleStyleLabelKey, isCustomAssetId } from '../../domain/vocabulary.js';
+import { MOTION_PROFILES_CONFIG, resolveMotionProfile, resolveSafeClipId, resolveSafePoseId } from '../../domain/animation-clips.js';
+import { evaluateCharacterPose, resolveEffectiveMotion } from '../../domain/motion-evaluator.js';
 import { appendAsset, renderAssetPreview } from '../designer/designer-view.js';
 import { getBackgroundLayout } from '../../core/background-layout.js';
 import { createBubbleSvg } from '../../services/export-service.js';
@@ -24,6 +26,14 @@ export function sceneEntityRenderKey(entity) {
     sourceId: entity.sourceId,
     characterSnapshot: entity.kind === 'character' ? entity.characterSnapshot : null,
     expression: entity.kind === 'character' ? entity.expression || DEFAULT_EXPRESSION : null,
+    expressionIntensity: entity.kind === 'character' ? entity.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY : null,
+    pose: entity.kind === 'character' ? entity.pose || DEFAULT_STATIC_POSE : null,
+    animation: entity.kind === 'character' && entity.animation ? [
+      entity.animation.clipId,
+      entity.animation.enabled,
+      entity.animation.intensity,
+      entity.animation.phaseOffset
+    ] : null,
     bubble: entity.kind === 'bubble' ? [entity.bubbleStyle, entity.text, entity.width] : null
   });
 }
@@ -561,6 +571,97 @@ export function createPlayView({
       }
     }
 
+    const exprIntensityGroup = $('#character-expression-intensity-controls');
+    if (exprIntensityGroup) {
+      exprIntensityGroup.hidden = !isCharacter;
+      if (isCharacter) {
+        const currentIntensity = selected.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY;
+        for (const btn of $$('button[data-expression-intensity]', exprIntensityGroup)) {
+          const val = Number(btn.dataset.expressionIntensity);
+          const isSelected = Math.abs(val - currentIntensity) < 0.05;
+          btn.classList.toggle('is-selected-intensity', isSelected);
+          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        }
+      }
+    }
+
+    const poseGroup = $('#character-pose-controls');
+    if (poseGroup) {
+      poseGroup.hidden = !isCharacter;
+      if (isCharacter) {
+        const profile = resolveMotionProfile(selected);
+        const safePoses = MOTION_PROFILES_CONFIG[profile]?.safePoses || [];
+        const currentPose = resolveSafePoseId(selected.pose || DEFAULT_STATIC_POSE, profile);
+        for (const btn of $$('button[data-pose]', poseGroup)) {
+          const poseId = btn.dataset.pose;
+          const isAllowed = safePoses.includes(poseId);
+          btn.hidden = !isAllowed;
+          const isSelected = poseId === currentPose;
+          btn.classList.toggle('is-selected-pose', isSelected);
+          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        }
+      }
+    }
+
+    const clipGroup = $('#character-animation-clip-controls');
+    if (clipGroup) {
+      clipGroup.hidden = !isCharacter;
+      if (isCharacter) {
+        const profile = resolveMotionProfile(selected);
+        const safeClips = MOTION_PROFILES_CONFIG[profile]?.safeClips || [];
+        const currentClip = resolveSafeClipId(selected.animation?.clipId || 'none', profile);
+        for (const btn of $$('button[data-clip-id]', clipGroup)) {
+          const clipId = btn.dataset.clipId;
+          const isAllowed = safeClips.includes(clipId);
+          btn.hidden = !isAllowed;
+          const isSelected = clipId === currentClip;
+          btn.classList.toggle('is-selected-clip', isSelected);
+          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        }
+      }
+    }
+
+    const motionIntensityGroup = $('#character-motion-intensity-controls');
+    if (motionIntensityGroup) {
+      motionIntensityGroup.hidden = !isCharacter;
+      if (isCharacter) {
+        const currentMotionIntensity = selected.animation?.intensity ?? DEFAULT_MOTION_INTENSITY;
+        for (const btn of $$('button[data-motion-intensity]', motionIntensityGroup)) {
+          const val = Number(btn.dataset.motionIntensity);
+          const isSelected = Math.abs(val - currentMotionIntensity) < 0.05;
+          btn.classList.toggle('is-selected-intensity', isSelected);
+          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        }
+      }
+    }
+
+    const phaseOffsetGroup = $('#character-phase-offset-controls');
+    if (phaseOffsetGroup) {
+      phaseOffsetGroup.hidden = !isCharacter;
+      if (isCharacter) {
+        const currentPhase = selected.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET;
+        for (const btn of $$('button[data-phase-offset]', phaseOffsetGroup)) {
+          const val = Number(btn.dataset.phaseOffset);
+          const isSelected = Math.abs(val - currentPhase) < 0.05;
+          btn.classList.toggle('is-selected-phase-offset', isSelected);
+          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        }
+      }
+    }
+
+    const motionPrefGroup = $('#character-motion-preference-controls');
+    if (motionPrefGroup) {
+      motionPrefGroup.hidden = !isCharacter;
+      if (isCharacter) {
+        const currentMotionPref = state.settings?.reducedMotion || 'system';
+        for (const btn of $$('button[data-motion-mode]', motionPrefGroup)) {
+          const isSelected = btn.dataset.motionMode === currentMotionPref;
+          btn.classList.toggle('is-selected-motion-mode', isSelected);
+          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        }
+      }
+    }
+
     const bubbleGroup = $('#bubble-controls');
     if (bubbleGroup) {
       bubbleGroup.hidden = !isBubble;
@@ -572,6 +673,65 @@ export function createPlayView({
           btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         }
       }
+    }
+
+    const attachJointGroup = $('#attach-joint-controls');
+    if (attachJointGroup) {
+      const isAttached = !isMulti && Boolean(selected?.attachedTo);
+      attachJointGroup.hidden = !isAttached;
+      if (isAttached) {
+        const parentEntity = state.currentScene.entities.find((e) => e.instanceId === selected.attachedTo);
+        const parentProfile = parentEntity?.kind === 'character' ? resolveMotionProfile(parentEntity) : 'root';
+        const currentJoint = selected.attachJoint || DEFAULT_ATTACH_JOINT;
+        for (const btn of $$('button[data-attach-joint]', attachJointGroup)) {
+          const joint = btn.dataset.attachJoint;
+          const isAllowed = parentProfile === 'root' ? (joint === 'root') : true;
+          btn.hidden = !isAllowed;
+          const isSelected = btn.dataset.attachJoint === currentJoint;
+          btn.classList.toggle('is-selected-joint', isSelected);
+          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        }
+      }
+    }
+
+    const hasCharactersSelected = isMulti
+      ? state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId) && e.kind === 'character').length > 0
+      : isCharacter;
+
+    const rhythmGroup = $('#rhythm-sync-controls');
+    if (rhythmGroup) {
+      rhythmGroup.hidden = !hasCharactersSelected;
+    }
+
+    // Transport & speed buttons state sync
+    const animSettings = state.currentScene?.animationSettings || {};
+    const playBtn = $('#play-animation-btn');
+    if (playBtn) {
+      const userReducedMotion = state.settings?.reducedMotion || 'system';
+      const systemPrefersReducedMotion = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+      const motionAllowed = resolveEffectiveMotion(userReducedMotion, systemPrefersReducedMotion);
+      const isPlaying = Boolean(animSettings.enabled) && motionAllowed;
+      playBtn.classList.toggle('is-playing', isPlaying);
+      playBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+      const textSpan = playBtn.querySelector('span');
+      if (textSpan) {
+        textSpan.textContent = isPlaying ? t('play.pauseBtn') : t('play.playBtn');
+      }
+    }
+
+    const loopBtn = $('#loop-animation-btn');
+    if (loopBtn) {
+      const isLooping = animSettings.loop !== false;
+      loopBtn.classList.toggle('is-looping', isLooping);
+      loopBtn.setAttribute('aria-pressed', isLooping ? 'true' : 'false');
+    }
+
+    const currentRate = animSettings.playbackRate ?? DEFAULT_PLAYBACK_RATE;
+    for (const btn of $$('button[data-playback-rate]')) {
+      const val = Number(btn.dataset.playbackRate);
+      const isSelected = Math.abs(val - currentRate) < 0.01;
+      btn.classList.toggle('is-selected-rate', isSelected);
+      btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
     }
   }
 
@@ -632,8 +792,10 @@ export function createPlayView({
     button.style.zIndex = String(entity.order);
     const asset = getAsset(entity.sourceId);
     const bounds = getEntityBounds(entity, getAsset);
-    const logicalWidth = bounds.width;
-    button.style.setProperty('--entity-width', String(logicalWidth));
+    button.style.setProperty('--entity-width', String(bounds.width));
+    button.style.setProperty('--entity-height', String(bounds.height));
+    button.style.setProperty('--char-width', String(CHARACTER_DIMENSIONS.BASE_WIDTH));
+    button.style.setProperty('--char-height', String(CHARACTER_DIMENSIONS.BASE_HEIGHT));
     button.style.aspectRatio = entity.kind === 'character'
       ? '2 / 3'
       : (entity.kind === 'bubble' ? `${bounds.width} / ${bounds.height}` : `${asset?.displayWidth ?? 200} / ${asset?.displayHeight ?? 200}`);
@@ -651,15 +813,60 @@ export function createPlayView({
     visual.style.setProperty('--flip', entity.flipped ? '-1' : '1');
 
     if (entity.kind === 'character') {
+      const staticPose = evaluateCharacterPose(entity, 0, { playbackEnabled: false, getAsset });
+      const motion = document.createElement('span');
+      motion.className = 'scene-entity-motion';
+      motion.style.setProperty('--motion-tx', String(Math.round(staticPose.root.x * 10) / 10));
+      motion.style.setProperty('--motion-ty', String(Math.round(staticPose.root.y * 10) / 10));
+      motion.style.setProperty('--motion-rot', String(Math.round(staticPose.root.rotate * 10) / 10));
+      motion.style.setProperty('--motion-scale-x', String(Math.round(staticPose.root.scaleX * 100) / 100));
+      motion.style.setProperty('--motion-scale-y', String(Math.round(staticPose.root.scaleY * 100) / 100));
+      motion.style.setProperty('--motion-head-tx', String(Math.round(staticPose.head.x * 10) / 10));
+      motion.style.setProperty('--motion-head-ty', String(Math.round(staticPose.head.y * 10) / 10));
+      motion.style.setProperty('--motion-head-rot', String(Math.round(staticPose.head.rotate * 10) / 10));
+      motion.style.setProperty('--motion-head-scale-x', String(Math.round(staticPose.head.scaleX * 100) / 100));
+      motion.style.setProperty('--motion-head-scale-y', String(Math.round(staticPose.head.scaleY * 100) / 100));
+
+      if (staticPose.armLeft) {
+        motion.style.setProperty('--motion-arm-left-tx', String(Math.round(staticPose.armLeft.x * 10) / 10));
+        motion.style.setProperty('--motion-arm-left-ty', String(Math.round(staticPose.armLeft.y * 10) / 10));
+        motion.style.setProperty('--motion-arm-left-rot', String(Math.round(staticPose.armLeft.rotate * 10) / 10));
+        motion.style.setProperty('--motion-arm-left-scale-x', String(Math.round(staticPose.armLeft.scaleX * 100) / 100));
+        motion.style.setProperty('--motion-arm-left-scale-y', String(Math.round(staticPose.armLeft.scaleY * 100) / 100));
+      }
+      if (staticPose.armRight) {
+        motion.style.setProperty('--motion-arm-right-tx', String(Math.round(staticPose.armRight.x * 10) / 10));
+        motion.style.setProperty('--motion-arm-right-ty', String(Math.round(staticPose.armRight.y * 10) / 10));
+        motion.style.setProperty('--motion-arm-right-rot', String(Math.round(staticPose.armRight.rotate * 10) / 10));
+        motion.style.setProperty('--motion-arm-right-scale-x', String(Math.round(staticPose.armRight.scaleX * 100) / 100));
+        motion.style.setProperty('--motion-arm-right-scale-y', String(Math.round(staticPose.armRight.scaleY * 100) / 100));
+      }
+      if (staticPose.legLeft) {
+        motion.style.setProperty('--motion-leg-left-tx', String(Math.round(staticPose.legLeft.x * 10) / 10));
+        motion.style.setProperty('--motion-leg-left-ty', String(Math.round(staticPose.legLeft.y * 10) / 10));
+        motion.style.setProperty('--motion-leg-left-rot', String(Math.round(staticPose.legLeft.rotate * 10) / 10));
+        motion.style.setProperty('--motion-leg-left-scale-x', String(Math.round(staticPose.legLeft.scaleX * 100) / 100));
+        motion.style.setProperty('--motion-leg-left-scale-y', String(Math.round(staticPose.legLeft.scaleY * 100) / 100));
+      }
+      if (staticPose.legRight) {
+        motion.style.setProperty('--motion-leg-right-tx', String(Math.round(staticPose.legRight.x * 10) / 10));
+        motion.style.setProperty('--motion-leg-right-ty', String(Math.round(staticPose.legRight.y * 10) / 10));
+        motion.style.setProperty('--motion-leg-right-rot', String(Math.round(staticPose.legRight.rotate * 10) / 10));
+        motion.style.setProperty('--motion-leg-right-scale-x', String(Math.round(staticPose.legRight.scaleX * 100) / 100));
+        motion.style.setProperty('--motion-leg-right-scale-y', String(Math.round(staticPose.legRight.scaleY * 100) / 100));
+      }
+
       const canvas = document.createElement('span');
       canvas.className = 'scene-character-canvas';
       await renderDollInto(canvas, entity.characterSnapshot, {
         expression: entity.expression || DEFAULT_EXPRESSION,
+        expressionIntensity: entity.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY,
         customArtRepo,
         getAsset,
         enforceFit: false
       });
-      visual.append(canvas);
+      motion.append(canvas);
+      visual.append(motion);
       const preset = store.getState().presets.find((item) => item.presetId === entity.sourceId);
       button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${preset?.name ?? (entity.sourceId === 'demo_emma' ? 'Emma' : t('play.savedDoll'))}`);
     } else if (entity.kind === 'bubble') {
@@ -708,6 +915,9 @@ export function createPlayView({
     element.style.setProperty('--y', String(entity.y));
     element.style.zIndex = String(entity.order);
     element.style.setProperty('--entity-width', String(bounds.width));
+    element.style.setProperty('--entity-height', String(bounds.height));
+    element.style.setProperty('--char-width', String(CHARACTER_DIMENSIONS.BASE_WIDTH));
+    element.style.setProperty('--char-height', String(CHARACTER_DIMENSIONS.BASE_HEIGHT));
     element.style.aspectRatio = entity.kind === 'character'
       ? '2 / 3'
       : (entity.kind === 'bubble' ? `${bounds.width} / ${bounds.height}` : `${asset?.displayWidth ?? 200} / ${asset?.displayHeight ?? 200}`);

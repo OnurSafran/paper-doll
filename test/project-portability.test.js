@@ -39,7 +39,7 @@ test('serializeProjectExport formats valid versioned JSON containing full domain
   const parsed = JSON.parse(jsonStr);
   assert.equal(parsed.format, 'paper-doll-project');
   assert.equal(parsed.formatVersion, 1);
-  assert.equal(parsed.state.schemaVersion, 4);
+  assert.equal(parsed.state.schemaVersion, 6);
   assert.equal(parsed.state.presets.length, 1);
   assert.equal(parsed.state.presets[0].name, 'Export Doll');
   assert.equal(parsed.state.scenes.length, 1);
@@ -104,7 +104,7 @@ test('validateImportPayload performs 5-stage validation and summarizes incoming 
   const v1Payload = { ...validEnvelope, schemaVersion: 1 };
   const migratedRes = await validateImportPayload(JSON.stringify(v1Payload), getAsset);
   assert.equal(migratedRes.ok, true);
-  assert.equal(migratedRes.envelope.schemaVersion, 4);
+  assert.equal(migratedRes.envelope.schemaVersion, 6);
   assert.ok(migratedRes.warnings.some((w) => w.includes('upgraded')));
 });
 

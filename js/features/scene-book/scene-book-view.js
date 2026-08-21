@@ -13,6 +13,7 @@ import { createStarterDraft } from '../../domain/outfit-rules.js';
 import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../../domain/scene-templates.js';
 import { assetName, t } from '../../core/i18n.js';
 import { getBackgroundLayout } from '../../core/background-layout.js';
+import { evaluateCharacterPose, evaluateAttachedEntityTransform, resolveEntityAttachmentTransform } from '../../domain/motion-evaluator.js';
 
 /**
  * Creates a high-fidelity composite vector SVG representing a full scene (background + entities).
@@ -28,12 +29,13 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
   rootSvg.setAttribute('viewBox', `0 0 ${stageWidth} 900`);
   rootSvg.setAttribute('width', '100%');
   rootSvg.setAttribute('height', '100%');
-  rootSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  rootSvg.style.display = 'block';
+  rootSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  rootSvg.setAttribute('class', 'scene-composite-thumbnail');
 
-  // 1. Background layer
+  // 1. Background layer (vector composite)
   try {
-    const bgSvg = await loadSvg(scene.backgroundId);
+    const bgId = scene.backgroundId || scene.backgroundAssetId;
+    const bgSvg = await loadSvg(bgId);
     const vbStr = bgSvg.getAttribute?.('viewBox') || '0 0 800 500';
     const vbParts = vbStr.trim().split(/[\s,]+/).map(Number);
     const bvx = Number.isFinite(vbParts[0]) ? vbParts[0] : 0;
@@ -41,7 +43,7 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
     const bvw = Number.isFinite(vbParts[2]) && vbParts[2] > 0 ? vbParts[2] : 800;
     const bvh = Number.isFinite(vbParts[3]) && vbParts[3] > 0 ? vbParts[3] : 500;
 
-    const layout = getBackgroundLayout(getAssetFn(scene.backgroundId), stageWidth);
+    const layout = getBackgroundLayout(getAssetFn(bgId), stageWidth);
     for (const tileX of layout.tilePositions) {
       const bgG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       bgG.setAttribute('class', 'scene-thumb-bg');
@@ -61,27 +63,53 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
     rootSvg.appendChild(fallbackRect);
   }
 
+  // Precompute static character poses
+  const characterEntities = new Map();
+  const characterPoses = new Map();
+  const allEntitiesMap = new Map((scene.entities || []).map((e) => [e.instanceId, e]));
+  const attachedTransformMemo = new Map();
+
+  for (const ent of (scene.entities || [])) {
+    if (ent.kind === 'character') {
+      characterEntities.set(ent.instanceId, ent);
+      characterPoses.set(ent.instanceId, evaluateCharacterPose(ent, 0, { playbackEnabled: false, getAsset: getAssetFn }));
+    }
+  }
+
   // 2. Ordered entity layers
   const ordered = [...(scene.entities || [])].sort((a, b) => a.order - b.order);
   for (const entity of ordered) {
+    let attachedTransform = { tx: 0, ty: 0, rot: 0 };
+    if (entity.attachedTo) {
+      attachedTransform = resolveEntityAttachmentTransform(
+        entity,
+        allEntitiesMap,
+        characterPoses,
+        getAssetFn,
+        attachedTransformMemo
+      );
+    }
+
     const flipSign = entity.flipped ? -1 : 1;
     const entityScale = entity.scale ?? 1;
     const entityG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    entityG.setAttribute('transform', `translate(${entity.x}, ${entity.y}) scale(${flipSign * entityScale}, ${entityScale})`);
+    entityG.setAttribute('transform', `translate(${entity.x + attachedTransform.tx}, ${entity.y + attachedTransform.ty}) rotate(${attachedTransform.rot}) scale(${flipSign * entityScale}, ${entityScale})`);
 
     if (entity.kind === 'character') {
       try {
+        const pose = evaluateCharacterPose(entity, 0, { playbackEnabled: false, getAsset: getAssetFn });
         const dollSvg = await createExportDollSvg(
           entity.characterSnapshot || {},
-          entity.expression || DEFAULT_EXPRESSION,
-          { loadAssetSvg: loadSvg, customArtRepo, getAsset: getAssetFn, enforceFit }
+          pose.expression,
+          { loadAssetSvg: loadSvg, customArtRepo, getAsset: getAssetFn, enforceFit, expressionIntensity: pose.expressionIntensity, headTransform: pose.head, pose }
         );
         const dollG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const scaleX = CHARACTER_DIMENSIONS.BASE_WIDTH / 300;
         const scaleY = CHARACTER_DIMENSIONS.BASE_HEIGHT / 450;
         const offsetX = -CHARACTER_DIMENSIONS.BASE_WIDTH * CHARACTER_DIMENSIONS.GROUND_ANCHOR.x;
         const offsetY = -CHARACTER_DIMENSIONS.BASE_HEIGHT * CHARACTER_DIMENSIONS.GROUND_ANCHOR.y;
-        dollG.setAttribute('transform', `translate(${offsetX}, ${offsetY}) scale(${scaleX}, ${scaleY})`);
+        const transformAttr = `translate(${offsetX + pose.root.x}, ${offsetY + pose.root.y}) rotate(${pose.root.rotate}) scale(${scaleX * pose.root.scaleX}, ${scaleY * pose.root.scaleY})`;
+        dollG.setAttribute('transform', transformAttr);
         while (dollSvg.firstChild) dollG.appendChild(dollSvg.firstChild);
         entityG.appendChild(dollG);
       } catch {

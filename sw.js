@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paper-doll-studio-ve239b262';
+const CACHE_NAME = 'paper-doll-studio-v92d4a2da';
 const APP_SHELL = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const APP_SHELL = [
   './css/components/footer.css?v=c27c124b',
   './css/features/header.css?v=4bf96bb6',
   './css/features/designer.css?v=d17b1cb3',
-  './css/features/play.css?v=a974a343',
+  './css/features/play.css?v=e03bb77c',
   './css/features/paint.css?v=d4825b95',
   './css/responsive/responsive.css?v=2e0ce50b',
   './js/app.js?v=4',
@@ -30,6 +30,8 @@ const APP_SHELL = [
   './js/core/storage-adapter.js',
   './js/core/svg-loader.js',
   './js/core/text.js',
+  './js/domain/animation-clips.js',
+  './js/domain/motion-evaluator.js',
   './js/domain/outfit-rules.js',
   './js/domain/scene-rules.js',
   './js/domain/scene-templates.js',
@@ -46,6 +48,7 @@ const APP_SHELL = [
   './js/services/export-service.js',
   './js/services/project-portability.js',
   './js/services/project-repository.js',
+  './js/services/scene-animation-service.js',
   './js/services/voice-puppetry.js',
   './assets/app-icon.svg',
   './assets/characters/doll-classic-a.svg',

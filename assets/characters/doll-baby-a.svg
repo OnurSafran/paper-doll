@@ -1,67 +1,78 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="doll_baby_a">
+  <g id="pose-root">
   <g id="body" class="outline-shape" stroke="#2d261e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Chubby Baby Neck -->
-    <rect class="skin-fill" x="140" y="94" width="20" height="18" rx="5" fill="var(--skin-color, #fcd7b6)"/>
-    
-    <!-- Chubby Baby Torso -->
-    <path class="skin-fill" d="M121 110 C112 136 111 171 116 205 C118 221 125 234 133 240 L167 240 C175 234 182 221 184 205 C189 171 188 136 179 110 C166 116 134 116 121 110 Z" fill="var(--skin-color, #fcd7b6)"/>
-    
-    <!-- Cute Soft Pastel Yellow Diaper Undergarment -->
-    <path d="M117 201 C135 208 165 208 183 201 L179 237 C165 243 135 243 121 237 Z" fill="#fff3cd" stroke="#2d261e" stroke-width="2"/>
-    <path d="M123 211 C137 216 163 216 177 211" fill="none" stroke="#e7c96a" stroke-width="1.5"/>
+    <!-- Torso -->
+    <g id="torso">
+      <!-- Chubby Baby Neck -->
+      <rect class="skin-fill" x="140" y="94" width="20" height="18" rx="5" fill="var(--skin-color, #fcd7b6)"/>
+      
+      <!-- Chubby Baby Torso -->
+      <path class="skin-fill" d="M121 110 C112 136 111 171 116 205 C118 221 125 234 133 240 L167 240 C175 234 182 221 184 205 C189 171 188 136 179 110 C166 116 134 116 121 110 Z" fill="var(--skin-color, #fcd7b6)"/>
+      
+      <!-- Cute Soft Pastel Yellow Diaper Undergarment -->
+      <path d="M117 201 C135 208 165 208 183 201 L179 237 C165 243 135 243 121 237 Z" fill="#fff3cd" stroke="#2d261e" stroke-width="2"/>
+      <path d="M123 211 C137 216 163 216 177 211" fill="none" stroke="#e7c96a" stroke-width="1.5"/>
+    </g>
     
     <!-- Short Rounded Baby Legs -->
     <!-- Left Leg -->
-    <path class="skin-fill" d="M129 237 C126 269 124 303 127 338 C128 343 133 346 144 345 C146 309 149 270 147 237 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <g id="pose-leg-left">
+      <path class="skin-fill" d="M129 237 C126 269 124 303 127 338 C128 343 133 346 144 345 C146 309 149 270 147 237 Z" fill="var(--skin-color, #fcd7b6)"/>
+      <path class="skin-fill" d="M127 338 C124 349 118 359 113 363 C120 368 137 368 145 363 L144 340 Z" fill="var(--skin-color, #fcd7b6)"/>
+      <path d="M117 359 Q123 362 128 360" fill="none" stroke="#c98c70" stroke-width="1.2" opacity="0.38"/>
+    </g>
     <!-- Right Leg -->
-    <path class="skin-fill" d="M153 237 C151 270 154 309 156 345 C167 346 172 343 173 338 C176 303 174 269 171 237 Z" fill="var(--skin-color, #fcd7b6)"/>
-    <!-- Left Little Foot -->
-    <path class="skin-fill" d="M127 338 C124 349 118 359 113 363 C120 368 137 368 145 363 L144 340 Z" fill="var(--skin-color, #fcd7b6)"/>
-    <!-- Right Little Foot -->
-    <path class="skin-fill" d="M156 340 L155 363 C163 368 180 368 187 363 C182 359 176 349 173 338 Z" fill="var(--skin-color, #fcd7b6)"/>
+    <g id="pose-leg-right">
+      <path class="skin-fill" d="M153 237 C151 270 154 309 156 345 C167 346 172 343 173 338 C176 303 174 269 171 237 Z" fill="var(--skin-color, #fcd7b6)"/>
+      <path class="skin-fill" d="M156 340 L155 363 C163 368 180 368 187 363 C182 359 176 349 173 338 Z" fill="var(--skin-color, #fcd7b6)"/>
+      <path d="M172 360 Q178 362 184 359" fill="none" stroke="#c98c70" stroke-width="1.2" opacity="0.38"/>
+    </g>
 
     <!-- Chubby Baby Arms -->
     <!-- Left Arm -->
-    <path class="skin-fill" d="M122 112 C109 132 99 158 97 184 C95 193 101 198 106 193 C111 165 119 140 130 122 Z" fill="var(--skin-color, #fcd7b6)"/>
-    <!-- Right Arm -->
-    <path class="skin-fill" d="M178 112 C191 132 201 158 203 184 C205 193 199 198 194 193 C189 165 181 140 170 122 Z" fill="var(--skin-color, #fcd7b6)"/>
-    <!-- Left Little Hand -->
-    <circle class="skin-fill" cx="98" cy="193" r="7" fill="var(--skin-color, #fcd7b6)"/>
-    <!-- Right Little Hand -->
-    <circle class="skin-fill" cx="202" cy="193" r="7" fill="var(--skin-color, #fcd7b6)"/>
-
-    <!-- Soft baby dimples and toe creases -->
-    <path d="M95 187 Q99 189 102 187" fill="none" stroke="#c98c70" stroke-width="1.4" opacity="0.45"/>
-    <path d="M198 187 Q202 189 205 187" fill="none" stroke="#c98c70" stroke-width="1.4" opacity="0.45"/>
-    <path d="M117 359 Q123 362 128 360 M172 360 Q178 362 184 359" fill="none" stroke="#c98c70" stroke-width="1.2" opacity="0.38"/>
-
-    <!-- Round Baby Head -->
-    <ellipse class="skin-fill" cx="150" cy="64" rx="35" ry="40" fill="var(--skin-color, #fcd7b6)"/>
-    
-    <!-- Cute Ears -->
-    <circle class="skin-fill" cx="115" cy="66" r="5.5" fill="var(--skin-color, #fcd7b6)"/>
-    <circle class="skin-fill" cx="185" cy="66" r="5.5" fill="var(--skin-color, #fcd7b6)"/>
-
-    <!-- Face Details -->
-    <g id="baked-face">
-      <!-- Soft Rosy Baby Cheeks -->
-      <ellipse cx="132" cy="70" rx="7" ry="4" fill="#f28482" opacity="0.6" stroke="none"/>
-      <ellipse cx="168" cy="70" rx="7" ry="4" fill="#f28482" opacity="0.6" stroke="none"/>
-      
-      <!-- Big Round Curious Baby Eyes -->
-      <ellipse cx="135" cy="61" rx="4" ry="5.5" fill="#2d261e" stroke="none"/>
-      <circle cx="134" cy="59" r="1.6" fill="#ffffff" stroke="none"/>
-      <circle cx="136.5" cy="63" r="0.9" fill="#ffffff" stroke="none"/>
-      <path d="M130 54 C134 52 138 52 142 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
-      
-      <ellipse cx="165" cy="61" rx="4" ry="5.5" fill="#2d261e" stroke="none"/>
-      <circle cx="164" cy="59" r="1.6" fill="#ffffff" stroke="none"/>
-      <circle cx="166.5" cy="63" r="0.9" fill="#ffffff" stroke="none"/>
-      <path d="M158 54 C162 52 166 52 170 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
-
-      <!-- Tiny Button Nose & Baby Smile -->
-      <circle cx="150" cy="67" r="1.2" fill="#2d261e" stroke="none"/>
-      <path id="doll-mouth-default" d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+    <g id="pose-arm-left">
+      <path class="skin-fill" d="M122 112 C109 132 99 158 97 184 C95 193 101 198 106 193 C111 165 119 140 130 122 Z" fill="var(--skin-color, #fcd7b6)"/>
+      <circle class="skin-fill" cx="98" cy="193" r="7" fill="var(--skin-color, #fcd7b6)"/>
+      <path d="M95 187 Q99 189 102 187" fill="none" stroke="#c98c70" stroke-width="1.4" opacity="0.45"/>
     </g>
+    <!-- Right Arm -->
+    <g id="pose-arm-right">
+      <path class="skin-fill" d="M178 112 C191 132 201 158 203 184 C205 193 199 198 194 193 C189 165 181 140 170 122 Z" fill="var(--skin-color, #fcd7b6)"/>
+      <circle class="skin-fill" cx="202" cy="193" r="7" fill="var(--skin-color, #fcd7b6)"/>
+      <path d="M198 187 Q202 189 205 187" fill="none" stroke="#c98c70" stroke-width="1.4" opacity="0.45"/>
+    </g>
+
+    <!-- Rigged Head Channel -->
+    <g id="pose-head">
+      <!-- Round Baby Head -->
+      <ellipse class="skin-fill" cx="150" cy="64" rx="35" ry="40" fill="var(--skin-color, #fcd7b6)"/>
+      
+      <!-- Cute Ears -->
+      <circle class="skin-fill" cx="115" cy="66" r="5.5" fill="var(--skin-color, #fcd7b6)"/>
+      <circle class="skin-fill" cx="185" cy="66" r="5.5" fill="var(--skin-color, #fcd7b6)"/>
+
+      <!-- Face Details -->
+      <g id="baked-face">
+        <!-- Soft Rosy Baby Cheeks -->
+        <ellipse cx="132" cy="70" rx="7" ry="4" fill="#f28482" opacity="0.6" stroke="none"/>
+        <ellipse cx="168" cy="70" rx="7" ry="4" fill="#f28482" opacity="0.6" stroke="none"/>
+        
+        <!-- Big Round Curious Baby Eyes -->
+        <ellipse cx="135" cy="61" rx="4" ry="5.5" fill="#2d261e" stroke="none"/>
+        <circle cx="134" cy="59" r="1.6" fill="#ffffff" stroke="none"/>
+        <circle cx="136.5" cy="63" r="0.9" fill="#ffffff" stroke="none"/>
+        <path d="M130 54 C134 52 138 52 142 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+        
+        <ellipse cx="165" cy="61" rx="4" ry="5.5" fill="#2d261e" stroke="none"/>
+        <circle cx="164" cy="59" r="1.6" fill="#ffffff" stroke="none"/>
+        <circle cx="166.5" cy="63" r="0.9" fill="#ffffff" stroke="none"/>
+        <path d="M158 54 C162 52 166 52 170 54" fill="none" stroke="#2d261e" stroke-width="1.8"/>
+
+        <!-- Tiny Button Nose & Baby Smile -->
+        <circle cx="150" cy="67" r="1.2" fill="#2d261e" stroke="none"/>
+        <path id="doll-mouth-default" d="M146 73 C148 76 152 76 154 73" fill="none" stroke="#2d261e" stroke-width="2" stroke-linecap="round"/>
+      </g>
+    </g>
+  </g>
   </g>
 </svg>

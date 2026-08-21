@@ -5,13 +5,24 @@ import {
   DEFAULT_BUBBLE_STYLE,
   DEFAULT_BUBBLE_TEXT,
   DEFAULT_EXPRESSION,
+  DEFAULT_EXPRESSION_INTENSITY,
+  DEFAULT_MOTION_CLIP_ID,
+  DEFAULT_MOTION_INTENSITY,
+  DEFAULT_PHASE_OFFSET,
+  DEFAULT_SCENE_ANIMATION_SETTINGS,
   DEFAULT_STAGE_WIDTH,
+  DEFAULT_STATIC_POSE,
   defaultMakeId,
   defaultNow,
   isAlignmentMode,
   isBubbleStyle,
   isExpression,
+  isExpressionIntensity,
+  isMotionClipId,
+  isMotionIntensity,
+  isPhaseOffset,
   isStageWidth,
+  isStaticPose,
   LIMITS,
   STAGE_WIDTHS
 } from './vocabulary.js';
@@ -70,6 +81,7 @@ export function createEmptyScene(id = defaultMakeId(), now = defaultNow) {
     backgroundId: DEFAULT_BACKGROUND_ID,
     stageWidth: DEFAULT_STAGE_WIDTH,
     cameraX: CAMERA_CONSTANTS.DEFAULT_CAMERA_X,
+    animationSettings: { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
     updatedAt: now().toISOString(),
     entities: []
   };
@@ -82,11 +94,28 @@ export function createSampleScene(characterSnapshot, now = defaultNow) {
     backgroundId: DEFAULT_BACKGROUND_ID,
     stageWidth: DEFAULT_STAGE_WIDTH,
     cameraX: CAMERA_CONSTANTS.DEFAULT_CAMERA_X,
+    animationSettings: { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
     updatedAt: now().toISOString(),
     entities: [
       {
-        instanceId: 'sample-emma', kind: 'character', sourceId: 'demo_emma',
-        characterSnapshot, x: 720, y: 750, scale: 1, flipped: false, expression: DEFAULT_EXPRESSION, order: 2
+        instanceId: 'sample-emma',
+        kind: 'character',
+        sourceId: 'demo_emma',
+        characterSnapshot,
+        x: 720,
+        y: 750,
+        scale: 1,
+        flipped: false,
+        expression: DEFAULT_EXPRESSION,
+        expressionIntensity: DEFAULT_EXPRESSION_INTENSITY,
+        pose: DEFAULT_STATIC_POSE,
+        animation: {
+          clipId: DEFAULT_MOTION_CLIP_ID,
+          enabled: false,
+          intensity: DEFAULT_MOTION_INTENSITY,
+          phaseOffset: DEFAULT_PHASE_OFFSET
+        },
+        order: 2
       },
       {
         instanceId: 'sample-chair', kind: 'prop', sourceId: 'prop_chair',
@@ -155,7 +184,24 @@ export function addEntity(scene, entity, getAsset = () => undefined) {
 
   const next = {
     ...entity,
-    ...(entity.kind === 'character' ? { expression: isExpression(entity.expression) ? entity.expression : DEFAULT_EXPRESSION } : {}),
+    ...(entity.kind === 'character' ? {
+      expression: isExpression(entity.expression) ? entity.expression : DEFAULT_EXPRESSION,
+      expressionIntensity: isExpressionIntensity(entity.expressionIntensity) ? entity.expressionIntensity : DEFAULT_EXPRESSION_INTENSITY,
+      pose: isStaticPose(entity.pose) ? entity.pose : DEFAULT_STATIC_POSE,
+      animation: entity.animation && typeof entity.animation === 'object'
+        ? {
+            clipId: isMotionClipId(entity.animation.clipId) ? entity.animation.clipId : DEFAULT_MOTION_CLIP_ID,
+            enabled: Boolean(entity.animation.enabled),
+            intensity: isMotionIntensity(entity.animation.intensity) ? entity.animation.intensity : DEFAULT_MOTION_INTENSITY,
+            phaseOffset: isPhaseOffset(entity.animation.phaseOffset) ? entity.animation.phaseOffset : DEFAULT_PHASE_OFFSET
+          }
+        : {
+            clipId: DEFAULT_MOTION_CLIP_ID,
+            enabled: false,
+            intensity: DEFAULT_MOTION_INTENSITY,
+            phaseOffset: DEFAULT_PHASE_OFFSET
+          }
+    } : {}),
     ...(entity.kind === 'bubble' ? {
       text: entity.text || DEFAULT_BUBBLE_TEXT,
       bubbleStyle: isBubbleStyle(entity.bubbleStyle) ? entity.bubbleStyle : DEFAULT_BUBBLE_STYLE,

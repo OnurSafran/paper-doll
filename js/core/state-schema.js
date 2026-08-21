@@ -1,35 +1,55 @@
 import { isColorValue, isIrisColor, isPaletteToken, normalizeColorValue } from './palette.js';
 import { cloneDraft, createDefaultFace, createStarterDraft, emptySlots, OUTFIT_SLOTS } from '../domain/outfit-rules.js';
 import { clamp, clampPoint, clampScale, createEmptyScene, createSampleScene, getEntityBounds, reclampSceneEntities } from '../domain/scene-rules.js';
+import {
+  resolveMotionProfile,
+  resolveSafeClipId,
+  resolveSafePoseId
+} from '../domain/animation-clips.js';
 import { clampCameraX } from './coordinate-space.js';
 import { hasValidDisplayName, normalizeDisplayName } from './text.js';
 import {
   CAMERA_CONSTANTS,
+  DEFAULT_ATTACH_JOINT,
   DEFAULT_BACKGROUND_ID,
   DEFAULT_BASE_DOLL_ID,
   DEFAULT_BUBBLE_STYLE,
   DEFAULT_BUBBLE_TEXT,
   DEFAULT_EXPRESSION,
+  DEFAULT_EXPRESSION_INTENSITY,
   DEFAULT_IRIS_COLOR,
+  DEFAULT_MOTION_CLIP_ID,
+  DEFAULT_MOTION_INTENSITY,
+  DEFAULT_PHASE_OFFSET,
+  DEFAULT_PLAYBACK_RATE,
   DEFAULT_REDUCED_MOTION,
+  DEFAULT_SCENE_ANIMATION_SETTINGS,
   DEFAULT_STAGE_WIDTH,
+  DEFAULT_STATIC_POSE,
   FIT_FAMILIES,
+  isAttachJoint,
   isBubbleStyle,
   isCustomAssetId,
   isEntityKind,
   isExpression,
+  isExpressionIntensity,
   isFaceGroup,
   isFitFamily,
+  isMotionClipId,
+  isMotionIntensity,
+  isPhaseOffset,
+  isPlaybackRate,
   isPresentationStyle,
   isPropCollection,
   isReducedMotionOption,
   isStageWidth,
+  isStaticPose,
   isValidId,
   LIMITS,
   STAGE_WIDTHS
 } from '../domain/vocabulary.js';
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 6;
 export const STORAGE_KEY = 'paperDollStudio.state';
 
 export function createDefaultEnvelope() {
@@ -293,6 +313,7 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
   };
 }
 
+
 export function sanitizePreset(candidate, getAsset = () => undefined, warnings = []) {
   if (!candidate || typeof candidate !== 'object') return null;
   if (!validId(candidate.presetId) || !validPresetName(candidate.name)) return null;
@@ -422,12 +443,22 @@ export function sanitizeScene(candidate, getAsset = () => undefined, warnings = 
   const stageWidth = isStageWidth(candidate.stageWidth) ? candidate.stageWidth : DEFAULT_STAGE_WIDTH;
   const cameraX = clampCameraX(candidate.cameraX ?? CAMERA_CONSTANTS.DEFAULT_CAMERA_X, stageWidth);
 
+  const rawAnimationSettings = candidate.animationSettings;
+  const animationSettings = rawAnimationSettings && typeof rawAnimationSettings === 'object'
+    ? {
+        enabled: Boolean(rawAnimationSettings.enabled),
+        loop: rawAnimationSettings.loop !== false,
+        playbackRate: isPlaybackRate(rawAnimationSettings.playbackRate) ? rawAnimationSettings.playbackRate : DEFAULT_PLAYBACK_RATE
+      }
+    : { ...DEFAULT_SCENE_ANIMATION_SETTINGS };
+
   const sanitizedScene = {
     sceneId: candidate.sceneId,
     title: validName(candidate.title) ? normalizeDisplayName(candidate.title, LIMITS.MAX_SCENE_TITLE_LENGTH) : 'Current Scene',
     backgroundId: getAsset(candidate.backgroundId)?.kind === 'background' ? candidate.backgroundId : DEFAULT_BACKGROUND_ID,
     stageWidth,
     cameraX,
+    animationSettings,
     createdAt: validDateString(candidate.createdAt) ? candidate.createdAt : (validDateString(candidate.updatedAt) ? candidate.updatedAt : new Date(0).toISOString()),
     updatedAt: validDateString(candidate.updatedAt) ? candidate.updatedAt : new Date(0).toISOString(),
     entities
@@ -461,6 +492,34 @@ function sanitizeEntity(item, getAsset, stageWidth = DEFAULT_STAGE_WIDTH, warnin
   const attachOffset = attachedTo && item.attachOffset && Number.isFinite(item.attachOffset.dx) && Number.isFinite(item.attachOffset.dy)
     ? { dx: Math.round(item.attachOffset.dx), dy: Math.round(item.attachOffset.dy) }
     : null;
+  const attachJoint = attachedTo && isAttachJoint(item.attachJoint) ? item.attachJoint : DEFAULT_ATTACH_JOINT;
+
+  let expression = undefined;
+  let expressionIntensity = undefined;
+  let pose = undefined;
+  let animation = undefined;
+
+  if (item.kind === 'character') {
+    const motionProfile = resolveMotionProfile(item);
+    expression = isExpression(item.expression) ? item.expression : DEFAULT_EXPRESSION;
+    expressionIntensity = isExpressionIntensity(item.expressionIntensity) ? item.expressionIntensity : DEFAULT_EXPRESSION_INTENSITY;
+    pose = resolveSafePoseId(item.pose, motionProfile);
+
+    const rawAnim = item.animation;
+    animation = rawAnim && typeof rawAnim === 'object'
+      ? {
+          clipId: resolveSafeClipId(rawAnim.clipId, motionProfile),
+          enabled: Boolean(rawAnim.enabled),
+          intensity: isMotionIntensity(rawAnim.intensity) ? rawAnim.intensity : DEFAULT_MOTION_INTENSITY,
+          phaseOffset: isPhaseOffset(rawAnim.phaseOffset) ? rawAnim.phaseOffset : DEFAULT_PHASE_OFFSET
+        }
+      : {
+          clipId: DEFAULT_MOTION_CLIP_ID,
+          enabled: false,
+          intensity: DEFAULT_MOTION_INTENSITY,
+          phaseOffset: DEFAULT_PHASE_OFFSET
+        };
+  }
 
   return {
     instanceId: item.instanceId,
@@ -474,7 +533,8 @@ function sanitizeEntity(item, getAsset, stageWidth = DEFAULT_STAGE_WIDTH, warnin
     pinned,
     attachedTo,
     attachOffset,
-    ...(item.kind === 'character' ? { expression: isExpression(item.expression) ? item.expression : DEFAULT_EXPRESSION } : {}),
+    ...(attachedTo ? { attachJoint } : {}),
+    ...(item.kind === 'character' ? { expression, expressionIntensity, pose, animation } : {}),
     order: Number.isInteger(item.order) ? item.order : 1
   };
 }
@@ -502,10 +562,15 @@ export function clonePreset(preset) {
 export function cloneScene(scene) {
   return {
     ...scene,
+    animationSettings: scene.animationSettings
+      ? { ...scene.animationSettings }
+      : { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
     entities: scene.entities.map((entity) => ({
       ...entity,
       attachOffset: entity.attachOffset ? { ...entity.attachOffset } : null,
-      ...(entity.characterSnapshot ? { characterSnapshot: cloneDraft(entity.characterSnapshot) } : {})
+      ...(entity.attachJoint ? { attachJoint: entity.attachJoint } : {}),
+      ...(entity.characterSnapshot ? { characterSnapshot: cloneDraft(entity.characterSnapshot) } : {}),
+      ...(entity.animation ? { animation: { ...entity.animation } } : {})
     }))
   };
 }
@@ -562,10 +627,110 @@ function migrateEnvelope(value, warnings) {
         }
       : null;
 
-    return {
+    value = {
       ...value,
       schemaVersion: 4,
       presets,
+      scenes,
+      currentScene
+    };
+  }
+  if (value.schemaVersion === 4) {
+    warnings.push('Saved data was upgraded to character animation and pose schema.');
+    const migrateSceneEntitiesV5 = (entities) => {
+      if (!Array.isArray(entities)) return [];
+      return entities.map((entity) => {
+        if (entity.kind === 'character') {
+          return {
+            ...entity,
+            expressionIntensity: isExpressionIntensity(entity.expressionIntensity) ? entity.expressionIntensity : DEFAULT_EXPRESSION_INTENSITY,
+            pose: isStaticPose(entity.pose) ? entity.pose : DEFAULT_STATIC_POSE,
+            animation: entity.animation && typeof entity.animation === 'object'
+              ? {
+                  clipId: isMotionClipId(entity.animation.clipId) ? entity.animation.clipId : DEFAULT_MOTION_CLIP_ID,
+                  enabled: Boolean(entity.animation.enabled),
+                  intensity: isMotionIntensity(entity.animation.intensity) ? entity.animation.intensity : DEFAULT_MOTION_INTENSITY,
+                  phaseOffset: isPhaseOffset(entity.animation.phaseOffset) ? entity.animation.phaseOffset : DEFAULT_PHASE_OFFSET
+                }
+              : {
+                  clipId: DEFAULT_MOTION_CLIP_ID,
+                  enabled: false,
+                  intensity: DEFAULT_MOTION_INTENSITY,
+                  phaseOffset: DEFAULT_PHASE_OFFSET
+                }
+          };
+        }
+        return entity;
+      });
+    };
+
+    const scenes = Array.isArray(value.scenes)
+      ? value.scenes.map((scene) => ({
+          ...scene,
+          animationSettings: scene.animationSettings ? { ...scene.animationSettings } : { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
+          entities: migrateSceneEntitiesV5(scene.entities)
+        }))
+      : [];
+
+    const currentScene = value.currentScene
+      ? {
+          ...value.currentScene,
+          animationSettings: value.currentScene.animationSettings ? { ...value.currentScene.animationSettings } : { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
+          entities: migrateSceneEntitiesV5(value.currentScene.entities)
+        }
+      : null;
+
+    value = {
+      ...value,
+      schemaVersion: 5,
+      presets: Array.isArray(value.presets) ? value.presets : [],
+      scenes,
+      currentScene
+    };
+  }
+  if (value.schemaVersion === 5) {
+    warnings.push('Saved data was upgraded to animation expansion and choreography schema.');
+    const migrateSceneEntitiesV6 = (entities) => {
+      if (!Array.isArray(entities)) return [];
+      return entities.map((entity) => {
+        if (entity.attachedTo) {
+          return {
+            ...entity,
+            attachJoint: isAttachJoint(entity.attachJoint) ? entity.attachJoint : DEFAULT_ATTACH_JOINT
+          };
+        }
+        return entity;
+      });
+    };
+
+    const scenes = Array.isArray(value.scenes)
+      ? value.scenes.map((scene) => ({
+          ...scene,
+          animationSettings: {
+            ...DEFAULT_SCENE_ANIMATION_SETTINGS,
+            ...(scene.animationSettings || {}),
+            playbackRate: isPlaybackRate(scene.animationSettings?.playbackRate) ? scene.animationSettings.playbackRate : DEFAULT_PLAYBACK_RATE
+          },
+          entities: migrateSceneEntitiesV6(scene.entities)
+        }))
+      : [];
+
+    const currentScene = value.currentScene
+      ? {
+          ...value.currentScene,
+          animationSettings: {
+            ...DEFAULT_SCENE_ANIMATION_SETTINGS,
+            ...(value.currentScene.animationSettings || {}),
+            playbackRate: isPlaybackRate(value.currentScene.animationSettings?.playbackRate) ? value.currentScene.animationSettings.playbackRate : DEFAULT_PLAYBACK_RATE
+          },
+          entities: migrateSceneEntitiesV6(value.currentScene.entities)
+        }
+      : null;
+
+    return {
+      ...value,
+      schemaVersion: 6,
+      presets: Array.isArray(value.presets) ? value.presets : [],
       scenes,
       currentScene
     };

@@ -40,6 +40,7 @@ import {
 } from '../domain/scene-rules.js';
 import { clampCameraX } from './coordinate-space.js';
 import { instantiateSceneTemplate } from '../domain/scene-templates.js';
+import { resolveMotionProfile, resolveSafeClipId, resolveSafePoseId } from '../domain/animation-clips.js';
 import { cloneCustomAsset, clonePreset, cloneScene, createRuntimeState, sanitizeCustomAsset } from './state-schema.js';
 import { createAssetRegistry } from './asset-registry.js';
 import { assetName, t } from './i18n.js';
@@ -47,28 +48,45 @@ import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, isColorValue, isIrisColor, is
 import { normalizeDisplayName, truncateGraphemes } from './text.js';
 import {
   ALIGNMENT_MODES,
+  ATTACH_JOINTS,
   BUBBLE_STYLES,
   CAMERA_CONSTANTS,
+  DEFAULT_ATTACH_JOINT,
   DEFAULT_BASE_DOLL_ID,
   DEFAULT_BUBBLE_STYLE,
   DEFAULT_BUBBLE_TEXT,
   DEFAULT_EXPRESSION,
+  DEFAULT_EXPRESSION_INTENSITY,
   DEFAULT_IRIS_COLOR,
+  DEFAULT_MOTION_CLIP_ID,
+  DEFAULT_MOTION_INTENSITY,
+  DEFAULT_PHASE_OFFSET,
+  DEFAULT_PLAYBACK_RATE,
+  DEFAULT_SCENE_ANIMATION_SETTINGS,
   DEFAULT_STAGE_WIDTH,
+  DEFAULT_STATIC_POSE,
   defaultMakeId,
   defaultNow,
   isAlignmentMode,
+  isAttachJoint,
   isBubbleStyle,
   isCustomAssetId,
   isExpression,
+  isExpressionIntensity,
   isFaceGroup,
+  isMotionClipId,
+  isMotionIntensity,
   isOutfitSlot,
+  isPhaseOffset,
+  isPlaybackRate,
   isPresentationStyle,
   isPropCollection,
   isStageWidth,
+  isStaticPose,
   isValidId,
   LIMITS,
   OUTFIT_SLOTS,
+  PLAYBACK_RATES,
   STAGE_WIDTHS
 } from '../domain/vocabulary.js';
 
@@ -1058,6 +1076,193 @@ function reduce(state, action, context) {
         persist: true
       };
     }
+    case 'scene/setDollExpressionIntensity': {
+      if (!isExpressionIntensity(action.expressionIntensity)) return null;
+      const targetId = action.instanceId ?? state.ui.selectedEntityId;
+      const entity = state.currentScene.entities.find((e) => e.instanceId === targetId && e.kind === 'character');
+      if (!entity || entity.expressionIntensity === action.expressionIntensity) return null;
+      const updatedEntities = state.currentScene.entities.map((e) => e.instanceId === targetId ? { ...e, expressionIntensity: action.expressionIntensity } : e);
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, entities: updatedEntities }, context.now)
+        },
+        persist: true
+      };
+    }
+    case 'scene/setDollPose': {
+      const targetId = action.instanceId ?? state.ui.selectedEntityId;
+      const entity = state.currentScene.entities.find((e) => e.instanceId === targetId && e.kind === 'character');
+      if (!entity) return null;
+      const motionProfile = resolveMotionProfile(entity);
+      const safePose = resolveSafePoseId(action.pose, motionProfile);
+      if (!safePose || entity.pose === safePose) return null;
+      const updatedEntities = state.currentScene.entities.map((e) => e.instanceId === targetId ? { ...e, pose: safePose } : e);
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, entities: updatedEntities }, context.now)
+        },
+        persist: true
+      };
+    }
+    case 'scene/setDollAnimation': {
+      const raw = action.animation;
+      if (!raw || typeof raw !== 'object') return null;
+      const targetId = action.instanceId ?? state.ui.selectedEntityId;
+      const entity = state.currentScene.entities.find((e) => e.instanceId === targetId && e.kind === 'character');
+      if (!entity) return null;
+      const motionProfile = resolveMotionProfile(entity);
+      const rawCandidate = raw.clipId !== undefined ? raw.clipId : (entity.animation?.clipId ?? DEFAULT_MOTION_CLIP_ID);
+      const clipId = resolveSafeClipId(rawCandidate, motionProfile);
+      const enabled = raw.enabled !== undefined
+        ? Boolean(raw.enabled)
+        : (raw.clipId !== undefined ? clipId !== 'none' : (entity.animation?.enabled ?? false));
+      const animation = {
+        clipId,
+        enabled,
+        intensity: isMotionIntensity(raw.intensity) ? raw.intensity : (entity.animation?.intensity ?? DEFAULT_MOTION_INTENSITY),
+        phaseOffset: isPhaseOffset(raw.phaseOffset) ? raw.phaseOffset : (entity.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET)
+      };
+      const updatedEntities = state.currentScene.entities.map((e) => e.instanceId === targetId ? { ...e, animation } : e);
+      const currentAnimSettings = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
+      const shouldAutoPlay = animation.enabled && animation.clipId !== 'none';
+      const nextAnimationSettings = shouldAutoPlay && !currentAnimSettings.enabled
+        ? { ...currentAnimSettings, enabled: true }
+        : currentAnimSettings;
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, entities: updatedEntities, animationSettings: nextAnimationSettings }, context.now)
+        },
+        persist: true
+      };
+    }
+    case 'scene/setAnimationSettings': {
+      const raw = action.animationSettings;
+      if (!raw || typeof raw !== 'object') return null;
+      const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
+      const animationSettings = {
+        enabled: raw.enabled !== undefined ? Boolean(raw.enabled) : current.enabled,
+        loop: raw.loop !== undefined ? Boolean(raw.loop) : current.loop,
+        playbackRate: isPlaybackRate(raw.playbackRate) ? raw.playbackRate : (current.playbackRate ?? DEFAULT_PLAYBACK_RATE)
+      };
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, animationSettings }, context.now)
+        },
+        persist: true
+      };
+    }
+    case 'scene/setPlaybackRate': {
+      const rawRate = Number(action.playbackRate);
+      if (!isPlaybackRate(rawRate)) return null;
+      const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
+      const animationSettings = {
+        ...current,
+        playbackRate: rawRate
+      };
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, animationSettings }, context.now)
+        },
+        persist: true
+      };
+    }
+    case 'scene/syncCharacterBeats': {
+      const mode = action.mode || 'sync';
+      const targetIds = action.instanceIds || (state.ui.selectedEntityIds?.length ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : null));
+      const chars = state.currentScene.entities.filter((e) => e.kind === 'character');
+      if (chars.length === 0) return null;
+
+      const targetSet = targetIds ? new Set(targetIds) : null;
+      let charIndex = 0;
+      const updatedEntities = state.currentScene.entities.map((e) => {
+        if (e.kind !== 'character') return e;
+        const isTarget = !targetSet || targetSet.has(e.instanceId);
+        if (!isTarget) return e;
+
+        let phaseOffset = 0;
+        if (mode === 'alternate') {
+          phaseOffset = (charIndex % 2) === 1 ? 0.5 : 0;
+        } else if (mode === 'wave') {
+          phaseOffset = ((charIndex % 4) * 0.25);
+        }
+        charIndex += 1;
+
+        const currentAnim = e.animation || {
+          clipId: DEFAULT_MOTION_CLIP_ID,
+          enabled: false,
+          intensity: DEFAULT_MOTION_INTENSITY,
+          phaseOffset: DEFAULT_PHASE_OFFSET
+        };
+
+        return {
+          ...e,
+          animation: {
+            ...currentAnim,
+            phaseOffset
+          }
+        };
+      });
+
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, entities: updatedEntities }, context.now)
+        },
+        persist: true
+      };
+    }
+    case 'scene/setAttachJoint': {
+      const instanceId = action.instanceId || state.ui.selectedEntityId;
+      const attachJoint = action.attachJoint;
+      if (!instanceId || !isAttachJoint(attachJoint)) return null;
+      const entity = state.currentScene.entities.find((e) => e.instanceId === instanceId);
+      if (!entity || !entity.attachedTo) return null;
+      const parent = state.currentScene.entities.find((e) => e.instanceId === entity.attachedTo);
+      const parentProfile = parent?.kind === 'character' ? resolveMotionProfile(parent) : 'root';
+      const effectiveJoint = parentProfile === 'root' ? 'root' : attachJoint;
+
+      const updatedEntities = state.currentScene.entities.map((e) => e.instanceId === instanceId ? { ...e, attachJoint: effectiveJoint } : e);
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, entities: updatedEntities }, context.now)
+        },
+        persist: true
+      };
+    }
+    case 'scene/toggleScenePlayback': {
+      const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
+      const animationSettings = {
+        ...current,
+        enabled: !current.enabled
+      };
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, animationSettings }, context.now)
+        },
+        persist: true
+      };
+    }
+    case 'scene/toggleSceneLoop': {
+      const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
+      const animationSettings = {
+        ...current,
+        loop: !current.loop
+      };
+      return {
+        state: {
+          ...state,
+          currentScene: touchScene({ ...state.currentScene, animationSettings }, context.now)
+        },
+        persist: true
+      };
+    }
     case 'scene/saveToLibrary': {
       const title = normalizeDisplayName(action.name, LIMITS.MAX_SCENE_TITLE_LENGTH) ?? (state.currentScene.title !== 'Current Scene' ? state.currentScene.title : 'My Scene');
       if (!title) return { state: message(t('play.statusSceneTitleRequired')), result: { ok: false, code: 'INVALID_NAME' } };
@@ -1376,6 +1581,20 @@ function reduce(state, action, context) {
         }),
         persist: true,
         result: { ok: true }
+      };
+    }
+    case 'settings/setReducedMotion': {
+      const mode = action.mode;
+      if (!['system', 'reduce', 'full'].includes(mode)) return null;
+      return {
+        state: {
+          ...state,
+          settings: {
+            ...state.settings,
+            reducedMotion: mode
+          }
+        },
+        persist: true
       };
     }
     default:

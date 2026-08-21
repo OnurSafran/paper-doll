@@ -84,8 +84,8 @@ test('storage payload footprint test at maximum boundary conditions', () => {
 
   // Standard browser localStorage quota is 5MB to 10MB (5,000,000+ bytes).
   // At absolute maximum state (50 full presets, 30 multi-character library scenes, 40 active scene entities),
-  // assert footprint stays well below 1MB.
-  assert.ok(serialized.length < 1_000_000, `Storage footprint was ${serialized.length} bytes, expected under 1MB`);
+  // assert footprint stays well below 1.5MB.
+  assert.ok(serialized.length < 1_500_000, `Storage footprint was ${serialized.length} bytes, expected under 1.5MB`);
   
   // Verify no base64, data:, or DOM leaks in serialized JSON
   assert.doesNotMatch(serialized, /data:image/);

@@ -3,7 +3,7 @@
  * Single authority for deterministic PNG scene export with immutable snapshot isolation.
  */
 
-import { getAsset } from '../core/asset-catalog.js';
+import { getAsset, getLimbBoundChannel, isHeadBoundLayer, isLimbBoundLayer } from '../core/asset-catalog.js';
 import { loadAssetSvg } from '../core/svg-loader.js';
 import { paletteValue } from '../core/palette.js';
 import { cloneScene } from '../core/state-schema.js';
@@ -17,9 +17,16 @@ import {
   CHARACTER_DIMENSIONS,
   DEFAULT_BASE_DOLL_ID,
   DEFAULT_EXPRESSION,
+  DEFAULT_EXPRESSION_INTENSITY,
   LIMITS,
   isCustomAssetId
 } from '../domain/vocabulary.js';
+import {
+  evaluateAttachedEntityTransform,
+  evaluateCharacterPose,
+  evaluateProceduralBlink,
+  resolveEntityAttachmentTransform
+} from '../domain/motion-evaluator.js';
 
 export function loadImageFromUrl(url) {
   return new Promise((resolve, reject) => {
@@ -56,6 +63,20 @@ export function svgElementToImage(svgElement, width, height) {
   });
 }
 
+function createJointTransformAttr(t, pivot) {
+  if (!t || (!t.x && !t.y && !t.rotate && (t.scaleX === undefined || t.scaleX === 1) && (t.scaleY === undefined || t.scaleY === 1))) {
+    return '';
+  }
+  const px = pivot?.x ?? 150;
+  const py = pivot?.y ?? 90;
+  const tx = t.x || 0;
+  const ty = t.y || 0;
+  const rot = t.rotate || 0;
+  const sx = t.scaleX ?? 1;
+  const sy = t.scaleY ?? 1;
+  return `translate(${tx}, ${ty}) translate(${px}, ${py}) rotate(${rot}) scale(${sx}, ${sy}) translate(${-px}, ${-py})`;
+}
+
 /**
  * Composites layered SVG geometry for an exported character doll.
  */
@@ -64,6 +85,7 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
   const resolveAsset = options.getAsset ?? getAsset;
   const customArtRepo = options.customArtRepo;
   const enforceFit = options.enforceFit !== false;
+  const expressionIntensity = options.expressionIntensity ?? draft?.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY;
   const canRenderWearable = (item) => item && (!enforceFit || isWearableCompatible(draft, resolveAsset(item.assetId), resolveAsset));
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 300 450');
@@ -71,13 +93,49 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
   svg.setAttribute('height', '450');
   svg.style.setProperty('--skin-color', paletteValue(draft?.skinTone, 'peach'));
 
+  const baseDoll = resolveAsset(draft?.baseDollId || DEFAULT_BASE_DOLL_ID);
+  const headPivot = baseDoll?.headPivot || { x: 150, y: 90 };
+  const shoulderLeftPivot = baseDoll?.shoulderLeftPivot || { x: 126, y: 120 };
+  const shoulderRightPivot = baseDoll?.shoulderRightPivot || { x: 174, y: 120 };
+  const hipLeftPivot = baseDoll?.hipLeftPivot || { x: 138, y: 230 };
+  const hipRightPivot = baseDoll?.hipRightPivot || { x: 162, y: 230 };
+
+  const head = options.headTransform || options.pose?.head;
+  const armLeft = options.armLeftTransform || options.pose?.armLeft;
+  const armRight = options.armRightTransform || options.pose?.armRight;
+  const legLeft = options.legLeftTransform || options.pose?.legLeft;
+  const legRight = options.legRightTransform || options.pose?.legRight;
+
+  const headTransformAttr = createJointTransformAttr(head, headPivot);
+  const armLeftTransformAttr = createJointTransformAttr(armLeft, shoulderLeftPivot);
+  const armRightTransformAttr = createJointTransformAttr(armRight, shoulderRightPivot);
+  const legLeftTransformAttr = createJointTransformAttr(legLeft, hipLeftPivot);
+  const legRightTransformAttr = createJointTransformAttr(legRight, hipRightPivot);
+
+  const eyesHeadTransform = (head || Number.isFinite(options.blinkScaleY))
+    ? {
+        x: head?.x || 0,
+        y: head?.y || 0,
+        rotate: head?.rotate || 0,
+        scaleX: head?.scaleX ?? 1,
+        scaleY: (head?.scaleY ?? 1) * (Number.isFinite(options.blinkScaleY) ? options.blinkScaleY : 1)
+      }
+    : null;
+  const eyesTransformAttr = createJointTransformAttr(eyesHeadTransform, headPivot);
+
   const layers = [];
   const hair = draft?.slots?.hair;
   const showBakedFace = isDefaultFace(draft?.face, draft?.baseDollId) && expression === DEFAULT_EXPRESSION;
   if (hair && canRenderWearable(hair) && !isCustomAssetId(hair.assetId)) {
     layers.push([10, hair.assetId, hair.color, 'hairBack', 'hair']);
   }
-  layers.push([20, draft?.baseDollId || DEFAULT_BASE_DOLL_ID, null, null, 'skin']);
+  const customFullId = draft?.customArtId || (isCustomAssetId(draft?.baseDollId) ? draft?.baseDollId : null) || (draft?.kind === 'custom_full' ? (draft?.customArtId || draft?.baseDollId) : null);
+  const isCustomFull = Boolean(draft?.kind === 'custom_full' || customFullId);
+  if (isCustomFull && customFullId) {
+    layers.push([20, customFullId, null, null, 'skin']);
+  } else {
+    layers.push([20, draft?.baseDollId || DEFAULT_BASE_DOLL_ID, null, null, 'skin']);
+  }
 
   const face = draft?.face;
   if (face && !showBakedFace) {
@@ -124,8 +182,10 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
       groupEl.style.setProperty('--skin-color', paletteValue(draft?.skinTone, 'peach'));
       groupEl.style.setProperty('--hair-color', paletteValue(color, 'brown'));
       groupEl.style.setProperty('--asset-color-primary', paletteValue(color, 'coral'));
-      if (slot === 'face-eyes' && extra) {
-        groupEl.style.setProperty('--iris-color', paletteValue(extra, 'cocoa'));
+      if (slot === 'face-eyes') {
+        if (extra) {
+          groupEl.style.setProperty('--iris-color', paletteValue(extra, 'cocoa'));
+        }
       }
       if (group) {
         for (const candidate of ['hairBack', 'hairFront']) {
@@ -138,12 +198,51 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
         if (baked && face && !showBakedFace) {
           baked.style.display = 'none';
         } else if (!face) {
-          applyMouthExpression(clone, expression);
+          applyMouthExpression(clone, expression, expressionIntensity);
+        }
+      }
+      if (headTransformAttr) {
+        const poseHead = clone.querySelector('#pose-head');
+        if (poseHead) poseHead.setAttribute('transform', headTransformAttr);
+      }
+      if (armLeftTransformAttr) {
+        const armLeftEl = clone.querySelector('#pose-arm-left') || clone.querySelector('#arm-left');
+        if (armLeftEl) armLeftEl.setAttribute('transform', armLeftTransformAttr);
+      }
+      if (armRightTransformAttr) {
+        const armRightEl = clone.querySelector('#pose-arm-right') || clone.querySelector('#arm-right');
+        if (armRightEl) armRightEl.setAttribute('transform', armRightTransformAttr);
+      }
+      if (legLeftTransformAttr) {
+        const legLeftEl = clone.querySelector('#pose-leg-left') || clone.querySelector('#leg-left');
+        if (legLeftEl) legLeftEl.setAttribute('transform', legLeftTransformAttr);
+      }
+      if (legRightTransformAttr) {
+        const legRightEl = clone.querySelector('#pose-leg-right') || clone.querySelector('#leg-right');
+        if (legRightEl) legRightEl.setAttribute('transform', legRightTransformAttr);
+      }
+
+      if (slot !== 'skin') {
+        if (slot === 'face-eyes' && eyesTransformAttr) {
+          groupEl.setAttribute('transform', eyesTransformAttr);
+        } else if (headTransformAttr && isHeadBoundLayer(slot, id, resolveAsset)) {
+          groupEl.setAttribute('transform', headTransformAttr);
+        } else {
+          const limbChannel = getLimbBoundChannel(slot, id, resolveAsset);
+          if (limbChannel === 'armLeft' && armLeftTransformAttr) {
+            groupEl.setAttribute('transform', armLeftTransformAttr);
+          } else if (limbChannel === 'armRight' && armRightTransformAttr) {
+            groupEl.setAttribute('transform', armRightTransformAttr);
+          } else if (limbChannel === 'legLeft' && legLeftTransformAttr) {
+            groupEl.setAttribute('transform', legLeftTransformAttr);
+          } else if (limbChannel === 'legRight' && legRightTransformAttr) {
+            groupEl.setAttribute('transform', legRightTransformAttr);
+          }
         }
       }
       if (slot === 'face-mouth') {
         if (expression && expression !== 'neutral') {
-          applyMouthExpression(clone, expression);
+          applyMouthExpression(clone, expression, expressionIntensity);
         }
       }
       while (clone.firstChild) groupEl.appendChild(clone.firstChild);
@@ -406,8 +505,14 @@ export function createExportService(options = {}) {
     onProgress({ percent: 0, phase: 'cancelled' });
   }
 
-  async function renderSceneToCanvas(sceneSnapshot, canvas = document.createElement('canvas'), signal = null) {
-    if (signal?.aborted) throw new Error('Export cancelled');
+  async function renderSceneToCanvas(sceneSnapshot, canvas = document.createElement('canvas'), signal = null, options = {}) {
+    const effectiveSignal = (signal && typeof signal.aborted === 'boolean') ? signal : null;
+    const effectiveOptions = (signal && typeof signal === 'object' && typeof signal.aborted !== 'boolean') ? signal : (options || {});
+    if (effectiveSignal?.aborted) throw new Error('Export cancelled');
+
+    const animTimeMs = Number.isFinite(effectiveOptions.animationTimeMs) ? effectiveOptions.animationTimeMs : 0;
+    const isAnimatedExport = animTimeMs > 0 || Boolean(effectiveOptions.playbackEnabled);
+
     const snapshot = cloneScene(sceneSnapshot);
     const stageWidth = snapshot.stageWidth || LIMITS.STAGE_WIDTH;
     canvas.width = stageWidth;
@@ -427,20 +532,61 @@ export function createExportService(options = {}) {
       ctx.fillRect(0, 0, stageWidth, LIMITS.STAGE_HEIGHT);
     }
 
+    const isLooping = snapshot.animationSettings?.loop !== false;
+    const allEntitiesMap = new Map(snapshot.entities.map((e) => [e.instanceId, e]));
+    const attachedTransformMemo = new Map();
+    const characterEntities = new Map();
+    const characterPoses = new Map();
+    for (const ent of snapshot.entities) {
+      if (ent.kind === 'character') {
+        characterEntities.set(ent.instanceId, ent);
+        characterPoses.set(ent.instanceId, evaluateCharacterPose(ent, animTimeMs, { playbackEnabled: isAnimatedExport, loop: isLooping, getAsset: getAssetFn }));
+      }
+    }
+
     const ordered = [...snapshot.entities].sort((a, b) => a.order - b.order);
     for (const entity of ordered) {
-      if (signal?.aborted) throw new Error('Export cancelled');
+      if (effectiveSignal?.aborted) throw new Error('Export cancelled');
       ctx.save();
+
+      let attachedTransform = null;
+      if (entity.attachedTo) {
+        attachedTransform = resolveEntityAttachmentTransform(
+          entity,
+          allEntitiesMap,
+          characterPoses,
+          getAssetFn,
+          attachedTransformMemo
+        );
+      }
+
       ctx.translate(entity.x, entity.y);
+      if (attachedTransform) {
+        ctx.translate(attachedTransform.tx, attachedTransform.ty);
+        if (attachedTransform.rot) ctx.rotate(attachedTransform.rot * Math.PI / 180);
+      }
       const flipSign = entity.flipped ? -1 : 1;
       ctx.scale(flipSign * entity.scale, entity.scale);
 
       if (entity.kind === 'character') {
-        const dollSvg = await createExportDollSvg(entity.characterSnapshot, entity.expression || DEFAULT_EXPRESSION, {
+        const pose = characterPoses.get(entity.instanceId) || evaluateCharacterPose(entity, animTimeMs, { playbackEnabled: isAnimatedExport, loop: isLooping, getAsset: getAssetFn });
+        ctx.translate(pose.root.x, pose.root.y);
+        if (pose.root.rotate) ctx.rotate(pose.root.rotate * Math.PI / 180);
+        ctx.scale(pose.root.scaleX, pose.root.scaleY);
+
+        const blink = (isAnimatedExport && pose.isAnimated)
+          ? evaluateProceduralBlink(entity.instanceId, animTimeMs, { reducedMotion: false })
+          : { scaleY: 1.0 };
+
+        const dollSvg = await createExportDollSvg(entity.characterSnapshot, pose.expression, {
           loadAssetSvg: loadSvgFn,
           customArtRepo,
           getAsset: getAssetFn,
-          enforceFit: false
+          enforceFit: false,
+          expressionIntensity: pose.expressionIntensity,
+          headTransform: pose.head,
+          blinkScaleY: blink.scaleY,
+          pose
         });
         const dollImg = await toImageFn(dollSvg, 300, 450);
         ctx.drawImage(
@@ -506,11 +652,11 @@ export function createExportService(options = {}) {
           const px = -renderW * bounds.anchorX;
           const py = -renderH * bounds.anchorY;
           ctx.fillStyle = 'rgba(235, 230, 220, 0.85)';
+          ctx.fillRect(px, py, renderW, renderH);
           ctx.strokeStyle = '#c4b5a2';
           ctx.lineWidth = 2;
           ctx.setLineDash([6, 4]);
           ctx.strokeRect(px, py, renderW, renderH);
-          ctx.fillRect(px, py, renderW, renderH);
           ctx.setLineDash([]);
           ctx.fillStyle = '#8c7e6c';
           ctx.font = 'bold 14px sans-serif';
@@ -525,7 +671,7 @@ export function createExportService(options = {}) {
     return canvas;
   }
 
-  async function exportSceneBlob(sceneSnapshot, { onProgress: progressCb, signal } = {}) {
+  async function exportSceneBlob(sceneSnapshot, options = {}) {
     if (isExporting) {
       return { ok: false, code: 'EXPORT_IN_PROGRESS', message: 'An export is already in progress.' };
     }
@@ -533,17 +679,17 @@ export function createExportService(options = {}) {
     const currentGeneration = ++activeGeneration;
     abortController = new AbortController();
     const onExternalAbort = () => abortController?.abort();
-    if (signal?.aborted) abortController.abort();
-    else signal?.addEventListener('abort', onExternalAbort, { once: true });
+    if (options.signal?.aborted) abortController.abort();
+    else options.signal?.addEventListener('abort', onExternalAbort, { once: true });
     const effectiveSignal = abortController.signal;
-    const reportProgress = progressCb || onProgress;
+    const reportProgress = options.onProgress || onProgress;
 
     try {
       reportProgress({ percent: 10, phase: 'preparing' });
       if (effectiveSignal.aborted) throw new Error('Export cancelled');
       const snapshot = cloneScene(sceneSnapshot);
       reportProgress({ percent: 30, phase: 'rendering' });
-      const canvas = await renderSceneToCanvas(snapshot, document.createElement('canvas'), effectiveSignal);
+      const canvas = await renderSceneToCanvas(snapshot, document.createElement('canvas'), effectiveSignal, options);
       if (effectiveSignal.aborted) throw new Error('Export cancelled');
       reportProgress({ percent: 75, phase: 'encoding' });
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
@@ -560,7 +706,8 @@ export function createExportService(options = {}) {
       }
       return { ok: false, code: 'EXPORT_FAILED', error, message: 'Could not export scene image.' };
     } finally {
-      signal?.removeEventListener('abort', onExternalAbort);
+      if (currentGeneration === activeGeneration) isExporting = false;
+      options.signal?.removeEventListener?.('abort', onExternalAbort);
       if (activeGeneration === currentGeneration) {
         isExporting = false;
         abortController = null;

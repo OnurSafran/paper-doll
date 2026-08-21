@@ -279,7 +279,7 @@ test('renderDollInto filters face layers by the active doll fit family', async (
 });
 
 test('state schema v4 sanitization and v3 migration', () => {
-  assert.equal(SCHEMA_VERSION, 4);
+  assert.equal(SCHEMA_VERSION, 6);
 
   // v3 envelope migrates to v4 and injects default face into presets and scene character entities
   const legacyV3 = {
@@ -316,7 +316,7 @@ test('state schema v4 sanitization and v3 migration', () => {
   };
 
   const sanitized = sanitizeEnvelope(legacyV3, getAsset);
-  assert.equal(sanitized.envelope.schemaVersion, 4);
+  assert.equal(sanitized.envelope.schemaVersion, 6);
   assert.equal(sanitized.migrated, true);
   assert.equal(sanitized.recovered, true);
 

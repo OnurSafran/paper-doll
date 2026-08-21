@@ -58,6 +58,30 @@ for (const asset of ASSETS) {
   for (const group of asset.requiredGroups ?? []) {
     if (!new RegExp(`\\bid=["']${escapeRegex(group)}["']`).test(source)) failures.push(`${asset.path}: missing required #${group}`);
   }
+  if (asset.kind === 'doll') {
+    if (asset.poseSupport && !['rigid', 'basic', 'full'].includes(asset.poseSupport)) {
+      failures.push(`${asset.id}: invalid poseSupport "${asset.poseSupport}"`);
+    }
+    if (asset.poseSupport === 'basic' || asset.poseSupport === 'full') {
+      if (!asset.headPivot || !Number.isFinite(asset.headPivot.x) || !Number.isFinite(asset.headPivot.y)) {
+        failures.push(`${asset.id}: rigged doll must declare a numeric headPivot { x, y }`);
+      }
+    }
+    if (asset.poseSupport === 'full') {
+      if (!asset.shoulderLeftPivot || !Number.isFinite(asset.shoulderLeftPivot.x) || !Number.isFinite(asset.shoulderLeftPivot.y)) {
+        failures.push(`${asset.id}: full poseSupport doll must declare a numeric shoulderLeftPivot { x, y }`);
+      }
+      if (!asset.shoulderRightPivot || !Number.isFinite(asset.shoulderRightPivot.x) || !Number.isFinite(asset.shoulderRightPivot.y)) {
+        failures.push(`${asset.id}: full poseSupport doll must declare a numeric shoulderRightPivot { x, y }`);
+      }
+      if (!asset.hipLeftPivot || !Number.isFinite(asset.hipLeftPivot.x) || !Number.isFinite(asset.hipLeftPivot.y)) {
+        failures.push(`${asset.id}: full poseSupport doll must declare a numeric hipLeftPivot { x, y }`);
+      }
+      if (!asset.hipRightPivot || !Number.isFinite(asset.hipRightPivot.x) || !Number.isFinite(asset.hipRightPivot.y)) {
+        failures.push(`${asset.id}: full poseSupport doll must declare a numeric hipRightPivot { x, y }`);
+      }
+    }
+  }
   if (prohibitedElements.test(source)) failures.push(`${asset.path}: contains a prohibited element`);
   if (eventAttributes.test(source)) failures.push(`${asset.path}: contains an event-handler attribute`);
   if (externalReferences.test(source)) failures.push(`${asset.path}: contains an external or embedded reference`);

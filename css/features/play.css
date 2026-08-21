@@ -203,6 +203,71 @@
   box-shadow: 0 0 0 2px var(--coral);
 }
 
+/* Animation Transport Controls */
+.animation-transport-btn {
+  font-weight: 750;
+  transition: all 0.15s ease;
+}
+
+.animation-transport-btn.is-playing {
+  background: #2a9d8f !important;
+  color: white !important;
+  border-color: #264653 !important;
+  box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.4);
+}
+
+.animation-transport-btn.is-looping {
+  background: var(--paper-card);
+  border-color: var(--coral);
+  color: var(--coral-dark);
+  font-weight: 800;
+}
+
+/* Play Selection Toolbar Segmented Controls */
+.segmented-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(46, 38, 31, 0.06);
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.segmented-control button {
+  min-height: 44px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 750;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--radius-xs);
+  color: var(--ink);
+  cursor: pointer;
+  line-height: 1;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+}
+
+.segmented-control button:hover {
+  background: var(--paper-card);
+}
+
+.segmented-control button.is-selected-intensity,
+.segmented-control button.is-selected-phase-offset,
+.segmented-control button.is-selected-motion-mode,
+.segmented-control button.is-selected-pose,
+.segmented-control button.is-selected-clip,
+.segmented-control button.is-selected-rate,
+.segmented-control button.is-selected-joint,
+.segmented-control button.is-selected-rhythm {
+  background: var(--paper-card);
+  border-color: var(--coral);
+  color: var(--coral-dark);
+  box-shadow: var(--shadow-sm);
+  font-weight: 800;
+}
+
 /* Bubble Controls */
 .bubble-controls {
   display: inline-flex;
@@ -219,8 +284,8 @@
 }
 
 .bubble-style-buttons button {
-  min-width: 40px;
-  min-height: 40px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0.3rem 0.45rem;
   font-size: 1rem;
   border: 1px solid transparent;
@@ -253,7 +318,8 @@
 }
 
 .alignment-buttons button {
-  min-height: 40px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0.25rem 0.5rem;
   font-size: 0.74rem;
   font-weight: 750;
@@ -591,8 +657,118 @@
   display: block;
   width: 100%;
   height: 100%;
-  transform: scaleX(var(--flip));
+  transform: translate(calc(var(--motion-attached-tx, 0) / var(--entity-width, 235) * 100%), calc(var(--motion-attached-ty, 0) / var(--entity-height, 352.5) * 100%))
+             rotate(calc(var(--motion-attached-rot, 0) * 1deg))
+             scaleX(var(--flip));
   transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+.doll-layer[data-slot="face-eyes"] {
+  transform: translate(calc(var(--motion-head-tx, 0) / 300 * 100%), calc(var(--motion-head-ty, 0) / 450 * 100%))
+             rotate(calc(var(--motion-head-rot, 0) * 1deg))
+             scale(var(--motion-head-scale-x, 1), calc(var(--motion-head-scale-y, 1) * var(--motion-blink-scale-y, 1)));
+  transform-origin: var(--head-pivot-pct-x, 50%) var(--head-pivot-pct-y, 20%);
+  transform-box: view-box;
+  will-change: transform;
+}
+
+.scene-entity-motion {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: translate(calc(var(--motion-tx, 0) / var(--char-width, 235) * 100%), calc(var(--motion-ty, 0) / var(--char-height, 352.5) * 100%))
+             rotate(calc(var(--motion-rot, 0) * 1deg))
+             scale(var(--motion-scale-x, 1), var(--motion-scale-y, 1));
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+.doll-layer-head,
+.scene-character-canvas #pose-head {
+  transform: translate(calc(var(--motion-head-tx, 0) / 300 * 100%), calc(var(--motion-head-ty, 0) / 450 * 100%))
+             rotate(calc(var(--motion-head-rot, 0) * 1deg))
+             scale(var(--motion-head-scale-x, 1), var(--motion-head-scale-y, 1));
+  transform-origin: var(--head-pivot-pct-x, 50%) var(--head-pivot-pct-y, 20%);
+  transform-box: view-box;
+  will-change: transform;
+}
+
+.doll-layer-arm-left,
+.scene-character-canvas #pose-arm-left,
+.scene-character-canvas [id="pose-arm-left"],
+.scene-character-canvas #arm-left {
+  transform: translate(calc(var(--motion-arm-left-tx, 0) / 300 * 100%), calc(var(--motion-arm-left-ty, 0) / 450 * 100%))
+             rotate(calc(var(--motion-arm-left-rot, 0) * 1deg))
+             scale(var(--motion-arm-left-scale-x, 1), var(--motion-arm-left-scale-y, 1));
+  transform-origin: var(--shoulder-left-pivot-pct-x, 42%) var(--shoulder-left-pivot-pct-y, 26.6667%);
+  transform-box: view-box;
+  will-change: transform;
+}
+
+.doll-layer-arm-right,
+.scene-character-canvas #pose-arm-right,
+.scene-character-canvas [id="pose-arm-right"],
+.scene-character-canvas #arm-right {
+  transform: translate(calc(var(--motion-arm-right-tx, 0) / 300 * 100%), calc(var(--motion-arm-right-ty, 0) / 450 * 100%))
+             rotate(calc(var(--motion-arm-right-rot, 0) * 1deg))
+             scale(var(--motion-arm-right-scale-x, 1), var(--motion-arm-right-scale-y, 1));
+  transform-origin: var(--shoulder-right-pivot-pct-x, 58%) var(--shoulder-right-pivot-pct-y, 26.6667%);
+  transform-box: view-box;
+  will-change: transform;
+}
+
+.doll-layer-leg-left,
+.scene-character-canvas #pose-leg-left,
+.scene-character-canvas [id="pose-leg-left"],
+.scene-character-canvas #leg-left {
+  transform: translate(calc(var(--motion-leg-left-tx, 0) / 300 * 100%), calc(var(--motion-leg-left-ty, 0) / 450 * 100%))
+             rotate(calc(var(--motion-leg-left-rot, 0) * 1deg))
+             scale(var(--motion-leg-left-scale-x, 1), var(--motion-leg-left-scale-y, 1));
+  transform-origin: var(--hip-left-pivot-pct-x, 46%) var(--hip-left-pivot-pct-y, 51.1111%);
+  transform-box: view-box;
+  will-change: transform;
+}
+
+.doll-layer-leg-right,
+.scene-character-canvas #pose-leg-right,
+.scene-character-canvas [id="pose-leg-right"],
+.scene-character-canvas #leg-right {
+  transform: translate(calc(var(--motion-leg-right-tx, 0) / 300 * 100%), calc(var(--motion-leg-right-ty, 0) / 450 * 100%))
+             rotate(calc(var(--motion-leg-right-rot, 0) * 1deg))
+             scale(var(--motion-leg-right-scale-x, 1), var(--motion-leg-right-scale-y, 1));
+  transform-origin: var(--hip-right-pivot-pct-x, 54%) var(--hip-right-pivot-pct-y, 51.1111%);
+  transform-box: view-box;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-entity-motion,
+  .scene-entity-visual,
+  .doll-layer[data-slot="face-eyes"],
+  .doll-layer-head,
+  .scene-character-canvas #pose-head,
+  .doll-layer-arm-left,
+  .scene-character-canvas #pose-arm-left,
+  .scene-character-canvas [id="pose-arm-left"],
+  .scene-character-canvas #arm-left,
+  .doll-layer-arm-right,
+  .scene-character-canvas #pose-arm-right,
+  .scene-character-canvas [id="pose-arm-right"],
+  .scene-character-canvas #arm-right,
+  .doll-layer-leg-left,
+  .scene-character-canvas #pose-leg-left,
+  .scene-character-canvas [id="pose-leg-left"],
+  .scene-character-canvas #leg-left,
+  .doll-layer-leg-right,
+  .scene-character-canvas #pose-leg-right,
+  .scene-character-canvas [id="pose-leg-right"],
+  .scene-character-canvas #leg-right {
+    transition: none !important;
+    animation: none !important;
+    will-change: auto;
+  }
 }
 
 .scene-entity-visual .asset-svg {
@@ -604,7 +780,7 @@
 .scene-character-canvas {
   position: relative;
   display: block;
-  aspect-ratio: 5 / 8;
+  aspect-ratio: 2 / 3;
   width: 100%;
   height: 100%;
 }

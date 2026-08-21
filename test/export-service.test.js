@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applyMouthExpression, createExportService } from '../js/services/export-service.js';
+import { applyMouthExpression, createExportDollSvg, createExportService } from '../js/services/export-service.js';
 import { createDefaultEnvelope } from '../js/core/state-schema.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { EXPRESSIONS } from '../js/domain/vocabulary.js';
@@ -299,6 +299,72 @@ test('createExportService renders fallback placeholder for unknown or missing pr
     assert.ok(operations.includes('strokeRect'), 'Rendered placeholder stroke frame');
     assert.ok(operations.includes('fillRect'), 'Rendered placeholder fill background');
     assert.ok(operations.includes('fillText:?'), 'Rendered placeholder ? text label');
+  } finally {
+    globalThis.document = originalDoc;
+  }
+});
+
+test('createExportDollSvg applies head transform to rigged doll SVG and head-bound layers', async () => {
+  const transformedGroups = [];
+  const originalDoc = globalThis.document;
+
+  globalThis.document = {
+    createElementNS: (ns, tag) => {
+      const attrs = new Map();
+      const styles = new Map();
+      const children = [];
+      return {
+        tagName: tag,
+        children,
+        setAttribute: (k, v) => attrs.set(k, v),
+        getAttribute: (k) => attrs.get(k),
+        style: {
+          setProperty: (k, v) => styles.set(k, v),
+          getPropertyValue: (k) => styles.get(k)
+        },
+        appendChild: (child) => children.push(child),
+        querySelector: (sel) => {
+          if (sel === '#pose-head') {
+            const poseHead = {
+              id: 'pose-head',
+              setAttribute: (k, v) => {
+                attrs.set(k, v);
+                transformedGroups.push({ id: 'pose-head', attr: k, val: v });
+              }
+            };
+            return poseHead;
+          }
+          return null;
+        }
+      };
+    }
+  };
+
+  try {
+    const draft = createStarterDraft();
+    const headTransform = { x: -3, y: 0, rotate: -4, scaleX: 0.98, scaleY: 1 };
+    const svg = await createExportDollSvg(draft, 'neutral', {
+      headTransform,
+      loadAssetSvg: async (id) => ({
+        cloneNode: () => ({
+          querySelector: (sel) => {
+            if (sel === '#pose-head') {
+              return {
+                id: 'pose-head',
+                setAttribute: (k, v) => transformedGroups.push({ id: 'pose-head', attr: k, val: v })
+              };
+            }
+            return null;
+          },
+          firstChild: null
+        })
+      })
+    });
+
+    assert.ok(svg);
+    const poseHeadTransform = transformedGroups.find((g) => g.id === 'pose-head');
+    assert.ok(poseHeadTransform, 'Should apply transform to #pose-head');
+    assert.match(poseHeadTransform.val, /rotate\(-4\)/);
   } finally {
     globalThis.document = originalDoc;
   }
