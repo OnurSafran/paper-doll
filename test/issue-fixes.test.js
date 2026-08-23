@@ -177,7 +177,8 @@ test('Issue 3: Play inspector panel exists below stage and contains expression a
   assert.match(html, /id="inspector-tab-bubble"/);
 
   // Expressions and bubble controls are inside the inspector panel
-  const inspectorPanelContent = html.slice(html.indexOf('id="play-inspector-panel"'), html.indexOf('class="play-rail"'));
+  const inspectorPanelStart = html.indexOf('id="play-inspector-panel"');
+  const inspectorPanelContent = html.slice(inspectorPanelStart, html.indexOf('</aside>', inspectorPanelStart));
   assert.match(inspectorPanelContent, /id="character-expression-controls"/);
   assert.match(inspectorPanelContent, /id="character-pose-controls"/);
   assert.match(inspectorPanelContent, /id="character-animation-clip-controls"/);

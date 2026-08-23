@@ -3,7 +3,8 @@
    ========================================================================== */
 
 #designer-screen {
-  height: calc(100dvh - var(--app-header-height));
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
 }
 

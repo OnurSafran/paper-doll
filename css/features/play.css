@@ -5,18 +5,19 @@
 /* Play Heading & Meta Actions */
 .play-heading {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem 1.2rem;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.5rem;
+  min-height: 44px;
 }
 
 .play-title-group {
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .scene-picker-group {
@@ -37,72 +38,90 @@
 }
 
 .scene-meta-actions {
-  flex: 1 1 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  width: 100%;
 }
 
-.meta-action-group {
+/* Menu Dropdowns */
+.menu-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-dropdown summary.dropdown-summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 2px;
-  background: rgba(46, 38, 31, 0.05);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
 }
 
-.scene-meta-left {
-  justify-self: start;
+.menu-dropdown summary.dropdown-summary::-webkit-details-marker {
+  display: none;
 }
 
-.scene-meta-center {
-  justify-self: center;
-}
-
-.scene-meta-right {
-  justify-self: end;
-}
-
-.meta-action-group button {
-  min-height: 38px;
-  padding: 0.3rem 0.65rem;
-  font-size: 0.78rem;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-}
-
-.meta-action-group button:hover:not(:disabled) {
+.menu-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-md);
   background: var(--paper-card);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-lg);
 }
 
-.meta-action-group button.primary {
-  background: var(--coral-dark);
-  color: white;
+.menu-dropdown-panel .dropdown-item {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  min-height: 38px;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.82rem;
+  font-weight: 750;
+  border: none;
+  background: transparent;
+  color: var(--ink);
 }
 
-.meta-action-group button.clear-scene-btn:hover:not(:disabled) {
+.menu-dropdown-panel .dropdown-item:hover:not(:disabled) {
+  background: var(--paper-warm);
+}
+
+.menu-dropdown-panel .dropdown-item.clear-scene-btn:hover:not(:disabled) {
   background: #fdeeed;
   color: var(--coral-dark);
 }
 
-/* Top Entity Actions Contextual Bar */
+/* Top Entity Actions Floating Contextual Bar */
 .top-entity-actions {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  max-width: calc(100% - 24px);
+  overflow-x: auto;
   padding: 4px 8px;
-  margin-bottom: 0.65rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: rgba(255, 253, 249, 0.92);
-  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 253, 249, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-float);
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .selection-pill {
@@ -125,7 +144,7 @@
   font-size: 0.75rem;
   font-weight: 850;
   color: var(--ink);
-  max-width: 160px;
+  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -350,31 +369,29 @@
 
 /* Play Screen Grid & Stage */
 .play-grid {
+  height: 100%;
+  min-height: 0;
   display: grid;
-  grid-template-columns: minmax(600px, 1fr) minmax(300px, 360px);
+  grid-template-columns: minmax(480px, 1fr) minmax(340px, 380px);
   grid-template-areas: "scene rail";
   gap: 14px;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .play-stage-column {
   grid-area: scene;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-}
-
-.play-rail {
-  grid-area: rail;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
 }
 
 .play-stage-viewport {
-  min-height: min(76vh, 800px);
+  position: relative;
+  height: 100%;
+  min-height: 0;
   display: grid;
   place-items: center;
   padding: 8px;
@@ -385,12 +402,100 @@
   overflow: hidden;
 }
 
-/* Play Inspector Panel (Character & Entity controls below stage) */
+/* Floating Animation Transport Bar */
+.play-floating-transport {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 4px 8px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 253, 249, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-float);
+}
+
+.play-floating-transport button {
+  min-height: 36px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 750;
+  border-radius: var(--radius-pill);
+}
+
+.play-floating-transport .speed-buttons button {
+  min-width: 38px;
+  min-height: 34px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.76rem;
+}
+
+/* Play Rail & Segmented Mode Switcher */
+.play-rail {
+  grid-area: rail;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  overflow: hidden;
+}
+
+.rail-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  background: rgba(46, 38, 31, 0.06);
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+}
+
+.rail-mode-tabs .mode-tab {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--muted);
+  background: transparent;
+  transition: all 0.15s ease;
+}
+
+.rail-mode-tabs .mode-tab:hover:not(.is-active) {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.rail-mode-tabs .mode-tab.is-active {
+  background: var(--paper-card);
+  color: var(--coral-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.play-rail .spawn-panel,
+.play-rail .play-inspector-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Play Inspector Panel */
 .play-inspector-panel {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 0.85rem;
   background: var(--paper-card);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
@@ -1032,7 +1137,7 @@
 /* Scene Spawner Panel */
 .spawn-panel {
   flex: 1 1 auto;
-  max-height: min(76vh, 800px);
+  min-height: 0;
   padding: 0.85rem;
   overflow-y: auto;
   scrollbar-gutter: stable;

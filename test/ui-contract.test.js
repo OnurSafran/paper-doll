@@ -87,7 +87,7 @@ test('pointer cancellation remains safe across mixed cached module versions', ()
 test('Designer uses one viewport workspace with a deliberate scrolling rail', () => {
   assert.match(html, /class="designer-sidebar"/);
   assert.doesNotMatch(html, /class="stage-caption"/);
-  assert.match(css, /#designer-screen\s*{[^}]*height:\s*calc\(100dvh - var\(--app-header-height\)\)[^}]*overflow:\s*hidden/s);
+  assert.match(css, /#designer-screen\s*{[^}]*height:\s*(?:100%|calc\(100dvh - var\(--app-header-height\)\))[^}]*overflow:\s*hidden/s);
   assert.match(css, /\.designer-sidebar\s*{[^}]*overflow-y:\s*auto/s);
   assert.match(css, /--app-header-height:\s*58px/);
 });
@@ -111,12 +111,11 @@ test('Face mode tab has a full-width, touch-friendly hit area', () => {
   assert.match(css, /\.designer-mode-tabs \.mode-tab\s*{[^}]*touch-action:\s*manipulation/s);
 });
 
-test('scene rail groups tray tools and keeps microphone centered', () => {
-  assert.match(html, /class="play-rail"[\s\S]*id="spawn-tabs"[\s\S]*id="scene-templates-btn"[\s\S]*id="scene-outline-btn"/);
-  assert.match(html, /class="meta-action-group scene-meta-center"[\s\S]*id="voice-puppetry-btn"/);
-  assert.match(html, /class="meta-action-group scene-meta-right(?:\s|\")/);
+test('scene rail groups tray tools, segmented tabs, and voice puppetry', () => {
+  assert.match(html, /class="play-rail"[\s\S]*id="play-rail-tabs"[\s\S]*id="spawn-tabs"[\s\S]*id="scene-templates-btn"[\s\S]*id="scene-outline-btn"/);
+  assert.match(html, /class="[^"]*scene-rail-actions[^"]*"[\s\S]*id="voice-puppetry-btn"/);
   assert.match(css, /\.play-grid\s*{[^}]*grid-template-areas:\s*"scene rail"/s);
-  assert.match(css, /\.scene-meta-center\s*{[^}]*justify-self:\s*center/s);
+  assert.match(css, /\.play-rail\s*{[^}]*grid-area:\s*rail/s);
 });
 
 test('history controls and export button expose accessible semantics and touch targets', () => {

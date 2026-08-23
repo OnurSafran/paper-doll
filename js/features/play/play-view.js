@@ -83,6 +83,8 @@ export function createPlayView({
   let activeDragInstanceId = null;
   let latestDragPoint = null;
   let activeInspectorTab = 'expressions';
+  let activeRailTab = 'spawn';
+  let prevHasSelection = false;
 
   let edgePanRaf = null;
   let edgePanDirection = 0;
@@ -538,12 +540,17 @@ export function createPlayView({
 
     const labelEl = $('#selected-label');
     if (labelEl) labelEl.textContent = label;
-    for (const button of $$('#entity-actions > button:not(.deselect-btn)')) button.disabled = selectedIds.length === 0;
+    const hasSelection = selectedIds.length > 0;
+    const entityActionsEl = $('#entity-actions');
+    if (entityActionsEl) {
+      entityActionsEl.hidden = !hasSelection;
+    }
+    for (const button of $$('#entity-actions > button:not(.deselect-btn)')) button.disabled = !hasSelection;
 
     const deselectBtn = $('#deselect-entity-btn');
     if (deselectBtn) {
-      deselectBtn.hidden = selectedIds.length === 0;
-      deselectBtn.disabled = selectedIds.length === 0;
+      deselectBtn.hidden = !hasSelection;
+      deselectBtn.disabled = !hasSelection;
     }
 
     const alignGroup = $('#alignment-controls');
@@ -747,12 +754,17 @@ export function createPlayView({
         }
       }
     }
+
     const inspectorPanel = $('#play-inspector-panel');
     const hasAnyInspectorControls = hasCharactersSelected || isBubble || (isAttached && attachJointGroup && !attachJointGroup.hidden);
 
-    if (inspectorPanel) {
-      inspectorPanel.hidden = !hasAnyInspectorControls;
+    if (hasSelection && !prevHasSelection && hasAnyInspectorControls) {
+      activeRailTab = 'inspector';
+    } else if (!hasSelection) {
+      activeRailTab = 'spawn';
     }
+    prevHasSelection = hasSelection;
+    renderRailTabs();
 
     const tabExpressions = $('#inspector-tab-expressions');
     const tabMotion = $('#inspector-tab-motion');
@@ -1349,6 +1361,55 @@ export function createPlayView({
       stageEl.style.setProperty('--camera-x', String(state.currentScene.cameraX || 0));
     }
     renderCameraHud(state, false);
+  }
+
+  function renderRailTabs() {
+    initRailTabs();
+    const tabSpawn = $('#rail-tab-spawn');
+    const tabInspector = $('#rail-tab-inspector');
+    const spawnSection = $('#spawn-panel-section');
+    const inspectorPanel = $('#play-inspector-panel');
+
+    if (tabSpawn) {
+      tabSpawn.classList.toggle('is-active', activeRailTab === 'spawn');
+      tabSpawn.setAttribute('aria-selected', activeRailTab === 'spawn' ? 'true' : 'false');
+    }
+    if (tabInspector) {
+      tabInspector.classList.toggle('is-active', activeRailTab === 'inspector');
+      tabInspector.setAttribute('aria-selected', activeRailTab === 'inspector' ? 'true' : 'false');
+    }
+    if (spawnSection) spawnSection.hidden = activeRailTab !== 'spawn';
+    if (inspectorPanel) inspectorPanel.hidden = activeRailTab !== 'inspector';
+  }
+
+  function initRailTabs() {
+    const railTabs = $('#play-rail-tabs');
+    if (railTabs && !railTabs.dataset.bound) {
+      railTabs.dataset.bound = 'true';
+      railTabs.addEventListener('click', (event) => {
+        const btn = event.target.closest('button[data-rail-tab]');
+        if (btn && btn.dataset.railTab) {
+          activeRailTab = btn.dataset.railTab;
+          renderRailTabs();
+        }
+      });
+    }
+
+    if (typeof window !== 'undefined' && !window.__playDropdownsBound) {
+      window.__playDropdownsBound = true;
+      if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+        document.addEventListener('click', (event) => {
+          if (!event.target.closest('#play-scene-dropdown')) {
+            const el = document.getElementById('play-scene-dropdown');
+            if (el && el.open) el.open = false;
+          }
+          if (!event.target.closest('#play-export-dropdown')) {
+            const el = document.getElementById('play-export-dropdown');
+            if (el && el.open) el.open = false;
+          }
+        });
+      }
+    }
   }
 
   function initInspectorTabs() {

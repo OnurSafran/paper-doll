@@ -118,7 +118,10 @@ export function createPaintView({
   const clearBtn = rootElement.querySelector('#paint-clear-btn');
   const saveBtn = rootElement.querySelector('#paint-save-btn');
 
-  // Sidebar
+  // Sidebar & Item Chip Popover
+  const itemChip = rootElement.querySelector('#paint-item-chip');
+  const itemChipText = rootElement.querySelector('#paint-item-chip-text');
+  const itemConfigPopover = rootElement.querySelector('#paint-item-config-popover');
   const typeWearableBtn = rootElement.querySelector('#paint-type-wearable');
   const typePropBtn = rootElement.querySelector('#paint-type-prop');
   const wearableConfig = rootElement.querySelector('#paint-wearable-config');
@@ -276,6 +279,11 @@ export function createPaintView({
         : t('paint.propTypeLabel');
     }
 
+    if (itemChipText) {
+      itemChipText.textContent = state.itemType === 'wearable'
+        ? `👗 ${t('paint.wearableTypeBtn') || 'Kıyafet'} · ${t('wardrobeSlots.' + state.slot) || state.slot}`
+        : `🧸 ${t('paint.propTypeBtn') || 'Eşya'}`;
+    }
 
     typeWearableBtn?.classList.toggle('active', state.itemType === 'wearable');
     typePropBtn?.classList.toggle('active', state.itemType === 'prop');
@@ -1429,7 +1437,16 @@ export function createPaintView({
     canvas.addEventListener('pointercancel', handlePointerCancel);
     window.addEventListener('keydown', handleKeyDown);
 
-    // Sidebar tab switching
+    // Close item chip popover on outside click
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('click', (event) => {
+        if (itemConfigPopover && itemConfigPopover.open && !event.target.closest('#paint-item-config-popover')) {
+          itemConfigPopover.open = false;
+        }
+      });
+    }
+
+    // Sidebar tab switching (backward compatibility)
     tabDraw?.addEventListener('click', () => switchSidebarTab('draw'));
     tabSetup?.addEventListener('click', () => switchSidebarTab('setup'));
 

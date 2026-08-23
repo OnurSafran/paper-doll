@@ -20,15 +20,18 @@
 
 html {
   min-width: 320px;
+  height: 100dvh;
   background: var(--paper-warm);
   color: var(--ink);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
+  height: 100dvh;
   color: var(--ink);
   font-family: var(--font-ui);
   background:
@@ -37,8 +40,9 @@ body {
     radial-gradient(rgba(46, 38, 31, 0.06) 0.8px, transparent 0.9px),
     var(--paper-warm);
   background-size: auto, auto, 20px 20px, auto;
-  min-height: 100vh;
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 button, input, select, textarea {
@@ -110,13 +114,21 @@ h2 {
 
 /* Main Layout & Screens -------------------------------------------------- */
 main {
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
   max-width: 1720px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .screen {
+  height: 100%;
+  max-height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   padding: 10px clamp(10px, 1.4vw, 20px);
+  overflow: hidden;
 }
 
 .screen-heading {
