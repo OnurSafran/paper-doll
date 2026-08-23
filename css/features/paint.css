@@ -700,7 +700,35 @@
 .tool-prop-group {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
+}
+
+.paint-selection-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.paint-selection-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.paint-selection-actions-grid button {
+  min-height: 40px;
+  font-size: 0.78rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.paint-selection-actions-grid button.danger-hover:hover:not(:disabled) {
+  background: #fdeeed;
+  border-color: var(--coral-dark);
+  color: var(--coral-dark);
 }
 
 .tool-prop-header {

@@ -12,7 +12,7 @@ import { createCustomArtRepository } from './services/custom-art-repository.js';
 import { createExportService } from './services/export-service.js';
 import { applyMouthExpression } from './core/mouth-expression.js';
 import { createVoicePuppetryService } from './services/voice-puppetry.js';
-import { createSceneAnimationService } from './services/scene-animation-service.js';
+import { createSceneAnimationService, resolveVoiceTargetCharacter } from './services/scene-animation-service.js';
 import { createDesignerView, previewCustomColor } from './features/designer/designer-view.js';
 import { createPaintView } from './features/paint/paint-view.js';
 import { createPlayView, findSceneSkinSvg } from './features/play/play-view.js';
@@ -216,7 +216,8 @@ const playView = createPlayView({
   customArtRepo,
   openPaintStudio,
   getAsset: getEffectiveAsset,
-  getAssetsByKind: getEffectiveAssetsByKind
+  getAssetsByKind: getEffectiveAssetsByKind,
+  invalidateAnimationDomCache: () => sceneAnimationService?.invalidateDomCache?.()
 });
 
 const sceneBookView = createSceneBookView({
@@ -255,10 +256,8 @@ const paintView = createPaintView({
 
 const voiceService = createVoicePuppetryService({
   onViseme(viseme) {
-    const currentSelected = store.getState().ui.selectedEntityId;
-    const targetCharacter = store.getState().currentScene.entities.find((e) =>
-      e.kind === 'character' && (e.instanceId === currentSelected || !currentSelected)
-    );
+    const state = store.getState();
+    const targetCharacter = resolveVoiceTargetCharacter(state.currentScene, state.ui.selectedEntityId);
     if (targetCharacter) {
       const domEntity = findSceneSkinSvg(targetCharacter.instanceId, $$);
       if (domEntity) {
@@ -349,17 +348,20 @@ store.subscribe(({ action, previousState, state, persist }) => {
     return;
   }
   if (action.type === 'scene/setDollExpression') {
-    const targetId = action.instanceId ?? state.ui.selectedEntityId;
-    const entity = state.currentScene?.entities?.find((e) => e.instanceId === targetId);
-    const domSkin = findSceneSkinSvg(targetId, $$);
-    if (domSkin && entity) {
-      applyMouthExpression(domSkin, action.expression, entity.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY);
+    const targetIds = action.instanceIds || (action.instanceId ? [action.instanceId] : (state.ui.selectedEntityIds?.length ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : [])));
+    for (const targetId of targetIds) {
+      const entity = state.currentScene?.entities?.find((e) => e.instanceId === targetId);
+      const domSkin = findSceneSkinSvg(targetId, $$);
+      if (domSkin && entity) {
+        applyMouthExpression(domSkin, action.expression, entity.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY);
+      }
     }
     playView.renderSelectedActions(state);
     return;
   }
-  if (action.type === 'scene/setAnimationSettings' || action.type === 'scene/toggleScenePlayback') {
+  if (action.type === 'scene/setAnimationSettings' || action.type === 'scene/toggleScenePlayback' || action.type === 'scene/playbackFinished') {
     playView.renderSelectedActions(state);
+    if (action.type === 'scene/playbackFinished') return;
   }
   if (action.type === 'scene/toggleSceneLoop') {
     playView.renderSelectedActions(state);
@@ -625,13 +627,9 @@ function wireStaticEvents() {
   $('#character-animation-clip-controls')?.addEventListener('click', (event) => {
     const clipId = event.target.closest('button')?.dataset.clipId;
     if (clipId) {
-      const selectedId = store.getState().ui.selectedEntityId;
-      const entity = store.getState().currentScene.entities.find((e) => e.instanceId === selectedId);
-      const currentAnim = entity?.animation || {};
       store.dispatch({
         type: 'scene/setDollAnimation',
         animation: {
-          ...currentAnim,
           clipId,
           enabled: clipId !== 'none'
         }
@@ -643,13 +641,9 @@ function wireStaticEvents() {
   $('#character-motion-intensity-controls')?.addEventListener('click', (event) => {
     const intensity = event.target.closest('button')?.dataset.motionIntensity;
     if (intensity !== undefined) {
-      const selectedId = store.getState().ui.selectedEntityId;
-      const entity = store.getState().currentScene.entities.find((e) => e.instanceId === selectedId);
-      const currentAnim = entity?.animation || {};
       store.dispatch({
         type: 'scene/setDollAnimation',
         animation: {
-          ...currentAnim,
           intensity: Number(intensity)
         }
       });
@@ -660,13 +654,9 @@ function wireStaticEvents() {
   $('#character-phase-offset-controls')?.addEventListener('click', (event) => {
     const offset = event.target.closest('button')?.dataset.phaseOffset;
     if (offset !== undefined) {
-      const selectedId = store.getState().ui.selectedEntityId;
-      const entity = store.getState().currentScene.entities.find((e) => e.instanceId === selectedId);
-      const currentAnim = entity?.animation || {};
       store.dispatch({
         type: 'scene/setDollAnimation',
         animation: {
-          ...currentAnim,
           phaseOffset: Number(offset)
         }
       });
@@ -954,17 +944,25 @@ function handleTabKeys(event) {
   if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
   const list = tab.closest('[role="tablist"]');
   if (!list) return;
-  const tabs = [...list.querySelectorAll('[role="tab"]')];
-  const index = tabs.indexOf(tab);
+  const allTabs = [...list.querySelectorAll('[role="tab"]')];
+  const visibleTabs = allTabs.filter((t) => !t.hidden && t.getAttribute('hidden') === null && t.style.display !== 'none');
+  const index = visibleTabs.indexOf(tab);
   if (index === -1) return;
   event.preventDefault();
   let nextIndex = index;
-  if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
-  else if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+  if (event.key === 'ArrowLeft') nextIndex = (index - 1 + visibleTabs.length) % visibleTabs.length;
+  else if (event.key === 'ArrowRight') nextIndex = (index + 1) % visibleTabs.length;
   else if (event.key === 'Home') nextIndex = 0;
-  else if (event.key === 'End') nextIndex = tabs.length - 1;
-  tabs[nextIndex]?.focus();
-  tabs[nextIndex]?.click();
+  else if (event.key === 'End') nextIndex = visibleTabs.length - 1;
+  const targetTab = visibleTabs[nextIndex];
+  if (targetTab) {
+    for (const t of allTabs) {
+      t.setAttribute('tabindex', '-1');
+    }
+    targetTab.setAttribute('tabindex', '0');
+    targetTab.focus();
+    targetTab.click();
+  }
 }
 
 function handleGlobalShortcuts(event) {

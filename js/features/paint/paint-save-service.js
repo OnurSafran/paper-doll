@@ -19,7 +19,7 @@ export function createPaintSaveService({
   updateLivePreview,
   announceStatus
 } = {}) {
-  const doc = rootElement?.ownerDocument || rootElement || document;
+  const doc = rootElement?.ownerDocument || (typeof document !== 'undefined' ? document : rootElement);
   const saveDialog = rootElement.querySelector('#paint-save-dialog');
   const saveForm = rootElement.querySelector('#paint-save-form');
   const saveThumb = rootElement.querySelector('#paint-save-thumb');
@@ -124,19 +124,46 @@ export function createPaintSaveService({
     const assetId = `custom_${defaultMakeId()}`;
     const now = defaultNow().toISOString();
     try {
-      const blob = await canvasToBlob(canvas);
+      let blobToSave;
+      let savePixelWidth = canvas.width;
+      let savePixelHeight = canvas.height;
+      let saveLogicalWidth = paintSession.logicalWidth;
+      let saveLogicalHeight = paintSession.logicalHeight;
+      let propBounds = null;
+
+      if (session.itemType === 'prop') {
+        propBounds = computeNonTransparentBounds(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        if (!propBounds.empty) {
+          const cropCanvas = doc.createElement('canvas');
+          cropCanvas.width = propBounds.width;
+          cropCanvas.height = propBounds.height;
+          const cropCtx = cropCanvas.getContext('2d');
+          cropCtx.drawImage(canvas, propBounds.x, propBounds.y, propBounds.width, propBounds.height, 0, 0, propBounds.width, propBounds.height);
+          blobToSave = await canvasToBlob(cropCanvas);
+          savePixelWidth = propBounds.width;
+          savePixelHeight = propBounds.height;
+          const scaleFactor = canvas.width > 0 && paintSession.logicalWidth > 0 ? (canvas.width / paintSession.logicalWidth) : 2;
+          saveLogicalWidth = Math.max(1, Math.round(propBounds.width / scaleFactor));
+          saveLogicalHeight = Math.max(1, Math.round(propBounds.height / scaleFactor));
+        } else {
+          blobToSave = await canvasToBlob(canvas);
+        }
+      } else {
+        blobToSave = await canvasToBlob(canvas);
+      }
+
       if (!customArtRepo?.computeSha256) throw new Error('Artwork digest service is unavailable.');
-      const sha256 = await customArtRepo.computeSha256(blob);
+      const sha256 = await customArtRepo.computeSha256(blobToSave);
       const customMetadata = {
         assetId,
         name: validation.name,
         kind: session.itemType,
         format: 'image/png',
-        logicalWidth: paintSession.logicalWidth,
-        logicalHeight: paintSession.logicalHeight,
-        pixelWidth: canvas.width,
-        pixelHeight: canvas.height,
-        byteLength: blob.size,
+        logicalWidth: saveLogicalWidth,
+        logicalHeight: saveLogicalHeight,
+        pixelWidth: savePixelWidth,
+        pixelHeight: savePixelHeight,
+        byteLength: blobToSave.size,
         sha256,
         createdAt: now,
         updatedAt: now,
@@ -149,7 +176,7 @@ export function createPaintSaveService({
         customMetadata.supportedFitFamilies = [...FIT_FAMILIES];
         customMetadata.presentationStyles = ['neutral'];
       } else {
-        const bounds = computeNonTransparentBounds(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        const bounds = propBounds || { aspectRatio: 1, empty: true };
         const dims = calculatePropDisplayDimensions(bounds.aspectRatio, session.propSize);
         customMetadata.displayWidth = dims.displayWidth;
         customMetadata.displayHeight = dims.displayHeight;
@@ -158,7 +185,7 @@ export function createPaintSaveService({
           : { x: 0.5, y: 0.5 };
       }
 
-      const binaryResult = await customArtRepo.saveArtwork(assetId, blob, customMetadata);
+      const binaryResult = await customArtRepo.saveArtwork(assetId, blobToSave, customMetadata);
       if (!binaryResult?.ok) throw new Error(binaryResult?.error || 'Artwork binary could not be saved.');
       const metadataResult = store.dispatch({ type: 'customAsset/add', asset: customMetadata });
       if (!metadataResult?.ok) {

@@ -70,7 +70,8 @@ export function createPlayView({
   customArtRepo,
   openPaintStudio,
   getAsset = getBuiltinAsset,
-  getAssetsByKind = (kind, options) => assetsByKind(kind, options)
+  getAssetsByKind = (kind, options) => assetsByKind(kind, options),
+  invalidateAnimationDomCache
 }) {
   let playRenderToken = 0;
   let spawnTab = 'characters';
@@ -81,6 +82,7 @@ export function createPlayView({
   const grabOffsets = new Map();
   let activeDragInstanceId = null;
   let latestDragPoint = null;
+  let activeInspectorTab = 'expressions';
 
   let edgePanRaf = null;
   let edgePanDirection = 0;
@@ -516,6 +518,7 @@ export function createPlayView({
   }
 
   function renderSelectedActions(state = store.getState()) {
+    initInspectorTabs();
     const selectedIds = state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []);
     const isMulti = selectedIds.length >= 2;
     const selected = state.currentScene.entities.find((entity) => entity.instanceId === state.ui.selectedEntityId);
@@ -535,7 +538,13 @@ export function createPlayView({
 
     const labelEl = $('#selected-label');
     if (labelEl) labelEl.textContent = label;
-    for (const button of $$('#entity-actions > button')) button.disabled = selectedIds.length === 0;
+    for (const button of $$('#entity-actions > button:not(.deselect-btn)')) button.disabled = selectedIds.length === 0;
+
+    const deselectBtn = $('#deselect-entity-btn');
+    if (deselectBtn) {
+      deselectBtn.hidden = selectedIds.length === 0;
+      deselectBtn.disabled = selectedIds.length === 0;
+    }
 
     const alignGroup = $('#alignment-controls');
     if (alignGroup) {
@@ -558,13 +567,20 @@ export function createPlayView({
       detachBtn.disabled = isMulti || !selected?.attachedTo;
     }
 
+    const targetCharacters = isMulti
+      ? state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId) && e.kind === 'character')
+      : (isCharacter && selected ? [selected] : []);
+    const hasCharactersSelected = targetCharacters.length > 0;
+    const isAttached = !isMulti && Boolean(selected?.attachedTo);
+
     const expressionGroup = $('#character-expression-controls');
     if (expressionGroup) {
-      expressionGroup.hidden = !isCharacter;
-      if (isCharacter) {
-        const currentExpr = selected.expression || DEFAULT_EXPRESSION;
+      expressionGroup.hidden = !hasCharactersSelected;
+      if (hasCharactersSelected) {
+        const allSameExpr = targetCharacters.every((c) => (c.expression || DEFAULT_EXPRESSION) === (targetCharacters[0].expression || DEFAULT_EXPRESSION));
+        const currentExpr = allSameExpr ? (targetCharacters[0].expression || DEFAULT_EXPRESSION) : null;
         for (const btn of $$('button[data-expression]', expressionGroup)) {
-          const isSelected = btn.dataset.expression === currentExpr;
+          const isSelected = Boolean(currentExpr && btn.dataset.expression === currentExpr);
           btn.classList.toggle('is-selected-expression', isSelected);
           btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         }
@@ -573,12 +589,13 @@ export function createPlayView({
 
     const exprIntensityGroup = $('#character-expression-intensity-controls');
     if (exprIntensityGroup) {
-      exprIntensityGroup.hidden = !isCharacter;
-      if (isCharacter) {
-        const currentIntensity = selected.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY;
+      exprIntensityGroup.hidden = !hasCharactersSelected;
+      if (hasCharactersSelected) {
+        const allSameIntensity = targetCharacters.every((c) => (c.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY) === (targetCharacters[0].expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY));
+        const currentIntensity = allSameIntensity ? (targetCharacters[0].expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY) : null;
         for (const btn of $$('button[data-expression-intensity]', exprIntensityGroup)) {
           const val = Number(btn.dataset.expressionIntensity);
-          const isSelected = Math.abs(val - currentIntensity) < 0.05;
+          const isSelected = Boolean(currentIntensity !== null && Math.abs(val - currentIntensity) < 0.05);
           btn.classList.toggle('is-selected-intensity', isSelected);
           btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         }
@@ -587,16 +604,19 @@ export function createPlayView({
 
     const poseGroup = $('#character-pose-controls');
     if (poseGroup) {
-      poseGroup.hidden = !isCharacter;
-      if (isCharacter) {
-        const profile = resolveMotionProfile(selected);
-        const safePoses = MOTION_PROFILES_CONFIG[profile]?.safePoses || [];
-        const currentPose = resolveSafePoseId(selected.pose || DEFAULT_STATIC_POSE, profile);
+      poseGroup.hidden = !hasCharactersSelected;
+      if (hasCharactersSelected) {
+        const safePosesSets = targetCharacters.map((c) => {
+          const profile = resolveMotionProfile(c);
+          return MOTION_PROFILES_CONFIG[profile]?.safePoses || [];
+        });
+        const allSamePose = targetCharacters.every((c) => c.pose === targetCharacters[0].pose);
+        const currentPose = allSamePose ? targetCharacters[0].pose : null;
         for (const btn of $$('button[data-pose]', poseGroup)) {
           const poseId = btn.dataset.pose;
-          const isAllowed = safePoses.includes(poseId);
+          const isAllowed = safePosesSets.some((set) => set.includes(poseId));
           btn.hidden = !isAllowed;
-          const isSelected = poseId === currentPose;
+          const isSelected = Boolean(currentPose && poseId === currentPose);
           btn.classList.toggle('is-selected-pose', isSelected);
           btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         }
@@ -605,16 +625,19 @@ export function createPlayView({
 
     const clipGroup = $('#character-animation-clip-controls');
     if (clipGroup) {
-      clipGroup.hidden = !isCharacter;
-      if (isCharacter) {
-        const profile = resolveMotionProfile(selected);
-        const safeClips = MOTION_PROFILES_CONFIG[profile]?.safeClips || [];
-        const currentClip = resolveSafeClipId(selected.animation?.clipId || 'none', profile);
+      clipGroup.hidden = !hasCharactersSelected;
+      if (hasCharactersSelected) {
+        const safeClipsSets = targetCharacters.map((c) => {
+          const profile = resolveMotionProfile(c);
+          return MOTION_PROFILES_CONFIG[profile]?.safeClips || [];
+        });
+        const allSameClip = targetCharacters.every((c) => (c.animation?.clipId || 'none') === (targetCharacters[0].animation?.clipId || 'none'));
+        const currentClip = allSameClip ? (targetCharacters[0].animation?.clipId || 'none') : null;
         for (const btn of $$('button[data-clip-id]', clipGroup)) {
           const clipId = btn.dataset.clipId;
-          const isAllowed = safeClips.includes(clipId);
+          const isAllowed = safeClipsSets.some((set) => set.includes(clipId));
           btn.hidden = !isAllowed;
-          const isSelected = clipId === currentClip;
+          const isSelected = Boolean(currentClip && clipId === currentClip);
           btn.classList.toggle('is-selected-clip', isSelected);
           btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         }
@@ -623,12 +646,13 @@ export function createPlayView({
 
     const motionIntensityGroup = $('#character-motion-intensity-controls');
     if (motionIntensityGroup) {
-      motionIntensityGroup.hidden = !isCharacter;
-      if (isCharacter) {
-        const currentMotionIntensity = selected.animation?.intensity ?? DEFAULT_MOTION_INTENSITY;
+      motionIntensityGroup.hidden = !hasCharactersSelected;
+      if (hasCharactersSelected) {
+        const allSameMotionIntensity = targetCharacters.every((c) => (c.animation?.intensity ?? DEFAULT_MOTION_INTENSITY) === (targetCharacters[0].animation?.intensity ?? DEFAULT_MOTION_INTENSITY));
+        const currentMotionIntensity = allSameMotionIntensity ? (targetCharacters[0].animation?.intensity ?? DEFAULT_MOTION_INTENSITY) : null;
         for (const btn of $$('button[data-motion-intensity]', motionIntensityGroup)) {
           const val = Number(btn.dataset.motionIntensity);
-          const isSelected = Math.abs(val - currentMotionIntensity) < 0.05;
+          const isSelected = Boolean(currentMotionIntensity !== null && Math.abs(val - currentMotionIntensity) < 0.05);
           btn.classList.toggle('is-selected-intensity', isSelected);
           btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         }
@@ -637,12 +661,13 @@ export function createPlayView({
 
     const phaseOffsetGroup = $('#character-phase-offset-controls');
     if (phaseOffsetGroup) {
-      phaseOffsetGroup.hidden = !isCharacter;
-      if (isCharacter) {
-        const currentPhase = selected.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET;
+      phaseOffsetGroup.hidden = !hasCharactersSelected;
+      if (hasCharactersSelected) {
+        const allSamePhase = targetCharacters.every((c) => (c.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET) === (targetCharacters[0].animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET));
+        const currentPhase = allSamePhase ? (targetCharacters[0].animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET) : null;
         for (const btn of $$('button[data-phase-offset]', phaseOffsetGroup)) {
           const val = Number(btn.dataset.phaseOffset);
-          const isSelected = Math.abs(val - currentPhase) < 0.05;
+          const isSelected = Boolean(currentPhase !== null && Math.abs(val - currentPhase) < 0.05);
           btn.classList.toggle('is-selected-phase-offset', isSelected);
           btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         }
@@ -651,8 +676,8 @@ export function createPlayView({
 
     const motionPrefGroup = $('#character-motion-preference-controls');
     if (motionPrefGroup) {
-      motionPrefGroup.hidden = !isCharacter;
-      if (isCharacter) {
+      motionPrefGroup.hidden = !hasCharactersSelected;
+      if (hasCharactersSelected) {
         const currentMotionPref = state.settings?.reducedMotion || 'system';
         for (const btn of $$('button[data-motion-mode]', motionPrefGroup)) {
           const isSelected = btn.dataset.motionMode === currentMotionPref;
@@ -677,7 +702,6 @@ export function createPlayView({
 
     const attachJointGroup = $('#attach-joint-controls');
     if (attachJointGroup) {
-      const isAttached = !isMulti && Boolean(selected?.attachedTo);
       attachJointGroup.hidden = !isAttached;
       if (isAttached) {
         const parentEntity = state.currentScene.entities.find((e) => e.instanceId === selected.attachedTo);
@@ -694,14 +718,89 @@ export function createPlayView({
       }
     }
 
-    const hasCharactersSelected = isMulti
-      ? state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId) && e.kind === 'character').length > 0
-      : isCharacter;
-
     const rhythmGroup = $('#rhythm-sync-controls');
     if (rhythmGroup) {
       rhythmGroup.hidden = !hasCharactersSelected;
+      if (hasCharactersSelected) {
+        let activeRhythmMode = null;
+        if (targetCharacters.length > 0) {
+          let isSync = true;
+          let isAlternate = true;
+          let isWave = true;
+          targetCharacters.forEach((char, idx) => {
+            const phase = char.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET;
+            if (phase !== 0) isSync = false;
+            const expectedAlt = (idx % 2 === 1) ? 0.5 : 0;
+            if (Math.abs(phase - expectedAlt) > 0.01) isAlternate = false;
+            const expectedWave = (idx * 0.25) % 1.0;
+            if (Math.abs(phase - expectedWave) > 0.01) isWave = false;
+          });
+          if (isSync) activeRhythmMode = 'sync';
+          else if (isAlternate) activeRhythmMode = 'alternate';
+          else if (isWave) activeRhythmMode = 'wave';
+        }
+
+        for (const btn of $$('button[data-rhythm-mode]', rhythmGroup)) {
+          const isSelected = Boolean(activeRhythmMode && btn.dataset.rhythmMode === activeRhythmMode);
+          btn.classList.toggle('is-selected-rhythm', isSelected);
+          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        }
+      }
     }
+    const inspectorPanel = $('#play-inspector-panel');
+    const hasAnyInspectorControls = hasCharactersSelected || isBubble || (isAttached && attachJointGroup && !attachJointGroup.hidden);
+
+    if (inspectorPanel) {
+      inspectorPanel.hidden = !hasAnyInspectorControls;
+    }
+
+    const tabExpressions = $('#inspector-tab-expressions');
+    const tabMotion = $('#inspector-tab-motion');
+    const tabJoints = $('#inspector-tab-joints');
+    const tabBubble = $('#inspector-tab-bubble');
+
+    if (tabExpressions) tabExpressions.hidden = !hasCharactersSelected;
+    if (tabMotion) tabMotion.hidden = !hasCharactersSelected;
+    if (tabJoints) tabJoints.hidden = !isAttached;
+    if (tabBubble) tabBubble.hidden = !isBubble;
+
+    // Validate activeInspectorTab: keep current tab if valid for current selection, else fallback
+    const isTabValid =
+      (activeInspectorTab === 'expressions' && hasCharactersSelected) ||
+      (activeInspectorTab === 'motion' && hasCharactersSelected) ||
+      (activeInspectorTab === 'joints' && isAttached) ||
+      (activeInspectorTab === 'bubble' && isBubble);
+
+    if (!isTabValid) {
+      if (isBubble) {
+        activeInspectorTab = 'bubble';
+      } else if (hasCharactersSelected) {
+        activeInspectorTab = 'expressions';
+      } else if (isAttached) {
+        activeInspectorTab = 'joints';
+      } else {
+        activeInspectorTab = 'expressions';
+      }
+    }
+
+    // Update active tab buttons and panels
+    const tabButtons = $$('#inspector-tabs > button[data-inspector-tab]');
+    for (const btn of tabButtons) {
+      const isTabActive = btn.dataset.inspectorTab === activeInspectorTab;
+      btn.classList.toggle('active', isTabActive);
+      btn.setAttribute('aria-selected', isTabActive ? 'true' : 'false');
+      btn.setAttribute('tabindex', isTabActive && !btn.hidden ? '0' : '-1');
+    }
+
+    const secExpressions = $('#inspector-section-expressions');
+    const secMotion = $('#inspector-section-motion');
+    const secJoints = $('#inspector-section-joints');
+    const secBubble = $('#inspector-section-bubble');
+
+    if (secExpressions) secExpressions.hidden = activeInspectorTab !== 'expressions';
+    if (secMotion) secMotion.hidden = activeInspectorTab !== 'motion';
+    if (secJoints) secJoints.hidden = activeInspectorTab !== 'joints';
+    if (secBubble) secBubble.hidden = activeInspectorTab !== 'bubble';
 
     // Transport & speed buttons state sync
     const animSettings = state.currentScene?.animationSettings || {};
@@ -794,6 +893,8 @@ export function createPlayView({
     const bounds = getEntityBounds(entity, getAsset);
     button.style.setProperty('--entity-width', String(bounds.width));
     button.style.setProperty('--entity-height', String(bounds.height));
+    button.style.setProperty('--anchor-x', String(bounds.anchorX ?? 0.5));
+    button.style.setProperty('--anchor-y', String(bounds.anchorY ?? 1.0));
     button.style.setProperty('--char-width', String(CHARACTER_DIMENSIONS.BASE_WIDTH));
     button.style.setProperty('--char-height', String(CHARACTER_DIMENSIONS.BASE_HEIGHT));
     button.style.aspectRatio = entity.kind === 'character'
@@ -916,6 +1017,8 @@ export function createPlayView({
     element.style.zIndex = String(entity.order);
     element.style.setProperty('--entity-width', String(bounds.width));
     element.style.setProperty('--entity-height', String(bounds.height));
+    element.style.setProperty('--anchor-x', String(bounds.anchorX ?? 0.5));
+    element.style.setProperty('--anchor-y', String(bounds.anchorY ?? 1.0));
     element.style.setProperty('--char-width', String(CHARACTER_DIMENSIONS.BASE_WIDTH));
     element.style.setProperty('--char-height', String(CHARACTER_DIMENSIONS.BASE_HEIGHT));
     element.style.aspectRatio = entity.kind === 'character'
@@ -942,6 +1045,11 @@ export function createPlayView({
     const id = state.ui.selectedEntityId;
     const entity = state.currentScene.entities.find((item) => item.instanceId === id);
     if (!action || selectedIds.length === 0) return;
+
+    if (action === 'deselect') {
+      store.dispatch({ type: 'ui/clearSelection' });
+      return;
+    }
 
     if (action.startsWith('align') || action === 'distributeH' || action === 'distributeV') {
       const modeMap = {
@@ -1243,6 +1351,20 @@ export function createPlayView({
     renderCameraHud(state, false);
   }
 
+  function initInspectorTabs() {
+    const tabsList = $('#inspector-tabs');
+    if (tabsList && !tabsList.dataset.bound) {
+      tabsList.dataset.bound = 'true';
+      tabsList.addEventListener('click', (event) => {
+        const btn = event.target.closest('button[data-inspector-tab]');
+        if (btn && btn.dataset.inspectorTab) {
+          activeInspectorTab = btn.dataset.inspectorTab;
+          renderSelectedActions(store.getState());
+        }
+      });
+    }
+  }
+
   async function render(state = store.getState()) {
     const token = ++playRenderToken;
     const focusedEntityId = document.activeElement?.closest?.('.scene-entity-positioner')?.dataset.instanceId;
@@ -1308,7 +1430,10 @@ export function createPlayView({
     }
     const orderUnchanged = nextElements.length === entityRoot.children.length
       && nextElements.every((element, index) => element === entityRoot.children[index]);
-    if (!orderUnchanged) entityRoot.replaceChildren(...nextElements);
+    if (!orderUnchanged) {
+      entityRoot.replaceChildren(...nextElements);
+      invalidateAnimationDomCache?.();
+    }
     // The entity root is only replaced when order or membership changes; stable nodes are patched in place.
     renderCameraHud(state);
     renderContextRing(state);

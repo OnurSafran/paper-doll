@@ -148,12 +148,15 @@ export function sanitizeCustomAsset(candidate) {
     ? candidate.pixelHeight
     : (kind === 'wearable' ? 900 : 1000);
 
-  const expectedDimensions = kind === 'wearable'
-    ? { logicalWidth: 300, logicalHeight: 450, pixelWidth: 600, pixelHeight: 900 }
-    : { logicalWidth: 500, logicalHeight: 500, pixelWidth: 1000, pixelHeight: 1000 };
-  if (logicalWidth !== expectedDimensions.logicalWidth || logicalHeight !== expectedDimensions.logicalHeight ||
-    pixelWidth !== expectedDimensions.pixelWidth || pixelHeight !== expectedDimensions.pixelHeight) {
-    return null;
+  if (kind === 'wearable') {
+    if (logicalWidth !== 300 || logicalHeight !== 450 || pixelWidth !== 600 || pixelHeight !== 900) {
+      return null;
+    }
+  } else {
+    if (logicalWidth < 1 || logicalWidth > 1000 || logicalHeight < 1 || logicalHeight > 1000 ||
+        pixelWidth < 1 || pixelWidth > 2000 || pixelHeight < 1 || pixelHeight > 2000) {
+      return null;
+    }
   }
 
   const byteLength = typeof candidate.byteLength === 'number' && candidate.byteLength > 0 && candidate.byteLength <= LIMITS.MAX_CUSTOM_ASSET_BYTES

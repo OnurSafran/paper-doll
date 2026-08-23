@@ -171,6 +171,19 @@
   border-color: var(--coral-dark);
 }
 
+.top-entity-actions .deselect-btn {
+  background: rgba(46, 38, 31, 0.06);
+  color: var(--ink-soft);
+  font-weight: 750;
+  border: 1px dashed var(--line);
+}
+
+.top-entity-actions .deselect-btn:hover:not(:disabled) {
+  background: var(--paper-warm);
+  color: var(--ink);
+  border-style: solid;
+}
+
 /* Expression Controls */
 .expression-buttons {
   display: inline-flex;
@@ -344,6 +357,14 @@
   align-items: stretch;
 }
 
+.play-stage-column {
+  grid-area: scene;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .play-rail {
   grid-area: rail;
   min-width: 0;
@@ -353,7 +374,6 @@
 }
 
 .play-stage-viewport {
-  grid-area: scene;
   min-height: min(76vh, 800px);
   display: grid;
   place-items: center;
@@ -363,6 +383,93 @@
   background: linear-gradient(145deg, #d8c5aa, #eadbc6);
   box-shadow: inset 0 0 0 6px rgba(255, 253, 249, 0.45), inset 0 0 45px rgba(46, 38, 31, 0.14), var(--shadow-md);
   overflow: hidden;
+}
+
+/* Play Inspector Panel (Character & Entity controls below stage) */
+.play-inspector-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.play-inspector-panel[hidden] {
+  display: none !important;
+}
+
+.inspector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.inspector-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inspector-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(46, 38, 31, 0.05);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+}
+
+.inspector-tabs .tab-btn {
+  min-height: 38px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 750;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.inspector-tabs .tab-btn:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.inspector-tabs .tab-btn.active {
+  background: var(--paper-card);
+  color: var(--coral-dark);
+  font-weight: 800;
+  box-shadow: var(--shadow-xs);
+}
+
+.inspector-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  animation: fadeIn 0.15s ease;
+}
+
+.inspector-section[hidden] {
+  display: none !important;
+}
+
+.inspector-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .play-stage {
@@ -443,7 +550,7 @@
   left: calc(var(--x) / var(--stage-width, 1600) * 100%);
   top: calc(var(--y) / 900 * 100%);
   width: calc(var(--entity-width) / var(--stage-width, 1600) * 100%);
-  transform: translate(-50%, -100%);
+  transform: translate(calc(-100% * var(--anchor-x, 0.5)), calc(-100% * var(--anchor-y, 1)));
   pointer-events: auto;
   touch-action: none;
   cursor: grab;
@@ -660,8 +767,18 @@
   transform: translate(calc(var(--motion-attached-tx, 0) / var(--entity-width, 235) * 100%), calc(var(--motion-attached-ty, 0) / var(--entity-height, 352.5) * 100%))
              rotate(calc(var(--motion-attached-rot, 0) * 1deg))
              scaleX(var(--flip));
-  transform-origin: 50% 100%;
+  transform-origin: calc(var(--anchor-x, 0.5) * 100%) calc(var(--anchor-y, 1) * 100%);
   will-change: transform;
+}
+
+.scene-custom-prop-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 4px 8px rgba(46, 38, 31, 0.12));
 }
 
 .doll-layer[data-slot="face-eyes"] {

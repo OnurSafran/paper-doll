@@ -143,6 +143,11 @@ export function createPaintView({
   const brushSizeValue = rootElement.querySelector('#paint-brush-size-value');
   const shapeOptions = rootElement.querySelector('#paint-shape-options');
   const shapeFilledCheckbox = rootElement.querySelector('#paint-shape-filled');
+  const selectionOptions = rootElement.querySelector('#paint-selection-options');
+  const selectionDeleteBtn = rootElement.querySelector('#paint-selection-delete-btn');
+  const selectionCancelBtn = rootElement.querySelector('#paint-selection-cancel-btn');
+  const selectionFlipBtn = rootElement.querySelector('#paint-selection-flip-btn');
+  const selectionDuplicateBtn = rootElement.querySelector('#paint-selection-duplicate-btn');
   const paletteGrid = rootElement.querySelector('#paint-palette-grid');
   const colorPicker = rootElement.querySelector('#paint-color-picker');
   const activeColorSwatch = rootElement.querySelector('#paint-active-color');
@@ -298,6 +303,15 @@ export function createPaintView({
     });
 
     if (shapeOptions) shapeOptions.hidden = state.tool !== 'shape';
+    if (selectionOptions) {
+      const showSelectionOptions = state.tool === 'select' || Boolean(selectionRect);
+      selectionOptions.hidden = !showSelectionOptions;
+      const hasActiveSelection = Boolean(selectionRect);
+      if (selectionDeleteBtn) selectionDeleteBtn.disabled = !hasActiveSelection;
+      if (selectionCancelBtn) selectionCancelBtn.disabled = !hasActiveSelection;
+      if (selectionFlipBtn) selectionFlipBtn.disabled = !hasActiveSelection;
+      if (selectionDuplicateBtn) selectionDuplicateBtn.disabled = !hasActiveSelection;
+    }
     if (shapeFilledCheckbox) shapeFilledCheckbox.checked = state.shapeFilled;
 
     // Contextual: show brush-size only for brush/eraser
@@ -1421,6 +1435,22 @@ export function createPaintView({
 
     undoBtn?.addEventListener('click', handleUndo);
     redoBtn?.addEventListener('click', handleRedo);
+
+    selectionDeleteBtn?.addEventListener('click', () => {
+      deleteSelection();
+    });
+    selectionCancelBtn?.addEventListener('click', () => {
+      selectionRect = null;
+      selectionPixels = null;
+      updateSelectionOutline();
+      updateUIFromState();
+    });
+    selectionFlipBtn?.addEventListener('click', () => {
+      flipSelectionHorizontally();
+    });
+    selectionDuplicateBtn?.addEventListener('click', () => {
+      moveSelectionBy(10, 10, true);
+    });
 
     newBtn?.addEventListener('click', () => {
       if (session.getState().dirty) {

@@ -198,9 +198,9 @@ export function createAppStore(envelope, options = {}) {
       previousState.scenes !== result.state.scenes ||
       previousState.currentScene !== result.state.currentScene ||
       previousState.customAssets !== result.state.customAssets;
-    const cameraOnlyAction = action.type === 'scene/setCameraX' || action.type === 'scene/panCamera';
+    const nonUndoAction = action.type === 'scene/setCameraX' || action.type === 'scene/panCamera' || action.type === 'scene/playbackFinished';
 
-    if (domainChanged && !cameraOnlyAction) {
+    if (domainChanged && !nonUndoAction) {
       undoStack.push(snapshotDomain(previousState));
       if (undoStack.length > maxHistory) undoStack.shift();
       redoStack.length = 0;
@@ -1064,10 +1064,12 @@ function reduce(state, action, context) {
       };
     case 'scene/setDollExpression': {
       if (!isExpression(action.expression)) return null;
-      const targetId = action.instanceId ?? state.ui.selectedEntityId;
-      const entity = state.currentScene.entities.find((e) => e.instanceId === targetId && e.kind === 'character');
-      if (!entity || entity.expression === action.expression) return null;
-      const updatedEntities = state.currentScene.entities.map((e) => e.instanceId === targetId ? { ...e, expression: action.expression } : e);
+      const targetIds = action.instanceIds || (action.instanceId ? [action.instanceId] : (state.ui.selectedEntityIds?.length ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : [])));
+      const idSet = new Set(targetIds);
+      const targetEntities = state.currentScene.entities.filter((e) => idSet.has(e.instanceId) && e.kind === 'character');
+      if (targetEntities.length === 0) return null;
+      if (targetEntities.every((e) => e.expression === action.expression)) return null;
+      const updatedEntities = state.currentScene.entities.map((e) => idSet.has(e.instanceId) && e.kind === 'character' ? { ...e, expression: action.expression } : e);
       return {
         state: {
           ...state,
@@ -1078,10 +1080,12 @@ function reduce(state, action, context) {
     }
     case 'scene/setDollExpressionIntensity': {
       if (!isExpressionIntensity(action.expressionIntensity)) return null;
-      const targetId = action.instanceId ?? state.ui.selectedEntityId;
-      const entity = state.currentScene.entities.find((e) => e.instanceId === targetId && e.kind === 'character');
-      if (!entity || entity.expressionIntensity === action.expressionIntensity) return null;
-      const updatedEntities = state.currentScene.entities.map((e) => e.instanceId === targetId ? { ...e, expressionIntensity: action.expressionIntensity } : e);
+      const targetIds = action.instanceIds || (action.instanceId ? [action.instanceId] : (state.ui.selectedEntityIds?.length ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : [])));
+      const idSet = new Set(targetIds);
+      const targetEntities = state.currentScene.entities.filter((e) => idSet.has(e.instanceId) && e.kind === 'character');
+      if (targetEntities.length === 0) return null;
+      if (targetEntities.every((e) => e.expressionIntensity === action.expressionIntensity)) return null;
+      const updatedEntities = state.currentScene.entities.map((e) => idSet.has(e.instanceId) && e.kind === 'character' ? { ...e, expressionIntensity: action.expressionIntensity } : e);
       return {
         state: {
           ...state,
@@ -1091,13 +1095,20 @@ function reduce(state, action, context) {
       };
     }
     case 'scene/setDollPose': {
-      const targetId = action.instanceId ?? state.ui.selectedEntityId;
-      const entity = state.currentScene.entities.find((e) => e.instanceId === targetId && e.kind === 'character');
-      if (!entity) return null;
-      const motionProfile = resolveMotionProfile(entity);
-      const safePose = resolveSafePoseId(action.pose, motionProfile);
-      if (!safePose || entity.pose === safePose) return null;
-      const updatedEntities = state.currentScene.entities.map((e) => e.instanceId === targetId ? { ...e, pose: safePose } : e);
+      const targetIds = action.instanceIds || (action.instanceId ? [action.instanceId] : (state.ui.selectedEntityIds?.length ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : [])));
+      const idSet = new Set(targetIds);
+      const targetEntities = state.currentScene.entities.filter((e) => idSet.has(e.instanceId) && e.kind === 'character');
+      if (targetEntities.length === 0) return null;
+      let hasChange = false;
+      const updatedEntities = state.currentScene.entities.map((e) => {
+        if (!idSet.has(e.instanceId) || e.kind !== 'character') return e;
+        const motionProfile = resolveMotionProfile(e);
+        const safePose = resolveSafePoseId(action.pose, motionProfile);
+        if (!safePose || e.pose === safePose) return e;
+        hasChange = true;
+        return { ...e, pose: safePose };
+      });
+      if (!hasChange) return null;
       return {
         state: {
           ...state,
@@ -1109,25 +1120,30 @@ function reduce(state, action, context) {
     case 'scene/setDollAnimation': {
       const raw = action.animation;
       if (!raw || typeof raw !== 'object') return null;
-      const targetId = action.instanceId ?? state.ui.selectedEntityId;
-      const entity = state.currentScene.entities.find((e) => e.instanceId === targetId && e.kind === 'character');
-      if (!entity) return null;
-      const motionProfile = resolveMotionProfile(entity);
-      const rawCandidate = raw.clipId !== undefined ? raw.clipId : (entity.animation?.clipId ?? DEFAULT_MOTION_CLIP_ID);
-      const clipId = resolveSafeClipId(rawCandidate, motionProfile);
-      const enabled = raw.enabled !== undefined
-        ? Boolean(raw.enabled)
-        : (raw.clipId !== undefined ? clipId !== 'none' : (entity.animation?.enabled ?? false));
-      const animation = {
-        clipId,
-        enabled,
-        intensity: isMotionIntensity(raw.intensity) ? raw.intensity : (entity.animation?.intensity ?? DEFAULT_MOTION_INTENSITY),
-        phaseOffset: isPhaseOffset(raw.phaseOffset) ? raw.phaseOffset : (entity.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET)
-      };
-      const updatedEntities = state.currentScene.entities.map((e) => e.instanceId === targetId ? { ...e, animation } : e);
+      const targetIds = action.instanceIds || (action.instanceId ? [action.instanceId] : (state.ui.selectedEntityIds?.length ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : [])));
+      const idSet = new Set(targetIds);
+      const targetEntities = state.currentScene.entities.filter((e) => idSet.has(e.instanceId) && e.kind === 'character');
+      if (targetEntities.length === 0) return null;
+      let anyAutoPlay = false;
+      const updatedEntities = state.currentScene.entities.map((entity) => {
+        if (!idSet.has(entity.instanceId) || entity.kind !== 'character') return entity;
+        const motionProfile = resolveMotionProfile(entity);
+        const rawCandidate = raw.clipId !== undefined ? raw.clipId : (entity.animation?.clipId ?? DEFAULT_MOTION_CLIP_ID);
+        const clipId = resolveSafeClipId(rawCandidate, motionProfile);
+        const enabled = raw.enabled !== undefined
+          ? Boolean(raw.enabled)
+          : (raw.clipId !== undefined ? clipId !== 'none' : (entity.animation?.enabled ?? false));
+        const animation = {
+          clipId,
+          enabled,
+          intensity: isMotionIntensity(raw.intensity) ? raw.intensity : (entity.animation?.intensity ?? DEFAULT_MOTION_INTENSITY),
+          phaseOffset: isPhaseOffset(raw.phaseOffset) ? raw.phaseOffset : (entity.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET)
+        };
+        if (animation.enabled && animation.clipId !== 'none') anyAutoPlay = true;
+        return { ...entity, animation };
+      });
       const currentAnimSettings = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
-      const shouldAutoPlay = animation.enabled && animation.clipId !== 'none';
-      const nextAnimationSettings = shouldAutoPlay && !currentAnimSettings.enabled
+      const nextAnimationSettings = anyAutoPlay && !currentAnimSettings.enabled
         ? { ...currentAnimSettings, enabled: true }
         : currentAnimSettings;
       return {
@@ -1261,6 +1277,24 @@ function reduce(state, action, context) {
           currentScene: touchScene({ ...state.currentScene, animationSettings }, context.now)
         },
         persist: true
+      };
+    }
+    case 'scene/playbackFinished': {
+      const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
+      if (!current.enabled) return null;
+      const animationSettings = {
+        ...current,
+        enabled: false
+      };
+      return {
+        state: {
+          ...state,
+          currentScene: {
+            ...state.currentScene,
+            animationSettings
+          }
+        },
+        persist: false
       };
     }
     case 'scene/saveToLibrary': {

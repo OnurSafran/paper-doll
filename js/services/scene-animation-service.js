@@ -13,8 +13,17 @@ import {
   resolveEntityAttachmentTransform
 } from '../domain/motion-evaluator.js';
 import { applyMouthExpression } from '../core/mouth-expression.js';
-import { getAsset as getBuiltinAsset } from '../core/asset-catalog.js';
-import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_STAGE_WIDTH } from '../domain/vocabulary.js';
+import { getAsset as getBuiltinAsset, hasRigidWearableForLimb } from '../core/asset-catalog.js';
+import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_REDUCED_MOTION, DEFAULT_STAGE_WIDTH, VIEWPORT_WIDTH } from '../domain/vocabulary.js';
+
+export function resolveVoiceTargetCharacter(scene, selectedEntityId) {
+  if (!scene?.entities || !Array.isArray(scene.entities)) return null;
+  if (selectedEntityId) {
+    const selectedChar = scene.entities.find((e) => e.instanceId === selectedEntityId && e.kind === 'character');
+    if (selectedChar) return selectedChar;
+  }
+  return scene.entities.find((e) => e.kind === 'character') || null;
+}
 
 function applyPosePropertiesToMotionElement(motionEl, pose) {
   if (!motionEl || !pose) return;
@@ -74,6 +83,7 @@ export function createSceneAnimationService(options = {}) {
   const matchMedia = options.matchMedia ?? ((q) => globalThis.matchMedia?.(q));
   const clockNow = options.now ?? (() => (globalThis.performance?.now ? globalThis.performance.now() : Date.now()));
   const isVoiceActive = options.isVoiceActive ?? (() => false);
+  const stageViewportWidth = options.viewportWidth ?? VIEWPORT_WIDTH;
 
   let isPlaying = false;
   let rafId = null;
@@ -84,11 +94,64 @@ export function createSceneAnimationService(options = {}) {
   let mediaQueryHandler = null;
 
   // Recycled cache maps to prevent per-frame garbage collection
-  const elementsByInstanceId = new Map();
+  const domCacheByInstanceId = new Map();
+  let domCacheValid = false;
   const characterPoses = new Map();
   const characterEntities = new Map();
   const allEntitiesMap = new Map();
   const attachedTransformMemo = new Map();
+  const rigidLimbMemo = new Map();
+
+  function invalidateDomCache() {
+    domCacheValid = false;
+    domCacheByInstanceId.clear();
+    rigidLimbMemo.clear();
+  }
+
+  function syncDomCache() {
+    domCacheByInstanceId.clear();
+    const positionerElements = queryAll('.scene-entity-positioner');
+    for (const el of positionerElements) {
+      const id = el.dataset?.instanceId;
+      if (id) {
+        domCacheByInstanceId.set(id, {
+          positioner: el,
+          motionEl: el.querySelector('.scene-entity-motion'),
+          eyesLayer: el.querySelector('[data-slot="face-eyes"]'),
+          mouthSvg: el.querySelector('#mouth-svg, svg[data-layer="face-mouth"], .mouth-layer-svg')
+        });
+      }
+    }
+    domCacheValid = true;
+  }
+
+  function getCachedDomRecord(instanceId) {
+    if (!domCacheValid) {
+      syncDomCache();
+    }
+    const record = domCacheByInstanceId.get(instanceId);
+    if (record && record.positioner && record.positioner.isConnected === false) {
+      syncDomCache();
+      return domCacheByInstanceId.get(instanceId);
+    }
+    return record;
+  }
+
+  function getRigidWearableForLimbCached(draft, limb) {
+    if (!draft) return false;
+    const slots = draft.slots || {};
+    const topId = slots.top?.assetId || '';
+    const bottomId = slots.bottom?.assetId || '';
+    const dressId = slots.dress?.assetId || '';
+    const shoesId = slots.shoes?.assetId || '';
+    const cacheKey = `${limb}:${topId}:${bottomId}:${dressId}:${shoesId}`;
+    if (rigidLimbMemo.has(cacheKey)) {
+      return rigidLimbMemo.get(cacheKey);
+    }
+    const result = hasRigidWearableForLimb(draft, limb, getAssetFn);
+    rigidLimbMemo.set(cacheKey, result);
+    return result;
+  }
 
   // Track system prefers-reduced-motion
   try {
@@ -106,57 +169,48 @@ export function createSceneAnimationService(options = {}) {
       }
     }
   } catch {
-    // Best-effort media query listener
+    // Non-browser or mock environments
   }
 
   function getEffectiveMotionAllowed() {
-    const userSetting = store?.getState()?.settings?.reducedMotion || 'system';
-    return resolveEffectiveMotion(userSetting, systemPrefersReducedMotion);
+    const userPref = store?.getState()?.settings?.reducedMotion || DEFAULT_REDUCED_MOTION;
+    return Boolean(resolveEffectiveMotion(userPref, systemPrefersReducedMotion));
   }
 
   function getElapsedMs() {
     return accumulatedElapsedMs;
   }
 
+  // Least Common Multiple of all motion clip durations (800, 1000, 1200, 1400, 1600, 1800, 2000, 2400, 3000 ms)
+  const CLIP_DURATION_LCM_MS = 504000;
+
   function tick() {
     if (!isPlaying) return;
-
-    if (!getEffectiveMotionAllowed()) {
-      pause();
-      applyStaticPoseToDom();
-      return;
-    }
-
-    const state = store?.getState();
-    if (!state || !state.currentScene) {
-      rafId = raf(tick);
-      return;
-    }
-
     const now = clockNow();
     const delta = Math.max(0, now - lastTickTime);
     lastTickTime = now;
-    const playbackRate = Number.isFinite(state.currentScene.animationSettings?.playbackRate)
-      ? state.currentScene.animationSettings.playbackRate
-      : 1.0;
+
+    const state = store?.getState();
+    if (!state?.currentScene) {
+      pause();
+      return;
+    }
+
+    const playbackRate = state.currentScene.animationSettings?.playbackRate ?? DEFAULT_PLAYBACK_RATE;
     accumulatedElapsedMs += delta * playbackRate;
 
     const isLooping = state.currentScene.animationSettings?.loop !== false;
     if (!isLooping) {
       const maxDuration = getSceneActiveAnimationDuration(state.currentScene);
-      if (accumulatedElapsedMs >= maxDuration) {
+      if (maxDuration > 0 && accumulatedElapsedMs >= maxDuration) {
         accumulatedElapsedMs = maxDuration;
-        updateDomTransforms(state, maxDuration);
         pause();
-        store?.dispatch({
-          type: 'scene/setAnimationSettings',
-          animationSettings: {
-            ...(state.currentScene.animationSettings || {}),
-            enabled: false
-          }
-        });
+        store?.dispatch({ type: 'scene/playbackFinished' });
         return;
       }
+    } else if (accumulatedElapsedMs >= CLIP_DURATION_LCM_MS * 10) {
+      // Periodic modulo wrapping at integer multiples of duration LCM to preserve float precision without phase jump
+      accumulatedElapsedMs = accumulatedElapsedMs % CLIP_DURATION_LCM_MS;
     }
 
     updateDomTransforms(state, accumulatedElapsedMs);
@@ -167,21 +221,18 @@ export function createSceneAnimationService(options = {}) {
     const scene = state.currentScene;
     const stageWidth = scene.stageWidth || DEFAULT_STAGE_WIDTH;
     const cameraX = scene.cameraX || 0;
-    const isWideStage = stageWidth > 1600;
+    const isWideStage = stageWidth > stageViewportWidth;
     const viewportLeft = cameraX - 350;
-    const viewportRight = cameraX + 1600 + 350;
+    const viewportRight = cameraX + stageViewportWidth + 350;
     const isLooping = scene.animationSettings?.loop !== false;
 
-    elementsByInstanceId.clear();
-    const positionerElements = queryAll('.scene-entity-positioner');
-    for (const el of positionerElements) {
-      const id = el.dataset?.instanceId;
-      if (id) elementsByInstanceId.set(id, el);
+    if (!domCacheValid) {
+      syncDomCache();
     }
 
     const voiceActive = isVoiceActive();
-    const primarySelectedId = state.ui?.selectedEntityId;
-    const voiceTargetId = primarySelectedId || scene.entities.find((e) => e.kind === 'character')?.instanceId;
+    const targetVoiceChar = resolveVoiceTargetCharacter(scene, state.ui?.selectedEntityId);
+    const voiceTargetId = targetVoiceChar?.instanceId;
 
     characterPoses.clear();
     characterEntities.clear();
@@ -196,39 +247,41 @@ export function createSceneAnimationService(options = {}) {
       if (entity.kind !== 'character') continue;
       characterEntities.set(entity.instanceId, entity);
 
-      const el = elementsByInstanceId.get(entity.instanceId);
-      if (!el) continue;
+      const cachedDom = getCachedDomRecord(entity.instanceId);
+      if (!cachedDom?.positioner) continue;
 
       const isOffscreen = isWideStage && (entity.x < viewportLeft || entity.x > viewportRight);
-      const pose = evaluateCharacterPose(entity, elapsedMs, { playbackEnabled: isPlaying, loop: isLooping, getAsset: getAssetFn });
+      const pose = evaluateCharacterPose(entity, elapsedMs, {
+        playbackEnabled: isPlaying,
+        loop: isLooping,
+        getAsset: getAssetFn,
+        hasRigidWearableForLimb: getRigidWearableForLimbCached
+      });
       characterPoses.set(entity.instanceId, pose);
 
       if (isOffscreen) continue;
 
-      const motionEl = el.querySelector('.scene-entity-motion');
-      if (motionEl) {
-        applyPosePropertiesToMotionElement(motionEl, pose);
+      if (cachedDom.motionEl) {
+        applyPosePropertiesToMotionElement(cachedDom.motionEl, pose);
       }
 
       // Procedural secondary micro-motion: eye blinking (only for animated characters)
-      const eyesLayer = el.querySelector('.doll-layer[data-slot="face-eyes"]');
-      if (eyesLayer) {
+      if (cachedDom.eyesLayer) {
         if (pose.isAnimated) {
           const blink = evaluateProceduralBlink(entity.instanceId, elapsedMs, {
             reducedMotion: !getEffectiveMotionAllowed()
           });
-          eyesLayer.style.setProperty('--motion-blink-scale-y', String(Math.round(blink.scaleY * 100) / 100));
-        } else if (eyesLayer.style.getPropertyValue?.('--motion-blink-scale-y') !== '1') {
-          eyesLayer.style.setProperty('--motion-blink-scale-y', '1');
+          cachedDom.eyesLayer.style.setProperty('--motion-blink-scale-y', String(Math.round(blink.scaleY * 100) / 100));
+        } else if (cachedDom.eyesLayer.style.getPropertyValue?.('--motion-blink-scale-y') !== '1') {
+          cachedDom.eyesLayer.style.setProperty('--motion-blink-scale-y', '1');
         }
       }
 
       // Voice priority: voice puppetry controls mouth when speaking
       const isOverriddenByVoice = voiceActive && entity.instanceId === voiceTargetId;
       if (!isOverriddenByVoice && pose.isAnimated) {
-        const mouthSvg = el.querySelector('[data-slot="face-mouth"] svg') || el.querySelector('[data-slot="skin"] svg');
-        if (mouthSvg) {
-          applyMouthExpression(mouthSvg, pose.expression, pose.expressionIntensity);
+        if (cachedDom.mouthSvg) {
+          applyMouthExpression(cachedDom.mouthSvg, pose.expression, pose.expressionIntensity);
         }
       }
     }
@@ -236,8 +289,8 @@ export function createSceneAnimationService(options = {}) {
     // Dynamic attached props and speech bubbles kinematics (recursive for nested DAG)
     for (const entity of scene.entities) {
       if (!entity.attachedTo) continue;
-      const el = elementsByInstanceId.get(entity.instanceId);
-      if (!el) continue;
+      const cachedDom = getCachedDomRecord(entity.instanceId);
+      if (!cachedDom?.positioner) continue;
 
       const attachedTransform = resolveEntityAttachmentTransform(
         entity,
@@ -247,9 +300,9 @@ export function createSceneAnimationService(options = {}) {
         attachedTransformMemo
       );
 
-      el.style.setProperty('--motion-attached-tx', String(Math.round(attachedTransform.tx * 10) / 10));
-      el.style.setProperty('--motion-attached-ty', String(Math.round(attachedTransform.ty * 10) / 10));
-      el.style.setProperty('--motion-attached-rot', String(Math.round(attachedTransform.rot * 10) / 10));
+      cachedDom.positioner.style.setProperty('--motion-attached-tx', String(Math.round(attachedTransform.tx * 10) / 10));
+      cachedDom.positioner.style.setProperty('--motion-attached-ty', String(Math.round(attachedTransform.ty * 10) / 10));
+      cachedDom.positioner.style.setProperty('--motion-attached-rot', String(Math.round(attachedTransform.rot * 10) / 10));
     }
   }
 
@@ -257,11 +310,8 @@ export function createSceneAnimationService(options = {}) {
     const state = store?.getState();
     if (!state || !state.currentScene) return;
 
-    elementsByInstanceId.clear();
-    const positionerElements = queryAll('.scene-entity-positioner');
-    for (const el of positionerElements) {
-      const id = el.dataset?.instanceId;
-      if (id) elementsByInstanceId.set(id, el);
+    if (!domCacheValid) {
+      syncDomCache();
     }
 
     characterEntities.clear();
@@ -277,33 +327,34 @@ export function createSceneAnimationService(options = {}) {
       if (entity.kind !== 'character') continue;
       characterEntities.set(entity.instanceId, entity);
 
-      const el = elementsByInstanceId.get(entity.instanceId);
-      if (!el) continue;
+      const cachedDom = getCachedDomRecord(entity.instanceId);
+      if (!cachedDom?.positioner) continue;
 
-      const staticPose = evaluateCharacterPose(entity, 0, { playbackEnabled: false, getAsset: getAssetFn });
+      const staticPose = evaluateCharacterPose(entity, 0, {
+        playbackEnabled: false,
+        getAsset: getAssetFn,
+        hasRigidWearableForLimb: getRigidWearableForLimbCached
+      });
       characterPoses.set(entity.instanceId, staticPose);
 
-      const motionEl = el.querySelector('.scene-entity-motion');
-      if (motionEl) {
-        applyPosePropertiesToMotionElement(motionEl, staticPose);
+      if (cachedDom.motionEl) {
+        applyPosePropertiesToMotionElement(cachedDom.motionEl, staticPose);
       }
 
-      const eyesLayer = el.querySelector('.doll-layer[data-slot="face-eyes"]');
-      if (eyesLayer) {
-        eyesLayer.style.setProperty('--motion-blink-scale-y', '1');
+      if (cachedDom.eyesLayer) {
+        cachedDom.eyesLayer.style.setProperty('--motion-blink-scale-y', '1');
       }
 
-      const mouthSvg = el.querySelector('[data-slot="face-mouth"] svg') || el.querySelector('[data-slot="skin"] svg');
-      if (mouthSvg) {
-        applyMouthExpression(mouthSvg, entity.expression || DEFAULT_EXPRESSION, entity.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY);
+      if (cachedDom.mouthSvg) {
+        applyMouthExpression(cachedDom.mouthSvg, entity.expression || DEFAULT_EXPRESSION, entity.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY);
       }
     }
 
     // Static attached entity transforms (recursive for nested DAG)
     for (const entity of state.currentScene.entities) {
       if (!entity.attachedTo) continue;
-      const el = elementsByInstanceId.get(entity.instanceId);
-      if (!el) continue;
+      const cachedDom = getCachedDomRecord(entity.instanceId);
+      if (!cachedDom?.positioner) continue;
 
       const attachedTransform = resolveEntityAttachmentTransform(
         entity,
@@ -313,9 +364,9 @@ export function createSceneAnimationService(options = {}) {
         attachedTransformMemo
       );
 
-      el.style.setProperty('--motion-attached-tx', String(Math.round(attachedTransform.tx * 10) / 10));
-      el.style.setProperty('--motion-attached-ty', String(Math.round(attachedTransform.ty * 10) / 10));
-      el.style.setProperty('--motion-attached-rot', String(Math.round(attachedTransform.rot * 10) / 10));
+      cachedDom.positioner.style.setProperty('--motion-attached-tx', String(Math.round(attachedTransform.tx * 10) / 10));
+      cachedDom.positioner.style.setProperty('--motion-attached-ty', String(Math.round(attachedTransform.ty * 10) / 10));
+      cachedDom.positioner.style.setProperty('--motion-attached-rot', String(Math.round(attachedTransform.rot * 10) / 10));
     }
   }
 
@@ -325,6 +376,7 @@ export function createSceneAnimationService(options = {}) {
       applyStaticPoseToDom();
       return;
     }
+    invalidateDomCache();
     if (options?.resetClock) {
       accumulatedElapsedMs = 0;
     }
@@ -341,6 +393,7 @@ export function createSceneAnimationService(options = {}) {
       cancelRaf(rafId);
       rafId = null;
     }
+    invalidateDomCache();
     applyStaticPoseToDom();
   }
 
@@ -353,6 +406,7 @@ export function createSceneAnimationService(options = {}) {
     const wasPlaying = isPlaying;
     accumulatedElapsedMs = 0;
     lastTickTime = clockNow();
+    invalidateDomCache();
     applyStaticPoseToDom();
     if (!wasPlaying && rafId) {
       cancelRaf(rafId);
@@ -373,8 +427,9 @@ export function createSceneAnimationService(options = {}) {
       play();
     } else if (!motionAllowed && isPlaying) {
       pause();
+    } else {
+      applyStaticPoseToDom();
     }
-    applyStaticPoseToDom();
   }
 
   function teardown() {
@@ -395,6 +450,7 @@ export function createSceneAnimationService(options = {}) {
         // Best effort
       }
     }
+    invalidateDomCache();
     applyStaticPoseToDom();
   }
 
@@ -409,7 +465,7 @@ export function createSceneAnimationService(options = {}) {
     toggle,
     handleSettingsChange,
     applyStaticPoseToDom,
+    invalidateDomCache,
     teardown
   };
 }
-

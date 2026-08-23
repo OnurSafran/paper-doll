@@ -548,6 +548,6 @@ export function getSceneActiveAnimationDuration(sceneSnapshot) {
       maxDuration = finishTime;
     }
   }
-  return maxDuration || 1000;
+  return maxDuration;
 }
 
