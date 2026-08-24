@@ -158,6 +158,9 @@
             </div>
           </div>
           <div class="scene-meta-actions">
+            <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir" data-i18n="play.voiceBtn">🎙️ Seslendir</button>
+            <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
+            <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)" data-i18n="play.outlineBtn">📋 Katmanlar</button>
             <button id="save-scene-btn" class="button primary compact-action" type="button" data-i18n-title="play.saveSceneTitle" title="Bu sahneyi Sahne Kitabına kaydet" data-i18n="play.saveSceneBtn">💾 Sahneyi Kaydet</button>
             <details id="play-scene-dropdown" class="menu-dropdown">
               <summary class="button secondary compact-action dropdown-summary" data-i18n-title="play.scenesTitle" title="Sahne Kitabı ve Sahne İşlemleri">📚 <span data-i18n="play.sceneMenuBtn">Sahne</span> ▾</summary>
@@ -177,36 +180,13 @@
           </div>
         </div>
 
+        <div class="play-status-row">
+          <div id="play-status" class="play-status-pill" role="status" aria-live="polite"></div>
+        </div>
+
         <div class="play-grid">
           <div class="play-stage-column">
             <div id="play-stage-viewport" class="play-stage-viewport">
-              <div id="entity-actions" class="entity-actions top-entity-actions" role="toolbar" data-i18n-aria-label="play.selectedItemControls" aria-label="Seçili öğe kontrolleri">
-                <div class="selection-pill">
-                  <span class="selection-dot" aria-hidden="true"></span>
-                  <span id="selected-label" class="selected-label" data-i18n="play.noItemSelected">Öğe seçilmedi</span>
-                </div>
-                <button id="deselect-entity-btn" data-action="deselect" type="button" class="deselect-btn button secondary compact-action" data-i18n-title="play.deselectItemTitle" title="Seçimi kaldır" data-i18n="play.deselectItem" hidden>✕ Vazgeç</button>
-                <div id="alignment-controls" class="alignment-buttons" role="group" data-i18n-aria-label="play.alignGroup" aria-label="Seçili öğeleri hizala" hidden>
-                  <button data-action="alignLeft" type="button" data-i18n-title="play.alignLeft" title="Sol kenarları hizala" data-i18n="play.alignLeft">⇤ Sol</button>
-                  <button data-action="alignCenter" type="button" data-i18n-title="play.alignCenter" title="Yatay merkezleri hizala" data-i18n="play.alignCenter">⇥⇤ Orta</button>
-                  <button data-action="alignRight" type="button" data-i18n-title="play.alignRight" title="Sağ kenarları hizala" data-i18n="play.alignRight">⇥ Sağ</button>
-                  <button data-action="alignTop" type="button" data-i18n-title="play.alignTop" title="Üst kenarları hizala" data-i18n="play.alignTop">⤒ Üst</button>
-                  <button data-action="alignMiddle" type="button" data-i18n-title="play.alignMiddle" title="Dikey merkezleri hizala" data-i18n="play.alignMiddle">⤓ Dikey Orta</button>
-                  <button data-action="alignBottom" type="button" data-i18n-title="play.alignBottom" title="Alt kenarları hizala" data-i18n="play.alignBottom">⤓ Alt</button>
-                  <button data-action="distributeH" type="button" data-i18n-title="play.distributeH" title="Yatay olarak dağıt" data-i18n="play.distributeH">⋯ Yatay Dağıt</button>
-                  <button data-action="distributeV" type="button" data-i18n-title="play.distributeV" title="Dikey olarak dağıt" data-i18n="play.distributeV">⋮ Dikey Dağıt</button>
-                </div>
-                <button data-action="flip" type="button" data-i18n-title="play.flip" title="Yatay çevir" data-i18n="play.flip">↔ Çevir</button>
-                <button data-action="smaller" type="button" data-i18n-title="play.smaller" title="Küçült" data-i18n="play.smaller">− Küçült</button>
-                <button data-action="larger" type="button" data-i18n-title="play.larger" title="Büyüt" data-i18n="play.larger">+ Büyüt</button>
-                <button data-action="back" type="button" data-i18n-title="play.back" title="Arkaya gönder" data-i18n="play.back">↓ Arkaya</button>
-                <button data-action="front" type="button" data-i18n-title="play.front" title="Öne getir" data-i18n="play.front">↑ Öne</button>
-                <button data-action="duplicate" type="button" data-i18n-title="play.duplicate" title="Öğeyi çoğalt" data-i18n="play.duplicate">⧉ Çoğalt</button>
-                <button id="pin-item-btn" data-action="togglePin" type="button" data-i18n-title="play.pinTitle" title="Öğeyi sahne arka planına sabitle" data-i18n="play.pin">📍 Sabitle</button>
-                <button id="detach-item-btn" data-action="detach" type="button" data-i18n-title="play.detachTitle" title="Bağlı olduğu ana öğeden ayır" data-i18n="play.detach" hidden>⛓️ Ayır</button>
-                <button data-action="delete" class="danger" type="button" data-i18n-title="play.deleteItemTitle" title="Öğeyi sil" data-i18n="play.deleteItem">✕ Sil</button>
-              </div>
-
               <div id="play-stage" class="play-stage" tabindex="0" data-i18n-aria-label="play.stageAria" aria-label="Oyun sahnesi. Bir öğe seçin, ardından hareket ettirmek için yön tuşlarını kullanın.">
                 <div id="scene-world" class="scene-world">
                   <div id="scene-background" class="scene-background" aria-hidden="true"></div>
@@ -369,15 +349,8 @@
                 </div>
               </div>
             </section>
-
-            <div class="paper-panel scene-rail-actions" data-i18n-aria-label="play.sceneActionsAria" aria-label="Sahne seçenekleri">
-              <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir" data-i18n="play.voiceBtn">🎙️ Seslendir</button>
-              <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
-              <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)" data-i18n="play.outlineBtn">📋 Katmanlar</button>
-            </div>
           </aside>
         </div>
-        <div id="play-status" class="visible-status" role="status" aria-live="polite"></div>
       </section>
 
       <section id="paint-screen" class="screen" aria-labelledby="paint-title" hidden>
@@ -396,6 +369,10 @@
             <button id="paint-new-btn" class="button secondary compact-action" type="button" data-i18n-title="paint.newArtTitle" title="Yeni sanat eseri başlat" data-i18n="paint.newArtBtn">✦ Yeni</button>
             <button id="paint-save-btn" class="button primary compact-action" type="button" data-i18n-title="paint.saveArtTitle" title="Sanat eserini kaydet" data-i18n="paint.saveArtBtn">💾 Çizimi Kaydet</button>
           </div>
+        </div>
+
+        <div class="paint-status-row">
+          <div id="paint-status" class="paint-status-pill" role="status" aria-live="polite"></div>
         </div>
 
         <div class="paint-grid">
@@ -559,7 +536,6 @@
             </details>
           </aside>
         </div>
-        <div id="paint-status" class="visible-status" role="status" aria-live="polite"></div>
       </section>
 
     </main>

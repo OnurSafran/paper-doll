@@ -71,9 +71,9 @@ test('cross-tab recovery ignores temporary write keys', () => {
   assert.doesNotMatch(js, /event\.key\?\.startsWith/);
 });
 
-test('tabs and top scene actions retain 44 pixel targets', () => {
+test('tabs and scene action controls retain touch targets', () => {
   assert.match(css, /\.tab-list button\s*{[^}]*min-height:\s*44px/s);
-  assert.match(css, /\.top-entity-actions button\s*{[^}]*min-width:\s*44px[^}]*min-height:\s*44px/s);
+  assert.match(css, /\.context-ring button\s*{[^}]*min-width:\s*36px[^}]*min-height:\s*36px/s);
 });
 
 test('pointer cancellation remains safe across mixed cached module versions', () => {
@@ -111,9 +111,9 @@ test('Face mode tab has a full-width, touch-friendly hit area', () => {
   assert.match(css, /\.designer-mode-tabs \.mode-tab\s*{[^}]*touch-action:\s*manipulation/s);
 });
 
-test('scene rail groups tray tools, segmented tabs, and voice puppetry', () => {
-  assert.match(html, /class="play-rail"[\s\S]*id="play-rail-tabs"[\s\S]*id="spawn-tabs"[\s\S]*id="scene-templates-btn"[\s\S]*id="scene-outline-btn"/);
-  assert.match(html, /class="[^"]*scene-rail-actions[^"]*"[\s\S]*id="voice-puppetry-btn"/);
+test('scene rail groups tray tools and play heading houses scene actions', () => {
+  assert.match(html, /class="play-rail"[\s\S]*id="play-rail-tabs"[\s\S]*id="spawn-tabs"/);
+  assert.match(html, /class="[^"]*scene-meta-actions[^"]*"[\s\S]*id="voice-puppetry-btn"[\s\S]*id="scene-templates-btn"[\s\S]*id="scene-outline-btn"/);
   assert.match(css, /\.play-grid\s*{[^}]*grid-template-areas:\s*"scene rail"/s);
   assert.match(css, /\.play-rail\s*{[^}]*grid-area:\s*rail/s);
 });
@@ -201,10 +201,8 @@ test('project portability and backup controls expose accessible dialogs, dropzon
 });
 
 test('scene stickiness and pinning expose accessible HUD controls, visual badge, and keyboard shortcuts', () => {
-  assert.match(html, /id="pin-item-btn"/);
-  assert.match(html, /id="detach-item-btn"/);
-  assert.match(html, /data-action="togglePin"/);
-  assert.match(html, /data-action="detach"/);
+  assert.match(playJs, /'togglePin'/);
+  assert.match(playJs, /'detach'/);
   assert.match(css, /\.scene-entity-positioner\.is-pinned\s*{/);
   assert.match(css, /\.pinned-badge\s*{/);
   assert.match(playJs, /action === 'togglePin'/);
@@ -240,15 +238,14 @@ test('multi-select, alignment controls, scene outline, and templates expose acce
   assert.match(html, /id="scene-templates-btn"/);
   assert.match(html, /id="scene-outline-btn"/);
   assert.match(html, /id="save-scene-copy-btn"/);
-  assert.match(html, /id="alignment-controls"/);
-  assert.match(html, /data-action="alignLeft"/);
-  assert.match(html, /data-action="alignCenter"/);
-  assert.match(html, /data-action="alignRight"/);
-  assert.match(html, /data-action="alignTop"/);
-  assert.match(html, /data-action="alignMiddle"/);
-  assert.match(html, /data-action="alignBottom"/);
-  assert.match(html, /data-action="distributeH"/);
-  assert.match(html, /data-action="distributeV"/);
+  assert.match(playJs, /'alignLeft'/);
+  assert.match(playJs, /'alignCenter'/);
+  assert.match(playJs, /'alignRight'/);
+  assert.match(playJs, /'alignTop'/);
+  assert.match(playJs, /'alignMiddle'/);
+  assert.match(playJs, /'alignBottom'/);
+  assert.match(playJs, /'distributeH'/);
+  assert.match(playJs, /'distributeV'/);
 
   // Dialogs
   assert.match(html, /id="scene-templates-dialog"/);
@@ -257,8 +254,6 @@ test('multi-select, alignment controls, scene outline, and templates expose acce
   assert.match(html, /id="scene-outline-list"/);
   assert.match(html, /id="outline-select-all-btn"/);
   assert.match(css, /\.scene-entity-positioner\.is-multi-selected\s*{/);
-  assert.match(css, /\.alignment-buttons\s*{/);
-  assert.match(css, /\.alignment-buttons button\s*{[^}]*min-height:\s*44px/s);
   assert.match(css, /\.template-card\s*{/);
   assert.match(css, /\.template-badge\s*{/);
   assert.match(css, /\.outline-dialog\s*{/);

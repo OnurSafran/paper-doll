@@ -45,7 +45,9 @@
     width: 100%;
     max-width: 760px;
   }
-  #designer-screen {
+  #designer-screen,
+  #play-screen,
+  #paint-screen {
     height: auto;
     min-height: calc(100dvh - var(--app-header-height));
     overflow: visible;
@@ -139,8 +141,8 @@
   .doll-canvas {
     width: min(85%, 340px);
   }
-  .top-entity-actions {
-    justify-content: flex-start;
+  .context-ring {
+    max-width: calc(100vw - 32px);
   }
   .scene-help {
     display: none;

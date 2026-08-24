@@ -516,7 +516,6 @@ export function createPlayView({
     }
 
     list.replaceChildren(...cards);
-
   }
 
   function renderSelectedActions(state = store.getState()) {
@@ -524,55 +523,9 @@ export function createPlayView({
     const selectedIds = state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []);
     const isMulti = selectedIds.length >= 2;
     const selected = state.currentScene.entities.find((entity) => entity.instanceId === state.ui.selectedEntityId);
-    const asset = selected ? getAsset(selected.sourceId) : null;
-    const preset = selected?.kind === 'character' ? state.presets.find((item) => item.presetId === selected.sourceId) : null;
     const isCharacter = !isMulti && selected?.kind === 'character';
     const isBubble = !isMulti && selected?.kind === 'bubble';
-
-    let label = t('play.noItemSelected');
-    if (isMulti) {
-      label = t('play.itemCount', { count: selectedIds.length });
-    } else if (selected) {
-      label = isBubble
-        ? t(bubbleStyleLabelKey(selected.bubbleStyle))
-        : (selected?.sourceId === 'demo_emma' ? 'Emma' : preset?.name ?? assetName(asset, t('play.sceneProp')));
-    }
-
-    const labelEl = $('#selected-label');
-    if (labelEl) labelEl.textContent = label;
     const hasSelection = selectedIds.length > 0;
-    const entityActionsEl = $('#entity-actions');
-    if (entityActionsEl) {
-      entityActionsEl.hidden = !hasSelection;
-    }
-    for (const button of $$('#entity-actions > button:not(.deselect-btn)')) button.disabled = !hasSelection;
-
-    const deselectBtn = $('#deselect-entity-btn');
-    if (deselectBtn) {
-      deselectBtn.hidden = !hasSelection;
-      deselectBtn.disabled = !hasSelection;
-    }
-
-    const alignGroup = $('#alignment-controls');
-    if (alignGroup) {
-      alignGroup.hidden = !isMulti;
-    }
-
-    const pinBtn = $('#pin-item-btn');
-    if (pinBtn) {
-      pinBtn.disabled = selectedIds.length === 0;
-      const allSelectedPinned = isMulti
-        ? state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId)).every((e) => e.pinned)
-        : selected?.pinned;
-      pinBtn.textContent = allSelectedPinned ? t('play.pinned') : t('play.pin');
-      pinBtn.title = t('play.pinTitle');
-    }
-
-    const detachBtn = $('#detach-item-btn');
-    if (detachBtn) {
-      detachBtn.hidden = isMulti || !selected?.attachedTo;
-      detachBtn.disabled = isMulti || !selected?.attachedTo;
-    }
 
     const targetCharacters = isMulti
       ? state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId) && e.kind === 'character')
@@ -849,43 +802,147 @@ export function createPlayView({
   function renderContextRing(state = store.getState()) {
     const focusedAction = getContextRingFocusAction(document.activeElement);
     $('#scene-entities .context-ring')?.remove();
-    const selected = state.currentScene.entities.find((entity) => entity.instanceId === state.ui.selectedEntityId);
-    if (!selected || state.ui.mode !== 'play') return;
-    const ringY = selected.y + 35;
+    if (state.ui.mode !== 'play') return;
+
+    const selectedIds = state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []);
+    if (selectedIds.length === 0) return;
+
+    const isMulti = selectedIds.length > 1;
+    let label = t('play.noItemSelected');
+    let ringX = 0;
+    let ringY = 0;
+    let placeBelow = true;
+    let selected = null;
+
+    if (isMulti) {
+      label = t('play.itemCount', { count: selectedIds.length });
+      const selectedEntities = state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId));
+      if (selectedEntities.length === 0) return;
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (const ent of selectedEntities) {
+        const bounds = getEntityBounds(ent, getAsset);
+        const top = ent.y - bounds.height * (bounds.anchorY ?? 1.0);
+        const bottom = ent.y + bounds.height * (1.0 - (bounds.anchorY ?? 1.0));
+        minX = Math.min(minX, ent.x);
+        maxX = Math.max(maxX, ent.x);
+        minY = Math.min(minY, top);
+        maxY = Math.max(maxY, bottom);
+      }
+      ringX = (minX + maxX) / 2;
+      if (maxY > 740) {
+        placeBelow = false;
+        ringY = Math.max(25, minY - 15);
+      } else {
+        placeBelow = true;
+        ringY = Math.min(840, maxY + 35);
+      }
+    } else {
+      selected = state.currentScene.entities.find((entity) => entity.instanceId === selectedIds[0]);
+      if (!selected) return;
+      const asset = getAsset(selected.sourceId);
+      const preset = selected.kind === 'character' ? state.presets.find((item) => item.presetId === selected.sourceId) : null;
+      label = selected.kind === 'bubble'
+        ? t(bubbleStyleLabelKey(selected.bubbleStyle))
+        : (selected.sourceId === 'demo_emma' ? 'Emma' : preset?.name ?? assetName(asset, t('play.sceneProp')));
+      ringX = selected.x;
+      const bounds = getEntityBounds(selected, getAsset);
+      const top = selected.y - bounds.height * (bounds.anchorY ?? 1.0);
+      const bottom = selected.y + bounds.height * (1.0 - (bounds.anchorY ?? 1.0));
+      if (bottom > 740 || selected.y > 740) {
+        placeBelow = false;
+        ringY = Math.max(25, top - 15);
+      } else {
+        placeBelow = true;
+        ringY = Math.min(840, bottom + 35);
+      }
+    }
+
     const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
-    const horizontalClass = selected.x < 250 ? ' align-left' : selected.x > stageWidth - 250 ? ' align-right' : '';
+    ringX = Math.max(50, Math.min(stageWidth - 50, ringX));
+    const horizontalClass = ringX < 250 ? ' align-left' : ringX > stageWidth - 250 ? ' align-right' : '';
     const ring = document.createElement('div');
-    ring.className = `context-ring is-below${horizontalClass}`;
-    ring.style.setProperty('--ring-x', String(selected.x));
+    ring.className = `context-ring${placeBelow ? ' is-below' : ''}${horizontalClass}${isMulti ? ' is-multi' : ''}`;
+    ring.style.setProperty('--ring-x', String(ringX));
     ring.style.setProperty('--ring-y', String(ringY));
     ring.setAttribute('role', 'toolbar');
     ring.setAttribute('aria-label', t('play.contextRingAria'));
-    const controls = [
-      ...(selected.kind === 'bubble' ? [['editBubble', '✏️', t('play.editBubble')]] : []),
-      ['flip', '↔', t('play.flip')],
-      ['smaller', '−', t('play.smaller')],
-      ['larger', '+', t('play.larger')],
-      ['back', '↓', t('play.sendBackward')],
-      ['front', '↑', t('play.bringForward')],
-      ['togglePin', selected.pinned ? '📌' : '📍', selected.pinned ? t('play.unpin') : t('play.pin')],
-      ...(selected.attachedTo ? [['detach', '⛓️', t('play.detach')]] : []),
-      ['duplicate', '⧉', t('play.duplicate')],
-      ['delete', '×', t('play.deleteItem')]
-    ];
-    ring.append(...controls.map(([action, symbol, label]) => {
+
+    const pill = document.createElement('div');
+    pill.className = 'selection-pill';
+    const dot = document.createElement('span');
+    dot.className = 'selection-dot';
+    dot.setAttribute('aria-hidden', 'true');
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'selected-label';
+    labelSpan.textContent = label;
+    pill.append(dot, labelSpan);
+    ring.append(pill);
+
+    const deselectBtn = document.createElement('button');
+    deselectBtn.type = 'button';
+    deselectBtn.className = 'deselect-btn';
+    deselectBtn.dataset.action = 'deselect';
+    deselectBtn.textContent = '✕';
+    deselectBtn.title = t('play.deselectItem');
+    deselectBtn.setAttribute('aria-label', t('play.deselectItem'));
+    deselectBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      void handleEntityAction('deselect');
+    });
+    ring.append(deselectBtn);
+
+    let controls = [];
+    if (isMulti) {
+      const allSelectedPinned = state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId)).every((e) => e.pinned);
+      controls = [
+        ['alignLeft', '⇤', t('play.alignLeft')],
+        ['alignCenter', '⇥⇤', t('play.alignCenter')],
+        ['alignRight', '⇥', t('play.alignRight')],
+        ['alignTop', '⤒', t('play.alignTop')],
+        ['alignMiddle', '⤓', t('play.alignMiddle')],
+        ['alignBottom', '⤓', t('play.alignBottom')],
+        ['distributeH', '⋯', t('play.distributeH')],
+        ['distributeV', '⋮', t('play.distributeV')],
+        ['flip', '↔', t('play.flip')],
+        ['smaller', '−', t('play.smaller')],
+        ['larger', '+', t('play.larger')],
+        ['togglePin', allSelectedPinned ? '📌' : '📍', allSelectedPinned ? t('play.unpin') : t('play.pin')],
+        ['delete', '×', t('play.deleteItem')]
+      ];
+    } else {
+      controls = [
+        ...(selected.kind === 'bubble' ? [['editBubble', '✏️', t('play.editBubble')]] : []),
+        ['flip', '↔', t('play.flip')],
+        ['smaller', '−', t('play.smaller')],
+        ['larger', '+', t('play.larger')],
+        ['back', '↓', t('play.sendBackward')],
+        ['front', '↑', t('play.bringForward')],
+        ['togglePin', selected.pinned ? '📌' : '📍', selected.pinned ? t('play.unpin') : t('play.pin')],
+        ...(selected.attachedTo ? [['detach', '⛓️', t('play.detach')]] : []),
+        ['duplicate', '⧉', t('play.duplicate')],
+        ['delete', '×', t('play.deleteItem')]
+      ];
+    }
+
+    ring.append(...controls.map(([action, symbol, labelText]) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.dataset.action = action;
       button.textContent = symbol;
-      button.title = label;
-      button.setAttribute('aria-label', label);
+      button.title = labelText;
+      button.setAttribute('aria-label', labelText);
+      if (action === 'delete') button.className = 'danger';
       button.addEventListener('click', (event) => {
         event.stopPropagation();
         void handleEntityAction(action);
       });
       return button;
     }));
-    $('#scene-entities').append(ring);
+
+    $('#scene-entities')?.append(ring);
     if (focusedAction && typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(() => {
         ring.querySelector(`button[data-action="${escapeCss(focusedAction)}"]`)?.focus?.({ preventScroll: true });

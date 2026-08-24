@@ -134,8 +134,8 @@ test('Issue 1: Scene entity positioner and visual use dynamic anchor variables i
 });
 
 test('Issue 2: Selection cancel/delete and deselect buttons exist in HTML, JS, and i18n', () => {
-  // HTML elements
-  assert.match(html, /id="deselect-entity-btn"/);
+  // HTML / JS elements
+  assert.match(playJs, /'deselect'/);
   assert.match(html, /id="paint-selection-options"/);
   assert.match(html, /id="paint-selection-delete-btn"/);
   assert.match(html, /id="paint-selection-cancel-btn"/);

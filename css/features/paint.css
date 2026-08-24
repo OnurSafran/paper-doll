@@ -24,6 +24,46 @@
   cursor: pointer;
 }
 
+#paint-screen {
+  height: 100%;
+  max-height: 100%;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 4px;
+  overflow: hidden;
+}
+
+/* Dedicated Paint Status Row */
+.paint-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 0 4px;
+}
+
+.paint-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(46, 38, 31, 0.05);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  max-width: 600px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.15s ease;
+}
+
+.paint-status-pill:empty {
+  display: none;
+}
+
 .paint-heading {
   display: flex;
   align-items: center;

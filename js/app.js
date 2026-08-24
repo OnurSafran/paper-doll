@@ -792,8 +792,7 @@ function wireStaticEvents() {
   $('#redo-button')?.addEventListener('click', () => store.dispatch({ type: 'app/redo' }));
   $('#export-scene-png')?.addEventListener('click', () => void exportSceneAsPng());
   $('#export-frame-btn')?.addEventListener('click', () => void exportCurrentFrameAsPng());
-  $('#entity-actions').addEventListener('click', (event) => void playView.handleEntityAction(event.target.closest('button')?.dataset.action));
-  $('#play-stage').addEventListener('keydown', playView.handleStageKeydown);
+  $('#play-stage')?.addEventListener('keydown', playView.handleStageKeydown);
   document.addEventListener('keydown', handleTabKeys);
   document.addEventListener('keydown', handleGlobalShortcuts);
 
