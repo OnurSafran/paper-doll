@@ -14,7 +14,7 @@
 
 ### Component: Play Screen & HTML Structure
 
-#### [MODIFY] [index.html](file:///Users/onursafran/ai-projects/paper-doll-dress-up/index.html)
+#### [MODIFY] [index.html](index.html)
 - Move `#voice-puppetry-btn`, `#scene-templates-btn`, and `#scene-outline-btn` into `.scene-meta-actions` inside `.play-heading`.
 - Insert `<div class="play-status-row"><div id="play-status" class="play-status-pill" role="status" aria-live="polite"></div></div>` between `.play-heading` and `.play-grid`.
 - Remove the old `<footer class="paper-panel play-screen-footer scene-rail-actions">` from the bottom of `#play-screen`.
@@ -22,28 +22,28 @@
 
 ### Component: Stylesheets
 
-#### [MODIFY] [css/features/play.css](file:///Users/onursafran/ai-projects/paper-doll-dress-up/css/features/play.css)
+#### [MODIFY] [css/features/play.css](css/features/play.css)
 - Set `#play-screen` grid layout: `grid-template-rows: auto auto minmax(0, 1fr); gap: 6px;`.
 - Add `.play-status-row` and `.play-status-pill` styles with smooth discrete pill styling and `:empty { display: none; }`.
 - Update `.play-stage` sizing to `width: auto; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9;`.
 - Ensure `.scene-meta-actions` wraps flexibly and supports all scene actions with consistent pill button styles.
 - Set `z-index: 1200` on `.menu-dropdown-panel`.
 
-#### [MODIFY] [css/features/paint.css](file:///Users/onursafran/ai-projects/paper-doll-dress-up/css/features/paint.css)
+#### [MODIFY] [css/features/paint.css](css/features/paint.css)
 - Set `#paint-screen` grid layout: `grid-template-rows: auto auto minmax(0, 1fr); gap: 6px;`.
 - Add `.paint-status-row` and `.paint-status-pill` styles.
 
-#### [MODIFY] [css/responsive/responsive.css](file:///Users/onursafran/ai-projects/paper-doll-dress-up/css/responsive/responsive.css)
+#### [MODIFY] [css/responsive/responsive.css](css/responsive/responsive.css)
 - Update responsive rules for `#play-screen`, `.play-status-row`, and `#paint-screen`.
 
 ### Component: JavaScript Features
 
-#### [MODIFY] [js/features/play/play-view.js](file:///Users/onursafran/ai-projects/paper-doll-dress-up/js/features/play/play-view.js)
+#### [MODIFY] [js/features/play/play-view.js](js/features/play/play-view.js)
 - Enhance `renderContextRing` to clamp positioning or flip above entity when `ringY > 740` near the bottom edge of the stage.
 
 ### Component: Test Suite
 
-#### [MODIFY] [test/ui-contract.test.js](file:///Users/onursafran/ai-projects/paper-doll-dress-up/test/ui-contract.test.js)
+#### [MODIFY] [test/ui-contract.test.js](test/ui-contract.test.js)
 - Update UI contract assertions for scene actions and status row.
 
 ## Verification Plan

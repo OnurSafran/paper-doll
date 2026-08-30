@@ -247,6 +247,8 @@ test('renderDollInto keeps baked default face visible and hides incompatible clo
       'free-form render contexts should not show Designer fit warnings');
     assert.equal(renderedLayers.find((layer) => layer.dataset.slot === 'bottom')?.children?.[0]?.localName, 'svg',
       'free-form render contexts should keep the saved clothing visible');
+    assert.equal(renderedLayers.find((layer) => layer.dataset.slot === 'accessory')?.children?.[0]?.localName, 'svg',
+      'free-form render contexts should keep the saved accessory visible');
   } finally {
     if (origDocument === undefined) delete globalThis.document;
     else globalThis.document = origDocument;

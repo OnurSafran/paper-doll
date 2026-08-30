@@ -214,13 +214,17 @@ export function createPaintSession(initialState = {}) {
 
   function setPropSize(propSize) {
     if (['small', 'medium', 'large'].includes(propSize)) {
-      state = { ...state, propSize };
+      if (state.propSize === propSize) return;
+      metadataDirty = true;
+      state = { ...state, propSize, dirty: true };
     }
   }
 
   function setPropPlacement(propPlacement) {
     if (['surface', 'hang'].includes(propPlacement)) {
-      state = { ...state, propPlacement };
+      if (state.propPlacement === propPlacement) return;
+      metadataDirty = true;
+      state = { ...state, propPlacement, dirty: true };
     }
   }
 

@@ -351,6 +351,7 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
 
   const usedCustomIds = new Set((currentEnvelope.customAssets || []).map((a) => a.assetId));
   const customIdRewrites = new Map(); // oldCustomId -> newCustomId
+  const omittedCustomIds = new Set();
 
   const nextUniqueCustomId = () => {
     for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -367,8 +368,9 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
   const mergedCustomAssets = (currentEnvelope.customAssets || []).map((a) => ({ ...a }));
   const rewrittenCustomArtwork = [];
 
-  for (const incomingAsset of incomingEnvelope.customAssets || []) {
+  for (const [index, incomingAsset] of (incomingEnvelope.customAssets || []).entries()) {
     if (mergedCustomAssets.length >= LIMITS.MAX_CUSTOM_ASSETS) {
+      for (const remaining of incomingEnvelope.customAssets.slice(index)) omittedCustomIds.add(remaining.assetId);
       warnings.push(`Custom art library limit (${LIMITS.MAX_CUSTOM_ASSETS}) reached; remaining drawings were omitted.`);
       break;
     }
@@ -377,6 +379,7 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
     if (usedCustomIds.has(finalAssetId)) {
       finalAssetId = nextUniqueCustomId();
       if (!finalAssetId) {
+        omittedCustomIds.add(incomingAsset.assetId);
         warnings.push('A colliding custom artwork was omitted because a safe unique ID could not be generated.');
         continue;
       }
@@ -406,6 +409,7 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
   // 2. Merge presets with rewritten custom wearable references
   const usedPresetIds = new Set((currentEnvelope.presets || []).map((p) => p.presetId));
   const presetIdRewrites = new Map(); // oldPresetId -> newPresetId
+  const omittedPresetIds = new Set();
 
   const nextUniquePresetId = () => {
     for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -432,19 +436,30 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
     return cloned;
   };
 
+  const draftUsesOmittedCustomAsset = (draft) => Object.values(draft?.slots || {})
+    .some((item) => item?.assetId && omittedCustomIds.has(item.assetId));
+
   const mergedPresets = (currentEnvelope.presets || []).map(clonePreset);
   let addedPresets = 0;
 
-  for (const incomingPreset of incomingEnvelope.presets || []) {
+  for (const [index, incomingPreset] of (incomingEnvelope.presets || []).entries()) {
     if (mergedPresets.length >= LIMITS.MAX_PRESETS) {
+      for (const remaining of incomingEnvelope.presets.slice(index)) omittedPresetIds.add(remaining.presetId);
       warnings.push(`Preset limit (${LIMITS.MAX_PRESETS}) reached; remaining incoming dolls were omitted.`);
       break;
+    }
+
+    if (draftUsesOmittedCustomAsset(incomingPreset)) {
+      omittedPresetIds.add(incomingPreset.presetId);
+      warnings.push(`Preset "${incomingPreset.name || incomingPreset.presetId}" was omitted because its custom artwork was not imported.`);
+      continue;
     }
 
     let finalPresetId = incomingPreset.presetId;
     if (usedPresetIds.has(finalPresetId)) {
       finalPresetId = nextUniquePresetId();
       if (!finalPresetId) {
+        omittedPresetIds.add(incomingPreset.presetId);
         warnings.push('A colliding incoming doll was omitted because a safe unique ID could not be generated.');
         continue;
       }
@@ -499,10 +514,21 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
     });
   };
 
+  const sceneUsesOmittedReference = (scene) => (scene.entities || []).some((entity) =>
+    (entity.kind === 'prop' && omittedCustomIds.has(entity.sourceId)) ||
+    (entity.kind === 'character' && omittedPresetIds.has(entity.sourceId)) ||
+    (entity.kind === 'character' && draftUsesOmittedCustomAsset(entity.characterSnapshot))
+  );
+
   for (const incomingScene of incomingEnvelope.scenes || []) {
     if (mergedScenes.length >= LIMITS.MAX_SCENES) {
       warnings.push(`Scene library limit (${LIMITS.MAX_SCENES}) reached; remaining incoming scenes were omitted.`);
       break;
+    }
+
+    if (sceneUsesOmittedReference(incomingScene)) {
+      warnings.push(`Scene "${incomingScene.title || incomingScene.sceneId}" was omitted because one of its references was not imported.`);
+      continue;
     }
 
     let finalSceneId = incomingScene.sceneId;
@@ -526,9 +552,13 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
 
   let targetCurrentScene = currentEnvelope.currentScene ? cloneScene(currentEnvelope.currentScene) : null;
   if (!targetCurrentScene && incomingEnvelope.currentScene) {
-    const rawCurrent = cloneScene(incomingEnvelope.currentScene);
-    rawCurrent.entities = rewriteSceneEntities(rawCurrent.entities || []);
-    targetCurrentScene = rawCurrent;
+    if (sceneUsesOmittedReference(incomingEnvelope.currentScene)) {
+      warnings.push('The incoming current scene was omitted because one of its references was not imported.');
+    } else {
+      const rawCurrent = cloneScene(incomingEnvelope.currentScene);
+      rawCurrent.entities = rewriteSceneEntities(rawCurrent.entities || []);
+      targetCurrentScene = rawCurrent;
+    }
   }
 
   const mergedEnvelope = {

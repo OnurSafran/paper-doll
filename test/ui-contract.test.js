@@ -172,6 +172,11 @@ test('free-form Play and export renderers keep saved incompatible clothing', () 
   assert.match(sceneBookJs, /const enforceFit = options\.enforceFit \?\? false/);
 });
 
+test('bubble drag payload uses the localized preset text', () => {
+  assert.match(playJs, /encodeURIComponent\(defaultText\)/);
+  assert.doesNotMatch(playJs, /encodeURIComponent\(preset\.defaultText\)/);
+});
+
 test('Scene Book localizes background metadata through assetName', () => {
   assert.match(sceneBookJs, /import \{ assetName, t \} from .*core\/i18n\.js/);
   assert.match(sceneBookJs, /assetName\(getAsset\(scene\.backgroundId\), t\('play\.paperScene'\)\)/);

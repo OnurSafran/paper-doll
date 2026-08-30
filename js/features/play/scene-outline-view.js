@@ -5,10 +5,10 @@
  */
 
 import { getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
+import { escapeCss } from '../../core/css-escape.js';
 import { bubbleStyleLabelKey } from '../../domain/vocabulary.js';
 import { assetName, t } from '../../core/i18n.js';
 
-const escapeCss = (val) => globalThis.CSS?.escape ? CSS.escape(String(val)) : String(val).replace(/["\\]/g, '\\$&');
 
 export function createSceneOutlineView({
   store,

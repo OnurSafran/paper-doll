@@ -1558,10 +1558,14 @@ export function createPaintView({
 
     propSizeSelect?.addEventListener('change', (e) => {
       session.setPropSize(e.target.value);
+      updateUIFromState();
+      saveService.scheduleDraftCheckpoint();
     });
 
     propPlacementSelect?.addEventListener('change', (e) => {
       session.setPropPlacement(e.target.value);
+      updateUIFromState();
+      saveService.scheduleDraftCheckpoint();
     });
 
     referenceVisible?.addEventListener('change', (e) => {

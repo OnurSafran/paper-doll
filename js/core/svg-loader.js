@@ -1,4 +1,5 @@
 import { getAsset } from './asset-catalog.js';
+import { escapeCss } from './css-escape.js';
 
 const templateCache = new Map();
 const prohibitedSelector = [
@@ -48,7 +49,6 @@ export function validateSvg(svg, asset) {
   if (actualViewBox !== expectedViewBox) throw assetError('ASSET_VIEWBOX', `${asset.name} has the wrong viewBox.`);
   if (svg.dataset.assetId !== asset.id) throw assetError('ASSET_ID', `${asset.name} has a mismatched asset ID.`);
 
-  const escapeCss = globalThis.CSS?.escape ?? ((str) => String(str).replace(/([!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~])/g, '\\$1'));
   for (const groupId of asset.requiredGroups ?? []) {
     if (!svg.querySelector(`#${escapeCss(groupId)}`)) throw assetError('ASSET_GROUP', `${asset.name} is missing #${groupId}.`);
   }

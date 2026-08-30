@@ -347,7 +347,12 @@ export function createCustomArtRepository(options = {}) {
       const trashStore = tx.objectStore(STORES.TRASH);
 
       const record = await reqToPromise(artStore.get(assetId));
-      if (!record) return { ok: false, error: 'Artwork not found.' };
+      if (!record) {
+        // No writes were issued, so let the transaction commit rather than
+        // returning out from under it and leaving txDone to reject unobserved.
+        await txDone;
+        return { ok: false, error: 'Artwork not found.' };
+      }
 
       const trashRecord = {
         ...record,
@@ -380,7 +385,12 @@ export function createCustomArtRepository(options = {}) {
       const trashStore = tx.objectStore(STORES.TRASH);
 
       const trashRecord = await reqToPromise(trashStore.get(assetId));
-      if (!trashRecord) return { ok: false, error: 'Trash record not found.' };
+      if (!trashRecord) {
+        // No writes were issued, so let the transaction commit rather than
+        // returning out from under it and leaving txDone to reject unobserved.
+        await txDone;
+        return { ok: false, error: 'Trash record not found.' };
+      }
 
       const { trashedAt, reason, ...artRecord } = trashRecord;
       artRecord.updatedAt = now().toISOString();

@@ -4,6 +4,7 @@
  */
 
 import { assetsByKind, facesByGroup, getLimbBoundChannel, getOfferedWearables, isHeadBoundLayer, matchesDiscoveryFilters, wearablesBySlot, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
+import { escapeCss } from '../../core/css-escape.js';
 import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, PALETTE, paletteValue, SKIN_COLORS } from '../../core/palette.js';
 import { loadAssetSvg, makeAssetPlaceholder } from '../../core/svg-loader.js';
 import { DEFAULT_BASE_DOLL_ID, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, FACE_GROUPS, FIT_FAMILIES, PRESENTATION_STYLES, isCustomAssetId } from '../../domain/vocabulary.js';
@@ -174,7 +175,7 @@ export async function renderDollInto(container, draft, options = {}) {
   const accessory = draft?.slots?.accessory;
   if (accessory) {
     const asset = getAsset(accessory.assetId);
-    layers.push([80, accessory.assetId, accessory.color, null, 'accessory', !isWearableCompatible(draft, asset, getAsset)]);
+    layers.push([80, accessory.assetId, accessory.color, null, 'accessory', enforceFit && !isWearableCompatible(draft, asset, getAsset)]);
   }
 
   const fitWarningNames = [];
@@ -356,7 +357,7 @@ export function createDesignerView({
       bindRovingKeydown(button, tokens, selected, onSelect, () => container.querySelector('[aria-pressed="true"]'));
       return button;
     }));
-    if (focusedToken) requestAnimationFrame(() => container.querySelector(`[data-token="${focusedToken}"]`)?.focus());
+    if (focusedToken) requestAnimationFrame(() => container.querySelector(`[data-token="${escapeCss(focusedToken)}"]`)?.focus());
   }
 
   function bindRovingKeydown(button, values, selected, onSelect, query) {
@@ -423,7 +424,7 @@ export function createDesignerView({
         return btn;
       }));
       if (focusedStyle) requestAnimationFrame(() => {
-        if (token === designerRenderToken) styleNav.querySelector(`[data-style="${focusedStyle}"]`)?.focus();
+        if (token === designerRenderToken) styleNav.querySelector(`[data-style="${escapeCss(focusedStyle)}"]`)?.focus();
       });
     }
 
@@ -523,7 +524,7 @@ export function createDesignerView({
 
     items.replaceChildren(...cards);
     if (focusedAssetId) requestAnimationFrame(() => {
-      if (token === designerRenderToken) items.querySelector(`[data-asset-id="${focusedAssetId}"]`)?.focus();
+      if (token === designerRenderToken) items.querySelector(`[data-asset-id="${escapeCss(focusedAssetId)}"]`)?.focus();
     });
   }
 
@@ -600,7 +601,7 @@ export function createDesignerView({
 
     items.replaceChildren(...cards);
     if (focusedAssetId) requestAnimationFrame(() => {
-      if (token === designerRenderToken) items.querySelector(`[data-asset-id="${focusedAssetId}"]`)?.focus();
+      if (token === designerRenderToken) items.querySelector(`[data-asset-id="${escapeCss(focusedAssetId)}"]`)?.focus();
     });
   }
 
@@ -624,7 +625,7 @@ export function createDesignerView({
       button.addEventListener('click', () => store.dispatch({ type: 'designer/setBaseDoll', baseDollId: asset.id }));
       return button;
     }));
-    if (focusedDollId) requestAnimationFrame(() => container.querySelector(`[data-asset-id="${focusedDollId}"]`)?.focus());
+    if (focusedDollId) requestAnimationFrame(() => container.querySelector(`[data-asset-id="${escapeCss(focusedDollId)}"]`)?.focus());
   }
 
   function renderPalettes(state) {
@@ -727,7 +728,7 @@ export function createDesignerView({
       return row;
     }));
     if (focusedPresetId && focusedActionName) {
-      list.querySelector(`[data-preset-id="${focusedPresetId}"][data-preset-action="${focusedActionName}"]`)?.focus();
+      list.querySelector(`[data-preset-id="${escapeCss(focusedPresetId)}"][data-preset-action="${escapeCss(focusedActionName)}"]`)?.focus();
     }
   }
 

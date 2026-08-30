@@ -14,7 +14,7 @@ import {
 } from '../domain/motion-evaluator.js';
 import { applyMouthExpression } from '../core/mouth-expression.js';
 import { getAsset as getBuiltinAsset, hasRigidWearableForLimb } from '../core/asset-catalog.js';
-import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_REDUCED_MOTION, DEFAULT_STAGE_WIDTH, VIEWPORT_WIDTH } from '../domain/vocabulary.js';
+import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_PLAYBACK_RATE, DEFAULT_REDUCED_MOTION, DEFAULT_STAGE_WIDTH, VIEWPORT_WIDTH } from '../domain/vocabulary.js';
 
 export function resolveVoiceTargetCharacter(scene, selectedEntityId) {
   if (!scene?.entities || !Array.isArray(scene.entities)) return null;
@@ -118,7 +118,7 @@ export function createSceneAnimationService(options = {}) {
           positioner: el,
           motionEl: el.querySelector('.scene-entity-motion'),
           eyesLayer: el.querySelector('[data-slot="face-eyes"]'),
-          mouthSvg: el.querySelector('#mouth-svg, svg[data-layer="face-mouth"], .mouth-layer-svg')
+          mouthSvg: el.querySelector('[data-slot="face-mouth"] svg, #mouth-svg, svg[data-layer="face-mouth"], .mouth-layer-svg')
         });
       }
     }

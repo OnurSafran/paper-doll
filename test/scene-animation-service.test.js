@@ -35,7 +35,7 @@ function createMockElement(instanceId, x = 800) {
     querySelector: (sel) => {
       if (sel === '.scene-entity-motion') return motionSpan;
       if (sel.includes('face-eyes')) return eyesLayer;
-      if (sel.includes('face-mouth')) return mouthSvg;
+      if (sel === '[data-slot="face-mouth"] svg') return mouthSvg;
       return null;
     },
     style: {

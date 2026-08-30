@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { resolve, relative, dirname } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -91,6 +91,37 @@ for (const target of cssFiles.keys()) {
   }
 }
 
+// Every runtime ES module must be precached. An unlisted module is served
+// network-first with no offline copy, and — because CACHE_NAME is fingerprinted
+// only over APP_SHELL — editing it would not invalidate a stale shell.
+async function collectJsModules(dir) {
+  const found = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const child = resolve(dir, entry.name);
+    if (entry.isDirectory()) found.push(...await collectJsModules(child));
+    else if (entry.name.endsWith('.js')) found.push(child);
+  }
+  return found;
+}
+
+const shellJsTargets = new Set(
+  shellEntries
+    .filter((entry) => cleanRef(entry).endsWith('.js'))
+    .map((entry) => resolveRef(swPath, entry))
+);
+for (const target of await collectJsModules(resolve(root, 'js'))) {
+  if (!shellJsTargets.has(target)) {
+    failures.push(`sw.js: JS module is not in APP_SHELL: ${displayPath(target)}`);
+  }
+}
+for (const target of shellJsTargets) {
+  try {
+    await readFile(target);
+  } catch {
+    failures.push(`sw.js: APP_SHELL JS entry is missing on disk: ${displayPath(target)}`);
+  }
+}
+
 const cacheName = swSource.match(/const CACHE_NAME\s*=\s*['"]([^'"]+)['"]/)?.[1];
 if (!cacheName) {
   failures.push('sw.js: CACHE_NAME is missing');
@@ -118,5 +149,5 @@ if (failures.length) {
   for (const failure of failures) console.error(`- ${failure}`);
   process.exitCode = 1;
 } else {
-  console.log(`Cache-busting validation passed: ${cssFiles.size / 2} CSS files and the app-shell fingerprint are current.`);
+  console.log(`Cache-busting validation passed: ${cssFiles.size / 2} CSS files, ${shellJsTargets.size} precached JS modules, and the app-shell fingerprint are current.`);
 }

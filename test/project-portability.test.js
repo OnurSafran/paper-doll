@@ -197,6 +197,31 @@ test('mergeProjectEnvelopes caps collections at domain limits and records warnin
   assert.ok(result.warnings.some((w) => w.includes('Preset limit (50) reached')));
 });
 
+test('mergeProjectEnvelopes omits presets whose custom artwork was capped', () => {
+  const current = createDefaultEnvelope();
+  current.customAssets = Array.from({ length: 30 }, (_, index) => ({ assetId: `custom-existing-${index}` }));
+
+  const incomingSlots = createStarterDraft().slots;
+  incomingSlots.top = { assetId: 'custom-incoming', color: 'coral' };
+  const incoming = {
+    ...createDefaultEnvelope(),
+    customAssets: [{ assetId: 'custom-incoming' }],
+    presets: [{
+      presetId: 'incoming-with-custom-art',
+      name: 'Incoming Doll',
+      baseDollId: 'doll_classic_a',
+      skinTone: 'peach',
+      slots: incomingSlots
+    }]
+  };
+
+  const result = mergeProjectEnvelopes(current, incoming);
+
+  assert.equal(result.envelope.customAssets.length, 30);
+  assert.equal(result.envelope.presets.length, 0);
+  assert.ok(result.warnings.some((warning) => warning.includes('custom artwork was not imported')));
+});
+
 test('saveProjectBackup, getAvailableBackup, and clearProjectBackup manage storage snapshots safely', () => {
   const storage = memoryStorage();
   assert.equal(getAvailableBackup(storage, getAsset).available, false);

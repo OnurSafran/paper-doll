@@ -8,6 +8,7 @@ import { assetsByKind, getAsset as getBuiltinAsset, PROP_COLLECTIONS } from '../
 import { clientToLogical } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, getEntityBounds } from '../../domain/scene-rules.js';
 import { PointerController } from '../../core/pointer-controller.js?v=2';
+import { escapeCss } from '../../core/css-escape.js';
 import { CAMERA_CONSTANTS, CHARACTER_DIMENSIONS, DEFAULT_ATTACH_JOINT, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_MOTION_CLIP_ID, DEFAULT_MOTION_INTENSITY, DEFAULT_PHASE_OFFSET, DEFAULT_PLAYBACK_RATE, DEFAULT_STAGE_WIDTH, DEFAULT_STATIC_POSE, VIEWPORT_HEIGHT, VIEWPORT_WIDTH, bubbleStyleLabelKey, isCustomAssetId } from '../../domain/vocabulary.js';
 import { MOTION_PROFILES_CONFIG, resolveMotionProfile, resolveSafeClipId, resolveSafePoseId } from '../../domain/animation-clips.js';
 import { evaluateCharacterPose, resolveEffectiveMotion } from '../../domain/motion-evaluator.js';
@@ -16,8 +17,16 @@ import { getBackgroundLayout } from '../../core/background-layout.js';
 import { createBubbleSvg } from '../../services/export-service.js';
 import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
 
+// Context ring placement, in stage logical units. The ring flips above the
+// selection once the selection reaches the stage's lower band, and is otherwise
+// kept clear of the stage's top and bottom edges.
+const CONTEXT_RING_FLIP_THRESHOLD_Y = VIEWPORT_HEIGHT - 160;
+const CONTEXT_RING_MAX_Y = VIEWPORT_HEIGHT - 60;
+const CONTEXT_RING_MIN_Y = 25;
+const CONTEXT_RING_GAP_ABOVE = 15;
+const CONTEXT_RING_GAP_BELOW = 35;
 
-const escapeCss = (val) => globalThis.CSS?.escape ? CSS.escape(String(val)) : String(val).replace(/["\\]/g, '\\$&');
+
 
 export function sceneEntityRenderKey(entity) {
   return JSON.stringify({
@@ -424,7 +433,7 @@ export function createPlayView({
 
         card.addEventListener('dragstart', (event) => {
           event.dataTransfer.effectAllowed = 'copy';
-          event.dataTransfer.setData('text/plain', `paper-doll-spawn:bubble:${preset.style}:${encodeURIComponent(preset.defaultText)}`);
+          event.dataTransfer.setData('text/plain', `paper-doll-spawn:bubble:${preset.style}:${encodeURIComponent(defaultText)}`);
           card.classList.add('is-dragging');
         });
         card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
@@ -832,12 +841,12 @@ export function createPlayView({
         maxY = Math.max(maxY, bottom);
       }
       ringX = (minX + maxX) / 2;
-      if (maxY > 740) {
+      if (maxY > CONTEXT_RING_FLIP_THRESHOLD_Y) {
         placeBelow = false;
-        ringY = Math.max(25, minY - 15);
+        ringY = Math.max(CONTEXT_RING_MIN_Y, minY - CONTEXT_RING_GAP_ABOVE);
       } else {
         placeBelow = true;
-        ringY = Math.min(840, maxY + 35);
+        ringY = Math.min(CONTEXT_RING_MAX_Y, maxY + CONTEXT_RING_GAP_BELOW);
       }
     } else {
       selected = state.currentScene.entities.find((entity) => entity.instanceId === selectedIds[0]);
@@ -851,12 +860,12 @@ export function createPlayView({
       const bounds = getEntityBounds(selected, getAsset);
       const top = selected.y - bounds.height * (bounds.anchorY ?? 1.0);
       const bottom = selected.y + bounds.height * (1.0 - (bounds.anchorY ?? 1.0));
-      if (bottom > 740 || selected.y > 740) {
+      if (bottom > CONTEXT_RING_FLIP_THRESHOLD_Y || selected.y > CONTEXT_RING_FLIP_THRESHOLD_Y) {
         placeBelow = false;
-        ringY = Math.max(25, top - 15);
+        ringY = Math.max(CONTEXT_RING_MIN_Y, top - CONTEXT_RING_GAP_ABOVE);
       } else {
         placeBelow = true;
-        ringY = Math.min(840, bottom + 35);
+        ringY = Math.min(CONTEXT_RING_MAX_Y, bottom + CONTEXT_RING_GAP_BELOW);
       }
     }
 

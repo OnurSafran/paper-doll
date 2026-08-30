@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paper-doll-studio-v9ded60a2';
+const CACHE_NAME = 'paper-doll-studio-v40ac7b90';
 const APP_SHELL = [
   './',
   './index.html',
@@ -20,12 +20,15 @@ const APP_SHELL = [
   './js/core/app-store.js',
   './js/core/asset-catalog.js',
   './js/core/asset-registry.js',
+  './js/core/background-layout.js',
   './js/core/coordinate-space.js',
+  './js/core/css-escape.js',
   './js/core/error-boundary.js',
   './js/core/i18n.js',
+  './js/core/mouth-expression.js',
   './js/core/palette.js',
-
   './js/core/pointer-controller.js',
+  './js/core/preview-viewboxes.js',
   './js/core/state-schema.js',
   './js/core/storage-adapter.js',
   './js/core/svg-loader.js',
@@ -37,9 +40,12 @@ const APP_SHELL = [
   './js/domain/scene-templates.js',
   './js/domain/vocabulary.js',
   './js/features/designer/designer-view.js',
+  './js/features/paint/paint-history.js',
   './js/features/paint/paint-raster.js',
   './js/features/paint/paint-guides.js',
   './js/features/paint/paint-session.js',
+  './js/features/paint/paint-library-view.js',
+  './js/features/paint/paint-save-service.js',
   './js/features/paint/paint-view.js',
   './js/features/play/play-view.js',
   './js/features/play/scene-outline-view.js',

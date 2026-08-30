@@ -125,6 +125,49 @@ test('Issue 1: Paint studio crops prop pixels on save eliminating transparent of
   }
 });
 
+test('failed artwork metadata commit cleans up the saved binary', async () => {
+  let deletedAssetId = null;
+  const mockCustomArtRepo = {
+    computeSha256: async () => 'mocksha256',
+    saveArtwork: async () => ({ ok: true }),
+    deleteArtwork: async (assetId) => {
+      deletedAssetId = assetId;
+      return { ok: true };
+    }
+  };
+  const mockSession = {
+    getState: () => ({
+      name: 'Failed Shirt',
+      itemType: 'wearable',
+      slot: 'top',
+      originContext: 'designer'
+    }),
+    setName: () => {},
+    markDirty: () => {},
+    logicalWidth: 300,
+    logicalHeight: 450
+  };
+  const mockCanvas = {
+    width: 2,
+    height: 2,
+    toBlob: (callback) => callback(new Blob(['png'], { type: 'image/png' }))
+  };
+
+  const saveService = createPaintSaveService({
+    rootElement: { querySelector: () => null },
+    store: { dispatch: () => ({ ok: false, code: 'LIMIT' }) },
+    getSession: () => mockSession,
+    getCanvasState: () => ({ canvas: mockCanvas, ctx: {} }),
+    customArtRepo: mockCustomArtRepo,
+    showAlert: async () => {},
+    announceStatus: () => {}
+  });
+
+  await saveService.commitSave(false);
+
+  assert.match(deletedAssetId, /^custom_/);
+});
+
 test('Issue 1: Scene entity positioner and visual use dynamic anchor variables in CSS and play-view', () => {
   assert.match(playJs, /--anchor-x/);
   assert.match(playJs, /--anchor-y/);

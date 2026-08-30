@@ -56,6 +56,19 @@ test('createPaintSession initializes with sound defaults for props', () => {
   assert.equal(state.propPlacement, 'surface');
 });
 
+test('prop presentation metadata marks the paint session dirty', () => {
+  const session = createPaintSession({ itemType: 'prop' });
+
+  session.setPropSize('large');
+  assert.equal(session.getState().propSize, 'large');
+  assert.equal(session.getState().dirty, true);
+
+  session.markDirty(false);
+  session.setPropPlacement('hang');
+  assert.equal(session.getState().propPlacement, 'hang');
+  assert.equal(session.getState().dirty, true);
+});
+
 test('createPaintSession manages tool, shape, color, brush, and mirror state mutations', () => {
   const session = createPaintSession();
 

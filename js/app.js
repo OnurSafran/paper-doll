@@ -20,7 +20,7 @@ import { createSceneOutlineView } from './features/play/scene-outline-view.js';
 import { createSceneBookView } from './features/scene-book/scene-book-view.js';
 import { persistedProjection } from './core/state-schema.js';
 import { classifyError, executeSafeTeardown } from './core/error-boundary.js';
-import { CLEARABLE_OUTFIT_SLOTS, DEFAULT_EXPRESSION, LIMITS } from './domain/vocabulary.js';
+import { CLEARABLE_OUTFIT_SLOTS, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, LIMITS } from './domain/vocabulary.js';
 import {
   clearProjectBackup,
   exportProjectPackage,
@@ -1152,7 +1152,11 @@ async function executeImportReplace() {
 
   const currentEnv = persistedProjection(store.getState());
   const backupResult = saveProjectBackup(storageRef, currentEnv);
-  const currentArtwork = await customArtRepo.getAllArtwork();
+  const currentArtworkIds = new Set((currentEnv.customAssets || [])
+    .filter((asset) => asset.status === 'available')
+    .map((asset) => asset.assetId));
+  const currentArtwork = (await customArtRepo.getAllArtwork())
+    .filter((item) => currentArtworkIds.has(item.assetId));
   const customBackupResult = await customArtRepo.saveBackup('latest', currentEnv, currentArtwork);
   if (!backupResult.ok || !customBackupResult.ok) {
     clearProjectBackup(storageRef);
@@ -1181,6 +1185,9 @@ async function executeImportReplace() {
       ? t('toasts.importReplacedWithBackup')
       : t('toasts.importReplaced')
   });
+  const importedCustomIds = (pendingImportEnvelope.customAssets || []).map((asset) => asset.assetId);
+  const orphanIds = await customArtRepo.scanOrphans(importedCustomIds);
+  await customArtRepo.pruneOrphans(orphanIds, importedCustomIds);
   $('#project-dialog')?.close();
 }
 

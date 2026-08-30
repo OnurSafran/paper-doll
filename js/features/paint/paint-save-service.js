@@ -33,6 +33,7 @@ export function createPaintSaveService({
   const recoverDiscardBtn = rootElement.querySelector('#paint-recover-discard-btn');
   let draftTimer = null;
   let draftCheckpointInFlight = false;
+  let draftCheckpointPending = false;
   let saveInFlight = false;
 
   function scheduleDraftCheckpoint() {
@@ -45,7 +46,13 @@ export function createPaintSaveService({
     clearTimeout(draftTimer);
     draftTimer = null;
     const paintSession = getSession();
-    if (draftCheckpointInFlight || !customArtRepo || !paintSession.getState().dirty) return;
+    if (!customArtRepo || !paintSession.getState().dirty) return;
+    if (draftCheckpointInFlight) {
+      // The canvas changed while an earlier write was still settling. Remember the
+      // request instead of dropping it, or those strokes never reach the draft.
+      draftCheckpointPending = true;
+      return;
+    }
     draftCheckpointInFlight = true;
     try {
       const { canvas } = getCanvasState();
@@ -69,6 +76,10 @@ export function createPaintSaveService({
       console.warn('Draft checkpoint failed:', err);
     } finally {
       draftCheckpointInFlight = false;
+      if (draftCheckpointPending) {
+        draftCheckpointPending = false;
+        void flushDraftCheckpoint();
+      }
     }
   }
 
@@ -123,6 +134,8 @@ export function createPaintSaveService({
     const { canvas, ctx } = getCanvasState();
     const assetId = `custom_${defaultMakeId()}`;
     const now = defaultNow().toISOString();
+    let binarySaved = false;
+    let metadataCommitted = false;
     try {
       let blobToSave;
       let savePixelWidth = canvas.width;
@@ -187,10 +200,12 @@ export function createPaintSaveService({
 
       const binaryResult = await customArtRepo.saveArtwork(assetId, blobToSave, customMetadata);
       if (!binaryResult?.ok) throw new Error(binaryResult?.error || 'Artwork binary could not be saved.');
+      binarySaved = true;
       const metadataResult = store.dispatch({ type: 'customAsset/add', asset: customMetadata });
       if (!metadataResult?.ok) {
         throw new Error(metadataResult?.code === 'LIMIT' ? t('paint.limitReached') : t('paint.metadataCommitFailed'));
       }
+      metadataCommitted = true;
       await customArtRepo.clearDraft('active');
       paintSession.markDirty(false);
       saveDialog?.close();
@@ -205,6 +220,13 @@ export function createPaintSaveService({
         announceStatus(t('paint.savedStatus', { name: validation.name }));
       }
     } catch (err) {
+      if (binarySaved && !metadataCommitted) {
+        try {
+          await customArtRepo.deleteArtwork?.(assetId);
+        } catch (cleanupError) {
+          console.warn('Could not clean up failed artwork save:', cleanupError);
+        }
+      }
       console.error('Save artwork failed:', err);
       await showAlert?.(t('paint.saveError', { error: err.message || 'Storage failure' }));
     } finally {
