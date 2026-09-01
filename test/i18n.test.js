@@ -124,7 +124,7 @@ test('every built-in catalog asset has a localized name in both languages', () =
 test('updateDomTranslations preserves inline HTML formatting in rich strings', () => {
   setLanguage('tr');
   const guideEl = {
-    getAttribute: (attr) => (attr === 'data-i18n' ? 'guideDialog.sec1P1' : null),
+    getAttribute: (attr) => (attr === 'data-i18n' ? 'guideDialog.step1Desc' : null),
     innerHTML: '',
     textContent: ''
   };
@@ -142,7 +142,7 @@ test('updateDomTranslations preserves inline HTML formatting in rich strings', (
   };
 
   updateDomTranslations(mockContainer);
-  assert.match(guideEl.innerHTML, /<strong>Designer<\/strong>/);
+  assert.match(guideEl.innerHTML, /<strong>Tasarımcı<\/strong>/);
   assert.match(codeEl.innerHTML, /<code>\.json<\/code>/);
 
   setLanguage('en');

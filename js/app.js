@@ -730,8 +730,33 @@ function wireStaticEvents() {
     setLanguage(nextLang);
   });
 
-  // Project Portability wiring
-  $('#guide-menu-btn')?.addEventListener('click', () => $('#guide-dialog')?.showModal());
+  // Guide Dialog & Tabs wiring
+  function selectGuideTab(tabKey) {
+    const tabButtons = $$('#guide-tabs [data-guide-tab]');
+    const panels = $$('.guide-tab-panel');
+    tabButtons.forEach((btn) => {
+      const isActive = btn.dataset.guideTab === tabKey;
+      btn.classList.toggle('is-active', isActive);
+      btn.setAttribute('aria-selected', String(isActive));
+    });
+    panels.forEach((panel) => {
+      const isTarget = panel.id === `guide-panel-${tabKey}`;
+      panel.hidden = !isTarget;
+      panel.classList.toggle('is-active', isTarget);
+    });
+  }
+
+  $('#guide-tabs')?.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-guide-tab]');
+    if (btn) {
+      selectGuideTab(btn.dataset.guideTab);
+    }
+  });
+
+  $('#guide-menu-btn')?.addEventListener('click', () => {
+    selectGuideTab('quickstart');
+    $('#guide-dialog')?.showModal();
+  });
   $('#close-guide-dialog')?.addEventListener('click', () => $('#guide-dialog')?.close());
   $('#project-menu-btn')?.addEventListener('click', () => openProjectDialog());
   $('#close-project-dialog')?.addEventListener('click', () => $('#project-dialog')?.close());

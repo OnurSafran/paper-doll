@@ -349,45 +349,280 @@ dialog::backdrop {
   gap: 0.5rem;
 }
 
-/* Turkish in-app guide */
+/* In-App Guide Dialog & Tabs */
 .guide-dialog {
-  width: min(720px, 94vw);
+  width: min(840px, 95vw);
+  max-height: min(88dvh, 780px);
+}
+
+.guide-nav-bar {
+  padding: 0.35rem 1.25rem 0.5rem;
+  background: var(--paper);
+  border-bottom: 1.5px solid var(--line);
+}
+
+.guide-tabs {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.guide-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.guide-tabs .mode-tab {
+  flex-shrink: 0;
+  font-size: 0.88rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-pill);
 }
 
 .guide-dialog-body {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
-  max-height: calc(85dvh - 120px);
+  padding: 1.1rem 1.25rem 1.4rem;
+  max-height: calc(88dvh - 140px);
   overflow-y: auto;
 }
 
-.guide-section {
+.guide-tab-panel {
+  display: block;
+}
+
+.guide-tab-panel[hidden] {
+  display: none !important;
+}
+
+.guide-panel-hero {
+  margin-bottom: 1rem;
+}
+
+.guide-panel-hero h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.15rem;
+  color: var(--ink);
+  font-family: var(--font-display);
+}
+
+.guide-panel-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* 1. Quickstart Step Cards */
+.guide-step-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.guide-step-card {
   background: var(--paper-warm);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.guide-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.guide-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+  background: var(--coral);
+}
+
+.step-card-1 .guide-step-num { background: var(--coral); }
+.step-card-2 .guide-step-num { background: var(--sky); }
+.step-card-3 .guide-step-num { background: var(--sage); }
+.step-card-4 .guide-step-num { background: var(--lavender); }
+
+.guide-card-tag {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--paper-card);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+
+.guide-step-card h4 {
+  margin: 0 0 0.4rem;
+  font-size: 1.02rem;
+  color: var(--ink);
+}
+
+.guide-step-card p {
+  margin: 0;
+  font-size: 0.87rem;
+  color: var(--ink-soft);
+  line-height: 1.52;
+}
+
+/* 2. Feature Cards */
+.guide-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.guide-feature-card {
+  background: var(--paper-card);
   border: 1.5px solid var(--line);
   border-radius: var(--radius-sm);
   padding: 1rem;
 }
 
-.guide-section h3 {
-  margin: 0 0 0.45rem;
-  color: var(--ink);
+.guide-feature-card h4 {
+  margin: 0 0 0.55rem;
   font-size: 1rem;
+  color: var(--ink);
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 0.35rem;
 }
 
-.guide-section p {
-  margin: 0.45rem 0 0;
-  color: var(--muted);
-  line-height: 1.55;
+.guide-feature-card p {
+  margin: 0 0 0.45rem;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
 }
 
-.guide-tip {
-  border-color: var(--coral);
-  background: color-mix(in srgb, var(--coral) 10%, var(--paper-warm));
+.guide-feature-card p:last-child {
+  margin-bottom: 0;
 }
 
-@media (max-width: 650px) {
-  .guide-dialog-body {
+/* 3. Pro Tips Cards */
+.guide-pro-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.guide-pro-card {
+  background: color-mix(in srgb, var(--gold) 6%, var(--paper-warm));
+  border: 1.5px solid color-mix(in srgb, var(--gold) 40%, var(--line));
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.guide-pro-card .pro-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: #fff;
+  margin-bottom: 0.45rem;
+}
+
+.guide-pro-card h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+
+.guide-pro-card p {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* 4. Shortcuts Table */
+.guide-shortcut-table-wrap {
+  overflow-x: auto;
+  background: var(--paper-card);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.guide-shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.87rem;
+}
+
+.guide-shortcut-table th,
+.guide-shortcut-table td {
+  padding: 0.55rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.guide-shortcut-table th {
+  background: var(--paper-warm);
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.guide-shortcut-table tr:last-child td {
+  border-bottom: none;
+}
+
+.guide-shortcut-table kbd {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--paper-warm);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  box-shadow: 0 1px 0 rgba(46, 38, 31, 0.12);
+  color: var(--ink);
+  margin: 0 0.1rem;
+}
+
+.guide-area-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.12rem 0.5rem;
+  border-radius: var(--radius-pill);
+}
+
+.guide-area-pill.global {
+  background: var(--sky-soft);
+  color: var(--sky);
+}
+
+.guide-area-pill.play {
+  background: var(--sage-soft);
+  color: var(--sage);
+}
+
+.guide-area-pill.paint {
+  background: var(--coral-soft);
+  color: var(--coral-dark);
+}
+
+@media (max-width: 680px) {
+  .guide-step-grid,
+  .guide-feature-grid,
+  .guide-pro-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -666,36 +666,289 @@
     <dialog id="guide-dialog" class="library-dialog guide-dialog" aria-labelledby="guide-dialog-title">
       <div class="dialog-header">
         <div>
-          <span class="eyebrow" data-i18n="guideDialog.eyebrow">Kullanım Rehberi</span>
-          <h2 id="guide-dialog-title" data-i18n="guideDialog.title">Paper Doll Studio nasıl oynanır?</h2>
+          <span class="eyebrow" data-i18n="guideDialog.eyebrow">Kullanım Rehberi & İpuçları</span>
+          <h2 id="guide-dialog-title" data-i18n="guideDialog.title">Paper Doll Studio Nasıl Oynanır?</h2>
         </div>
         <button id="close-guide-dialog" class="icon-close-btn" type="button" data-i18n-aria-label="guideDialog.closeAria" aria-label="Rehberi kapat">✕</button>
       </div>
+
+      <nav class="guide-nav-bar">
+        <div id="guide-tabs" class="tab-list guide-tabs" role="tablist" aria-label="Rehber sekmeleri">
+          <button id="guide-tab-quickstart" class="mode-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="guide-panel-quickstart" data-guide-tab="quickstart" data-i18n="guideDialog.tabQuickstart">🌟 Kolay Başlangıç</button>
+          <button id="guide-tab-features" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="guide-panel-features" data-guide-tab="features" data-i18n="guideDialog.tabFeatures">🎮 Oyun Bölümleri</button>
+          <button id="guide-tab-tips" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="guide-panel-tips" data-guide-tab="tips" data-i18n="guideDialog.tabTips">💡 Usta İpuçları</button>
+          <button id="guide-tab-shortcuts" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="guide-panel-shortcuts" data-guide-tab="shortcuts" data-i18n="guideDialog.tabShortcuts">⌨️ Kısayollar</button>
+        </div>
+      </nav>
+
       <div class="guide-dialog-body">
-        <section class="guide-section">
-          <h3 data-i18n="guideDialog.sec1Title">1. Bebek tasarla</h3>
-          <p data-i18n="guideDialog.sec1P1"><strong>Designer</strong> bölümünde saç, kıyafet, ayakkabı ve aksesuar seç. Bir parçaya dokunarak giydir, renk paletinden rengini değiştir.</p>
-          <p data-i18n="guideDialog.sec1P2"><strong>Save new</strong> ile bebeğini Dollbox'a kaydet. Daha sonra kaydettiğin bebeği açıp güncelleyebilirsin.</p>
+        <!-- 1. Quickstart Panel -->
+        <section id="guide-panel-quickstart" class="guide-tab-panel is-active" role="tabpanel" aria-labelledby="guide-tab-quickstart">
+          <div class="guide-panel-hero">
+            <h3 data-i18n="guideDialog.qsHeading">4 Kolay Adımda Kendi Çizgi Hikayeni Yarat!</h3>
+            <p class="panel-copy" data-i18n="guideDialog.qsSubtitle">Paper Doll Studio ile hayalindeki kağıt bebekleri tasarlayabilir, kendi kıyafetlerini çizebilir, sahnede konuşturup dans ettirebilirsin.</p>
+          </div>
+
+          <div class="guide-step-grid">
+            <article class="guide-step-card step-card-1">
+              <div class="guide-card-header">
+                <span class="guide-step-num" data-i18n="guideDialog.step1Number">1</span>
+                <span class="guide-card-tag" data-i18n="guideDialog.step1Badge">👗 Tasarım</span>
+              </div>
+              <h4 data-i18n="guideDialog.step1Title">Bebeğini Yarat & Giydir</h4>
+              <p data-i18n="guideDialog.step1Desc"><strong>Tasarımcı</strong> bölümünde 6 farklı modelden birini seç. Ten, saç ve göz renklerini ayarla. Beğendiğin saçları, elbiseleri ve aksesuarları bebeğin üzerine sürükleyip bırak. 🎲 <strong>Karıştır</strong> butonuyla harika sürpriz kombinler deneyebilirsin! Bebeğine isim verip Dollbox'a kaydet.</p>
+            </article>
+
+            <article class="guide-step-card step-card-2">
+              <div class="guide-card-header">
+                <span class="guide-step-num" data-i18n="guideDialog.step2Number">2</span>
+                <span class="guide-card-tag" data-i18n="guideDialog.step2Badge">🎨 Çizim</span>
+              </div>
+              <h4 data-i18n="guideDialog.step2Title">Kendi Kıyafetlerini Çiz</h4>
+              <p data-i18n="guideDialog.step2Desc"><strong>Boya</strong> bölümüne geç! 🪞 <strong>Ayna Modu</strong> sayesinde tek bir çizgiyle iki tarafı simetrik tişörtler, elbiseler veya şapkalar çiz. Bebeğin vücut çizgilerini rehber alarak çiziminin tam üstüne oturmasını sağla.</p>
+            </article>
+
+            <article class="guide-step-card step-card-3">
+              <div class="guide-card-header">
+                <span class="guide-step-num" data-i18n="guideDialog.step3Number">3</span>
+                <span class="guide-card-tag" data-i18n="guideDialog.step3Badge">🎭 Sahne</span>
+              </div>
+              <h4 data-i18n="guideDialog.step3Title">Sahneni Kur & Süsle</h4>
+              <p data-i18n="guideDialog.step3Desc"><strong>Oyna</strong> bölümüne geç. Güzel bir arka plan seç ve kaydettiğin bebekleri sahneye koy. Mobilyalar, tatlı evcil hayvanlar ve süsler ekle. Eşyalara dokunarak büyüt, küçült veya çevir.</p>
+            </article>
+
+            <article class="guide-step-card step-card-4">
+              <div class="guide-card-header">
+                <span class="guide-step-num" data-i18n="guideDialog.step4Number">4</span>
+                <span class="guide-card-tag" data-i18n="guideDialog.step4Badge">🎙️ Canlandır</span>
+              </div>
+              <h4 data-i18n="guideDialog.step4Title">Seslendir & Canlandır!</h4>
+              <p data-i18n="guideDialog.step4Desc">Duruş ve dans hareketleri seç. 🎙️ <strong>Seslendir</strong> butonuna basıp mikrofona konuştuğunda bebeğin ağzı sesinle birlikte gerçek bir kukla gibi hareket eder! 📸 <strong>Dışa Aktar</strong> ile sahnenin fotoğrafını indir.</p>
+            </article>
+          </div>
         </section>
-        <section class="guide-section">
-          <h3 data-i18n="guideDialog.sec2Title">2. Sahne kur</h3>
-          <p data-i18n="guideDialog.sec2P1"><strong>Play</strong> bölümünde bebekleri ve eşyaları sahneye ekle. Dokunarak seç; sürükleyerek taşı. Seçili öğeyi büyüt, küçült, çevir, öne veya arkaya al.</p>
-          <p data-i18n="guideDialog.sec2P2">Birden fazla öğe seçmek için klavyede <strong>Shift</strong> tuşunu kullanabilirsin. Konuşma balonları ve sahne şablonları da Play bölümündedir.</p>
+
+        <!-- 2. Features Panel -->
+        <section id="guide-panel-features" class="guide-tab-panel" role="tabpanel" aria-labelledby="guide-tab-features" hidden>
+          <div class="guide-panel-hero">
+            <h3 data-i18n="guideDialog.featHeading">Stüdyodaki Tüm Bölümleri Keşfet</h3>
+          </div>
+
+          <div class="guide-feature-grid">
+            <article class="guide-feature-card">
+              <h4 data-i18n="guideDialog.featDesignerTitle">👗 Bebek Tasarımcısı (Designer)</h4>
+              <p data-i18n="guideDialog.featDesignerP1"><strong>6 Farklı Model:</strong> Bebek, Çocuk, Klasik, Yetişkin ve Yaşlı modelleri arasından istediğin karakteri seç.</p>
+              <p data-i18n="guideDialog.featDesignerP2"><strong>Yüz & Stil Stüdyosu:</strong> Gözleri, kaşları, burnu, ağzı ve gözlük, çil, allık gibi tatlı detayları belirle. Göz bebeği (iris) rengini ve kıyafet renklerini istediğin gibi değiştir.</p>
+              <p data-i18n="guideDialog.featDesignerP3"><strong>Dollbox (Bebek Kutusu):</strong> Bebeğine bir isim verip <strong>Yeni Kaydet</strong> ile kaydet. Kaydettiğin bebekleri istediğin zaman güncelleyebilir veya Oyna sahnesine ekleyebilirsin.</p>
+            </article>
+
+            <article class="guide-feature-card">
+              <h4 data-i18n="guideDialog.featPaintTitle">🎨 Boyama Stüdyosu (Paint Studio)</h4>
+              <p data-i18n="guideDialog.featPaintP1"><strong>Kıyafet ve Eşya Çizimi:</strong> Tişört, etek, elbise, ayakkabı veya sahnede kullanabileceğin oyuncaklar ve dekorasyonlar çiz.</p>
+              <p data-i18n="guideDialog.featPaintP2"><strong>Akıllı Araçlar:</strong> Fırça, Silgi, Boya Kovası, Şekiller (çizgi, daire, kutu) ve Renk Damlalığı. 🪞 <strong>Ayna Modu (M)</strong> ile iki tarafı birden aynı anda çiz!</p>
+              <p data-i18n="guideDialog.featPaintP3"><strong>Piksel Seçimi ve Kalıplar:</strong> Seçim aracıyla çizimin bir parçasını kopyala (⌘D) veya yatay çevir (H). Başlangıç kalıplarından ilham al ve manken referansıyla tam üstüne oturt.</p>
+            </article>
+
+            <article class="guide-feature-card">
+              <h4 data-i18n="guideDialog.featPlayTitle">🎭 Sahne ve Oyun Alanı (Play Stage)</h4>
+              <p data-i18n="guideDialog.featPlayP1"><strong>Bebek ve Eşya Yerleşimi:</strong> Tepsiden karakterleri ve eşyaları sahneye sürükle. Büyütmek veya küçültmek için köşelerden çek, ↔ butonuyla aynala, öne veya arkaya al.</p>
+              <p data-i18n="guideDialog.featPlayP2"><strong>📌 Sabitleme (Pin):</strong> Arka plandaki masayı, yatağı veya halıyı sahneye sabitleyerek yanlışlıkla yerinden oynamasını engelle.</p>
+              <p data-i18n="guideDialog.featPlayP3"><strong>Panoramik Sahne ve Mini Harita:</strong> Sahneyi Geniş (3200px) veya Panoramik (4800px) yaparak kocaman bir dünya kur. Mini haritadan istediğin yere hızla kay.</p>
+            </article>
+
+            <article class="guide-feature-card">
+              <h4 data-i18n="guideDialog.featBubblesTitle">💬 Konuşma ve Hikaye Balonları</h4>
+              <p data-i18n="guideDialog.featBubblesP1"><strong>4 Farklı Stil:</strong> Konuşma Balonu (💬), Düşünce Bulutu (💭), Haykırış/Çığlık (💥) ve Hikaye Altyazısı (📜).</p>
+              <p data-i18n="guideDialog.featBubblesP2">Balona çift tıklayarak veya seçip <strong>✏️ Metin</strong> diyerek 120 karaktere kadar istediğin diyaloğu yaz. Balonun ucunu konuşan bebeğe doğru sürükle.</p>
+            </article>
+
+            <article class="guide-feature-card">
+              <h4 data-i18n="guideDialog.featAnimationTitle">🎬 Canlandırma, Dans ve Sesli Kukla</h4>
+              <p data-i18n="guideDialog.featAnimationP1"><strong>Duruşlar ve İfadeler:</strong> Bebeğe sevinç, şaşkınlık, kahkaha ifadeleri ver; sola veya sağa eğilmesini sağla.</p>
+              <p data-i18n="guideDialog.featAnimationP2"><strong>Dans ve Hareket:</strong> Zıplama, sallanma, el sallama ve kutlama dansı kliplerini başlat. Ritim ve faz ayarlarıyla grup dansları yap!</p>
+              <p data-i18n="guideDialog.featAnimationP3"><strong>🎙️ Canlı Sesli Kukla:</strong> Mikrofona konuştuğunda veya şarkı söylediğinde bebeğin ağzı sesinle canlı olarak hareket eder. Kendi sesli tiyatronu yap!</p>
+            </article>
+
+            <article class="guide-feature-card">
+              <h4 data-i18n="guideDialog.featStoryTitle">📚 Sahne Kitabı ve Fotoğraf Çekme</h4>
+              <p data-i18n="guideDialog.featStoryP1"><strong>✦ Hikaye Şablonları:</strong> Çay Partisi, Yatak Odası, Moda Atölyesi, Güneşli Bahçe ve Çizgi Roman hazır sahneleriyle hemen hikayeni başlat.</p>
+              <p data-i18n="guideDialog.featStoryP2"><strong>Sahne Kitabı:</strong> Sahnelerini bir çizgi roman gibi sayfa sayfa kaydet, kopyasını çıkar ve istediğin zaman aç.</p>
+              <p data-i18n="guideDialog.featStoryP3"><strong>📸 PNG İndir:</strong> Sahnenin veya o anki hareketli karenin tertemiz, yüksek kaliteli resmini tek tıkla bilgisayarına veya tablete kaydet.</p>
+            </article>
+          </div>
         </section>
-        <section class="guide-section">
-          <h3 data-i18n="guideDialog.sec3Title">3. Kaydetme ve geri alma</h3>
-          <p data-i18n="guideDialog.sec3P1">Değişiklikler bu cihazda otomatik olarak kaydedilir. <strong>Undo</strong> ve <strong>Redo</strong> ile son işlemleri geri alıp tekrarlayabilirsin.</p>
-          <p data-i18n="guideDialog.sec3P2"><strong>Paint</strong> bölümünde kıyafet veya eşya çizip hemen kullanabilirsin. Çizimler cihazda IndexedDB'de saklanır; Project menüsündeki JSON yedeği çizimleri de içerir ve başka bir cihaza taşınabilir.</p>
-          <p data-i18n="guideDialog.sec3P3">Bir resmi My Art'tan kaldırmak mevcut bebek ve sahne kullanımlarını silmez; bunlar geri getirilebilir bir yer tutucu olarak kalır.</p>
+
+        <!-- 3. Pro Tips Panel -->
+        <section id="guide-panel-tips" class="guide-tab-panel" role="tabpanel" aria-labelledby="guide-tab-tips" hidden>
+          <div class="guide-panel-hero">
+            <h3 data-i18n="guideDialog.tipsHeading">Usta Oyuncular İçin Püf Noktaları ve Gizli Numaralar</h3>
+          </div>
+
+          <div class="guide-pro-grid">
+            <article class="guide-pro-card">
+              <div class="pro-tag">⭐ PRO</div>
+              <h4 data-i18n="guideDialog.tipJointsTitle">🔗 Eşyaları Ele ve Başa Bağlama (Joints)</h4>
+              <p data-i18n="guideDialog.tipJointsDesc">Bir eşyayı (örneğin mikrofon, çanta, asa veya şapka) seçip <strong>Ekleme Noktası</strong> panelinden <strong>Sol El</strong>, <strong>Sağ El</strong> veya <strong>Baş</strong> seçtiğinde, eşya bebeğin vücuduna kilitlenir. Bebek dans edip zıpladığında eşya da onunla birlikte sallanır!</p>
+            </article>
+
+            <article class="guide-pro-card">
+              <div class="pro-tag">⭐ PRO</div>
+              <h4 data-i18n="guideDialog.tipRhythmTitle">💃 K-Pop & Dans Grubu Senkronu (Faz & Dalga)</h4>
+              <p data-i18n="guideDialog.tipRhythmDesc">Sahnede birden fazla bebek varken birine <strong>Faz %0</strong>, diğerine <strong>Faz %50</strong> verirsen sırayla zıplarlar! <strong>🌊 Dalga</strong> ritim modunu seçerek Meksika dalgası gibi muhteşem bir grup koreografisi yapabilirsin.</p>
+            </article>
+
+            <article class="guide-pro-card">
+              <div class="pro-tag">⭐ PRO</div>
+              <h4 data-i18n="guideDialog.tipMultiSelectTitle">🔲 Çoklu Seçim ve Hizalama (Shift Tuşu)</h4>
+              <p data-i18n="guideDialog.tipMultiSelectDesc">Klavyede <strong>Shift</strong> tuşunu basılı tutarak birden fazla eşyaya tıklayabilir veya boşluktan sürükleyerek seçim kutusu açabilirsin. Tüm grubu aynı anda taşıyabilir, boyutlandırabilir veya hizalama butonlarıyla aynı çizgiye dizebilirsin.</p>
+            </article>
+
+            <article class="guide-pro-card">
+              <div class="pro-tag">⭐ PRO</div>
+              <h4 data-i18n="guideDialog.tipPinningTitle">📌 Arka Planı Sabitle (Kazaları Önle)</h4>
+              <p data-i18n="guideDialog.tipPinningDesc">Büyük bir kanepe, masa veya halıyı sahneye yerleştirdikten sonra <strong>📌 Sabitle</strong> butonuna bas. Sabitlenen eşyalar kilitlenir; böylece önlerindeki bebekleri seçip taşırken masa yanlışlıkla yerinden kaymaz.</p>
+            </article>
+
+            <article class="guide-pro-card">
+              <div class="pro-tag">⭐ PRO</div>
+              <h4 data-i18n="guideDialog.tipBackupTitle">📦 Projeyi Arkadaşına Gönderme (JSON Dosyası)</h4>
+              <p data-i18n="guideDialog.tipBackupDesc">Header'daki <strong>📦 Proje</strong> menüsünden <strong>JSON İndir</strong> butonuna bas. Bu dosya yaptığın tüm bebekleri, sahneleri ve kendi çizdiğin özel kıyafetleri içerir. Bu dosyayı arkadaşına gönderirsen o da kendi stüdyosuna yükleyip oynayabilir!</p>
+            </article>
+
+            <article class="guide-pro-card">
+              <div class="pro-tag">⭐ PRO</div>
+              <h4 data-i18n="guideDialog.tipOfflineTitle">✈️ İnternetsiz (Çevrimdışı) Tam Sürüm Oynama</h4>
+              <p data-i18n="guideDialog.tipOfflineDesc">Uygulamayı Safari veya Chrome'da açtıktan sonra <strong>Ana Ekrana Ekle</strong> (Add to Home Screen) yap. Oyun cihazına yüklenir ve uçakta, arabada veya yazlıkta internetin olmadığı her yerde kesintisiz çalışır.</p>
+            </article>
+
+            <article class="guide-pro-card">
+              <div class="pro-tag">⭐ İPUCU</div>
+              <h4 data-i18n="guideDialog.tipUndoTitle">↺ Bir Şey Kaybolursa Panik Yok!</h4>
+              <p data-i18n="guideDialog.tipUndoDesc">Yanlışlıkla bir eşyayı sildiysen veya rengini beğenmediysen hemen <strong>↺ Geri Al</strong> (Ctrl+Z) butonuna bas. Yaptığın her şey cihazında güvenle otomatik kaydedilir.</p>
+            </article>
+          </div>
         </section>
-        <section class="guide-section">
-          <h3 data-i18n="guideDialog.sec4Title">4. İnternetsiz oynama</h3>
-          <p data-i18n="guideDialog.sec4P1">Uygulamayı Safari'de bir kez internet varken açtıktan sonra iPad ana ekranına ekleyebilirsin. İlk açılıştan sonra oyun internetsiz çalışır.</p>
-          <p data-i18n="guideDialog.sec4P2">Veriler iPad'de saklanır. Safari site verileri temizlenirse kayıtlar silinebilir; önemli projeleri Project menüsünden dışa aktar.</p>
-        </section>
-        <section class="guide-section guide-tip">
-          <h3 data-i18n="guideDialog.tipTitle">İpucu</h3>
-          <p data-i18n="guideDialog.tipP">Bir şey kaybolmuş gibi görünürse önce <strong>Undo</strong>'yu dene. Sahneyi tamamen değiştirmeden önce Project menüsünden yedek almak güvenlidir.</p>
+
+        <!-- 4. Shortcuts Panel -->
+        <section id="guide-panel-shortcuts" class="guide-tab-panel" role="tabpanel" aria-labelledby="guide-tab-shortcuts" hidden>
+          <div class="guide-panel-hero">
+            <h3 data-i18n="guideDialog.scHeading">Klavye ve Hızlı Kullanım Kısayolları</h3>
+            <p class="panel-copy" data-i18n="guideDialog.scSubtitle">Fare, dokunmatik ekran veya klavye tuşlarıyla stüdyoda çok daha hızlı hareket et!</p>
+          </div>
+
+          <div class="guide-shortcut-table-wrap">
+            <table class="guide-shortcut-table">
+              <thead>
+                <tr>
+                  <th data-i18n="guideDialog.scColArea">Bölüm</th>
+                  <th data-i18n="guideDialog.scColKey">Tuş / Kısayol</th>
+                  <th data-i18n="guideDialog.scColAction">Ne İşe Yarar?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="guide-area-pill global" data-i18n="guideDialog.scAreaGlobal">Genel</span></td>
+                  <td><kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>⌘Z</kbd></td>
+                  <td data-i18n="guideDialog.scUndo">Son işlemi geri al</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill global" data-i18n="guideDialog.scAreaGlobal">Genel</span></td>
+                  <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> / <kbd>⌘⇧Z</kbd> / <kbd>Ctrl+Y</kbd></td>
+                  <td data-i18n="guideDialog.scRedo">Geri alınan işlemi yinele</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+                  <td data-i18n="guideDialog.scArrows">Seçili öğeyi 10px hareket ettir</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>Shift</kbd> + <kbd>Yön Tuşları</kbd></td>
+                  <td data-i18n="guideDialog.scShiftArrows">Seçili öğeyi 1px hassas kaydır</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>+</kbd> / <kbd>-</kbd></td>
+                  <td data-i18n="guideDialog.scPlusMinus">Seçili öğeyi büyüt / küçült</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>P</kbd></td>
+                  <td data-i18n="guideDialog.scPin">Seçili öğeyi sabitle / kilidi aç</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>D</kbd></td>
+                  <td data-i18n="guideDialog.scDup">Seçili öğenin kopyasını çıkar</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+                  <td data-i18n="guideDialog.scDelete">Seçili öğeyi veya pikselleri sil</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>[</kbd> / <kbd>]</kbd></td>
+                  <td data-i18n="guideDialog.scLayerOrder">Katmanı arkaya / öne taşı</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>O</kbd></td>
+                  <td data-i18n="guideDialog.scOutline">📋 Katmanlar listesini aç/kapat</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>E</kbd> / <kbd>Enter</kbd></td>
+                  <td data-i18n="guideDialog.scBubbleEdit">Seçili konuşma balonunun metnini düzenle</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>Escape</kbd></td>
+                  <td data-i18n="guideDialog.scEsc">Seçimi veya seçim çerçevesini kaldır</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
+                  <td><kbd>PageUp</kbd> / <kbd>PageDown</kbd></td>
+                  <td data-i18n="guideDialog.scPageNav">Panoramik sahnede kamerayı sola/sağa kaydır</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill paint" data-i18n="guideDialog.scAreaPaint">Boya Stüdyosu</span></td>
+                  <td><kbd>B</kbd>, <kbd>E</kbd>, <kbd>G</kbd>, <kbd>S</kbd>, <kbd>R</kbd>, <kbd>I</kbd></td>
+                  <td data-i18n="guideDialog.scTools">Fırça, Silgi, Doldur, Seçim, Şekil, Damlalık</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill paint" data-i18n="guideDialog.scAreaPaint">Boya Stüdyosu</span></td>
+                  <td><kbd>M</kbd></td>
+                  <td data-i18n="guideDialog.scMirror">🪞 Ayna Modunu aç / kapat</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill paint" data-i18n="guideDialog.scAreaPaint">Boya Stüdyosu</span></td>
+                  <td><kbd>Z</kbd></td>
+                  <td data-i18n="guideDialog.scZoom">🔍 Tuvali 1x / 2x büyüt</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill paint" data-i18n="guideDialog.scAreaPaint">Boya Stüdyosu</span></td>
+                  <td><kbd>[</kbd> / <kbd>]</kbd></td>
+                  <td data-i18n="guideDialog.scBrushSize">Fırça boyutunu küçült / büyüt</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill paint" data-i18n="guideDialog.scAreaPaint">Boya Stüdyosu</span></td>
+                  <td><kbd>H</kbd></td>
+                  <td data-i18n="guideDialog.scFlipH">Seçili pikselleri yatay çevir</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill paint" data-i18n="guideDialog.scAreaPaint">Boya Stüdyosu</span></td>
+                  <td><kbd>Ctrl+D</kbd> / <kbd>⌘D</kbd></td>
+                  <td data-i18n="guideDialog.scDupPixels">Seçili pikselleri çoğalt</td>
+                </tr>
+                <tr>
+                  <td><span class="guide-area-pill paint" data-i18n="guideDialog.scAreaPaint">Boya Stüdyosu</span></td>
+                  <td><kbd>Yön Tuşları</kbd> + <kbd>Boşluk</kbd></td>
+                  <td data-i18n="guideDialog.scPaintKeys">Sanal imleci hareket ettir ve Boşluk ile boya</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </dialog>
