@@ -238,3 +238,90 @@ test('validateArtworkName error messages adapt to active language', () => {
   assert.equal(enTooLong.valid, false);
   assert.equal(enTooLong.error, 'Name is too long (maximum 30 characters).');
 });
+
+test('Custom asset and project status messages adapt to active language and retranslate', () => {
+  const originalLanguage = getCurrentLanguage();
+
+  try {
+    setLanguage('tr');
+    const store = createAppStore(createDefaultEnvelope(), { getAsset });
+
+    // 1. Custom asset add
+    store.dispatch({
+      type: 'customAsset/add',
+      asset: {
+        assetId: 'custom_hat_1',
+        kind: 'wearable',
+        slot: 'accessory',
+        name: 'Mavi Şapka',
+        svgDataUri: 'data:image/svg+xml;utf8,<svg></svg>'
+      }
+    });
+    let state = store.getState();
+    assert.equal(state.ui.messageKey, 'paint.assetAdded');
+    assert.equal(state.ui.message, '“Mavi Şapka” Çizimlerime eklendi.');
+
+    setLanguage('en');
+    assert.equal(translateMessage(state.ui.messageKey, state.ui.messageParams), '"Mavi Şapka" added to My Art.');
+
+    // 2. Custom asset rename
+    setLanguage('tr');
+    store.dispatch({
+      type: 'customAsset/rename',
+      assetId: 'custom_hat_1',
+      name: 'Yaz Şapkası'
+    });
+    state = store.getState();
+    assert.equal(state.ui.messageKey, 'paint.assetRenamed');
+    assert.equal(state.ui.message, 'Çizim adı “Yaz Şapkası” olarak değiştirildi.');
+
+    setLanguage('en');
+    assert.equal(translateMessage(state.ui.messageKey, state.ui.messageParams), 'Artwork renamed to "Yaz Şapkası".');
+
+    // 3. Project restore backup
+    setLanguage('tr');
+    store.dispatch({
+      type: 'project/restoreBackup',
+      envelope: createDefaultEnvelope(),
+      messageKey: 'toasts.backupRestored'
+    });
+    state = store.getState();
+    assert.equal(state.ui.messageKey, 'toasts.backupRestored');
+    assert.equal(state.ui.message, 'Önceki proje yedeği geri yüklendi.');
+
+    setLanguage('en');
+    assert.equal(translateMessage(state.ui.messageKey, state.ui.messageParams), 'Previous project backup restored.');
+
+    // 4. Designer set base doll (with incompatible items preserved)
+    setLanguage('tr');
+    store.dispatch({
+      type: 'designer/setBaseDoll',
+      baseDollId: 'doll_adult_a'
+    });
+    state = store.getState();
+    assert.equal(state.ui.messageKey, 'designer.baseDollChangedFit');
+    assert.equal(state.ui.message, 'Yetişkin seçildi. Uyumsuz parçalar korunuyor ve model değişene kadar gizleniyor.');
+
+    setLanguage('en');
+    assert.equal(translateMessage(state.ui.messageKey, state.ui.messageParams), 'Adult selected. Incompatible items are preserved and hidden until the model fits them.');
+
+    // 5. Designer set base doll without incompatible items (same fit family: classic A -> classic B)
+    store.dispatch({ type: 'designer/reset' });
+    setLanguage('tr');
+    store.dispatch({
+      type: 'designer/setBaseDoll',
+      baseDollId: 'doll_classic_b'
+    });
+    state = store.getState();
+    assert.equal(state.ui.messageKey, 'designer.baseDollChanged');
+    assert.equal(state.ui.message, 'Neşeli seçildi.');
+
+    setLanguage('en');
+    assert.equal(translateMessage(state.ui.messageKey, state.ui.messageParams), 'Joy selected.');
+  } finally {
+    setLanguage(originalLanguage);
+  }
+});
+
+
+

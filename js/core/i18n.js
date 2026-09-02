@@ -671,7 +671,18 @@ export const TRANSLATIONS = Object.freeze({
       cutoutRestoredStatus: '{name} referans olarak geri yüklendi.',
       nameMustBeText: 'Çizim adı metin olmalıdır.',
       nameRequired: 'Lütfen çiziminiz için bir ad girin.',
-      nameTooLong: 'Ad çok uzun (en fazla {max} karakter).'
+      nameTooLong: 'Ad çok uzun (en fazla {max} karakter).',
+      invalidMetadata: 'Geçersiz özel çizim meta verisi.',
+      libraryLimit: 'Özel çizim kütüphanesi sınırına ({limit}) ulaşıldı. Önce bir öğe silin.',
+      storageLimit: 'Özel çizim depolama sınırına ({limit} bayt) ulaşıldı.',
+      assetAdded: '“{name}” Çizimlerime eklendi.',
+      assetRenamed: 'Çizim adı “{name}” olarak değiştirildi.',
+      invalidCollections: 'Geçersiz özel çizim koleksiyonları.',
+      collectionsUpdated: 'Çizim koleksiyonları güncellendi.',
+      removedToTrash: '“{name}” Çizimlerimden kaldırıldı. Kullanıldığı bebek ve sahnelerde yer tutucu kalır.',
+      assetRestored: '“{name}” Çizimlerime geri yüklendi.',
+      deletedWithUses: '“{name}” ve kullanımları silindi.',
+      trashPurged: '{count} adet silinmiş çizim kalıcı olarak silindi.'
     },
     outline: {
       eyebrow: 'Erişilebilirlik ve Katmanlar',
@@ -906,7 +917,12 @@ export const TRANSLATIONS = Object.freeze({
       backupFrom: '{date} tarihli yedek',
       backupDetails: '{presets} bebek · {scenes} sahne',
       replaceConfirmTitle: 'Tüm stüdyo değiştirilsin mi?',
-      replaceConfirmMessage: 'Tüm mevcut bebekler, sahneler ve özel çizimler içe aktarılan proje ile değiştirilecektir. İstediğiniz zaman geri yükleyebilmeniz için otomatik bir yedek oluşturulacaktır.'
+      replaceConfirmMessage: 'Tüm mevcut bebekler, sahneler ve özel çizimler içe aktarılan proje ile değiştirilecektir. İstediğiniz zaman geri yükleyebilmeniz için otomatik bir yedek oluşturulacaktır.',
+      safeIdFailed: 'İçe aktarılan projeye güvenli bir sahne kimliği atanamadı. Tekrar deneyin.',
+      backupSafeIdFailed: 'Yedeğe güvenli bir sahne kimliği atanamadı. Tekrar deneyin.',
+      loaded: 'Proje yüklendi. Önceki veriler yedeklendi.',
+      merged: 'Proje öğeleri stüdyoya eklendi.',
+      backupRestored: 'Önceki proje yedeği geri yüklendi.'
     },
     guideDialog: {
       eyebrow: 'Kullanım Rehberi & İpuçları',
@@ -1703,7 +1719,18 @@ export const TRANSLATIONS = Object.freeze({
       cutoutRestoredStatus: '{name} restored as a non-saving reference.',
       nameMustBeText: 'Name must be text.',
       nameRequired: 'Please enter a name for your artwork.',
-      nameTooLong: 'Name is too long (maximum {max} characters).'
+      nameTooLong: 'Name is too long (maximum {max} characters).',
+      invalidMetadata: 'Invalid custom artwork metadata.',
+      libraryLimit: 'Custom art library limit ({limit}) reached. Delete an item first.',
+      storageLimit: 'Custom art storage limit ({limit} bytes) reached.',
+      assetAdded: '"{name}" added to My Art.',
+      assetRenamed: 'Artwork renamed to "{name}".',
+      invalidCollections: 'Invalid custom artwork collections.',
+      collectionsUpdated: 'Artwork collections updated.',
+      removedToTrash: '"{name}" removed from My Art. Referenced dolls and scenes retain placeholders.',
+      assetRestored: '"{name}" restored to My Art.',
+      deletedWithUses: '"{name}" and its uses were deleted.',
+      trashPurged: '{count} trashed artwork items permanently deleted.'
     },
     outline: {
       eyebrow: 'Accessibility & Layers',
@@ -1937,7 +1964,12 @@ export const TRANSLATIONS = Object.freeze({
       backupFrom: 'Backup from {date}',
       backupDetails: '{presets} dolls · {scenes} scenes',
       replaceConfirmTitle: 'Replace entire studio?',
-      replaceConfirmMessage: 'All current dolls, scenes, and custom artwork will be replaced by the imported project. An automatic backup will be created so you can restore at any time.'
+      replaceConfirmMessage: 'All current dolls, scenes, and custom artwork will be replaced by the imported project. An automatic backup will be created so you can restore at any time.',
+      safeIdFailed: 'The imported project could not be assigned a safe scene ID. Try again.',
+      backupSafeIdFailed: 'The backup could not be assigned a safe scene ID. Try again.',
+      loaded: 'Project loaded. Previous data backed up.',
+      merged: 'Project items merged into studio.',
+      backupRestored: 'Previous project backup restored.'
     },
     guideDialog: {
       eyebrow: 'Studio User Guide & Tips',
@@ -2156,6 +2188,9 @@ export function translateMessage(key, params = {}) {
   const resolved = { ...params };
   if (params.assetId) {
     resolved.name = assetName(params.assetId, params.name || t('designer.unknownAsset'));
+  }
+  if (params.baseDollId) {
+    resolved.name = t(`models.${params.baseDollId}`) || params.name || t('designer.unknownAsset');
   }
   if (Array.isArray(params.slotIds)) {
     const slotNames = params.slotIds.map((slot) => t(`wardrobeSlots.${slot}`));

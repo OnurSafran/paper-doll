@@ -590,12 +590,12 @@ function reduce(state, action, context) {
       if (!res.changed) return null;
       const dollAsset = context.getAsset(action.baseDollId);
       const lifeStage = dollAsset?.lifeStages?.[0];
-      const dollName = (lifeStage && t(`lifeStages.${lifeStage}`)) || t(`models.${action.baseDollId}`) || dollAsset?.name || t('designer.unknownAsset');
-      const msg = res.incompatibleSlots.length > 0
-        ? t('designer.baseDollChangedFit', { name: dollName })
-        : t('designer.baseDollChanged', { name: dollName });
+      const dollName = t(`models.${action.baseDollId}`) || (lifeStage && t(`lifeStages.${lifeStage}`)) || dollAsset?.name || t('designer.unknownAsset');
+      const msgKey = res.incompatibleSlots.length > 0
+        ? 'designer.baseDollChangedFit'
+        : 'designer.baseDollChanged';
       return {
-        state: message(msg, {
+        state: localizedMessage(msgKey, { baseDollId: action.baseDollId, name: dollName }, {
           ...state,
           designer: {
             ...state.designer,
@@ -1468,14 +1468,14 @@ function reduce(state, action, context) {
     }
     case 'customAsset/add': {
       const sanitized = sanitizeCustomAsset(action.asset);
-      if (!sanitized) return { state: message('Invalid custom artwork metadata.'), result: { ok: false, code: 'INVALID_METADATA' } };
+      if (!sanitized) return { state: localizedMessage('paint.invalidMetadata'), result: { ok: false, code: 'INVALID_METADATA' } };
       const existingIndex = state.customAssets.findIndex((a) => a.assetId === sanitized.assetId);
       if (existingIndex < 0 && state.customAssets.length >= LIMITS.MAX_CUSTOM_ASSETS) {
-        return { state: message(`Custom art library limit (${LIMITS.MAX_CUSTOM_ASSETS}) reached. Delete an item first.`), result: { ok: false, code: 'LIMIT' } };
+        return { state: localizedMessage('paint.libraryLimit', { limit: LIMITS.MAX_CUSTOM_ASSETS }), result: { ok: false, code: 'LIMIT' } };
       }
       const currentBytes = state.customAssets.reduce((sum, asset, index) => sum + (index === existingIndex ? 0 : (asset.byteLength || 0)), 0);
       if (sanitized.byteLength && currentBytes + sanitized.byteLength > LIMITS.MAX_TOTAL_CUSTOM_BYTES) {
-        return { state: message(`Custom art storage limit (${LIMITS.MAX_TOTAL_CUSTOM_BYTES} bytes) reached.`, state), result: { ok: false, code: 'BYTE_LIMIT' } };
+        return { state: localizedMessage('paint.storageLimit', { limit: LIMITS.MAX_TOTAL_CUSTOM_BYTES }, state), result: { ok: false, code: 'BYTE_LIMIT' } };
       }
       let nextCustoms;
       if (existingIndex >= 0) {
@@ -1485,7 +1485,7 @@ function reduce(state, action, context) {
         nextCustoms = [...state.customAssets, sanitized];
       }
       return {
-        state: message(`"${sanitized.name}" added to My Art.`, { ...state, customAssets: nextCustoms }),
+        state: localizedMessage('paint.assetAdded', { name: sanitized.name }, { ...state, customAssets: nextCustoms }),
         persist: true,
         result: { ok: true, assetId: sanitized.assetId }
       };
@@ -1500,7 +1500,7 @@ function reduce(state, action, context) {
       const nextCustoms = [...state.customAssets];
       nextCustoms[index] = updated;
       return {
-        state: message(`Artwork renamed to "${name}".`, { ...state, customAssets: nextCustoms }),
+        state: localizedMessage('paint.assetRenamed', { name }, { ...state, customAssets: nextCustoms }),
         persist: true,
         result: { ok: true }
       };
@@ -1509,14 +1509,14 @@ function reduce(state, action, context) {
     case 'customAsset/setCollections': {
       const index = state.customAssets.findIndex((a) => a.assetId === action.assetId);
       if (index < 0 || state.customAssets[index].kind !== 'prop' || !Array.isArray(action.collections)) {
-        return { state: message('Invalid custom artwork collections.'), result: { ok: false, code: 'INVALID_COLLECTIONS' } };
+        return { state: localizedMessage('paint.invalidCollections'), result: { ok: false, code: 'INVALID_COLLECTIONS' } };
       }
       const collections = [...new Set(action.collections.filter(isPropCollection))];
       const updated = { ...state.customAssets[index], collections, updatedAt: context.now().toISOString() };
       const nextCustoms = [...state.customAssets];
       nextCustoms[index] = updated;
       return {
-        state: message(`Artwork collections updated.`, { ...state, customAssets: nextCustoms }),
+        state: localizedMessage('paint.collectionsUpdated', {}, { ...state, customAssets: nextCustoms }),
         persist: true,
         result: { ok: true }
       };
@@ -1530,7 +1530,7 @@ function reduce(state, action, context) {
       const nextCustoms = [...state.customAssets];
       nextCustoms[index] = updated;
       return {
-        state: message(`"${target.name}" removed from My Art. Referenced dolls and scenes retain placeholders.`, {
+        state: localizedMessage('paint.removedToTrash', { name: target.name }, {
           ...state,
           customAssets: nextCustoms
         }),
@@ -1547,7 +1547,7 @@ function reduce(state, action, context) {
       const nextCustoms = [...state.customAssets];
       nextCustoms[index] = updated;
       return {
-        state: message(`"${target.name}" restored to My Art.`, {
+        state: localizedMessage('paint.assetRestored', { name: target.name }, {
           ...state,
           customAssets: nextCustoms
         }),
@@ -1563,7 +1563,7 @@ function reduce(state, action, context) {
       const next = removeCustomAssetReferences(state, [targetId]);
 
       return {
-        state: message(`"${target.name}" and its uses were deleted.`, {
+        state: localizedMessage('paint.deletedWithUses', { name: target.name }, {
           ...state,
           ...next
         }),
@@ -1581,7 +1581,7 @@ function reduce(state, action, context) {
       if (targetIds.length === 0) return null;
       const next = removeCustomAssetReferences(state, targetIds);
       return {
-        state: message(`${targetIds.length} trashed artwork item${targetIds.length === 1 ? '' : 's'} permanently deleted.`, {
+        state: localizedMessage('paint.trashPurged', { count: targetIds.length }, {
           ...state,
           ...next
         }),
@@ -1594,9 +1594,10 @@ function reduce(state, action, context) {
       if (!action.envelope || !Array.isArray(action.envelope.presets)) return null;
       const env = action.envelope;
       const fallbackSceneId = env.currentScene ? null : nextUniqueId(context.makeId, []);
-      if (!env.currentScene && !fallbackSceneId) return { state: message('The imported project could not be assigned a safe scene ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!env.currentScene && !fallbackSceneId) return { state: localizedMessage('projectDialog.safeIdFailed'), result: { ok: false, code: 'ID_FAILED' } };
+      const defaultKey = 'toasts.importReplacedWithBackup';
       return {
-        state: message(action.message ?? 'Project loaded. Previous data backed up.', {
+        state: localizedMessage(action.messageKey || defaultKey, action.messageParams || {}, {
           ...state,
           settings: { ...state.settings, ...env.settings },
           customAssets: (env.customAssets || []).map(cloneCustomAsset),
@@ -1613,8 +1614,9 @@ function reduce(state, action, context) {
     case 'project/importMerge': {
       if (!action.envelope || !Array.isArray(action.envelope.presets)) return null;
       const env = action.envelope;
+      const defaultKey = 'projectDialog.merged';
       return {
-        state: message(action.message ?? 'Project items merged into studio.', {
+        state: localizedMessage(action.messageKey || defaultKey, action.messageParams || {}, {
           ...state,
           settings: { ...state.settings, ...env.settings },
           customAssets: (env.customAssets || []).map(cloneCustomAsset),
@@ -1630,9 +1632,10 @@ function reduce(state, action, context) {
       if (!action.envelope || !Array.isArray(action.envelope.presets)) return null;
       const env = action.envelope;
       const fallbackSceneId = env.currentScene ? null : nextUniqueId(context.makeId, []);
-      if (!env.currentScene && !fallbackSceneId) return { state: message('The backup could not be assigned a safe scene ID. Try again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!env.currentScene && !fallbackSceneId) return { state: localizedMessage('projectDialog.backupSafeIdFailed'), result: { ok: false, code: 'ID_FAILED' } };
+      const defaultKey = 'toasts.backupRestored';
       return {
-        state: message(action.message ?? 'Previous project backup restored.', {
+        state: localizedMessage(action.messageKey || defaultKey, action.messageParams || {}, {
           ...state,
           settings: { ...state.settings, ...env.settings },
           customAssets: (env.customAssets || []).map(cloneCustomAsset),

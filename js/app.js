@@ -1162,11 +1162,12 @@ async function executeImportMerge() {
   store.dispatch({
     type: 'project/importMerge',
     envelope: merged.envelope,
-    message: t('toasts.importMergedStats', {
+    messageKey: 'toasts.importMergedStats',
+    messageParams: {
       dolls: merged.stats.addedPresets,
       scenes: merged.stats.addedScenes,
       custom: merged.stats.addedCustomAssets ?? 0
-    })
+    }
   });
   $('#project-dialog')?.close();
 }
@@ -1210,9 +1211,9 @@ async function executeImportReplace() {
   store.dispatch({
     type: 'project/importReplace',
     envelope: pendingImportEnvelope,
-    message: backupResult.ok
-      ? t('toasts.importReplacedWithBackup')
-      : t('toasts.importReplaced')
+    messageKey: backupResult.ok
+      ? 'toasts.importReplacedWithBackup'
+      : 'toasts.importReplaced'
   });
   const importedCustomIds = (pendingImportEnvelope.customAssets || []).map((asset) => asset.assetId);
   const orphanIds = await customArtRepo.scanOrphans(importedCustomIds);
@@ -1248,7 +1249,7 @@ async function executeRestoreBackup() {
   store.dispatch({
     type: 'project/restoreBackup',
     envelope: backup.envelope,
-    message: 'Previous project backup restored.'
+    messageKey: 'toasts.backupRestored'
   });
 
   const saveResult = storage.flush({ force: true });

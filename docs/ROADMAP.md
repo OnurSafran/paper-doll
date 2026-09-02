@@ -1,16 +1,16 @@
 # Implementation Status and Roadmap
 
-Updated: 2026-08-19
+Updated: 2026-09-03
 
 This is the single authority for implementation status, open work, and delivery order. Product behavior belongs in [PROJECT.md](PROJECT.md); release evidence belongs in [QUALITY.md](QUALITY.md).
 
 ## Current snapshot
 
-- Working dependency-free Designer and Play vertical slice
-- 6 base dolls across 5 life stages (Baby, Child, Teen, Adult, Elder), 19 modular face features, 87 wearable/hair/accessory assets, 8 backgrounds, and 22 props
+- Working dependency-free Designer and Play vertical slice (v1.18.0)
+- 6 base dolls across 5 life stages (Baby, Child, Teen, Adult, Elder), 19 modular face features, 87 wearable/hair/accessory assets, 11 backgrounds, and 22 props
 - Dollbox, Scene Book, current-scene autosave/reload, and local schema migration (v4 modular face)
-- Pointer/keyboard scene editing, bounded Undo/Redo, and PNG export
-- Seven in-session expressions and strictly local voice puppetry
+- Pointer/keyboard scene editing, bounded Undo/Redo, and PNG export (scene & animation frame)
+- Seven in-session expressions, strictly local voice puppetry, character poses, and looping scene animation engine
 - Custom Paint Studio Gates 0–3B complete with IndexedDB storage, portability, mixed renderers, bounded history, My Art lifecycle, non-destructive wearable slot switching, trusted cutout actions, and precision body/alignment overlays
 - Character Customization System (Gates 0–5) complete:
   - Gate 0: Modular layer order, fit families, presentation styles, and domain contracts
@@ -18,16 +18,22 @@ This is the single authority for implementation status, open work, and delivery 
   - Gate 2: 6 base doll models across 5 life stages, fit-family wardrobe filtering, retention on model switch
   - Gate 3: Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage hair/garments
   - Gate 4: Single-layer custom hair architecture with Layer 70 rendering, Paint Studio guides for all 6 models, and portability
-  - Gate 5: 322 automated tests passing, 142 cataloged SVGs validated, complete release evidence and documentation
-- 322 automated tests passing
+  - Gate 5: Automated tests passing, 142 cataloged SVGs validated, complete release evidence and documentation
+- Character Expressions, Poses, and Looping Scene Animation complete:
+  - Multi-channel limb gesture presets, head tilt/orientation evaluator, animation clips (idle, talk, celebrate, walk, wave, bow, laugh, listen)
+  - Looping scene animation playback transport HUD (Play/Pause, Loop toggle, Reset, 0.5x-2.0x playback speed)
+  - Animation frame export to PNG
+- Play UI & Full-Height Stage complete:
+  - Segmented rail tabs (`➕ Ekle` / `⚙️ Seçili`) for spawn tray and inspector
+  - Dedicated play-status and paint-status pill rows above stages
+- 100% store status message localization across Designer, Play, Custom Art, and Project operations with `messageKey` and `translateMessage`
+- 412 automated tests passing
 - 142 cataloged SVG files passing asset validation
 - Catalog assets carry `added_date`, `creator`, `concept`, `dlc`, and `source` provenance metadata; current content pack is `core`
 - Props are grouped in Play by `Home`, `Outdoors`, `Creative`, `Fun`, and derived `My Art`; custom prop collection membership is persisted and editable from My Art
-- Installable offline PWA shell with Turkish in-app guide
-- Documentation validation passing with 9 canonical documents
-- Designer and Paint source hardening pass complete (2026-08-18): all 41 reviewed findings closed, plus 5 follow-ups found during verification; remaining non-defect observations are tracked in the improvement backlog below
-- Play hardening complete (2026-08-19): all 20 findings (PL-1 to PL-20) closed, plus the PLR-1 regression found during verification. Verification was done against source and at runtime, not against fix descriptions — 16 findings held on first check, 4 did not, and all were closed the same day. R-06 and R-07 are both closed; 315 automated tests pass
-- Gates A–D complete; Gate E asset expansion complete; Custom Paint Gates 0–3 complete; Character Customization Gates 0–5 complete; Play hardening (Gate F) complete; hosted iPad smoke test remains before family release
+- Installable offline PWA shell with comprehensive multi-tab Turkish & English in-app guide
+- Documentation validation passing with canonical documents
+- Designer, Paint, and Play source hardening passes complete; hosted iPad smoke test remains before family release
 
 ## Status by capability
 
@@ -130,8 +136,8 @@ Every extraction is independently reviewable and behavior-preserving. Do not com
 5. Interactive props and optional sound effects
 6. [x] Panoramic stages and camera navigation (`1600`, `3200`, `4800` widths with persisted cameraX, minimap, steppers, trackpad/wheel, edge auto-pan)
 7. World map and scene transitions
-8. Custom paint studio (implementation complete; hosted-device and cross-browser evidence in progress)
-9. Pose/gesture animation — see [PRD: Character Expressions, Poses, and Looping Scene Animation](PRD-POSE-GESTURE-ANIMATION.md); implementation follows the phased delivery plan after export and reduced-motion contracts are defined
+8. [x] Custom paint studio (implementation complete; hosted-device and cross-browser evidence in progress)
+9. [x] Pose/gesture animation and looping scene animation — see [PRD: Character Expressions, Poses, and Looping Scene Animation](PRD-POSE-GESTURE-ANIMATION.md) (complete with 90+ tests, multi-channel evaluator, transport HUD, and frame export)
 
 ### Gate F — Play hardening (Completed)
 

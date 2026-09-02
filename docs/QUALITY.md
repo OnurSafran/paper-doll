@@ -1,29 +1,32 @@
 # Quality and Release Plan
 
-Updated: 2026-08-19
+Updated: 2026-09-03
 
-Character Customization Gates 0–5: **complete**. Automated tests, asset validation, and source contracts are green. Hosted-device evidence is still required before family release.
+Character Customization Gates 0–5, Custom Paint, and Gate E Animation/Stage milestones: **complete**. Automated tests, asset validation, and source contracts are green. Hosted-device evidence is still required before family release.
 
 ## Current evidence
 
 | Check | Current result | What it proves |
 |:--|:--|:--|
-| `node --test` | 322 pass, 0 fail | Existing domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, and library coverage plus modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, resting-face restoration, Designer/Paint hardening, Play hardening, native-width panoramic backgrounds, and complete built-in asset-name coverage. |
-| Asset validator | 142 pass | All 142 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 87 wearables, 8 backgrounds, 22 props). |
-| Documentation validator | 9 canonical documents, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. The validator walks every tracked `.md` file, so its printed count rises with non-canonical notes such as `review/`. |
+| `node --test` | 412 pass, 0 fail | Domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, library coverage, modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, resting-face restoration, Designer/Paint/Play hardening, character poses, multi-channel gesture animation, looping scene playback, 100% status message localization, and built-in asset-name coverage. |
+| Asset validator | 142 pass | All 142 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 87 wearables, 11 backgrounds, 22 props). |
+| Documentation validator | Canonical documents, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
 | PWA shell validation | Pass | Manifest, service-worker syntax, and all offline app-shell assets validate. |
 
-## Character Customization & Custom Paint Evidence
+## Character Customization & Feature Evidence
 
 | Evidence | Result | Notes |
 |:--|:--|:--|
-| `npm run check` | Pass | 322 tests, documentation validation, cache-busting validation, and 142 cataloged SVG assets passed on 2026-08-19. |
+| `npm run check` | Pass | 412 tests, documentation validation, cache-busting validation, and 142 cataloged SVG assets passed on 2026-09-03. |
 | Modular Face Customization (Gates 0–1) | Pass | 19 face SVGs, iris palette, schema v4 migration, resting-face restoration, and full undo/redo pass automated test suites. |
 | Body Models & Fit Families (Gate 2) | Pass | 6 base dolls (Baby, Child, Teen Classic A/B, Adult, Elder), fit-family filtering, presentation style discovery filters pass tests. |
 | Expanded Catalog & Shuffle (Gate 3) | Pass | Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage wardrobe items pass tests. |
 | Custom Hair Design (Gate 4) | Pass | Single-layer custom hair at Layer 70, Paint Studio guides for all 6 models, storage, and project transfer pass tests. |
 | Custom-art storage and recovery contracts | Pass | IndexedDB repository, PNG integrity, staging, backups, trash, restore, orphan safety, and object-URL lifecycle are covered by automated tests. |
 | Painter and accessibility contracts | Pass | Raster operations, bounded history, keyboard cursor, dirty/draft recovery, semantic controls, 44px targets, dark/checkerboard UI, and narrow responsive layout are covered by tests. |
+| Character Expressions, Poses & Looping Animation | Pass | Multi-channel poses, animation clips, playback transport HUD, frame export, and rigid-safe limb motion are covered by automated tests. |
+| Play Stage Full-Height & Layout Polish | Pass | Segmented rail tabs, dedicated status row, context-ring clamping, and 100% store message localization pass test suites. |
+| In-App Guide ("Rehber") | Pass | Multi-tab Turkish & English interactive guide modal with accessible controls, shortcuts, and iPad tips. |
 | Project transfer contracts | Pass | Package validation, SHA-256 artwork integrity, Replace/Merge, collision rewriting, and missing/corrupt artwork behavior are covered by tests. |
 | Browser/device manual matrix | Open | Must be run against hosted Chrome, Safari, Firefox, Edge, and the target iPad; source tests do not substitute for this evidence. |
 | Hosted iPad Home Screen offline journey | Blocked | No hosted URL and target iPad evidence is present in this workspace. Follow the smoke test in [OFFLINE-PWA.md](OFFLINE-PWA.md) and record the result here. |
