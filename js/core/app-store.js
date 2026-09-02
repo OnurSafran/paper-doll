@@ -43,7 +43,7 @@ import { instantiateSceneTemplate } from '../domain/scene-templates.js';
 import { resolveMotionProfile, resolveSafeClipId, resolveSafePoseId } from '../domain/animation-clips.js';
 import { cloneCustomAsset, clonePreset, cloneScene, createRuntimeState, sanitizeCustomAsset } from './state-schema.js';
 import { createAssetRegistry } from './asset-registry.js';
-import { assetName, t } from './i18n.js';
+import { t, translateMessage } from './i18n.js';
 import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, isColorValue, isIrisColor, isPaletteToken, normalizeColorValue } from './palette.js';
 import { normalizeDisplayName, truncateGraphemes } from './text.js';
 import {
@@ -143,7 +143,9 @@ export function createAppStore(envelope, options = {}) {
           ...state.ui,
           selectedEntityId: selectedStillExists ? state.ui.selectedEntityId : (remainingSelectedIds[0] || null),
           selectedEntityIds: remainingSelectedIds,
-          message: 'Action undone.'
+          message: t('app.actionUndone'),
+          messageKey: 'app.actionUndone',
+          messageParams: {}
         }
       };
       for (const listener of listeners) {
@@ -181,7 +183,9 @@ export function createAppStore(envelope, options = {}) {
           ...state.ui,
           selectedEntityId: selectedStillExists ? state.ui.selectedEntityId : (remainingSelectedIds[0] || null),
           selectedEntityIds: remainingSelectedIds,
-          message: 'Action redone.'
+          message: t('app.actionRedone'),
+          messageKey: 'app.actionRedone',
+          messageParams: {}
         }
       };
       for (const listener of listeners) {
@@ -309,7 +313,19 @@ function removeCustomAssetReferences(state, assetIds) {
 }
 
 function reduce(state, action, context) {
-  const message = (text, next = state) => ({ ...next, ui: { ...next.ui, message: text } });
+  const message = (text, next = state) => ({
+    ...next,
+    ui: { ...next.ui, message: text, messageKey: null, messageParams: null }
+  });
+  const localizedMessage = (key, params = {}, next = state) => ({
+    ...next,
+    ui: {
+      ...next.ui,
+      message: translateMessage(key, params),
+      messageKey: key,
+      messageParams: { ...params }
+    }
+  });
   switch (action.type) {
     case 'ui/setMode':
       if (!['designer', 'paint', 'play'].includes(action.mode)) return null;
@@ -369,7 +385,18 @@ function reduce(state, action, context) {
       };
 
     case 'ui/storageStatus':
-      return { state: { ...state, ui: { ...state.ui, storageStatus: action.status, message: action.message ?? state.ui.message } } };
+      return {
+        state: {
+          ...state,
+          ui: {
+            ...state.ui,
+            storageStatus: action.status,
+            message: action.message ?? state.ui.message,
+            messageKey: action.messageKey ?? null,
+            messageParams: action.messageParams ?? null
+          }
+        }
+      };
 
     case 'designer/selectSlot':
       if (!isOutfitSlot(action.slot) || action.slot === state.designer.selectedSlot) return null;
@@ -378,17 +405,19 @@ function reduce(state, action, context) {
     case 'designer/equip': {
       const asset = context.getAsset(action.assetId);
       if (action.color != null && !isColorValue(action.color)) {
-        return { result: { ok: false, code: 'INVALID_COLOR' }, state: message('That color could not be used.') };
+        return { result: { ok: false, code: 'INVALID_COLOR' }, state: localizedMessage('designer.invalidColor') };
       }
       const equipped = equipWearable(state.designer.draft, asset, action.color == null ? undefined : normalizeColorValue(action.color), context.getAsset);
       if (!equipped.changed) {
-        const errorMessage = equipped.code === 'INCOMPATIBLE_FIT'
-          ? t('designer.incompatibleAsset', { name: asset?.name || t('designer.unknownAsset') })
-          : equipped.message;
-        return { result: { ok: false, code: equipped.code || 'INVALID_ASSET' }, state: message(errorMessage) };
+        const errorKey = equipped.code === 'INCOMPATIBLE_FIT' ? 'designer.incompatibleAsset' : (equipped.messageKey || 'designer.cannotEquip');
+        const errorParams = equipped.code === 'INCOMPATIBLE_FIT'
+          ? (asset?.id ? { assetId: asset.id } : { name: t('designer.unknownAsset') })
+          : {};
+        return { result: { ok: false, code: equipped.code || 'INVALID_ASSET' }, state: localizedMessage(errorKey, errorParams) };
       }
+      const equippedParams = { assetId: asset.id, slotIds: equipped.clearedSlots || [] };
       return {
-        state: message(equipped.message, {
+        state: localizedMessage(equipped.messageKey, equippedParams, {
           ...state,
           designer: { ...state.designer, draft: equipped.draft, selectedSlot: asset.slot, dirty: true }
         })
@@ -397,9 +426,9 @@ function reduce(state, action, context) {
 
     case 'designer/remove': { 
       const removed = removeSlot(state.designer.draft, action.slot ?? state.designer.selectedSlot);
-      if (!removed.changed) return { state: message(removed.message) };
+      if (!removed.changed) return { state: localizedMessage(removed.messageKey || 'designer.nothingToRemove') };
       return {
-        state: message(removed.message, {
+        state: localizedMessage(removed.messageKey, { slotIds: [removed.removedSlot] }, {
           ...state,
           designer: { ...state.designer, draft: removed.draft, dirty: true }
         })
@@ -408,7 +437,7 @@ function reduce(state, action, context) {
 
     case 'designer/reset':
       return {
-        state: message('Starter doll restored.', {
+        state: localizedMessage('designer.starterRestored', {}, {
           ...state,
           designer: { draft: createStarterDraft(), selectedSlot: 'top', editingPresetId: null, dirty: false }
         })
@@ -416,7 +445,7 @@ function reduce(state, action, context) {
 
     case 'designer/clearOutfit':
       return {
-        state: message('Outfit cleared. Hair and skin tone stayed in place.', {
+        state: localizedMessage('designer.outfitCleared', {}, {
           ...state,
           designer: { ...state.designer, draft: clearOutfit(state.designer.draft), selectedSlot: 'top', dirty: true }
         })
@@ -425,7 +454,7 @@ function reduce(state, action, context) {
     case 'designer/shuffle': { 
       const draft = shuffleDraft(state.designer.draft, context.assets, context.random);
       return {
-        state: message('Fresh outfit shuffled! Try another or fine-tune the colors.', {
+        state: localizedMessage('designer.outfitShuffled', {}, {
           ...state,
           designer: { ...state.designer, draft, selectedSlot: draft.slots.dress ? 'dress' : 'top', dirty: true }
         })
@@ -488,19 +517,19 @@ function reduce(state, action, context) {
       if (!isFaceGroup(action.group)) return null;
       const faceAsset = context.getAsset(action.assetId);
       if (!isFaceCompatible(state.designer.draft, faceAsset, context.getAsset) || faceAsset.faceGroup !== action.group) {
-        return { result: { ok: false, code: 'INVALID_FACE_ASSET' }, state: message(t('designer.invalidFaceAsset')) };
+        return { result: { ok: false, code: 'INVALID_FACE_ASSET' }, state: localizedMessage('designer.invalidFaceAsset') };
       }
       const res = setFaceFeature(state.designer.draft, action.group, action.assetId, context.getAsset);
       if (!res.changed) return null;
       const asset = context.getAsset(action.assetId);
-      const featureName = assetName(asset, t('designer.unknownAsset'));
-      const feedback = res.mode === 'cleared'
-        ? t('designer.faceDetailCleared')
+      const feedbackKey = res.mode === 'cleared'
+        ? 'designer.faceDetailCleared'
         : res.mode === 'defaulted'
-          ? t('designer.defaultFaceRestored')
-          : t('designer.faceFeatureUpdated', { name: featureName });
+          ? 'designer.defaultFaceRestored'
+          : 'designer.faceFeatureUpdated';
+      const feedbackParams = res.mode === 'selected' ? { assetId: asset.id } : {};
       return {
-        state: message(feedback, {
+        state: localizedMessage(feedbackKey, feedbackParams, {
           ...state,
           designer: {
             ...state.designer,
@@ -517,7 +546,7 @@ function reduce(state, action, context) {
       const res = setIrisColor(state.designer.draft, action.color);
       if (!res.changed) return null;
       return {
-        state: message(t('designer.irisColorUpdated'), {
+        state: localizedMessage('designer.irisColorUpdated', {}, {
           ...state,
           designer: {
             ...state.designer,
@@ -531,7 +560,7 @@ function reduce(state, action, context) {
     case 'designer/clearFaceDetail': {
       const res = clearFaceDetail(state.designer.draft);
       return {
-        state: message(t('designer.faceDetailCleared'), {
+        state: localizedMessage('designer.faceDetailCleared', {}, {
           ...state,
           designer: {
             ...state.designer,
@@ -545,7 +574,7 @@ function reduce(state, action, context) {
     case 'designer/resetFace': {
       const res = resetFace(state.designer.draft);
       return {
-        state: message(t('designer.defaultFaceRestored'), {
+        state: localizedMessage('designer.defaultFaceRestored', {}, {
           ...state,
           designer: {
             ...state.designer,
@@ -592,10 +621,10 @@ function reduce(state, action, context) {
 
     case 'preset/save': {
       const name = normalizeDisplayName(action.name, LIMITS.MAX_PRESET_NAME_LENGTH);
-      if (!name) return { state: message('Enter a doll name before saving.'), result: { ok: false, code: 'INVALID_NAME' } };
-      if (state.presets.length >= LIMITS.MAX_PRESETS) return { state: message('Dollbox is full. Delete a preset before saving.'), result: { ok: false, code: 'LIMIT' } };
+      if (!name) return { state: localizedMessage('designer.enterName'), result: { ok: false, code: 'INVALID_NAME' } };
+      if (state.presets.length >= LIMITS.MAX_PRESETS) return { state: localizedMessage('designer.dollboxFull'), result: { ok: false, code: 'LIMIT' } };
       const presetId = nextUniqueId(context.makeId, state.presets.map((preset) => preset.presetId));
-      if (!presetId) return { state: message('The doll could not be assigned a safe ID. Try saving again.'), result: { ok: false, code: 'ID_FAILED' } };
+      if (!presetId) return { state: localizedMessage('designer.safeIdFailed'), result: { ok: false, code: 'ID_FAILED' } };
       const stamp = context.now().toISOString();
       const preset = {
         presetId,
@@ -605,7 +634,7 @@ function reduce(state, action, context) {
         ...cloneDraft(state.designer.draft)
       };
       return {
-        state: message(`${name} saved to Dollbox.`, {
+        state: localizedMessage('designer.dollSaved', { name }, {
           ...state,
           presets: [...state.presets, preset],
           designer: { ...state.designer, editingPresetId: preset.presetId, dirty: false }
@@ -618,7 +647,7 @@ function reduce(state, action, context) {
     case 'preset/update': {
       const id = action.presetId ?? state.designer.editingPresetId;
       const index = state.presets.findIndex((preset) => preset.presetId === id);
-      if (index < 0) return { state: message('That Dollbox preset no longer exists.'), result: { ok: false, code: 'NOT_FOUND' } };
+      if (index < 0) return { state: localizedMessage('designer.presetMissing'), result: { ok: false, code: 'NOT_FOUND' } };
       const name = normalizeDisplayName(action.name, LIMITS.MAX_PRESET_NAME_LENGTH) ?? state.presets[index].name;
       const updated = {
         ...state.presets[index],
@@ -629,7 +658,7 @@ function reduce(state, action, context) {
       const presets = [...state.presets];
       presets[index] = updated;
       return {
-        state: message(`${name} updated.`, { ...state, presets, designer: { ...state.designer, dirty: false } }),
+        state: localizedMessage('designer.presetUpdated', { name }, { ...state, presets, designer: { ...state.designer, dirty: false } }),
         persist: true
       };
     }
@@ -638,7 +667,7 @@ function reduce(state, action, context) {
       const preset = state.presets.find((item) => item.presetId === action.presetId);
       if (!preset) return null;
       return {
-        state: message(`${preset.name} opened in Designer.`, {
+        state: localizedMessage('designer.presetOpened', { name: preset.name }, {
           ...state,
           designer: { draft: cloneDraft(preset), selectedSlot: 'top', editingPresetId: preset.presetId, dirty: false }
         })
@@ -652,7 +681,7 @@ function reduce(state, action, context) {
       const presets = state.presets.map((preset) => preset.presetId === action.presetId
         ? { ...preset, name, updatedAt: context.now().toISOString() }
         : preset);
-      return { state: message('Doll renamed.', { ...state, presets }), persist: true };
+      return { state: localizedMessage('designer.dollRenamed', {}, { ...state, presets }), persist: true };
     }
 
     case 'preset/delete': {
@@ -660,7 +689,7 @@ function reduce(state, action, context) {
       if (presets.length === state.presets.length) return null;
       const editing = state.designer.editingPresetId === action.presetId;
       return {
-        state: message('Doll removed from Dollbox. Scene copies are unchanged.', {
+        state: localizedMessage('designer.dollRemoved', {}, {
           ...state,
           presets,
           designer: editing ? { ...state.designer, editingPresetId: null } : state.designer
@@ -687,7 +716,7 @@ function reduce(state, action, context) {
       }
       nextScene.cameraX = clampCameraX(nextScene.cameraX, action.stageWidth);
       return {
-        state: message(t('play.statusStageWidth', { width: action.stageWidth }), {
+        state: localizedMessage('play.statusStageWidth', { width: action.stageWidth }, {
           ...state,
           currentScene: touchScene(nextScene, context.now)
         }),
@@ -725,11 +754,11 @@ function reduce(state, action, context) {
     }
 
     case 'scene/spawnCharacter': { 
-      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message(t('play.statusSceneFull')), result: { ok: false, code: 'LIMIT' } };
+      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: localizedMessage('play.statusSceneFull'), result: { ok: false, code: 'LIMIT' } };
       const preset = state.presets.find((item) => item.presetId === action.presetId);
       if (!preset) return null;
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
-      if (!instanceId) return { state: message(t('play.statusSafeId')), result: { ok: false, code: 'ID_FAILED' } };
+      if (!instanceId) return { state: localizedMessage('play.statusSafeId'), result: { ok: false, code: 'ID_FAILED' } };
       const scene = addEntity(state.currentScene, {
         instanceId,
         kind: 'character',
@@ -738,15 +767,15 @@ function reduce(state, action, context) {
         x: action.x,
         y: action.y
       }, context.getAsset);
-      return { state: message(t('play.statusCharacterAdded', { name: preset.name }), { ...state, currentScene: scene }), persist: true };
+      return { state: localizedMessage('play.statusCharacterAdded', { name: preset.name }, { ...state, currentScene: scene }), persist: true };
     }
 
     case 'scene/spawnProp': {
       const asset = context.getAsset(action.assetId);
       if (!asset || asset.kind !== 'prop') return null;
-      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message(t('play.statusSceneFull')), result: { ok: false, code: 'LIMIT' } };
+      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: localizedMessage('play.statusSceneFull'), result: { ok: false, code: 'LIMIT' } };
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
-      if (!instanceId) return { state: message(t('play.statusSafeId')), result: { ok: false, code: 'ID_FAILED' } };
+      if (!instanceId) return { state: localizedMessage('play.statusSafeId'), result: { ok: false, code: 'ID_FAILED' } };
 
       const targetId = action.targetEntityId ?? null;
       const target = targetId ? state.currentScene.entities.find((e) => e.instanceId === targetId) : null;
@@ -758,13 +787,13 @@ function reduce(state, action, context) {
       const scene = addEntity(state.currentScene, {
         instanceId, kind: 'prop', sourceId: asset.id, x: spawnX, y: spawnY, attachedTo, attachOffset
       }, context.getAsset);
-      return { state: message(t('play.statusPropAdded', { name: asset.name }), { ...state, currentScene: scene }), persist: true };
+      return { state: localizedMessage('play.statusPropAdded', { assetId: asset.id }, { ...state, currentScene: scene }), persist: true };
     }
 
     case 'scene/spawnBubble': {
-      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: message(t('play.statusSceneFull')), result: { ok: false, code: 'LIMIT' } };
+      if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES) return { state: localizedMessage('play.statusSceneFull'), result: { ok: false, code: 'LIMIT' } };
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
-      if (!instanceId) return { state: message(t('play.statusBubbleId')), result: { ok: false, code: 'ID_FAILED' } };
+      if (!instanceId) return { state: localizedMessage('play.statusBubbleId'), result: { ok: false, code: 'ID_FAILED' } };
 
       const text = typeof action.text === 'string' ? (normalizeDisplayName(action.text, LIMITS.MAX_BUBBLE_TEXT_LENGTH) || DEFAULT_BUBBLE_TEXT) : DEFAULT_BUBBLE_TEXT;
       const bubbleStyle = isBubbleStyle(action.bubbleStyle) ? action.bubbleStyle : DEFAULT_BUBBLE_STYLE;
@@ -805,7 +834,7 @@ function reduce(state, action, context) {
       }, context.getAsset);
 
       return {
-        state: message(t('play.statusBubbleAdded'), {
+        state: localizedMessage('play.statusBubbleAdded', {}, {
           ...state,
           currentScene: scene,
           ui: { ...state.ui, selectedEntityId: instanceId }
@@ -859,7 +888,7 @@ function reduce(state, action, context) {
       if (scene === state.currentScene) return null;
       const remainingSelected = (state.ui.selectedEntityIds || []).filter((id) => id !== action.instanceId);
       return {
-        state: message(t('play.statusItemRemoved'), {
+        state: localizedMessage('play.statusItemRemoved', {}, {
           ...state,
           currentScene: scene,
           ui: {
@@ -881,7 +910,7 @@ function reduce(state, action, context) {
       const idSet = new Set(targetIds);
       const remainingSelected = (state.ui.selectedEntityIds || []).filter((id) => !idSet.has(id));
       return {
-        state: message(t('play.statusItemsRemoved', { count: targetIds.length }), {
+        state: localizedMessage('play.statusItemsRemoved', { count: targetIds.length }, {
           ...state,
           currentScene: scene,
           ui: {
@@ -900,7 +929,7 @@ function reduce(state, action, context) {
         : (state.ui.selectedEntityIds.length >= 2 ? state.ui.selectedEntityIds : state.currentScene.entities.map((e) => e.instanceId));
       const scene = alignEntities(state.currentScene, targetIds, action.alignment, context.getAsset);
       return scene === state.currentScene ? null : {
-        state: message(t('play.statusItemsAligned', { alignment: t(`play.alignmentModes.${action.alignment}`) }), { ...state, currentScene: scene }),
+        state: localizedMessage('play.statusItemsAligned', { alignment: t(`play.alignmentModes.${action.alignment}`) }, { ...state, currentScene: scene }),
         persist: true
       };
     }
@@ -931,7 +960,7 @@ function reduce(state, action, context) {
       const nextPinned = !target.pinned;
       const scene = setEntityPinned(state.currentScene, instanceId, nextPinned);
       return {
-        state: message(t(nextPinned ? 'play.statusItemPinned' : 'play.statusItemUnpinned'), {
+        state: localizedMessage(nextPinned ? 'play.statusItemPinned' : 'play.statusItemUnpinned', {}, {
           ...state,
           currentScene: scene
         }),
@@ -945,7 +974,7 @@ function reduce(state, action, context) {
       if (!targetIds.length) return null;
       const scene = togglePinEntities(state.currentScene, targetIds, action.pinned);
       return scene === state.currentScene ? null : {
-        state: message(t('play.statusPinningUpdated'), { ...state, currentScene: scene }),
+        state: localizedMessage('play.statusPinningUpdated', {}, { ...state, currentScene: scene }),
         persist: true
       };
     }
@@ -956,7 +985,7 @@ function reduce(state, action, context) {
       const scene = attachEntity(state.currentScene, childId, parentId);
       if (scene === state.currentScene) return null;
       return {
-        state: message(t('play.statusItemAttached'), { ...state, currentScene: scene }),
+        state: localizedMessage('play.statusItemAttached', {}, { ...state, currentScene: scene }),
         persist: true
       };
     }
@@ -966,20 +995,20 @@ function reduce(state, action, context) {
       const scene = detachEntity(state.currentScene, childId);
       if (scene === state.currentScene) return null;
       return {
-        state: message(t('play.statusItemDetached'), { ...state, currentScene: scene }),
+        state: localizedMessage('play.statusItemDetached', {}, { ...state, currentScene: scene }),
         persist: true
       };
     }
     case 'scene/duplicateEntity': {
       if (state.currentScene.entities.length >= LIMITS.MAX_ENTITIES || !state.currentScene.entities.some((entity) => entity.instanceId === action.instanceId)) {
-        return { state: message(t('play.statusDuplicateFailed')), result: { ok: false, code: 'LIMIT_OR_NOT_FOUND' } };
+        return { state: localizedMessage('play.statusDuplicateFailed'), result: { ok: false, code: 'LIMIT_OR_NOT_FOUND' } };
       }
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
-      if (!instanceId) return { state: message(t('play.statusDuplicateId')), result: { ok: false, code: 'ID_FAILED' } };
+      if (!instanceId) return { state: localizedMessage('play.statusDuplicateId'), result: { ok: false, code: 'ID_FAILED' } };
       const scene = duplicateEntity(state.currentScene, action.instanceId, instanceId, context.getAsset);
       const duplicate = scene.entities.at(-1);
       return {
-        state: message(t('play.statusItemDuplicated'), {
+        state: localizedMessage('play.statusItemDuplicated', {}, {
           ...state,
           currentScene: scene,
           ui: { ...state.ui, selectedEntityId: duplicate.instanceId, selectedEntityIds: [duplicate.instanceId] }
@@ -990,10 +1019,10 @@ function reduce(state, action, context) {
     }
     case 'scene/duplicateCurrentToLibrary': {
       if (state.scenes.length >= LIMITS.MAX_SCENES) {
-        return { state: message(t('play.statusSceneLibraryFullShort')), result: { ok: false, code: 'LIMIT' } };
+        return { state: localizedMessage('play.statusSceneLibraryFullShort'), result: { ok: false, code: 'LIMIT' } };
       }
       const sceneId = nextUniqueId(context.makeId, state.scenes.map((s) => s.sceneId));
-      if (!sceneId) return { state: message(t('play.statusSceneId')), result: { ok: false, code: 'ID_FAILED' } };
+      if (!sceneId) return { state: localizedMessage('play.statusSceneId'), result: { ok: false, code: 'ID_FAILED' } };
       const stamp = context.now().toISOString();
       const baseTitle = state.currentScene.title !== 'Current Scene' ? state.currentScene.title : 'My Scene';
       const title = truncateGraphemes(action.name || `${baseTitle} (Copy)`, LIMITS.MAX_SCENE_TITLE_LENGTH);
@@ -1002,7 +1031,7 @@ function reduce(state, action, context) {
         const instanceId = nextUniqueId(context.makeId, [...entityIdMap.values()]);
         if (!instanceId) {
           return {
-            state: message(t('play.statusSceneCopyId')),
+            state: localizedMessage('play.statusSceneCopyId'),
             result: { ok: false, code: 'ID_FAILED' }
           };
         }
@@ -1024,7 +1053,7 @@ function reduce(state, action, context) {
         entities: clonedEntities
       };
       return {
-        state: message(t('play.statusSceneSavedCopy', { title }), {
+        state: localizedMessage('play.statusSceneSavedCopy', { title }, {
           ...state,
           scenes: [...state.scenes, clonedScene],
           ui: { ...state.ui, activeSceneLibraryId: sceneId }
@@ -1035,9 +1064,9 @@ function reduce(state, action, context) {
     }
     case 'scene/loadTemplate': {
       const templateScene = instantiateSceneTemplate(action.templateId, context.makeId, state.designer.draft || createStarterDraft(), context.now);
-      if (!templateScene) return { state: message(t('play.statusSceneId')), result: { ok: false, code: 'ID_FAILED' } };
+      if (!templateScene) return { state: localizedMessage('play.statusSceneId'), result: { ok: false, code: 'ID_FAILED' } };
       return {
-        state: message(t('play.statusTemplateLoaded', { title: templateScene.title }), {
+        state: localizedMessage('play.statusTemplateLoaded', { title: templateScene.title }, {
           ...state,
           currentScene: templateScene,
           ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null }
@@ -1048,9 +1077,9 @@ function reduce(state, action, context) {
     }
     case 'scene/new': {
       const sceneId = nextUniqueId(context.makeId, []);
-      if (!sceneId) return { state: message(t('play.statusSceneId')), result: { ok: false, code: 'ID_FAILED' } };
+      if (!sceneId) return { state: localizedMessage('play.statusSceneId'), result: { ok: false, code: 'ID_FAILED' } };
       return {
-        state: message(t('play.statusNewScene'), { ...state, currentScene: createEmptyScene(sceneId, context.now), ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null } }),
+        state: localizedMessage('play.statusNewScene', {}, { ...state, currentScene: createEmptyScene(sceneId, context.now), ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null } }),
         persist: true
       };
     }
@@ -1299,10 +1328,10 @@ function reduce(state, action, context) {
     }
     case 'scene/saveToLibrary': {
       const title = normalizeDisplayName(action.name, LIMITS.MAX_SCENE_TITLE_LENGTH) ?? (state.currentScene.title !== 'Current Scene' ? state.currentScene.title : 'My Scene');
-      if (!title) return { state: message(t('play.statusSceneTitleRequired')), result: { ok: false, code: 'INVALID_NAME' } };
-      if (state.scenes.length >= LIMITS.MAX_SCENES) return { state: message(t('play.statusSceneLibraryFull')), result: { ok: false, code: 'LIMIT' } };
+      if (!title) return { state: localizedMessage('play.statusSceneTitleRequired'), result: { ok: false, code: 'INVALID_NAME' } };
+      if (state.scenes.length >= LIMITS.MAX_SCENES) return { state: localizedMessage('play.statusSceneLibraryFull'), result: { ok: false, code: 'LIMIT' } };
       const sceneId = nextUniqueId(context.makeId, state.scenes.map((s) => s.sceneId));
-      if (!sceneId) return { state: message(t('play.statusSceneId')), result: { ok: false, code: 'ID_FAILED' } };
+      if (!sceneId) return { state: localizedMessage('play.statusSceneId'), result: { ok: false, code: 'ID_FAILED' } };
       const stamp = context.now().toISOString();
       const clonedCurrent = cloneScene(state.currentScene);
       const savedScene = {
@@ -1313,7 +1342,7 @@ function reduce(state, action, context) {
         updatedAt: stamp
       };
       return {
-        state: message(t('play.statusSceneSaved', { title }), {
+        state: localizedMessage('play.statusSceneSaved', { title }, {
           ...state,
           scenes: [...state.scenes, savedScene],
           currentScene: { ...state.currentScene, title, sceneId },
@@ -1326,7 +1355,7 @@ function reduce(state, action, context) {
     case 'scene/updateLibraryScene': {
       const id = action.sceneId ?? state.ui.activeSceneLibraryId ?? state.currentScene.sceneId;
       const index = state.scenes.findIndex((s) => s.sceneId === id);
-      if (index < 0) return { state: message(t('play.statusSavedSceneMissing')), result: { ok: false, code: 'NOT_FOUND' } };
+      if (index < 0) return { state: localizedMessage('play.statusSavedSceneMissing'), result: { ok: false, code: 'NOT_FOUND' } };
       const title = normalizeDisplayName(action.name, LIMITS.MAX_SCENE_TITLE_LENGTH) ?? state.scenes[index].title;
       const stamp = context.now().toISOString();
       const clonedCurrent = cloneScene(state.currentScene);
@@ -1340,7 +1369,7 @@ function reduce(state, action, context) {
       const scenes = [...state.scenes];
       scenes[index] = updated;
       return {
-          state: message(t('play.statusSceneUpdated', { title }), {
+          state: localizedMessage('play.statusSceneUpdated', { title }, {
           ...state,
           scenes,
           currentScene: { ...state.currentScene, title }
@@ -1351,10 +1380,10 @@ function reduce(state, action, context) {
     }
     case 'scene/loadFromLibrary': {
       const found = state.scenes.find((s) => s.sceneId === action.sceneId);
-      if (!found) return { state: message(t('play.statusSavedSceneMissing')), result: { ok: false, code: 'NOT_FOUND' } };
+      if (!found) return { state: localizedMessage('play.statusSavedSceneMissing'), result: { ok: false, code: 'NOT_FOUND' } };
       const loadedScene = cloneScene(found);
       return {
-        state: message(t('play.statusSceneLoaded', { title: found.title }), {
+        state: localizedMessage('play.statusSceneLoaded', { title: found.title }, {
           ...state,
           currentScene: loadedScene,
           ui: { ...state.ui, activeSceneLibraryId: found.sceneId, selectedEntityId: null, selectedEntityIds: [] }
@@ -1374,18 +1403,18 @@ function reduce(state, action, context) {
         ? { ...state.currentScene, title }
         : state.currentScene;
       return {
-        state: message(t('play.statusSceneRenamed'), { ...state, scenes, currentScene: activeCurrent }),
+        state: localizedMessage('play.statusSceneRenamed', {}, { ...state, scenes, currentScene: activeCurrent }),
         persist: true
       };
     }
     case 'scene/duplicateLibraryScene': {
-      if (state.scenes.length >= LIMITS.MAX_SCENES) return { state: message(t('play.statusSceneLibraryFull')), result: { ok: false, code: 'LIMIT' } };
+      if (state.scenes.length >= LIMITS.MAX_SCENES) return { state: localizedMessage('play.statusSceneLibraryFull'), result: { ok: false, code: 'LIMIT' } };
       const original = state.scenes.find((s) => s.sceneId === action.sceneId);
       if (!original) return null;
       const sceneId = nextUniqueId(context.makeId, state.scenes.map((s) => s.sceneId));
       if (!sceneId) {
         return {
-          state: message(t('play.statusSceneId')),
+          state: localizedMessage('play.statusSceneId'),
           result: { ok: false, code: 'ID_FAILED' }
         };
       }
@@ -1395,7 +1424,7 @@ function reduce(state, action, context) {
         const instanceId = nextUniqueId(context.makeId, [...entityIdMap.values()]);
         if (!instanceId) {
           return {
-            state: message(t('play.statusSafeId')),
+            state: localizedMessage('play.statusSafeId'),
             result: { ok: false, code: 'ID_FAILED' }
           };
         }
@@ -1417,7 +1446,7 @@ function reduce(state, action, context) {
         entities: clonedEntities
       };
       return {
-        state: message(t('play.statusSceneDuplicated', { title: cloned.title }), { ...state, scenes: [...state.scenes, cloned] }),
+        state: localizedMessage('play.statusSceneDuplicated', { title: cloned.title }, { ...state, scenes: [...state.scenes, cloned] }),
         persist: true,
         result: { ok: true, sceneId }
       };
@@ -1426,7 +1455,7 @@ function reduce(state, action, context) {
       const scenes = state.scenes.filter((s) => s.sceneId !== action.sceneId);
       if (scenes.length === state.scenes.length) return null;
       return {
-        state: message(t('play.statusSceneRemoved'), {
+        state: localizedMessage('play.statusSceneRemoved', {}, {
           ...state,
           scenes,
           ui: {

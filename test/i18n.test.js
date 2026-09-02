@@ -17,11 +17,14 @@ import {
   getCurrentLanguage,
   t,
   updateDomTranslations,
+  translateMessage,
   TRANSLATIONS,
   LANGUAGE_STORAGE_KEY
 } from '../js/core/i18n.js';
 import { getPaletteColorName } from '../js/core/palette.js';
-import { ASSETS } from '../js/core/asset-catalog.js';
+import { ASSETS, getAsset } from '../js/core/asset-catalog.js';
+import { createAppStore } from '../js/core/app-store.js';
+import { createDefaultEnvelope } from '../js/core/state-schema.js';
 
 test('i18n system defaults to Turkish (tr) with complete dictionary', () => {
   localStorage.clear();
@@ -53,6 +56,27 @@ test('setLanguage switches language and persists to localStorage', () => {
   assert.equal(getCurrentLanguage(), 'tr');
   assert.equal(localStorage.getItem(LANGUAGE_STORAGE_KEY), 'tr');
   assert.equal(t('app.title'), 'Paper Doll Studio');
+});
+
+test('Designer status messages can be retranslated after switching language', () => {
+  const originalLanguage = getCurrentLanguage();
+
+  try {
+    setLanguage('tr');
+    const store = createAppStore(createDefaultEnvelope(), { getAsset });
+    assert.equal(store.getState().ui.message, t('designer.choosePieceFirst'));
+
+    store.dispatch({ type: 'designer/equip', assetId: 'top_hoodie' });
+    const state = store.getState();
+    assert.equal(state.ui.messageKey, 'designer.equipped');
+    assert.deepEqual(state.ui.messageParams, { assetId: 'top_hoodie', slotIds: [] });
+    assert.equal(state.ui.message, 'Rahat kapüşonlu giydirildi.');
+
+    setLanguage('en');
+    assert.equal(translateMessage(state.ui.messageKey, state.ui.messageParams), 'Cozy hoodie equipped.');
+  } finally {
+    setLanguage(originalLanguage);
+  }
 });
 
 test('palette color localization helper works in tr and en', () => {

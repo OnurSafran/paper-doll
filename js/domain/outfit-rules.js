@@ -139,10 +139,10 @@ export function isFaceCompatible(draft, asset, getAsset = () => undefined) {
 
 export function equipWearable(draft, asset, color, getAsset = () => undefined) {
   if (!asset || asset.kind !== 'wearable' || !isOutfitSlot(asset.slot)) {
-    return { draft, changed: false, message: 'That item cannot be equipped.' };
+    return { draft, changed: false, message: 'That item cannot be equipped.', messageKey: 'designer.cannotEquip' };
   }
   if (!isWearableCompatible(draft, asset, getAsset)) {
-    return { draft, changed: false, code: 'INCOMPATIBLE_FIT', message: 'That item does not fit this model.' };
+    return { draft, changed: false, code: 'INCOMPATIBLE_FIT', message: 'That item does not fit this model.', messageKey: 'designer.incompatibleAsset' };
   }
 
   const next = cloneDraft(draft);
@@ -164,17 +164,23 @@ export function equipWearable(draft, asset, color, getAsset = () => undefined) {
   };
 
   const replacement = cleared.length ? ` Replaced ${cleared.join(' and ')}.` : '';
-  return { draft: next, changed: true, message: `${asset.name} equipped.${replacement}` };
+  return {
+    draft: next,
+    changed: true,
+    clearedSlots: cleared,
+    message: `${asset.name} equipped.${replacement}`,
+    messageKey: cleared.length ? 'designer.equippedWithReplacement' : 'designer.equipped'
+  };
 }
 
 export function removeSlot(draft, slot) {
   if (!OUTFIT_SLOTS.includes(slot) || !draft.slots?.[slot]) {
-    return { draft, changed: false, message: 'Nothing to remove.' };
+    return { draft, changed: false, message: 'Nothing to remove.', messageKey: 'designer.nothingToRemove' };
   }
 
   const next = cloneDraft(draft);
   next.slots[slot] = null;
-  return { draft: next, changed: true, message: `${slotLabel(slot)} removed.` };
+  return { draft: next, changed: true, removedSlot: slot, message: `${slotLabel(slot)} removed.`, messageKey: 'designer.slotRemoved' };
 }
 
 export function clearOutfit(draft) {

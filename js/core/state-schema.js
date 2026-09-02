@@ -8,6 +8,7 @@ import {
 } from '../domain/animation-clips.js';
 import { clampCameraX } from './coordinate-space.js';
 import { hasValidDisplayName, normalizeDisplayName } from './text.js';
+import { t } from './i18n.js';
 import {
   CAMERA_CONSTANTS,
   DEFAULT_ATTACH_JOINT,
@@ -84,7 +85,9 @@ export function createRuntimeState(envelope = createDefaultEnvelope()) {
       mode: 'designer',
       selectedEntityId: null,
       selectedEntityIds: [],
-      message: 'Choose an item to begin.',
+      message: t('designer.choosePieceFirst'),
+      messageKey: 'designer.choosePieceFirst',
+      messageParams: {},
       storageStatus: 'saved',
       activeSceneLibraryId: null,
       voicePuppetryActive: false

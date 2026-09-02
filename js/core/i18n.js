@@ -19,6 +19,9 @@ export const TRANSLATIONS = Object.freeze({
     },
     app: {
       title: 'Paper Doll Studio',
+      actionUndone: 'İşlem geri alındı.',
+      actionRedone: 'İşlem yinelendi.',
+      and: 've',
       brand: 'Paper Doll',
       subtitle: 'Stüdyo',
       skipLink: 'Stüdyoya geç',
@@ -128,6 +131,24 @@ export const TRANSLATIONS = Object.freeze({
       editCustomHair: 'Özel saçı düzenle',
       editCustomHairAria: 'Özel saçı Boya bölümünde kopya olarak düzenle',
       missingArtwork: 'Eksik sanat'
+      ,invalidColor: 'Bu renk kullanılamadı.'
+      ,cannotEquip: 'Bu parça giydirilemez.'
+      ,equipped: '{name} giydirildi.'
+      ,equippedWithReplacement: '{name} giydirildi. {slots} değiştirildi.'
+      ,nothingToRemove: 'Çıkarılacak bir şey yok.'
+      ,slotRemoved: '{slot} çıkarıldı.'
+      ,starterRestored: 'Başlangıç bebeği geri yüklendi.'
+      ,outfitCleared: 'Kıyafet çıkarıldı. Saç ve ten rengi korundu.'
+      ,outfitShuffled: 'Yeni kıyafet karıştırıldı! Başka bir tane deneyin veya renkleri ayarlayın.'
+      ,enterName: 'Kaydetmeden önce bir bebek adı girin.'
+      ,dollboxFull: 'Dollbox dolu. Kaydetmeden önce bir bebeği silin.'
+      ,safeIdFailed: 'Bebeğe güvenli bir kimlik atanamadı. Tekrar kaydetmeyi deneyin.'
+      ,dollSaved: '{name} Dollbox’a kaydedildi.'
+      ,presetMissing: 'Bu Dollbox bebeği artık mevcut değil.'
+      ,presetUpdated: '{name} güncellendi.'
+      ,presetOpened: '{name} Tasarımcıda açıldı.'
+      ,dollRenamed: 'Bebeğin adı değiştirildi.'
+      ,dollRemoved: 'Bebek Dollbox’tan kaldırıldı. Sahne kopyaları değişmedi.'
     },
     faceGroups: {
       eyes: 'Gözler',
@@ -1030,6 +1051,9 @@ export const TRANSLATIONS = Object.freeze({
     },
     app: {
       title: 'Paper Doll Studio',
+      actionUndone: 'Action undone.',
+      actionRedone: 'Action redone.',
+      and: 'and',
       brand: 'Paper Doll',
       subtitle: 'Studio',
       skipLink: 'Skip to studio',
@@ -1139,6 +1163,24 @@ export const TRANSLATIONS = Object.freeze({
       editCustomHair: 'Edit custom hair',
       editCustomHairAria: 'Edit custom hair as a copy in Paint Studio',
       missingArtwork: 'Missing artwork'
+      ,invalidColor: 'That color could not be used.'
+      ,cannotEquip: 'That item cannot be equipped.'
+      ,equipped: '{name} equipped.'
+      ,equippedWithReplacement: '{name} equipped. {slots} replaced.'
+      ,nothingToRemove: 'Nothing to remove.'
+      ,slotRemoved: '{slot} removed.'
+      ,starterRestored: 'Starter doll restored.'
+      ,outfitCleared: 'Outfit cleared. Hair and skin tone stayed in place.'
+      ,outfitShuffled: 'Fresh outfit shuffled! Try another or fine-tune the colors.'
+      ,enterName: 'Enter a doll name before saving.'
+      ,dollboxFull: 'Dollbox is full. Delete a preset before saving.'
+      ,safeIdFailed: 'The doll could not be assigned a safe ID. Try saving again.'
+      ,dollSaved: '{name} saved to Dollbox.'
+      ,presetMissing: 'That Dollbox preset no longer exists.'
+      ,presetUpdated: '{name} updated.'
+      ,presetOpened: '{name} opened in Designer.'
+      ,dollRenamed: 'Doll renamed.'
+      ,dollRemoved: 'Doll removed from Dollbox. Scene copies are unchanged.'
     },
     faceGroups: {
       eyes: 'Eyes',
@@ -2108,6 +2150,19 @@ export function assetName(asset, fallback = '') {
   if (!id) return defaultName;
   const translated = t(`assets.${id}`);
   return !translated || translated === `assets.${id}` ? defaultName : translated;
+}
+
+export function translateMessage(key, params = {}) {
+  const resolved = { ...params };
+  if (params.assetId) {
+    resolved.name = assetName(params.assetId, params.name || t('designer.unknownAsset'));
+  }
+  if (Array.isArray(params.slotIds)) {
+    const slotNames = params.slotIds.map((slot) => t(`wardrobeSlots.${slot}`));
+    resolved.slot = slotNames[0] || '';
+    resolved.slots = slotNames.join(` ${t('app.and')} `);
+  }
+  return t(key, resolved);
 }
 
 /**

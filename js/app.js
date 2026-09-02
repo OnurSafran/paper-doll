@@ -35,6 +35,7 @@ import {
   setLanguage,
   getCurrentLanguage,
   t,
+  translateMessage,
   updateDomTranslations
 } from './core/i18n.js';
 
@@ -325,7 +326,9 @@ const toastActions = new Set([
 
 store.subscribe(({ action, previousState, state, persist }) => {
   if (persist) storage.schedule(persistedProjection(state));
-  if (toastActions.has(action.type)) showToast(state.ui.message);
+  if (toastActions.has(action.type)) {
+    showToast(state.ui.messageKey ? translateMessage(state.ui.messageKey, state.ui.messageParams || {}) : state.ui.message);
+  }
 
   if (action.type === 'scene/setCameraX' || action.type === 'scene/panCamera') {
     playView.syncCamera(state);
@@ -492,8 +495,9 @@ function renderApp() {
   if (sceneLibCount) sceneLibCount.textContent = String(state.scenes?.length ?? 0);
   const voiceBtn = $('#voice-puppetry-btn');
   if (voiceBtn) voiceBtn.classList.toggle('voice-puppetry-active', Boolean(state.ui.voicePuppetryActive));
-  $('#designer-status').textContent = state.ui.message;
-  $('#play-status').textContent = state.ui.message;
+  const uiMessage = state.ui.messageKey ? translateMessage(state.ui.messageKey, state.ui.messageParams || {}) : state.ui.message;
+  $('#designer-status').textContent = uiMessage;
+  $('#play-status').textContent = uiMessage;
   if (paintActive) {
     designerView.bumpToken();
     playView.bumpToken();
