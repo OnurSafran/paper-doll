@@ -16,6 +16,7 @@ import { appendAsset, renderAssetPreview } from '../designer/designer-view.js';
 import { getBackgroundLayout } from '../../core/background-layout.js';
 import { createBubbleSvg } from '../../services/export-service.js';
 import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
+import { getLandmarkByBackgroundId } from '../../domain/world-map-catalog.js';
 
 // Context ring placement, in stage logical units. The ring flips above the
 // selection once the selection reaches the stage's lower band, and is otherwise
@@ -76,6 +77,7 @@ export function createPlayView({
   renderDollInto,
   askConfirm,
   openSceneOutlineDialog,
+  openWorldMapDialog,
   customArtRepo,
   openPaintStudio,
   getAsset = getBuiltinAsset,
@@ -314,12 +316,39 @@ export function createPlayView({
     }
   }
 
+  let lastRenderedBgId = null;
+
   function renderBackgroundSelect(state) {
+    const currentBgId = state.currentScene.backgroundId;
     const select = $('#background-select');
-    if (!select) return;
-    select.replaceChildren(...getAssetsByKind('background').map((asset) =>
-      new Option(assetName(asset, asset.name), asset.id, false, asset.id === state.currentScene.backgroundId)
-    ));
+    if (select) {
+      select.replaceChildren(...getAssetsByKind('background').map((asset) =>
+        new Option(assetName(asset, asset.name), asset.id, false, asset.id === currentBgId)
+      ));
+    }
+
+    const currentLocName = $('#current-location-name');
+    if (currentLocName) {
+      const landmark = getLandmarkByBackgroundId(currentBgId);
+      const asset = getAsset(currentBgId);
+      currentLocName.textContent = landmark
+        ? t(landmark.nameKey, assetName(asset, asset?.name || 'Oda'))
+        : assetName(asset, asset?.name || 'Oda');
+    }
+
+    if (lastRenderedBgId !== null && lastRenderedBgId !== currentBgId) {
+      triggerPageFlip();
+    }
+    lastRenderedBgId = currentBgId;
+  }
+
+  function triggerPageFlip() {
+    const stage = $('#play-stage');
+    if (!stage) return;
+    stage.classList.remove('is-page-flipping');
+    void stage.offsetWidth;
+    stage.classList.add('is-page-flipping');
+    setTimeout(() => stage.classList.remove('is-page-flipping'), 450);
   }
 
   const BUBBLE_PRESETS = [
@@ -1218,6 +1247,12 @@ export function createPlayView({
     if (event.key.toLowerCase() === 'o') {
       event.preventDefault();
       openSceneOutlineDialog?.();
+      return;
+    }
+
+    if (event.key.toLowerCase() === 'm') {
+      event.preventDefault();
+      openWorldMapDialog?.();
       return;
     }
 

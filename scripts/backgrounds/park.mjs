@@ -41,13 +41,13 @@ export default function park() {
   out.push(ridge(680, 640, 4, '#74c69d'));
 
   // Winding path, drawn with a seamless wave so it leaves and re-enters at the same height.
-  out.push(`<path d="${wave(760, 735, 2)}" fill="none" stroke="#e6cfa6" stroke-width="72" stroke-linecap="butt"/>`);
-  out.push(`<path d="${wave(760, 735, 2)}" fill="none" stroke="#d3b788" stroke-width="6" stroke-linecap="butt" opacity="0.7"/>`);
+  out.push(`<path d="${wave(760, 735, 2)}" fill="none" stroke="#d3b788" stroke-width="76" stroke-linecap="butt"/>`);
+  out.push(`<path d="${wave(760, 735, 2)}" fill="none" stroke="#e6cfa6" stroke-width="68" stroke-linecap="butt"/>`);
 
   out.push(ridge(858, 838, 4, '#8ed4ac'));
 
   const grass = [];
-  for (let i = 0; i < 26; i += 1) {
+  for (let i = 0; i < 16; i += 1) {
     const x = rand() * W;
     grass.push(wrap(x, W, 40, (px) => tuft(px, 845 + rand() * 45, 26 + rand() * 18, '#3f9d76')));
   }
@@ -55,9 +55,9 @@ export default function park() {
 
   const petals = ['#ffb703', '#ef476f', '#b56576', '#ffd166'];
   const flowers = [];
-  for (let i = 0; i < 16; i += 1) {
+  for (let i = 0; i < 10; i += 1) {
     const x = rand() * W;
-    const y = 700 + rand() * 170;
+    const y = 854 + rand() * 30;
     flowers.push(wrap(x, W, 24, (px) => flower(px, y, petals[i % petals.length])));
   }
   out.push(flowers.join(''));

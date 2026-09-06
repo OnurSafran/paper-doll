@@ -17,6 +17,7 @@
 @import './features/designer.css?v=dc56ed78';
 @import './features/play.css?v=16107641';
 @import './features/paint.css?v=6477e867';
+@import './features/world-map.css?v=7767268d';
 
 /* Global Responsive & Accessibility Queries */
 @import './responsive/responsive.css?v=d9edc524';

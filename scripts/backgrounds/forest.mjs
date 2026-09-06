@@ -1,4 +1,4 @@
-import { INK, R, ridge, rng, star4, svg, wrap } from './lib.mjs';
+import { INK, R, crescent, ridge, rng, star4, svg, wrap } from './lib.mjs';
 import { broadleaf, mushroom, pine, pineFlat, tuft } from './trees.mjs';
 
 const W = 1600;
@@ -14,8 +14,7 @@ export default function forest() {
   out.push(`<rect x="0" y="440" width="${W}" height="130" fill="#3a5063" stroke="none"/>`);
 
   // Crescent paper moon.
-  out.push(`<circle cx="1240" cy="150" r="76" fill="#ffe9a8" stroke="${INK}" stroke-width="5"/>`);
-  out.push(`<circle cx="1284" cy="118" r="66" fill="#2b3a4a" stroke="none"/>`);
+  out.push(crescent(1240, 150, 76, '#ffe9a8'));
 
   // Stars, wrapped so none is cut in half at a seam.
   const stars = [];
@@ -31,9 +30,10 @@ export default function forest() {
 
   // Far ridge of silhouetted conifers, their feet buried by the next ridge.
   const far = [];
-  for (let x = -40; x < W + 40; x += 74) {
+  for (let x = 0; x < W; x += 80) {
     const jitter = (rand() - 0.5) * 26;
-    far.push(pineFlat(x + jitter, 585, 120 + rand() * 70, '#2f4a52'));
+    const height = 120 + rand() * 70;
+    far.push(wrap((x + jitter + W) % W, W, 60, (px) => pineFlat(px, 585, height, '#2f4a52')));
   }
   out.push(`<g stroke="none">${far.join('')}</g>`);
   out.push(ridge(575, 535, 4, '#33544f'));
@@ -60,7 +60,7 @@ export default function forest() {
   // Front bank: ferns, toadstools and fireflies.
   out.push(ridge(848, 826, 4, '#6d9b65'));
   const ferns = [];
-  for (let i = 0; i < 22; i += 1) {
+  for (let i = 0; i < 14; i += 1) {
     const x = rand() * W;
     ferns.push(wrap(x, W, 40, (px) => tuft(px, 830 + rand() * 50, 34 + rand() * 22, '#3f6f4a')));
   }

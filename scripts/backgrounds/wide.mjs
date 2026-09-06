@@ -1,10 +1,10 @@
-import { INK, R, ridge, rng, star4, svg, wave, waveY, wrap } from './lib.mjs';
+import { INK, R, crescent, ridge, rng, star4, svg, wave, waveY, wrap } from './lib.mjs';
 import { broadleaf, pine, pineFlat, tuft } from './trees.mjs';
 
 const H = 900;
 
 /** Gabled cottage with lit windows and a chimney. */
-function cottage(cx, baseY, w, h, { wall, roof, trim = '#f7efe2' }) {
+function cottage(cx, baseY, w, h, { wall, roof, trim = '#f7efe2', snow = false }) {
   const hw = w / 2;
   const bodyTop = baseY - h;
   const roofPeak = bodyTop - h * 0.62;
@@ -13,6 +13,7 @@ function cottage(cx, baseY, w, h, { wall, roof, trim = '#f7efe2' }) {
     `<rect x="${R(cx - hw)}" y="${R(bodyTop)}" width="${R(w)}" height="${R(h)}" fill="${wall}" stroke="${INK}" stroke-width="5"/>`,
     `<rect x="${R(cx + hw * 0.42)}" y="${R(roofPeak - h * 0.34)}" width="${R(w * 0.14)}" height="${R(h * 0.62)}" fill="${roof}" stroke="${INK}" stroke-width="5"/>`,
     `<path d="M${R(cx - hw - w * 0.12)} ${R(bodyTop)}L${R(cx)} ${R(roofPeak)}L${R(cx + hw + w * 0.12)} ${R(bodyTop)}Z" fill="${roof}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>`,
+    snow ? `<path d="M${R(cx - hw - w * 0.12)} ${R(bodyTop)}L${R(cx)} ${R(roofPeak)}L${R(cx + hw + w * 0.12)} ${R(bodyTop)}" fill="none" stroke="#f7fbff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>` : '',
     win(cx - hw * 0.5, bodyTop + h * 0.34, w / 150),
     win(cx + hw * 0.5, bodyTop + h * 0.34, w / 150),
     `<path d="M${R(cx - w * 0.11)} ${R(baseY)}v${R(-h * 0.52)}q${R(w * 0.11)} ${R(-h * 0.2)} ${R(w * 0.22)} 0V${R(baseY)}Z" fill="${trim}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>`,
@@ -47,7 +48,11 @@ export function snowyVillage() {
   out.push(ridge(600, 546, 6, '#63819f', { w: W }));
 
   const far = [];
-  for (let x = -40; x < W + 40; x += 82) far.push(pineFlat(x + (rand() - 0.5) * 24, 640, 130 + rand() * 70, '#33506f'));
+  for (let x = 0; x < W; x += 80) {
+    const cx = (x + (rand() - 0.5) * 24 + W) % W;
+    const height = 130 + rand() * 70;
+    far.push(wrap(cx, W, 64, (px) => pineFlat(px, 640, height, '#33506f')));
+  }
   out.push(`<g stroke="none">${far.join('')}</g>`);
   out.push(ridge(636, 596, 8, '#8fadc9', { w: W }));
 
@@ -57,10 +62,10 @@ export function snowyVillage() {
     [1760, '#e4d3ee', '#6b4f8f'], [2260, '#f2d2c4', '#c1584f'], [2860, '#d9e3f2', '#3f6f8f'], [3200, '#f6e2bd', '#a3563f']
   ];
   for (const [x, wall, roof] of houses) {
-    out.push(wrap(x, W, 200, (px) => cottage(px, 716, 210, 150, { wall, roof })));
+    out.push(wrap(x, W, 200, (px) => cottage(px, 716, 210, 150, { wall, roof, snow: true })));
   }
 
-  // Snowy pines with capped tiers.
+  // Evergreen pines between the snow-capped cottages.
   for (const x of [60, 460, 900, 1500, 2040, 2560, 3100]) {
     out.push(wrap(x, W, 140, (px) => pine(px, 748, 268, { bark: '#5b4636', dark: '#2f5548', mid: '#3b6a56', light: '#4a7f64', sw: 6 })));
   }
@@ -70,7 +75,7 @@ export function snowyVillage() {
 
   // Footprints and snow drifts.
   const drifts = [];
-  for (let i = 0; i < 26; i += 1) {
+  for (let i = 0; i < 16; i += 1) {
     const x = rand() * W;
     const y = 800 + rand() * 70;
     drifts.push(wrap(x, W, 50, (px) => `<ellipse cx="${R(px)}" cy="${R(y)}" rx="${R(26 + rand() * 26)}" ry="${R(9 + rand() * 6)}" fill="#dceaf6" stroke="none"/>`));
@@ -79,7 +84,7 @@ export function snowyVillage() {
 
   // Falling snow.
   const flakes = [];
-  for (let i = 0; i < 70; i += 1) {
+  for (let i = 0; i < 42; i += 1) {
     const x = rand() * W;
     const y = rand() * 860;
     flakes.push(wrap(x, W, 20, (px) => `<circle cx="${R(px)}" cy="${R(y)}" r="${R(3 + rand() * 5)}" fill="#ffffff" opacity="0.9"/>`));
@@ -118,29 +123,34 @@ export function citySunset() {
   out.push(`<g fill="none" stroke="${INK}" stroke-width="5">${[[700, 250, 1], [760, 215, 0.7], [2600, 300, 0.85]]
     .map(([x, y, s]) => wrap(x, W, 40, (px) => `<path d="M${R(px - 26 * s)} ${R(y)}q${R(13 * s)} ${R(-15 * s)} ${R(26 * s)} 0q${R(13 * s)} ${R(-15 * s)} ${R(26 * s)} 0"/>`)).join('')}</g>`);
 
-  // Far skyline: block towers on a repeating rhythm, silhouetted.
-  const skyline = (baseY, fill, step, seed) => {
+  // Build each tower and its windows together, then wrap the whole silhouette.
+  // Fixed bay widths divide the panorama; random detail never breaks the seam.
+  const skyline = (baseY, fill, step, seed, lit = false) => {
     const r = rng(seed);
     const parts = [];
-    for (let x = -60; x < W + 60; x += step) {
+    for (let x = 0; x < W; x += step) {
       const bw = step * (0.62 + r() * 0.3);
       const bh = 90 + r() * 210;
-      parts.push(`<rect x="${R(x)}" y="${R(baseY - bh)}" width="${R(bw)}" height="${R(bh)}" fill="${fill}"/>`);
-      if (r() > 0.66) parts.push(`<rect x="${R(x + bw * 0.32)}" y="${R(baseY - bh - 46)}" width="${R(bw * 0.34)}" height="46" fill="${fill}"/>`);
+      const top = baseY - bh;
+      const crown = r() > 0.66;
+      const windows = [];
+      if (lit) {
+        for (let wy = top + 24; wy < Math.min(baseY - 20, 630); wy += 34) {
+          for (let wx = 18; wx < bw - 18; wx += 26) {
+            if (r() > 0.55) windows.push(`<rect x="${R(wx)}" y="${R(wy)}" width="9" height="13" fill="#ffd98a" opacity="0.7"/>`);
+          }
+        }
+      }
+      parts.push(wrap(x, W, bw + 4, (px) => `<g transform="translate(${R(px - bw / 2)} 0)">
+        <rect x="0" y="${R(top)}" width="${R(bw)}" height="${R(bh)}" fill="${fill}"/>
+        ${crown ? `<rect x="${R(bw * 0.32)}" y="${R(top - 46)}" width="${R(bw * 0.34)}" height="46" fill="${fill}"/>` : ''}
+        ${windows.join('')}
+      </g>`));
     }
     return `<g stroke="none">${parts.join('')}</g>`;
   };
-  out.push(skyline(660, '#8a5a75', 96, 4242));
-  out.push(skyline(700, '#5f3f5e', 128, 9090));
-
-  // Lit windows on the nearer skyline band.
-  const lights = [];
-  for (let i = 0; i < 220; i += 1) {
-    const x = rand() * W;
-    const y = 520 + rand() * 170;
-    lights.push(`<rect x="${R(x)}" y="${R(y)}" width="9" height="13" fill="#ffd98a" opacity="${R(0.5 + rand() * 0.5)}"/>`);
-  }
-  out.push(`<g stroke="none">${lights.join('')}</g>`);
+  out.push(skyline(660, '#8a5a75', 100, 4242));
+  out.push(skyline(700, '#5f3f5e', 128, 9090, true));
 
   // Foreground rooftop: full-width deck and parapet, both seamless by construction.
   out.push(`<rect x="0" y="700" width="${W}" height="${H - 700}" fill="#8d6b5c" stroke="none"/>`);
@@ -163,13 +173,13 @@ export function citySunset() {
   out.push(`<path d="${wave(swagTop, swagTop + swagDrop, 8, W)}" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="butt"/>`);
   const bulbColors = ['#ffd166', '#ef476f', '#8ecae6', '#a8e6a1'];
   const bulbs = [];
-  for (let x = 40; x < W; x += 80) {
+  for (let x = 80; x < W; x += 160) {
     const y = waveY(swagTop, swagTop + swagDrop, 8, x, W);
-    bulbs.push(`<line x1="${x}" y1="${R(y)}" x2="${x}" y2="${R(y + 18)}" stroke="${INK}" stroke-width="4"/><circle cx="${x}" cy="${R(y + 32)}" r="14" fill="${bulbColors[(x / 80) % bulbColors.length]}" stroke="${INK}" stroke-width="5"/>`);
+    bulbs.push(`<line x1="${x}" y1="${R(y)}" x2="${x}" y2="${R(y + 18)}" stroke="${INK}" stroke-width="4"/><circle cx="${x}" cy="${R(y + 32)}" r="14" fill="${bulbColors[((x - 80) / 160) % bulbColors.length]}" stroke="${INK}" stroke-width="5"/>`);
   }
   // Posts at the swag's high points, so the string is visibly supported.
   const posts = [];
-  for (let x = 0; x <= W; x += 800) {
+  for (let x = 0; x < W; x += 800) {
     posts.push(wrap(x, W, 30, (px) => `<line x1="${R(px)}" y1="${R(swagTop - 14)}" x2="${R(px)}" y2="646" stroke="${INK}" stroke-width="18" stroke-linecap="round"/><line x1="${R(px)}" y1="${R(swagTop - 14)}" x2="${R(px)}" y2="646" stroke="#c99b80" stroke-width="10" stroke-linecap="round"/><circle cx="${R(px)}" cy="${R(swagTop - 26)}" r="12" fill="#ffd98a" stroke="${INK}" stroke-width="5"/>`));
   }
   out.push(posts.join(''));
@@ -193,7 +203,7 @@ export function citySunset() {
   </g>`));
 
   const gravel = [];
-  for (let i = 0; i < 40; i += 1) {
+  for (let i = 0; i < 20; i += 1) {
     const x = rand() * W;
     gravel.push(wrap(x, W, 20, (px) => `<ellipse cx="${R(px)}" cy="${R(730 + rand() * 150)}" rx="${R(5 + rand() * 5)}" ry="${R(3 + rand() * 3)}" fill="#7a5b4e" stroke="none"/>`));
   }
@@ -371,7 +381,7 @@ export function candyLand() {
     const x = rand() * W;
     const y = 856 + rand() * 36;
     const a = Math.round(rand() * 180);
-    sprinkles.push(wrap(x, W, 24, (px) => `<rect x="${R(px)}" y="${R(y)}" width="26" height="10" rx="5" fill="${gum[i % gum.length]}" transform="rotate(${a} ${R(px + 13)} ${R(y + 5)})"/>`));
+    sprinkles.push(wrap(x, W, 40, (px) => `<rect x="${R(px)}" y="${R(y)}" width="26" height="10" rx="5" fill="${gum[i % gum.length]}" transform="rotate(${a} ${R(px + 13)} ${R(y + 5)})"/>`));
   }
   out.push(`<g stroke="none">${sprinkles.join('')}</g>`);
 
@@ -390,8 +400,7 @@ export function moonlitMeadow() {
   out.push(`<rect x="0" y="370" width="${W}" height="170" fill="#3a5878" stroke="none"/>`);
 
   // Crescent moon.
-  out.push(`<circle cx="2480" cy="170" r="92" fill="#fff1b8" stroke="${INK}" stroke-width="6"/>`);
-  out.push(`<circle cx="2522" cy="140" r="80" fill="#2f4763" stroke="none"/>`);
+  out.push(crescent(2480, 170, 92, '#fff1b8', 6));
 
   const stars = [];
   for (let i = 0; i < 40; i += 1) {
@@ -434,7 +443,7 @@ export function moonlitMeadow() {
   out.push(ridge(838, 808, 8, '#6d9b65', { w: W, width: 6 }));
 
   const grass = [];
-  for (let i = 0; i < 40; i += 1) {
+  for (let i = 0; i < 26; i += 1) {
     const x = rand() * W;
     grass.push(wrap(x, W, 44, (px) => tuft(px, 830 + rand() * 60, 30 + rand() * 22, '#3f6f4a', 5)));
   }

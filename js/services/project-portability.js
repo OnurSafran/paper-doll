@@ -567,7 +567,15 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
     savedAt: now().toISOString(),
     settings: {
       ...incomingEnvelope.settings,
-      ...currentEnvelope.settings
+      ...currentEnvelope.settings,
+      stamps: [...new Set([
+        ...(Array.isArray(currentEnvelope.settings?.stamps) ? currentEnvelope.settings.stamps : []),
+        ...(Array.isArray(incomingEnvelope.settings?.stamps) ? incomingEnvelope.settings.stamps : [])
+      ])],
+      unlockedBackgrounds: [...new Set([
+        ...(Array.isArray(currentEnvelope.settings?.unlockedBackgrounds) ? currentEnvelope.settings.unlockedBackgrounds : []),
+        ...(Array.isArray(incomingEnvelope.settings?.unlockedBackgrounds) ? incomingEnvelope.settings.unlockedBackgrounds : [])
+      ])]
     },
     customAssets: mergedCustomAssets,
     presets: mergedPresets,

@@ -47,10 +47,17 @@ export function rng(seed) {
  * so the halves rejoin across the seam.
  */
 export function wrap(x, w, margin, draw) {
-  const out = [draw(x)];
-  if (x < margin) out.push(draw(x + w));
-  if (x > w - margin) out.push(draw(x - w));
+  // Copy the same geometry: drawing twice can reroll random sizes or positions.
+  const shape = draw(x);
+  const out = [shape];
+  if (x < margin) out.push(`<g transform="translate(${w} 0)">${shape}</g>`);
+  if (x > w - margin) out.push(`<g transform="translate(${-w} 0)">${shape}</g>`);
   return out.join('\n');
+}
+
+/** A true crescent silhouette, with no sky-colored disc covering the sky bands. */
+export function crescent(cx, cy, r, fill, width = 5) {
+  return `<path d="M${R(cx + r * 0.42)} ${R(cy - r * 0.91)}A${r} ${r} 0 1 0 ${R(cx + r * 0.78)} ${R(cy + r * 0.63)}C${R(cx - r * 0.6)} ${R(cy + r * 0.8)} ${R(cx - r * 0.88)} ${R(cy - r * 0.62)} ${R(cx + r * 0.42)} ${R(cy - r * 0.91)}Z" fill="${fill}" stroke="${INK}" stroke-width="${width}"/>`;
 }
 
 export function svg(id, w, h, body) {

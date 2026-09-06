@@ -58,7 +58,12 @@ export function createDefaultEnvelope() {
     schemaVersion: SCHEMA_VERSION,
     revision: 1,
     savedAt: new Date(0).toISOString(),
-    settings: { reducedMotion: DEFAULT_REDUCED_MOTION, soundEnabled: false },
+    settings: {
+      reducedMotion: DEFAULT_REDUCED_MOTION,
+      soundEnabled: false,
+      stamps: [],
+      unlockedBackgrounds: []
+    },
     customAssets: [],
     presets: [],
     scenes: [],
@@ -70,7 +75,11 @@ export function createRuntimeState(envelope = createDefaultEnvelope()) {
   return {
     schemaVersion: SCHEMA_VERSION,
     revision: Number.isInteger(envelope?.revision) && envelope.revision >= 1 ? envelope.revision : 1,
-    settings: { ...envelope.settings },
+    settings: {
+      ...envelope.settings,
+      stamps: Array.isArray(envelope?.settings?.stamps) ? [...envelope.settings.stamps] : [],
+      unlockedBackgrounds: Array.isArray(envelope?.settings?.unlockedBackgrounds) ? [...envelope.settings.unlockedBackgrounds] : []
+    },
     customAssets: (envelope.customAssets || []).map(cloneCustomAsset),
     presets: (envelope.presets || []).map(clonePreset),
     scenes: (envelope.scenes || []).map(cloneScene),
@@ -100,7 +109,11 @@ export function persistedProjection(state, now = () => new Date(), revision = st
     schemaVersion: SCHEMA_VERSION,
     revision: Number.isInteger(revision) && revision >= 1 ? revision : 1,
     savedAt: now().toISOString(),
-    settings: { ...state.settings },
+    settings: {
+      ...state.settings,
+      stamps: Array.isArray(state.settings?.stamps) ? [...state.settings.stamps] : [],
+      unlockedBackgrounds: Array.isArray(state.settings?.unlockedBackgrounds) ? [...state.settings.unlockedBackgrounds] : []
+    },
     customAssets: (state.customAssets || []).map(cloneCustomAsset),
     presets: state.presets.map(clonePreset),
     scenes: (state.scenes || []).map(cloneScene),
@@ -306,7 +319,9 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
         reducedMotion: isReducedMotionOption(value.settings?.reducedMotion)
           ? value.settings.reducedMotion
           : DEFAULT_REDUCED_MOTION,
-        soundEnabled: Boolean(value.settings?.soundEnabled)
+        soundEnabled: Boolean(value.settings?.soundEnabled),
+        stamps: sanitizeStringList(value.settings?.stamps),
+        unlockedBackgrounds: sanitizeStringList(value.settings?.unlockedBackgrounds)
       },
       customAssets,
       presets,
@@ -742,4 +757,15 @@ function migrateEnvelope(value, warnings) {
     };
   }
   return value;
+}
+
+function sanitizeStringList(list) {
+  if (!Array.isArray(list)) return [];
+  const sanitized = [];
+  for (const item of list) {
+    if (typeof item === 'string' && item.trim().length > 0 && item.length <= 50) {
+      sanitized.push(item.trim());
+    }
+  }
+  return [...new Set(sanitized)];
 }

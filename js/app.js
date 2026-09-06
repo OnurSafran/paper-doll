@@ -18,6 +18,8 @@ import { createPaintView } from './features/paint/paint-view.js';
 import { createPlayView, findSceneSkinSvg } from './features/play/play-view.js';
 import { createSceneOutlineView } from './features/play/scene-outline-view.js';
 import { createSceneBookView } from './features/scene-book/scene-book-view.js';
+import { createWorldMapView } from './features/world-map/world-map-view.js';
+import { enableDialogLightDismiss } from './core/dialog-dismiss.js';
 import { persistedProjection } from './core/state-schema.js';
 import { classifyError, executeSafeTeardown } from './core/error-boundary.js';
 import { CLEARABLE_OUTFIT_SLOTS, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, LIMITS } from './domain/vocabulary.js';
@@ -82,6 +84,8 @@ function showToast(message) {
   $('#toast-region').append(toast);
   window.setTimeout(() => toast.remove(), 2900);
 }
+
+export { enableDialogLightDismiss };
 
 function askConfirm(title, message) {
   const show = () => new Promise((resolve) => {
@@ -207,6 +211,15 @@ const sceneOutlineView = createSceneOutlineView({
   getAsset: getEffectiveAsset
 });
 
+const worldMapView = createWorldMapView({
+  store,
+  $,
+  $$,
+  renderDollInto: designerView.renderDollInto,
+  customArtRepo,
+  getAsset: getEffectiveAsset
+});
+
 const playView = createPlayView({
   store,
   $,
@@ -214,6 +227,7 @@ const playView = createPlayView({
   renderDollInto: designerView.renderDollInto,
   askConfirm,
   openSceneOutlineDialog: () => sceneOutlineView.openSceneOutlineDialog(),
+  openWorldMapDialog: () => worldMapView.openWorldMapDialog(),
   customArtRepo,
   openPaintStudio,
   getAsset: getEffectiveAsset,
@@ -573,6 +587,10 @@ function wireStaticEvents() {
     }
   });
 
+  // World Map dialog wiring
+  $('#open-world-map-btn')?.addEventListener('click', () => worldMapView.openWorldMapDialog());
+  $('#close-world-map')?.addEventListener('click', () => worldMapView.closeWorldMapDialog());
+
   // Scene Library, Templates, Outline & Save Scene dialog wiring
   $('#scene-templates-btn')?.addEventListener('click', () => sceneBookView.openSceneTemplatesDialog());
   $('#close-scene-templates')?.addEventListener('click', () => $('#scene-templates-dialog')?.close());
@@ -600,6 +618,9 @@ function wireStaticEvents() {
     store.dispatch({ type: 'scene/updateLibraryScene', name: title });
     $('#save-scene-dialog')?.close();
   });
+
+  // Light-dismiss wiring for library dialogs (outside click closes dialog)
+  $$('dialog[closedby="any"], dialog.library-dialog').forEach(enableDialogLightDismiss);
 
   // Alignment buttons wiring
   $('#alignment-controls')?.addEventListener('click', (event) => {
@@ -997,6 +1018,16 @@ function handleGlobalShortcuts(event) {
   if (event.target.matches('input, textarea, select, [contenteditable="true"]') || document.querySelector('dialog[open]')) return;
   const isMac = typeof navigator !== 'undefined' && (/Mac|iPod|iPhone|iPad/.test(navigator.platform) || /Macintosh/.test(navigator.userAgent));
   const modifier = isMac ? event.metaKey : event.ctrlKey;
+
+  // 'm' shortcut for World Map in Play mode without modifier
+  if (!modifier && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'm') {
+    if (store.getState().activeTab === 'play') {
+      event.preventDefault();
+      worldMapView.openWorldMapDialog();
+      return;
+    }
+  }
+
   if (!modifier || event.altKey) return;
   const key = event.key.toLowerCase();
   if (key === 'z') {

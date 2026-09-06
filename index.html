@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <title>Paper Doll Studio</title>
     <link rel="stylesheet" href="css/tokens.css?v=5cb25082">
-    <link rel="stylesheet" href="css/app.css?v=d348ede7">
+    <link rel="stylesheet" href="css/app.css?v=3c674d3d">
   </head>
   <body>
     <a class="skip-link" href="#main-content" data-i18n="app.skipLink">Stüdyoya geç</a>
@@ -145,8 +145,9 @@
           <div class="play-title-group">
             <h1 id="play-title" data-i18n="play.title" class="visually-hidden">Oyun Alanı</h1>
             <div class="scene-picker-group">
-              <label for="background-select" data-i18n="play.backgroundLabel">🎨 Arka Plan:</label>
-              <select id="background-select"></select>
+              <button id="open-world-map-btn" class="button secondary compact-action world-map-pill" type="button" aria-haspopup="dialog" aria-expanded="false" data-i18n-title="worldMap.openTitle" title="Diyar Haritasını Aç (M)">🗺️ <span data-i18n="worldMap.btnLabel">Harita:</span> <span id="current-location-name" class="world-map-pill-name">Sıcak Yatak Odası</span> ▾</button>
+              <label for="background-select" data-i18n="play.backgroundLabel" class="visually-hidden">🎨 Arka Plan:</label>
+              <select id="background-select" class="visually-hidden" tabindex="-1"></select>
             </div>
             <div class="scene-picker-group stage-width-group">
               <label for="stage-width-select" data-i18n="play.stageLabel">📐 Sahne:</label>
@@ -542,7 +543,7 @@
 
     <footer id="app-footer" class="app-footer">
       <div class="app-footer-inner">
-        <span class="app-footer-version">Paper Doll Studio <strong>v1.18</strong></span>
+        <span class="app-footer-version">Paper Doll Studio <strong>v1.19</strong></span>
         <span class="footer-divider" aria-hidden="true">·</span>
         <button id="footer-hard-reset-btn" class="text-button inline-refresh-btn" type="button" data-i18n-title="app.clearingCache" title="Önbelleği temizle ve en son sürümü yeniden yükle" data-i18n="app.hardReset">🔄 Yenile ve Önbelleği Temizle</button>
       </div>
@@ -584,7 +585,7 @@
       </form>
     </dialog>
 
-    <dialog id="project-dialog" class="library-dialog project-dialog">
+    <dialog id="project-dialog" class="library-dialog project-dialog" closedby="any">
       <div class="dialog-header">
         <div>
           <span class="eyebrow" data-i18n="projectDialog.eyebrow">Stüdyo Taşınabilirliği</span>
@@ -656,14 +657,14 @@
             <p class="panel-copy" data-i18n="projectDialog.updateCopy">Geçici tarayıcı komut dosyası önbelleklerini temizlemek veya en yeni stüdyo sürümünü yeniden yüklemek isterseniz, tam sıfırlama yapabilirsiniz. Depolamadaki kayıtlı bebekler ve sahneler güvende kalır.</p>
           </div>
           <div class="export-meta-row">
-            <span class="app-version-badge">Paper Doll Studio <strong>v1.18</strong></span>
+            <span class="app-version-badge">Paper Doll Studio <strong>v1.19</strong></span>
             <button id="project-hard-reset-btn" class="button secondary" type="button" data-i18n-title="projectDialog.forceReloadBtn" title="Önbelleğe alınan komut dosyalarını temizle ve uygulamayı yeniden yükle" data-i18n="projectDialog.forceReloadBtn">🔄 Zorla Yenile ve Önbelleği Temizle</button>
           </div>
         </section>
       </div>
     </dialog>
 
-    <dialog id="guide-dialog" class="library-dialog guide-dialog" aria-labelledby="guide-dialog-title">
+    <dialog id="guide-dialog" class="library-dialog guide-dialog" aria-labelledby="guide-dialog-title" closedby="any">
       <div class="dialog-header">
         <div>
           <span class="eyebrow" data-i18n="guideDialog.eyebrow">Kullanım Rehberi & İpuçları</span>
@@ -953,7 +954,602 @@
       </div>
     </dialog>
 
-    <dialog id="scene-templates-dialog" class="library-dialog">
+    <dialog id="world-map-dialog" class="library-dialog world-map-dialog" aria-labelledby="world-map-title" closedby="any">
+      <div class="world-map-container">
+        <div class="world-map-header">
+          <div class="world-map-header-info">
+            <div class="world-map-title-group">
+              <span class="eyebrow" data-i18n="worldMap.eyebrow">Kâğıttan Masal Haritası</span>
+              <h2 id="world-map-title" data-i18n="worldMap.title">🗺️ Diyar Haritası</h2>
+            </div>
+            <span id="world-map-stamp-counter" class="world-map-stamp-badge">0/11 Hatıra Pulu</span>
+          </div>
+          <button id="close-world-map" class="icon-close-btn" type="button" data-i18n-aria-label="worldMap.closeAria" aria-label="Diyar Haritasını Kapat">✕</button>
+        </div>
+
+        <div class="world-map-viewport">
+          <div class="world-map-stage">
+            <div id="world-map-camera" class="world-map-camera" tabindex="0" role="group" data-i18n-aria-label="worldMap.cameraAria" aria-label="Harita kamerası — sürükleyerek veya ok tuşlarıyla gezinin">
+              <div id="world-map-svg-container" class="world-map-svg-frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 900" width="2400" height="900" preserveAspectRatio="xMidYMid meet" class="world-map-svg" role="group" data-i18n-aria-label="worldMap.svgAria" aria-label="Kâğıttan Masal Haritası">
+  <defs>
+    <clipPath id="world-map-terrain-clip">
+      <rect x="34" y="34" width="2332" height="832" rx="12"/>
+    </clipPath>
+    <!-- Paper texture filters & drop shadows -->
+    <filter id="paper-drop-shadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#4a3728" flood-opacity="0.18"/>
+    </filter>
+    <filter id="landmark-hover-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#2d1e14" flood-opacity="0.25"/>
+    </filter>
+    <filter id="active-marker-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#ffb703" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- ================= MAP BASE PARCHMENT (2400 x 900 wide canvas) ================= -->
+  <g id="map-background">
+    <!-- Parchment base -->
+    <rect x="12" y="12" width="2376" height="876" rx="28" fill="#faf3e0" stroke="#d4b996" stroke-width="3"/>
+    <rect x="24" y="24" width="2352" height="852" rx="20" fill="#fdf8ec" stroke="#ebd5b3" stroke-width="1.5" stroke-dasharray="8 4"/>
+
+    <!-- Storybook concertina fold creases -->
+    <path d="M 799 24 L 799 876" stroke="#c9a882" stroke-width="1.2" stroke-opacity="0.55"/>
+    <path d="M 801 24 L 801 876" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.7"/>
+    <path d="M 1599 24 L 1599 876" stroke="#c9a882" stroke-width="1.2" stroke-opacity="0.55"/>
+    <path d="M 1601 24 L 1601 876" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.7"/>
+    <path d="M 24 449 L 2376 449" stroke="#c9a882" stroke-width="1.2" stroke-opacity="0.55"/>
+    <path d="M 24 451 L 2376 451" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.7"/>
+
+    <!-- Keep wide river/shoreline strokes inside the parchment border. -->
+    <g clip-path="url(#world-map-terrain-clip)">
+    <!-- Biome Region 1: Sevimli Kasaba (Cozy Town) backdrop -->
+    <path d="M 34 34 C 300 50, 560 26, 782 40 C 806 250, 792 470, 800 640 C 806 760, 780 830, 770 866 C 520 852, 260 872, 34 862 C 44 600, 26 300, 34 34 Z" fill="#fdf0e2" opacity="0.62"/>
+    <!-- Cobblestone lanes linking the four town landmarks -->
+    <path d="M 170 392 C 268 452, 356 372, 450 358" fill="none" stroke="#d5bdaf" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 12" opacity="0.85"/>
+    <path d="M 458 362 C 570 372, 606 456, 618 542" fill="none" stroke="#d5bdaf" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 12" opacity="0.85"/>
+    <path d="M 604 636 C 490 710, 360 726, 250 716" fill="none" stroke="#d5bdaf" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 12" opacity="0.85"/>
+    <!-- Town meadow tufts -->
+    <path d="M 700 200 q 14 -22 28 0" fill="none" stroke="#e2cdb9" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 120 540 q 14 -22 28 0" fill="none" stroke="#e2cdb9" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 400 800 q 14 -22 28 0" fill="none" stroke="#e2cdb9" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+
+    <!-- Biome Region 2: Doganin Kalbi (The Wilds) backdrop -->
+    <path d="M 806 40 C 1040 22, 1300 52, 1560 36 C 1584 260, 1570 520, 1580 866 C 1320 850, 1060 872, 796 862 C 812 660, 790 300, 806 40 Z" fill="#eaf3ea" opacity="0.66"/>
+    <!-- Forest river winding the length of the wilds -->
+    <path d="M 880 34 C 930 190, 850 330, 910 470 C 968 606, 1088 704, 1108 866" fill="none" stroke="#a3c4bc" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
+    <path d="M 880 34 C 930 190, 850 330, 910 470 C 968 606, 1088 704, 1108 866" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="7 16" opacity="0.75"/>
+    <!-- Shoreline sweeping past the pier -->
+    <path d="M 1320 34 C 1352 200, 1300 330, 1360 452 C 1424 580, 1556 640, 1572 866" fill="none" stroke="#cfdfd7" stroke-width="120" stroke-linecap="round" opacity="0.35"/>
+    <path d="M 1330 34 C 1362 200, 1310 330, 1370 452 C 1434 580, 1566 640, 1582 866" fill="none" stroke="#8cbdb9" stroke-width="6" stroke-dasharray="14 10" opacity="0.5"/>
+    <!-- Woodland canopy tufts -->
+    <path d="M 1010 620 q 18 -26 36 0" fill="none" stroke="#c2dcc2" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+    <path d="M 1150 200 q 18 -26 36 0" fill="none" stroke="#c2dcc2" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+    <path d="M 900 760 q 18 -26 36 0" fill="none" stroke="#c2dcc2" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+
+    <!-- Biome Region 3: Ruya Diyarlari (Dream Realms) backdrop -->
+    <path d="M 1590 36 C 1860 20, 2120 52, 2364 36 C 2352 300, 2372 600, 2364 864 C 2100 874, 1840 850, 1584 866 C 1600 600, 1574 300, 1590 36 Z" fill="#f6edfb" opacity="0.66"/>
+    <!-- Twilight hill contours -->
+    <path d="M 1620 430 C 1760 350, 1900 412, 2040 380 C 2170 350, 2280 402, 2360 386" fill="none" stroke="#d8bbff" stroke-width="2.5" stroke-dasharray="7 7" opacity="0.55"/>
+    <path d="M 1608 776 C 1780 700, 1960 760, 2120 726 C 2240 700, 2310 738, 2364 728" fill="none" stroke="#d8bbff" stroke-width="2.5" stroke-dasharray="7 7" opacity="0.55"/>
+    <!-- Dream stars -->
+    <path d="M 1680 540 l 5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 Z" fill="#cbb0ea" opacity="0.7"/>
+    <path d="M 2300 540 l 5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 Z" fill="#cbb0ea" opacity="0.7"/>
+    <path d="M 1960 830 l 4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 Z" fill="#cbb0ea" opacity="0.6"/>
+    <path d="M 2240 170 l 4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 Z" fill="#cbb0ea" opacity="0.6"/>
+
+    </g>
+
+    <!-- Decorative Compass Rose (top-right of the Dream Realms) -->
+    <g transform="translate(2286, 118)" opacity="0.45">
+      <circle cx="0" cy="0" r="28" fill="none" stroke="#a3815c" stroke-width="1.5"/>
+      <circle cx="0" cy="0" r="22" fill="none" stroke="#a3815c" stroke-width="0.8" stroke-dasharray="2 2"/>
+      <polygon points="0,-26 5,-5 0,0 -5,-5" fill="#a3815c"/>
+      <polygon points="0,26 5,5 0,0 -5,5" fill="#8c6a47"/>
+      <polygon points="26,0 5,5 0,0 5,-5" fill="#8c6a47"/>
+      <polygon points="-26,0 -5,5 0,0 -5,-5" fill="#a3815c"/>
+      <text x="0" y="-29" font-family="'Outfit', sans-serif" font-size="9" font-weight="bold" fill="#78593a" text-anchor="middle" data-i18n="worldMap.compassNorth">K</text>
+      <text x="0" y="37" font-family="'Outfit', sans-serif" font-size="9" font-weight="bold" fill="#78593a" text-anchor="middle" data-i18n="worldMap.compassSouth">G</text>
+      <text x="35" y="3" font-family="'Outfit', sans-serif" font-size="9" font-weight="bold" fill="#78593a" text-anchor="middle" data-i18n="worldMap.compassEast">D</text>
+      <text x="-35" y="3" font-family="'Outfit', sans-serif" font-size="9" font-weight="bold" fill="#78593a" text-anchor="middle" data-i18n="worldMap.compassWest">B</text>
+    </g>
+  </g>
+
+  <!-- ================= BIOME TITLES & LABELS ================= -->
+  <g id="biome-labels" font-family="'Outfit', sans-serif" font-weight="800" text-anchor="middle" opacity="0.78">
+    <!-- Cozy Town Banner -->
+    <g transform="translate(400, 86)">
+      <rect x="-105" y="-16" width="210" height="32" rx="16" fill="#f4dfcf" stroke="#dcbba3" stroke-width="1.5"/>
+      <text x="0" y="6" font-size="15" fill="#824c31" data-i18n="worldMap.biomes.cozyTown.banner">🏡 SEVİMLİ KASABA</text>
+    </g>
+    <!-- The Wilds Banner -->
+    <g transform="translate(1200, 86)">
+      <rect x="-100" y="-16" width="200" height="32" rx="16" fill="#d9ebd9" stroke="#b2d4b2" stroke-width="1.5"/>
+      <text x="0" y="6" font-size="15" fill="#355e3b" data-i18n="worldMap.biomes.theWilds.banner">🌲 DOĞANIN KALBİ</text>
+    </g>
+    <!-- Dream Realms Banner -->
+    <g transform="translate(1900, 86)">
+      <rect x="-105" y="-16" width="210" height="32" rx="16" fill="#e9daf7" stroke="#ceb3ea" stroke-width="1.5"/>
+      <text x="0" y="6" font-size="15" fill="#582a72" data-i18n="worldMap.biomes.dreamRealms.banner">✨ RÜYA DİYARLARI</text>
+    </g>
+  </g>
+
+  <!-- ================= 11 ILLUSTRATED LANDMARKS ================= -->
+
+  <!-- 1. BEDROOM: Paper Cottage with Glowing Windows -->
+  <g class="map-landmark-anchor" data-landmark-id="bedroom"><g id="landmark-bedroom" class="map-landmark" data-landmark-id="bedroom" data-bg-id="bg_bedroom" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.bedroom.name" aria-label="Sıcak Yatak Odası">
+    <!-- Landmark Base Hit Box -->
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Cottage Paper Body -->
+    <rect x="-42" y="-18" width="84" height="60" rx="6" fill="#fcf6ec" stroke="#b08968" stroke-width="2"/>
+    <!-- Timber beams -->
+    <line x1="-42" y1="12" x2="42" y2="12" stroke="#b08968" stroke-width="1.5"/>
+    <line x1="0" y1="-18" x2="0" y2="42" stroke="#b08968" stroke-width="1.5"/>
+    <!-- Pitch Roof -->
+    <polygon points="-50,-15 0,-52 50,-15" fill="#cf5c36" stroke="#93361a" stroke-width="2"/>
+    <!-- Brick Chimney & Easter Egg -->
+    <g id="egg-cottage-chimney" class="easter-egg-trigger" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.chimney.name" aria-label="Sıcak Baca Pulu">
+      <circle cx="27" cy="-52" r="22" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <rect x="20" y="-48" width="14" height="26" fill="#aa4a30" stroke="#7a2a16" stroke-width="1.5"/>
+      <rect x="18" y="-52" width="18" height="6" rx="2" fill="#7a2a16"/>
+      <!-- Cozy smoke puffs (animated via CSS) -->
+      <circle class="smoke-puff puff-1" cx="27" cy="-59" r="5" fill="#f4ede2" opacity="0.85"/>
+      <circle class="smoke-puff puff-2" cx="30" cy="-68" r="7" fill="#f4ede2" opacity="0.7"/>
+      <circle class="smoke-puff puff-3" cx="26" cy="-78" r="9" fill="#f4ede2" opacity="0.5"/>
+    </g>
+    <!-- Glowing Timber Windows -->
+    <rect x="-30" y="-6" width="18" height="20" rx="3" fill="#ffe066" stroke="#b08968" stroke-width="1.5"/>
+    <line x1="-21" y1="-6" x2="-21" y2="14" stroke="#b08968" stroke-width="1"/>
+    <line x1="-30" y1="4" x2="-12" y2="4" stroke="#b08968" stroke-width="1"/>
+    <!-- Wooden Door with round handle -->
+    <rect x="10" y="4" width="20" height="38" rx="3" fill="#7f4f24" stroke="#58310c" stroke-width="1.5"/>
+    <circle cx="26" cy="24" r="2.5" fill="#ffd166"/>
+    <!-- Flower box -->
+    <rect x="-33" y="14" width="24" height="6" rx="2" fill="#797d62"/>
+    <circle cx="-29" cy="12" r="3" fill="#ff758f"/>
+    <circle cx="-21" cy="11" r="3.5" fill="#ffb703"/>
+    <circle cx="-13" cy="12" r="3" fill="#ff758f"/>
+    <!-- Label Pill -->
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-56" y="-10" width="112" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#58310c" text-anchor="middle" data-i18n="worldMap.landmarks.bedroom.name">Sıcak Yatak Odası</text>
+    </g>
+  </g></g>
+
+  <!-- 2. CAFE: Striped Awning Bakery & Bistro Bench -->
+  <g class="map-landmark-anchor" data-landmark-id="cafe"><g id="landmark-cafe" class="map-landmark" data-landmark-id="cafe" data-bg-id="bg_cafe" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.cafe.name" aria-label="Pastane &amp; Kafe">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Bakery Building -->
+    <rect x="-42" y="-22" width="84" height="64" rx="5" fill="#fffdfa" stroke="#d6ccc2" stroke-width="2"/>
+    <!-- Roof Balustrade -->
+    <rect x="-44" y="-28" width="88" height="8" rx="3" fill="#edede9" stroke="#d6ccc2" stroke-width="1.5"/>
+    <!-- Croissant & Coffee Sign -->
+    <g transform="translate(0, -38)">
+      <rect x="-18" y="-8" width="36" height="16" rx="4" fill="#d4a373" stroke="#a9714b" stroke-width="1.2"/>
+      <text x="0" y="4" font-size="9" text-anchor="middle">🥐☕</text>
+    </g>
+    <!-- Striped Awning -->
+    <g transform="translate(0, -12)">
+      <path d="M -44 0 L 44 0 L 38 16 L -38 16 Z" fill="#e63946"/>
+      <!-- White stripes -->
+      <polygon points="-36,0 -30,0 -26,16 -32,16" fill="#ffffff"/>
+      <polygon points="-18,0 -12,0 -8,16 -14,16" fill="#ffffff"/>
+      <polygon points="0,0 6,0 10,16 4,16" fill="#ffffff"/>
+      <polygon points="18,0 24,0 28,16 22,16" fill="#ffffff"/>
+    </g>
+    <!-- Bakery Display Window -->
+    <rect x="-34" y="8" width="32" height="28" rx="3" fill="#caf0f8" stroke="#a3b18a" stroke-width="1.5"/>
+    <text x="-18" y="26" font-size="12" text-anchor="middle">🍰</text>
+    <!-- Glass Door -->
+    <rect x="6" y="8" width="26" height="34" rx="3" fill="#f8f9fa" stroke="#a3b18a" stroke-width="1.5"/>
+    <circle cx="27" cy="26" r="2" fill="#d4a373"/>
+    <!-- Bistro Bench with Sleeping Kitten Easter Egg -->
+    <g id="egg-cafe-bench" class="easter-egg-trigger" transform="translate(38, 30)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.kitten.name" aria-label="Uykucu Kedi Pulu">
+      <circle cx="0" cy="5" r="20" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <rect x="-10" y="0" width="20" height="10" rx="2" fill="#8c6a47"/>
+      <line x1="-8" y1="10" x2="-8" y2="16" stroke="#58310c" stroke-width="1.5"/>
+      <line x1="8" y1="10" x2="8" y2="16" stroke="#58310c" stroke-width="1.5"/>
+      <!-- Sleeping Kitten (peeks out on tap) -->
+      <g class="sprite-anchor" transform="translate(0, -2)"><g class="hidden-kitten">
+        <ellipse cx="0" cy="0" rx="7" ry="5" fill="#f4a261"/>
+        <polygon points="-4,-4 -6,-9 -1,-5" fill="#f4a261"/>
+        <polygon points="4,-4 6,-9 1,-5" fill="#f4a261"/>
+        <!-- Eyes asleep -->
+        <path d="M -3 0 Q -1 2 1 0" stroke="#58310c" stroke-width="0.8" fill="none"/>
+        <circle cx="0" cy="1" r="0.8" fill="#e76f51"/>
+      </g></g>
+    </g>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-54" y="-10" width="108" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#58310c" text-anchor="middle" data-i18n="worldMap.landmarks.cafe.name">Pastane &amp; Kafe</text>
+    </g>
+  </g></g>
+
+  <!-- 3. ATELIER: Timber Painter's Loft with Skylight & Easel -->
+  <g class="map-landmark-anchor" data-landmark-id="atelier"><g id="landmark-atelier" class="map-landmark" data-landmark-id="atelier" data-bg-id="bg_atelier" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.atelier.name" aria-label="Sanat Atölyesi">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Timber Loft Body -->
+    <rect x="-42" y="-14" width="84" height="56" rx="4" fill="#ede0d4" stroke="#7f5539" stroke-width="2"/>
+    <!-- Sloped Timber Roof with Glass Skylight -->
+    <polygon points="-48,-14 -10,-48 48,-14" fill="#9c6644" stroke="#58310c" stroke-width="2"/>
+    <!-- Glass Skylight -->
+    <polygon points="-26,-18 -10,-33 12,-20 -4,-16" fill="#cbf3f0" stroke="#58310c" stroke-width="1.5" opacity="0.85"/>
+    <line x1="-18" y1="-25.5" x2="4" y2="-18" stroke="#58310c" stroke-width="1"/>
+    <!-- Atelier Double Doors -->
+    <rect x="-14" y="8" width="28" height="34" rx="2" fill="#ddb892" stroke="#7f5539" stroke-width="1.5"/>
+    <line x1="0" y1="8" x2="0" y2="42" stroke="#7f5539" stroke-width="1.2"/>
+    <!-- Outdoor Painter's Easel Easter Egg -->
+    <g id="egg-atelier-easel" class="easter-egg-trigger" transform="translate(34, 18)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.palette.name" aria-label="Ressam Paleti Pulu">
+      <circle cx="0" cy="0" r="22" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <!-- Tripod legs -->
+      <line x1="0" y1="-20" x2="-8" y2="22" stroke="#7f5539" stroke-width="2"/>
+      <line x1="0" y1="-20" x2="8" y2="22" stroke="#7f5539" stroke-width="2"/>
+      <line x1="0" y1="-20" x2="0" y2="22" stroke="#7f5539" stroke-width="1.5"/>
+      <!-- Canvas board -->
+      <rect x="-10" y="-14" width="20" height="16" rx="2" fill="#ffffff" stroke="#7f5539" stroke-width="1.5"/>
+      <!-- Splash circles -->
+      <circle class="paint-splash splash-1" cx="-4" cy="-7" r="3" fill="#ff006e"/>
+      <circle class="paint-splash splash-2" cx="3" cy="-5" r="2.5" fill="#3a86ff"/>
+      <circle class="paint-splash splash-3" cx="0" cy="-2" r="3.5" fill="#ffbe0b"/>
+    </g>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-54" y="-10" width="108" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#58310c" text-anchor="middle" data-i18n="worldMap.landmarks.atelier.name">Sanat Atölyesi</text>
+    </g>
+  </g></g>
+
+  <!-- 4. LIBRARY: Grand Classical Brick Library with Green Dome -->
+  <g class="map-landmark-anchor" data-landmark-id="library"><g id="landmark-library" class="map-landmark" data-landmark-id="library" data-bg-id="bg_library" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.library.name" aria-label="Büyük Kütüphane">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Classical Brick Building -->
+    <rect x="-44" y="-12" width="88" height="54" rx="4" fill="#a53826" stroke="#68190d" stroke-width="2"/>
+    <!-- Classical Pediment Portico -->
+    <polygon points="-48,-12 0,-34 48,-12" fill="#e9d8a6" stroke="#947c43" stroke-width="2"/>
+    <!-- Classical Columns -->
+    <rect x="-38" y="-12" width="8" height="54" fill="#e9d8a6" stroke="#947c43" stroke-width="1.2"/>
+    <rect x="-16" y="-12" width="8" height="54" fill="#e9d8a6" stroke="#947c43" stroke-width="1.2"/>
+    <rect x="8" y="-12" width="8" height="54" fill="#e9d8a6" stroke="#947c43" stroke-width="1.2"/>
+    <rect x="30" y="-12" width="8" height="54" fill="#e9d8a6" stroke="#947c43" stroke-width="1.2"/>
+    <!-- Verdigris Copper Dome & Owl Easter Egg -->
+    <g id="egg-library-owl" class="easter-egg-trigger" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.owl.name" aria-label="Bilge Baykuş Pulu">
+      <circle cx="0" cy="-56" r="22" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <ellipse cx="0" cy="-32" rx="22" ry="16" fill="#52b788" stroke="#2d6a4f" stroke-width="2"/>
+      <circle cx="0" cy="-48" r="3.5" fill="#ffd166" stroke="#b08968" stroke-width="1"/>
+      <!-- Little Wise Owl perched on dome -->
+      <g class="sprite-anchor" transform="translate(0, -56)"><g class="owl-sprite">
+        <ellipse cx="0" cy="0" rx="5" ry="6" fill="#7f4f24"/>
+        <!-- Big round owl eyes -->
+        <circle cx="-2.5" cy="-2" r="2.2" fill="#ffffff"/>
+        <circle cx="2.5" cy="-2" r="2.2" fill="#ffffff"/>
+        <circle cx="-2.5" cy="-2" r="1.2" fill="#000000"/>
+        <circle cx="2.5" cy="-2" r="1.2" fill="#000000"/>
+        <!-- Beak -->
+        <polygon points="-1,0 1,0 0,2" fill="#ffb703"/>
+      </g></g>
+    </g>
+    <!-- Arched Windows -->
+    <path d="M -6 10 A 6 6 0 0 1 6 10 L 6 36 L -6 36 Z" fill="#e0fbfc" stroke="#947c43" stroke-width="1.2"/>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-56" y="-10" width="112" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#58310c" text-anchor="middle" data-i18n="worldMap.landmarks.library.name">Büyük Kütüphane</text>
+    </g>
+  </g></g>
+
+  <!-- 5. PARK: Sunny Picnic Pavilion & Flowerbeds -->
+  <g class="map-landmark-anchor" data-landmark-id="park"><g id="landmark-park" class="map-landmark" data-landmark-id="park" data-bg-id="bg_park" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.park.name" aria-label="Güneşli Park">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Grass Mounds -->
+    <ellipse cx="0" cy="22" rx="48" ry="20" fill="#a7c957" stroke="#6a994e" stroke-width="2"/>
+    <!-- Wooden Pavilion Roof -->
+    <polygon points="-38,-8 0,-44 38,-8" fill="#bc6c25" stroke="#7f4f24" stroke-width="2"/>
+    <!-- Timber Posts -->
+    <line x1="-30" y1="-8" x2="-30" y2="28" stroke="#7f4f24" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="-8" x2="30" y2="28" stroke="#7f4f24" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-10" y1="-8" x2="-10" y2="28" stroke="#7f4f24" stroke-width="2" stroke-linecap="round"/>
+    <line x1="10" y1="-8" x2="10" y2="28" stroke="#7f4f24" stroke-width="2" stroke-linecap="round"/>
+    <!-- Picnic Table inside -->
+    <rect x="-18" y="14" width="36" height="8" rx="2" fill="#dda15e" stroke="#99582a" stroke-width="1.2"/>
+    <!-- Flowerbeds & Butterfly Easter Egg -->
+    <g id="egg-park-flowers" class="easter-egg-trigger" transform="translate(-32, 22)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.butterfly.name" aria-label="Uçuşan Kelebek Pulu">
+      <circle cx="2" cy="-6" r="22" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <circle cx="-6" cy="4" r="5" fill="#ff758f"/>
+      <circle cx="2" cy="0" r="6" fill="#ffd166"/>
+      <circle cx="10" cy="4" r="5" fill="#a2d2ff"/>
+      <!-- Fluttering Butterfly -->
+      <g class="sprite-anchor" transform="translate(2, -14)"><g class="flutter-butterfly">
+        <ellipse cx="-4" cy="-3" rx="4" ry="5" fill="#ff006e"/>
+        <ellipse cx="4" cy="-3" rx="4" ry="5" fill="#ff006e"/>
+        <line x1="0" y1="-6" x2="0" y2="3" stroke="#222222" stroke-width="1"/>
+      </g></g>
+    </g>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-50" y="-10" width="100" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#2d5a27" text-anchor="middle" data-i18n="worldMap.landmarks.park.name">Güneşli Park</text>
+    </g>
+  </g></g>
+
+  <!-- 6. BEACH: Boardwalk Pier, Waves & Striped Umbrella -->
+  <g class="map-landmark-anchor" data-landmark-id="beach"><g id="landmark-beach" class="map-landmark" data-landmark-id="beach" data-bg-id="bg_beach" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.beach.name" aria-label="Kumsal &amp; Deniz">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Sandy Beach Bank -->
+    <ellipse cx="-10" cy="18" rx="42" ry="24" fill="#faedcd" stroke="#e0cda7" stroke-width="2"/>
+    <!-- Wooden Pier boardwalk into water -->
+    <polygon points="-12,6 48,16 46,30 -14,20" fill="#d4a373" stroke="#8c6a47" stroke-width="1.8"/>
+    <line x1="4" y1="9" x2="2" y2="23" stroke="#8c6a47" stroke-width="1"/>
+    <line x1="18" y1="11" x2="16" y2="25" stroke="#8c6a47" stroke-width="1"/>
+    <line x1="32" y1="13" x2="30" y2="27" stroke="#8c6a47" stroke-width="1"/>
+    <!-- Striped Sun Umbrella -->
+    <g transform="translate(-20, -12)">
+      <line x1="0" y1="0" x2="0" y2="34" stroke="#8c6a47" stroke-width="2"/>
+      <path d="M -26 0 Q -18 -16 0 -16 Q 18 -16 26 0 Z" fill="#e63946"/>
+      <!-- Sectors share the canopy apex and meet its straight lower edge. -->
+      <path d="M -14 0 Q -10 -12 0 -16 Q -4 -10 -4 0 Z" fill="#ffffff"/>
+      <path d="M 4 0 Q 4 -10 0 -16 Q 10 -12 14 0 Z" fill="#ffd166"/>
+    </g>
+    <!-- Turquoise Waves & Bobbing Bottle Easter Egg -->
+    <g id="egg-beach-bottle" class="easter-egg-trigger" transform="translate(38, 32)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.message_bottle.name" aria-label="Şişedeki Mektup Pulu">
+      <circle cx="2" cy="-4" r="20" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <path d="M -16 0 Q -8 -4 0 0 T 16 0" fill="none" stroke="#48cae4" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Message in a bottle -->
+      <g class="sprite-anchor" transform="translate(2, -4)"><g class="bobbing-bottle">
+        <rect x="-4" y="-8" width="8" height="14" rx="3" fill="#90e0ef" stroke="#0077b6" stroke-width="1" opacity="0.85"/>
+        <rect x="-2" y="-12" width="4" height="4" fill="#a06cd5"/>
+        <line x1="-2" y1="-3" x2="2" y2="-3" stroke="#d4a373" stroke-width="2"/>
+      </g></g>
+    </g>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-56" y="-10" width="112" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#1d4e89" text-anchor="middle" data-i18n="worldMap.landmarks.beach.name">Kumsal &amp; Deniz</text>
+    </g>
+  </g></g>
+
+  <!-- 7. FOREST: Ancient Hollow Oak Tree & Lantern -->
+  <g class="map-landmark-anchor" data-landmark-id="forest"><g id="landmark-forest" class="map-landmark" data-landmark-id="forest" data-bg-id="bg_forest" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.forest.name" aria-label="Büyülü Orman">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Lush Green Canopy Foliage -->
+    <ellipse cx="0" cy="-24" rx="44" ry="34" fill="#2d6a4f" stroke="#1b4332" stroke-width="2.2"/>
+    <ellipse cx="-22" cy="-30" rx="26" ry="24" fill="#40916c"/>
+    <ellipse cx="22" cy="-30" rx="26" ry="24" fill="#52b788"/>
+    <!-- Massive Oak Trunk & Roots -->
+    <path d="M -16 -6 Q -12 20 -28 42 L 28 42 Q 12 20 16 -6 Z" fill="#6f4e37" stroke="#4a3525" stroke-width="2"/>
+    <!-- Hollow with Squirrel Easter Egg -->
+    <g id="egg-forest-oak" class="easter-egg-trigger" transform="translate(0, 14)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.squirrel.name" aria-label="Fındıkçı Sincap Pulu">
+      <circle cx="0" cy="0" r="20" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <ellipse cx="0" cy="0" rx="9" ry="12" fill="#2d1e14"/>
+      <!-- Squirrel peeking out holding acorn -->
+      <g class="sprite-anchor" transform="translate(0, -2)"><g class="curious-squirrel">
+        <ellipse cx="0" cy="2" rx="6" ry="7" fill="#b06c3b"/>
+        <circle cx="0" cy="-5" r="4.5" fill="#b06c3b"/>
+        <circle cx="-2" cy="-6" r="1" fill="#ffffff"/>
+        <circle cx="2" cy="-6" r="1" fill="#ffffff"/>
+        <circle cx="-2" cy="-6" r="0.6" fill="#000000"/>
+        <circle cx="2" cy="-6" r="0.6" fill="#000000"/>
+        <!-- Acorn in paws -->
+        <circle cx="0" cy="3" r="2.5" fill="#58310c"/>
+        <polygon points="-1,1 1,1 0,-1" fill="#7f4f24"/>
+      </g></g>
+    </g>
+    <!-- Paper Lantern hanging from branch -->
+    <g transform="translate(32, -4)">
+      <line x1="0" y1="-12" x2="0" y2="0" stroke="#4a3525" stroke-width="1.5"/>
+      <ellipse cx="0" cy="5" rx="5" ry="7" fill="#ffd166" stroke="#e09f3e" stroke-width="1.2"/>
+      <circle cx="0" cy="5" r="2" fill="#ffffff"/>
+    </g>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-52" y="-10" width="104" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#1b4332" text-anchor="middle" data-i18n="worldMap.landmarks.forest.name">Büyülü Orman</text>
+    </g>
+  </g></g>
+
+  <!-- 8. MOONLIT MEADOW: Hilltop Gazebo & Crescent Moon -->
+  <g class="map-landmark-anchor" data-landmark-id="moonlit-meadow"><g id="landmark-moonlit-meadow" class="map-landmark" data-landmark-id="moonlit-meadow" data-bg-id="bg_moonlit_meadow" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.moonlitMeadow.name" aria-label="Mehtaplı Çayır">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Hilltop Knoll -->
+    <ellipse cx="0" cy="22" rx="46" ry="18" fill="#4a4e69" stroke="#22223b" stroke-width="2"/>
+    <!-- Gazebo Roof (Romantic Lavender/Navy) -->
+    <polygon points="-32,-4 0,-34 32,-4" fill="#9a8c98" stroke="#4a4e69" stroke-width="2"/>
+    <!-- Ornate Gazebo Spire -->
+    <line x1="0" y1="-34" x2="0" y2="-44" stroke="#c9ada7" stroke-width="2"/>
+    <circle cx="0" cy="-44" r="2.5" fill="#f2e9e4"/>
+    <!-- White Paper Columns -->
+    <line x1="-24" y1="-4" x2="-24" y2="24" stroke="#f2e9e4" stroke-width="2.5"/>
+    <line x1="-8" y1="-4" x2="-8" y2="24" stroke="#f2e9e4" stroke-width="2"/>
+    <line x1="8" y1="-4" x2="8" y2="24" stroke="#f2e9e4" stroke-width="2"/>
+    <line x1="24" y1="-4" x2="24" y2="24" stroke="#f2e9e4" stroke-width="2.5"/>
+    <!-- Weeping Willow framing -->
+    <path d="M -36 -12 Q -48 10 -40 30" fill="none" stroke="#6b705c" stroke-width="2.5" stroke-dasharray="3 3"/>
+    <path d="M 36 -12 Q 48 10 40 30" fill="none" stroke="#6b705c" stroke-width="2.5" stroke-dasharray="3 3"/>
+    <!-- Crescent Moon & Fireflies Easter Egg -->
+    <g id="egg-meadow-moon" class="easter-egg-trigger" transform="translate(34, -40)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.fireflies.name" aria-label="Ateş Böceği Pulu">
+      <circle cx="0" cy="10" r="24" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <!-- Glowing Crescent Moon -->
+      <path d="M 10 -10 A 12 12 0 0 0 -6 10 A 14 14 0 1 1 10 -10 Z" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="1.5" filter="url(#active-marker-glow)"/>
+      <!-- Little dancing fireflies -->
+      <circle class="firefly firefly-1" cx="-12" cy="18" r="2.5" fill="#55efc4"/>
+      <circle class="firefly firefly-2" cx="-2" cy="26" r="2" fill="#ffeaa7"/>
+      <circle class="firefly firefly-3" cx="-18" cy="8" r="2" fill="#55efc4"/>
+    </g>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-54" y="-10" width="108" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#22223b" text-anchor="middle" data-i18n="worldMap.landmarks.moonlitMeadow.name">Mehtaplı Çayır</text>
+    </g>
+  </g></g>
+
+  <!-- 9. SNOWY VILLAGE: Alpine Chalet with Thick Snowdrifts -->
+  <g class="map-landmark-anchor" data-landmark-id="snowy-village"><g id="landmark-snowy-village" class="map-landmark" data-landmark-id="snowy-village" data-bg-id="bg_snowy_village" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.snowyVillage.name" aria-label="Karlı Köy">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Snowy Hill -->
+    <ellipse cx="0" cy="24" rx="46" ry="16" fill="#e0f2fe" stroke="#bae6fd" stroke-width="2"/>
+    <!-- Pine Trees with Snow -->
+    <polygon points="-38,20 -44,34 -32,34" fill="#0369a1"/>
+    <polygon points="-38,10 -43,22 -33,22" fill="#38bdf8"/>
+    <polygon points="38,20 32,34 44,34" fill="#0369a1"/>
+    <!-- Chalet Log Body -->
+    <rect x="-30" y="-8" width="60" height="42" rx="3" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+    <line x1="-30" y1="6" x2="30" y2="6" stroke="#451a03" stroke-width="1.2"/>
+    <line x1="-30" y1="20" x2="30" y2="20" stroke="#451a03" stroke-width="1.2"/>
+    <!-- Steep Snow-Blanketed Roof -->
+    <polygon points="-44,-6 0,-44 44,-6" fill="#ffffff" stroke="#93c5fd" stroke-width="2.5"/>
+    <!-- Snow eaves drop curves -->
+    <path d="M -44 -6 Q -34 0 -24 -6 Q -14 0 -4 -6 Q 6 0 16 -6 Q 26 0 36 -6 L 44 -6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <!-- Glowing Hearth Window -->
+    <rect x="-18" y="2" width="14" height="16" rx="2" fill="#fef08a" stroke="#451a03" stroke-width="1.2"/>
+    <!-- Stone Chimney & Flurry Easter Egg -->
+    <g id="egg-snowy-chimney" class="easter-egg-trigger" transform="translate(18, -36)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.snowflake.name" aria-label="Kristal Kar Pulu">
+      <circle cx="0" cy="-6" r="20" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <rect x="-6" y="0" width="12" height="18" fill="#64748b" stroke="#334155" stroke-width="1.2"/>
+      <rect x="-7" y="-3" width="14" height="4" rx="1" fill="#ffffff"/>
+      <!-- Fluttering paper snowflakes -->
+      <g class="sprite-anchor" transform="translate(-4, -8)"><g class="snowflake-puff flake-1">
+        <text x="0" y="0" font-size="10" text-anchor="middle" fill="#93c5fd">❄</text>
+      </g></g>
+      <g class="sprite-anchor" transform="translate(6, -18)"><g class="snowflake-puff flake-2">
+        <text x="0" y="0" font-size="12" text-anchor="middle" fill="#60a5fa">❄</text>
+      </g></g>
+    </g>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-48" y="-10" width="96" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#0369a1" text-anchor="middle" data-i18n="worldMap.landmarks.snowyVillage.name">Karlı Köy</text>
+    </g>
+  </g></g>
+
+  <!-- 10. SUNSET CITY: Art-Deco Clocktower Promenade -->
+  <g class="map-landmark-anchor" data-landmark-id="city-sunset"><g id="landmark-city-sunset" class="map-landmark" data-landmark-id="city-sunset" data-bg-id="bg_city_sunset" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.citySunset.name" aria-label="Gün Batımı Şehri">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Promenade Quay Base -->
+    <rect x="-46" y="22" width="92" height="18" rx="3" fill="#e76f51" stroke="#b23a22" stroke-width="1.5"/>
+    <!-- City Skyline Silhouette behind -->
+    <rect x="-40" y="2" width="22" height="22" fill="#f4a261" opacity="0.6"/>
+    <rect x="20" y="-4" width="20" height="28" fill="#e76f51" opacity="0.6"/>
+    <!-- Art-Deco Clocktower Tower -->
+    <polygon points="-16,24 -12,-38 12,-38 16,24" fill="#2a9d8f" stroke="#1d665e" stroke-width="2"/>
+    <!-- Stepped Deco Top -->
+    <rect x="-14" y="-44" width="28" height="6" fill="#e76f51"/>
+    <rect x="-10" y="-50" width="20" height="6" fill="#f4a261"/>
+    <line x1="0" y1="-50" x2="0" y2="-62" stroke="#264653" stroke-width="2"/>
+    <circle cx="0" cy="-62" r="2.5" fill="#e9c46a"/>
+    <!-- Luminous Clockface -->
+    <circle cx="0" cy="-20" r="10" fill="#fefae0" stroke="#e9c46a" stroke-width="1.8"/>
+    <!-- Clock Hands (golden hour 5 o'clock) -->
+    <line x1="0" y1="-20" x2="0" y2="-26" stroke="#264653" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="0" y1="-20" x2="5" y2="-17" stroke="#264653" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Clouds & Hot Air Balloon Easter Egg -->
+    <g id="egg-city-clouds" class="easter-egg-trigger" transform="translate(-36, -34)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.balloon.name" aria-label="Süzülen Balon Pulu">
+      <circle cx="4" cy="-6" r="22" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <ellipse cx="0" cy="0" rx="14" ry="6" fill="#ffb703" opacity="0.8"/>
+      <!-- Hot Air Balloon -->
+      <g class="sprite-anchor" transform="translate(4, -14)"><g class="balloon-drift">
+        <ellipse cx="0" cy="0" rx="8" ry="10" fill="#e76f51"/>
+        <!-- Balloon stripes -->
+        <path d="M -4 -8 Q 0 0 -4 8" fill="none" stroke="#f4a261" stroke-width="1.5"/>
+        <path d="M 4 -8 Q 0 0 4 8" fill="none" stroke="#f4a261" stroke-width="1.5"/>
+        <rect x="-3" y="12" width="6" height="4" fill="#7f4f24"/>
+        <line x1="-2" y1="10" x2="-2" y2="12" stroke="#264653" stroke-width="0.8"/>
+        <line x1="2" y1="10" x2="2" y2="12" stroke="#264653" stroke-width="0.8"/>
+      </g></g>
+    </g>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-56" y="-10" width="112" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#8d2816" text-anchor="middle" data-i18n="worldMap.landmarks.citySunset.name">Gün Batımı Şehri</text>
+    </g>
+  </g></g>
+
+  <!-- 11. CANDY LAND: Whimsical Gingerbread Castle & Pinwheel -->
+  <g class="map-landmark-anchor" data-landmark-id="candy-land"><g id="landmark-candy-land" class="map-landmark" data-landmark-id="candy-land" data-bg-id="bg_candy_land" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.candyLand.name" aria-label="Şeker Diyarı">
+    <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
+    <!-- Frosted Pastry Hills -->
+    <ellipse cx="0" cy="24" rx="46" ry="18" fill="#fbcfe8" stroke="#f472b6" stroke-width="2"/>
+    <!-- Gingerbread Castle Walls -->
+    <rect x="-34" y="-8" width="68" height="42" rx="5" fill="#b45309" stroke="#78350f" stroke-width="2"/>
+    <!-- Royal Icing Dripping Roof -->
+    <rect x="-38" y="-12" width="76" height="8" rx="3" fill="#ffffff"/>
+    <path d="M -38 -4 Q -32 4 -26 -4 Q -20 4 -14 -4 Q -8 4 -2 -4 Q 4 4 10 -4 Q 16 4 22 -4 Q 28 4 34 -4 L 38 -4" fill="#ffffff" stroke="#fbcfe8" stroke-width="1.2"/>
+    <!-- Peppermint Castle Spire -->
+    <polygon points="-26,-12 -26,-36 -20,-48 -14,-36 -14,-12" fill="#ffffff" stroke="#ef4444" stroke-width="1.5"/>
+    <line x1="-26" y1="-30" x2="-14" y2="-24" stroke="#ef4444" stroke-width="2"/>
+    <line x1="-26" y1="-20" x2="-14" y2="-14" stroke="#ef4444" stroke-width="2"/>
+    <polygon points="14,-12 14,-36 20,-48 26,-36 26,-12" fill="#ffffff" stroke="#ef4444" stroke-width="1.5"/>
+    <!-- Spinning Peppermint Pinwheel Easter Egg -->
+    <g id="egg-candy-pinwheel" class="easter-egg-trigger" transform="translate(0, -32)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.stamps.pinwheel.name" aria-label="Şeker Fırıldağı Pulu">
+      <circle cx="0" cy="0" r="20" fill="transparent" class="egg-hitbox" pointer-events="all"/>
+      <circle cx="0" cy="0" r="14" fill="#ffffff" stroke="#ec4899" stroke-width="2"/>
+      <!-- Pinwheel segments (spins on tap) -->
+      <g class="spinning-pinwheel">
+        <path d="M 0 0 L 0 -13 A 13 13 0 0 1 13 0 Z" fill="#ec4899"/>
+        <path d="M 0 0 L 13 0 A 13 13 0 0 1 0 13 Z" fill="#06b6d4"/>
+        <path d="M 0 0 L 0 13 A 13 13 0 0 1 -13 0 Z" fill="#facc15"/>
+        <path d="M 0 0 L -13 0 A 13 13 0 0 1 0 -13 Z" fill="#10b981"/>
+      </g>
+      <circle cx="0" cy="0" r="3.5" fill="#ffffff" stroke="#ec4899" stroke-width="1.2"/>
+    </g>
+    <!-- Candy Gumdrop decorations -->
+    <circle cx="-28" cy="22" r="5" fill="#10b981"/>
+    <circle cx="28" cy="22" r="5" fill="#8b5cf6"/>
+    <g class="landmark-label-pill" transform="translate(0, 52)">
+      <rect x="-48" y="-10" width="96" height="20" rx="10" fill="#ffffff" stroke="#d4b996" stroke-width="1.2"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="700" fill="#9d174d" text-anchor="middle" data-i18n="worldMap.landmarks.candyLand.name">Şeker Diyarı</text>
+    </g>
+  </g></g>
+
+  <!-- ================= ACTIVE DOLL MARKER CONTAINER ================= -->
+  <!-- Positioned dynamically above current location landmark -->
+  <g id="active-doll-marker" class="active-doll-marker-anchor" transform="translate(170, 146)"><g class="active-doll-marker" filter="url(#active-marker-glow)" aria-hidden="true">
+    <!-- Active Mini Doll Cutout Slot inside foreignObject scaled natively via SVG group -->
+    <g id="active-marker-doll-container" transform="translate(0, -44) scale(0.2)">
+      <foreignObject id="active-marker-doll-foreign" x="-150" y="-450" width="300" height="450" overflow="visible">
+        <div id="active-marker-doll-slot" class="active-marker-doll-slot"></div>
+      </foreignObject>
+    </g>
+    <!-- Fluttering Paper Flag -->
+    <g class="sprite-anchor" transform="translate(0, -36)"><g class="marker-flag">
+      <polygon points="-48,-12 48,-12 56,0 48,12 -48,12" fill="#ffb703" stroke="#e09f3e" stroke-width="1.5"/>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="800" fill="#58310c" text-anchor="middle" data-i18n="worldMap.youAreHereBadge">📍 BURADASINIZ</text>
+    </g></g>
+    <!-- Pointer Pin Arrow -->
+    <polygon points="-6,-24 6,-24 0,-14" fill="#ffb703" stroke="#e09f3e" stroke-width="1"/>
+  </g></g>
+
+</svg>
+              </div>
+            </div>
+
+            <!-- Camera HUD: pan controls, minimap and zoom toggle -->
+            <div class="world-map-camera-hud">
+              <button id="world-map-pan-left" class="map-pan-btn" type="button" data-i18n-aria-label="worldMap.panLeftAria" aria-label="Haritayı sola kaydır">◀</button>
+              <div id="world-map-minimap" class="world-map-minimap" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0" data-i18n-aria-label="worldMap.minimapAria" aria-label="Harita mini haritası">
+                <div id="world-map-minimap-dots" class="minimap-dots"></div>
+                <div id="world-map-minimap-window" class="minimap-window"></div>
+              </div>
+              <button id="world-map-pan-right" class="map-pan-btn" type="button" data-i18n-aria-label="worldMap.panRightAria" aria-label="Haritayı sağa kaydır">▶</button>
+              <button id="world-map-zoom-toggle" class="map-zoom-btn" type="button" aria-pressed="false" data-i18n-aria-label="worldMap.zoomToggleAria" aria-label="Tüm haritayı sığdır"><span aria-hidden="true">🔎</span></button>
+            </div>
+          </div>
+
+          <!-- Location Preview Dock -->
+          <aside id="world-map-preview-dock" class="world-map-preview-dock" data-i18n-aria-label="worldMap.dockAria" aria-label="Seçili Diyar Bilgisi">
+            <div class="dock-header-row">
+              <span class="dock-biome-badge cozyTown">🏡 Sevimli Kasaba</span>
+            </div>
+            <h3 class="dock-title">Sıcak Yatak Odası</h3>
+            <div class="dock-thumb-container"></div>
+            <p class="dock-description">Ilık şöminesi ve yumuşacık yatağıyla huzurlu bir kır evi.</p>
+            <span class="dock-hint">💡 Bacaya dokunun: sevimli dumanlar tüter.</span>
+            <div class="dock-action-area">
+              <button class="button primary dock-travel-btn" type="button">🚀 Buraya Git</button>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Souvenir Stamp Passport Strip -->
+        <footer class="world-map-passport-bar" data-i18n-aria-label="worldMap.passportAria" aria-label="Hatıra Pulları">
+          <span class="passport-label">📮 Hatıra Pulları:</span>
+          <div id="stamp-passport-list" class="stamp-passport-list" role="list"></div>
+        </footer>
+      </div>
+    </dialog>
+
+    <dialog id="scene-templates-dialog" class="library-dialog" closedby="any">
       <div class="dialog-header">
         <div>
           <span class="eyebrow" data-i18n="templates.eyebrow">Hikaye Başlatıcılar</span>
@@ -964,7 +1560,7 @@
       <div id="scene-templates-grid" class="scene-library-grid"></div>
     </dialog>
 
-    <dialog id="scene-outline-dialog" class="library-dialog outline-dialog">
+    <dialog id="scene-outline-dialog" class="library-dialog outline-dialog" closedby="any">
       <div class="dialog-header">
         <div>
           <span class="eyebrow" data-i18n="outline.eyebrow">Erişilebilirlik ve Katmanlar</span>
@@ -984,7 +1580,7 @@
       </div>
     </dialog>
 
-    <dialog id="scene-library-dialog" class="library-dialog">
+    <dialog id="scene-library-dialog" class="library-dialog" closedby="any">
       <div class="dialog-header">
         <div>
           <span class="eyebrow" data-i18n="sceneBook.eyebrow">Sahne Kitabı</span>
@@ -1054,7 +1650,7 @@
       </div>
     </dialog>
 
-    <dialog id="paint-myart-dialog" class="library-dialog myart-dialog" aria-labelledby="myart-dialog-title">
+    <dialog id="paint-myart-dialog" class="library-dialog myart-dialog" aria-labelledby="myart-dialog-title" closedby="any">
       <div class="dialog-header">
         <div>
           <span class="eyebrow" data-i18n="paintMyArtDialog.eyebrow">Özel Stüdyo Koleksiyonu</span>

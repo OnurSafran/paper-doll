@@ -73,9 +73,9 @@ export function bedroom() {
   for (let x = 50; x < W; x += 100) stripes.push(`<line x1="${x}" y1="0" x2="${x}" y2="${wallBottom}" stroke="#f8ded8" stroke-width="40"/>`);
   out.push(`<g stroke-linecap="butt">${stripes.join('')}</g>`);
   const sprigs = [];
-  for (let x = 0; x < W; x += 100) {
+  for (let x = 0; x < W; x += 200) {
     for (let y = 60; y < wallBottom - 40; y += 120) {
-      const px = x + (Math.floor(y / 120) % 2 === 0 ? 0 : 50);
+      const px = x + (Math.floor(y / 120) % 2 === 0 ? 25 : 125);
       if (px >= W) continue;
       sprigs.push(`<path d="M${px} ${y}v-18M${px} ${y}l-13 -13M${px} ${y}l13 -13" fill="none" stroke="#f1cdc4" stroke-width="4" stroke-linecap="round"/>`);
     }
@@ -87,13 +87,14 @@ export function bedroom() {
     out.push(`<g transform="translate(${cx - 130} 110)">
       <path d="M0 130A130 130 0 0 1 260 130L260 380L0 380Z" fill="#cfe7f2" stroke="#ffffff" stroke-width="14" stroke-linejoin="round"/>
       <path d="M0 130A130 130 0 0 1 260 130L260 380L0 380Z" fill="none" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M42 154l36 64M42 198l18 32" fill="none" stroke="#ffffff" stroke-width="10" opacity="0.65"/>
       <path d="M130 4 130 380M6 130 254 130M6 260 254 260" fill="none" stroke="#ffffff" stroke-width="9"/>
       <path d="M-34 -6q40 200 12 386L-72 380 -72 -6Z" fill="#f3b8bf" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
       <path d="M294 -6q-40 200 -12 386L332 380 332 -6Z" fill="#f3b8bf" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
     </g>`);
   }
 
-  out.push(bunting(70, 46, ['#e76f51', '#2a9d8f', '#e9c46a', '#b56576', '#457b9d', '#f4a261']));
+  out.push(bunting(70, 30, ['#e76f51', '#2a9d8f', '#e9c46a', '#b56576', '#457b9d', '#f4a261'], 200));
 
   // Picture rail, baseboard, floor.
   out.push(`<rect x="0" y="${wallBottom - 18}" width="${W}" height="18" fill="#e7d6c6" stroke="none"/>`);
@@ -277,14 +278,14 @@ export function cafe() {
     const h = scaled[r];
     for (let c = 0; c < 16; c += 1) {
       if ((r + c) % 2) continue;
-      tiles.push(`<rect x="${c * 100}" y="${R(y)}" width="100" height="${R(h)}" fill="#cdb9a7"/>`);
+      tiles.push(`<rect x="${c * 100}" y="${R(y)}" width="100" height="${R(h)}" fill="#d9cabb"/>`);
     }
     if (r > 0) grid.push(`<line x1="0" y1="${R(y)}" x2="${W}" y2="${R(y)}"/>`);
     y += h;
   }
   for (let c = 1; c < 16; c += 1) grid.push(`<line x1="${c * 100}" y1="${floorTop}" x2="${c * 100}" y2="${H}"/>`);
   out.push(`<g stroke="none">${tiles.join('')}</g>`);
-  out.push(`<g stroke="#b09d8d" stroke-width="4" stroke-linecap="butt">${grid.join('')}</g>`);
+  out.push(`<g stroke="#c5b5a5" stroke-width="4" stroke-linecap="butt">${grid.join('')}</g>`);
 
   return svg('bg_cafe', W, H, `  <g id="background" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
     ${out.join('\n    ')}
@@ -325,7 +326,7 @@ export function library() {
         let i = (row + seed) * 7;
         // One shelf per case holds keepsakes instead of a solid run of spines.
         const keepsake = row === (seed % 4 === 0 ? 2 : 1);
-        const stop = keepsake ? 250 : 470;
+        const stop = keepsake ? 150 : 440;
         while (x < stop) {
           const w = 26 + ((i * 13) % 26);
           const h = 78 + ((i * 7) % 22);
@@ -333,24 +334,24 @@ export function library() {
           x += w + 3;
           i += 1;
         }
-        if ((row + seed) % 3 !== 1) {
+        if (!keepsake && (row + seed) % 3 !== 1) {
           const leaningBookX = Math.min(x + 6, 460);
           items.push(`<path d="M${R(leaningBookX)} ${y + 108}L${R(leaningBookX + 14)} ${y + 40}L${R(leaningBookX + 42)} ${y + 48}L${R(leaningBookX + 28)} ${y + 108}Z" fill="${bookColors[(i + 3) % bookColors.length]}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`);
           x += 54;
         }
         if (keepsake) {
           // A stack of books laid flat, a globe and a small pot.
-          items.push(`<g transform="translate(${R(x + 30)} ${y + 108})">
+          items.push(`<g transform="translate(190 ${y + 108})">
             <rect x="0" y="-26" width="118" height="26" rx="4" fill="${bookColors[(i + 1) % bookColors.length]}" stroke="${INK}" stroke-width="4"/>
             <rect x="10" y="-48" width="100" height="24" rx="4" fill="${bookColors[(i + 4) % bookColors.length]}" stroke="${INK}" stroke-width="4"/>
             <rect x="22" y="-68" width="82" height="22" rx="4" fill="${bookColors[(i + 6) % bookColors.length]}" stroke="${INK}" stroke-width="4"/>
           </g>`);
-          items.push(`<g transform="translate(${R(x + 196)} ${y + 108})">
+          items.push(`<g transform="translate(370 ${y + 108})">
             <path d="M-22 0h44M0 0v-16" fill="none" stroke="#9a6b45" stroke-width="7" stroke-linecap="round"/>
             <circle cx="0" cy="-50" r="35" fill="#7fb3c8" stroke="${INK}" stroke-width="4"/>
             <path d="M-30 -62q30 14 60 0M-30 -38q30 14 60 0M0 -85v70" fill="none" stroke="#4f8f7a" stroke-width="4"/>
           </g>`);
-          items.push(`<g transform="translate(${R(x + 268)} ${y + 108})">
+          items.push(`<g transform="translate(466 ${y + 108})">
             <path d="M-20 0 -15 -34 15 -34 20 0Z" fill="#c96f52" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
             <circle cx="-10" cy="-48" r="13" fill="#4f8f5f" stroke="${INK}" stroke-width="4"/>
             <circle cx="11" cy="-52" r="12" fill="#6bb87b" stroke="${INK}" stroke-width="4"/>

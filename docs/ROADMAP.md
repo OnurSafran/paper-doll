@@ -135,9 +135,9 @@ Every extraction is independently reviewable and behavior-preserving. Do not com
 4. Paper-tab visual toggle
 5. Interactive props and optional sound effects
 6. [x] Panoramic stages and camera navigation (`1600`, `3200`, `4800` widths with persisted cameraX, minimap, steppers, trackpad/wheel, edge auto-pan)
-7. World map and scene transitions
+7. World map and scene transitions — see [PRD: The Papercraft World Map](PRD-WORLD-MAP.md) and [PRD: Papercraft Scene Transitions](PRD-STORYBOOK-SCENE-TRANSITIONS.md)
 8. [x] Custom paint studio (implementation complete; hosted-device and cross-browser evidence in progress)
-9. [x] Pose/gesture animation and looping scene animation — see [PRD: Character Expressions, Poses, and Looping Scene Animation](PRD-POSE-GESTURE-ANIMATION.md) (complete with 90+ tests, multi-channel evaluator, transport HUD, and frame export)
+9. [x] Pose/gesture animation and looping scene animation (complete with 90+ tests, multi-channel evaluator, transport HUD, and frame export)
 
 ### Gate F — Play hardening (Completed)
 

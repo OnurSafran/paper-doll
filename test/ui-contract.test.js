@@ -345,3 +345,59 @@ test('static pose and animation clip controls expose accessible multi-channel UI
   assert.match(js, /scene\/setDollPose/);
   assert.match(js, /scene\/setDollAnimation/);
 });
+
+test('The Papercraft World Map exposes accessible dialog, 11 landmarks, preview dock, stamps, and page flip', () => {
+  // Pill trigger & dialog elements in index.html
+  assert.match(html, /id="open-world-map-btn"/);
+  assert.match(html, /id="current-location-name"/);
+  assert.match(html, /id="world-map-dialog"/);
+  assert.match(html, /id="world-map-title"/);
+  assert.match(html, /id="world-map-stamp-counter"/);
+  assert.match(html, /id="world-map-preview-dock"/);
+  assert.match(html, /id="stamp-passport-list"/);
+  assert.match(html, /id="active-doll-marker"/);
+
+  // 11 landmark elements exist
+  const landmarkIds = [
+    'bedroom', 'cafe', 'atelier', 'library', 'park',
+    'beach', 'forest', 'moonlit-meadow', 'snowy-village', 'city-sunset', 'candy-land'
+  ];
+  for (const id of landmarkIds) {
+    assert.match(html, new RegExp(`id="landmark-${id}"`));
+    assert.match(html, new RegExp(`data-landmark-id="${id}"`));
+  }
+
+  // Touch target & styling contract
+  assert.match(css, /\.dock-travel-btn\s*{[^}]*min-height:\s*44px/s);
+  assert.match(css, /\.world-map-dialog\[open\]/);
+  assert.match(css, /@starting-style/);
+  assert.match(css, /\.is-page-flipping/);
+  assert.match(css, /storybookPageTurn/);
+
+  // App handlers & shortcut
+  assert.match(js, /worldMapView\.openWorldMapDialog/);
+  assert.match(js, /worldMapView\.closeWorldMapDialog/);
+  assert.match(playJs, /openWorldMapDialog/);
+});
+
+test('All library dialogs declare closedby="any" and light-dismiss backdrop wiring', () => {
+  const libraryDialogIds = [
+    'project-dialog',
+    'guide-dialog',
+    'world-map-dialog',
+    'scene-templates-dialog',
+    'scene-outline-dialog',
+    'scene-library-dialog',
+    'paint-myart-dialog'
+  ];
+
+  for (const id of libraryDialogIds) {
+    assert.match(html, new RegExp(`<dialog id="${id}"[^>]*closedby="any"`));
+  }
+
+  assert.match(js, /enableDialogLightDismiss/);
+  const dismissJs = readFileSync(new URL('../js/core/dialog-dismiss.js', import.meta.url), 'utf8');
+  assert.match(dismissJs, /export function enableDialogLightDismiss/);
+  assert.match(dismissJs, /dialog\.dataset\.lightDismissBound/);
+});
+

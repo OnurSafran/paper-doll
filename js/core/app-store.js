@@ -89,6 +89,7 @@ import {
   PLAYBACK_RATES,
   STAGE_WIDTHS
 } from '../domain/vocabulary.js';
+import { evaluateUnlockableBackgrounds, getLandmarkByBackgroundId, isLandmarkUnlocked } from '../domain/world-map-catalog.js';
 
 export function createAppStore(envelope, options = {}) {
   let state = createRuntimeState(envelope);
@@ -698,13 +699,16 @@ function reduce(state, action, context) {
       };
     }
 
-    case 'scene/setBackground':
+    case 'scene/setBackground': {
       if (context.getAsset(action.backgroundId)?.kind !== 'background') return null;
       if (state.currentScene.backgroundId === action.backgroundId) return null;
+      const landmark = getLandmarkByBackgroundId(action.backgroundId);
+      if (landmark && !isLandmarkUnlocked(landmark, state.settings)) return null;
       return {
         state: { ...state, currentScene: touchScene({ ...state.currentScene, backgroundId: action.backgroundId }, context.now) },
         persist: true
       };
+    }
 
     case 'scene/setStageWidth': {
       if (!isStageWidth(action.stageWidth)) return null;
@@ -1658,6 +1662,45 @@ function reduce(state, action, context) {
           settings: {
             ...state.settings,
             reducedMotion: mode
+          }
+        },
+        persist: true
+      };
+    }
+    case 'settings/unlockStamp': {
+      const stampId = action.stampId;
+      if (!stampId || typeof stampId !== 'string' || stampId.length > 50) return null;
+      const currentStamps = Array.isArray(state.settings?.stamps) ? state.settings.stamps : [];
+      if (currentStamps.includes(stampId)) return null;
+      const nextStamps = [...currentStamps, stampId];
+      const nextSettings = { ...state.settings, stamps: nextStamps };
+      const newlyEligible = evaluateUnlockableBackgrounds(nextSettings);
+      const currentUnlocked = Array.isArray(state.settings?.unlockedBackgrounds) ? state.settings.unlockedBackgrounds : [];
+      const nextUnlocked = [...new Set([...currentUnlocked, ...newlyEligible])];
+      return {
+        state: {
+          ...state,
+          settings: {
+            ...state.settings,
+            stamps: nextStamps,
+            unlockedBackgrounds: nextUnlocked
+          }
+        },
+        persist: true,
+        result: { ok: true, unlockedStamps: nextStamps, newlyUnlockedBackgrounds: newlyEligible.filter((id) => !currentUnlocked.includes(id)) }
+      };
+    }
+    case 'settings/unlockBackground': {
+      const backgroundId = action.backgroundId;
+      if (!backgroundId || typeof backgroundId !== 'string') return null;
+      const currentUnlocked = Array.isArray(state.settings?.unlockedBackgrounds) ? state.settings.unlockedBackgrounds : [];
+      if (currentUnlocked.includes(backgroundId)) return null;
+      return {
+        state: {
+          ...state,
+          settings: {
+            ...state.settings,
+            unlockedBackgrounds: [...currentUnlocked, backgroundId]
           }
         },
         persist: true

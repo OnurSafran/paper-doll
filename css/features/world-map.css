@@ -1,0 +1,974 @@
+/* ==========================================================================
+   The Papercraft World Map (Diyar Haritası) Stylesheet
+   Tactile paper aesthetic, 3D paper lift landmarks, folding dialog,
+   easter egg micro-animations, souvenir stamp passport, page-turn transition.
+   ========================================================================== */
+
+/* Map Pill Trigger Button in Play Header */
+.world-map-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 750;
+  font-size: 0.86rem;
+  min-height: 38px;
+  padding: 0.35rem 0.85rem;
+  background: var(--surface-card, #ffffff);
+  border: 1.5px solid var(--border-soft, #d8cbba);
+  border-radius: var(--radius-pill, 9999px);
+  color: var(--ink, #2d1e14);
+  box-shadow: 0 2px 4px rgba(74, 55, 40, 0.08);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+  cursor: pointer;
+}
+
+.world-map-pill:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent, #e07a5f);
+  box-shadow: 0 4px 8px rgba(74, 55, 40, 0.14);
+}
+
+.world-map-pill:focus-visible {
+  outline: 3px solid var(--accent, #e07a5f);
+  outline-offset: 2px;
+}
+
+.world-map-pill-name {
+  color: var(--accent-deep, #9c4127);
+  font-weight: 800;
+}
+
+/* ================= WORLD MAP DIALOG ================= */
+.world-map-dialog {
+  width: min(96vw, 1280px);
+  max-width: 1280px;
+  height: min(92vh, 880px);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-lg, 24px);
+  background: transparent;
+  color: var(--ink, #2d1e14);
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(45, 30, 20, 0.35), 0 4px 12px rgba(45, 30, 20, 0.15);
+}
+
+/* Top-layer Discrete Transitions for Dialog (Modern standard) */
+.world-map-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  transform: scale(1) rotateX(0deg);
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              display 0.38s allow-discrete,
+              overlay 0.38s allow-discrete;
+}
+
+@starting-style {
+  .world-map-dialog[open] {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px) rotateX(4deg);
+  }
+}
+
+.world-map-dialog::backdrop {
+  background-color: rgba(35, 25, 18, 0.65);
+  backdrop-filter: blur(4px);
+  transition: display 0.35s allow-discrete, overlay 0.35s allow-discrete, background-color 0.35s ease;
+}
+
+@starting-style {
+  .world-map-dialog[open]::backdrop {
+    background-color: rgba(35, 25, 18, 0);
+  }
+}
+
+/* Dialog Inner Wrapper */
+.world-map-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #faf4e6;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Header bar */
+.world-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.4rem;
+  background: #fdfaf3;
+  border-bottom: 1.5px solid #ebd9c3;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(60, 40, 20, 0.05);
+}
+
+.world-map-header-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.world-map-title-group h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: #4a2e18;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.world-map-stamp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  background: #f4e8d5;
+  color: #7f4f24;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid #dcbfa5;
+}
+
+/* Main Map Viewport */
+.world-map-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #f4ece1;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  padding: 0.75rem 1rem;
+  gap: 1rem;
+  min-height: 0;
+}
+
+/* ================= WIDE SCROLLABLE MAP CAMERA ================= */
+.world-map-stage {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 0;
+}
+
+.world-map-camera {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #d5bdaf transparent;
+  border-radius: var(--radius-md, 16px);
+  background: #f7efe2;
+  box-shadow: inset 0 0 0 1.5px #e6d4bd, inset 0 2px 10px rgba(80, 55, 30, 0.07);
+  cursor: grab;
+  touch-action: pan-x pan-y;
+}
+
+.world-map-camera.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+.world-map-camera.is-fit {
+  cursor: default;
+}
+
+.world-map-camera:focus-visible {
+  outline: 3px solid var(--accent, #e07a5f);
+  outline-offset: 2px;
+}
+
+.world-map-camera::-webkit-scrollbar {
+  height: 10px;
+}
+.world-map-camera::-webkit-scrollbar-thumb {
+  background: #d5bdaf;
+  border-radius: 9999px;
+}
+
+.world-map-svg-frame {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: max-content;
+  margin-inline: auto;
+}
+
+/* Width/height are set by world-map-view.js from the camera size. */
+.world-map-svg {
+  display: block;
+  flex: none;
+  max-width: none;
+}
+
+/* Camera HUD: pan buttons, minimap strip and zoom toggle */
+.world-map-camera-hud {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+
+.map-pan-btn,
+.map-zoom-btn {
+  width: 40px;
+  height: 34px;
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #7f4f24;
+  background: #fdfaf3;
+  border: 1.5px solid #e0c9ae;
+  border-radius: var(--radius-sm, 10px);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.map-pan-btn:hover,
+.map-zoom-btn:hover {
+  background: #f6e9d6;
+  border-color: var(--accent, #e07a5f);
+}
+
+.map-pan-btn:focus-visible,
+.map-zoom-btn:focus-visible,
+.world-map-minimap:focus-visible {
+  outline: 3px solid var(--accent, #e07a5f);
+  outline-offset: 2px;
+}
+
+.map-zoom-btn[aria-pressed="true"] {
+  background: #f4dfcf;
+  border-color: #c98d6b;
+}
+
+.world-map-minimap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  border-radius: var(--radius-sm, 10px);
+  background: linear-gradient(90deg, #fdf0e2 0%, #fdf0e2 33.3%, #eaf3ea 33.3%, #eaf3ea 66%, #f6edfb 66%, #f6edfb 100%);
+  border: 1.5px solid #e0c9ae;
+  cursor: pointer;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.minimap-dots {
+  position: absolute;
+  inset: 0;
+}
+
+.minimap-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: #b08968;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.75);
+}
+
+.minimap-dot.biome-cozyTown { background: #e07a5f; }
+.minimap-dot.biome-theWilds { background: #588157; }
+.minimap-dot.biome-dreamRealms { background: #7b2cbf; }
+
+.minimap-dot.is-selected {
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  box-shadow: 0 0 0 2px #fffdf5, 0 0 6px rgba(255, 183, 3, 0.9);
+}
+
+.minimap-dot.is-current {
+  box-shadow: 0 0 0 2px #ffb703, 0 0 0 3.5px rgba(255, 255, 255, 0.85);
+}
+
+.minimap-window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 2px solid #8d2816;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0 1px rgba(255, 253, 245, 0.8) inset;
+  pointer-events: none;
+}
+
+/* ================= LANDMARK INTERACTIONS =================
+   IMPORTANT — transform contract for this map:
+   Positioning lives on wrapper groups (.map-landmark-anchor, .sprite-anchor,
+   .active-doll-marker-anchor) via the SVG `transform` attribute. The CSS
+   `transform` property REPLACES that attribute rather than composing with it,
+   so those anchors must never be given a CSS transform (hover, keyframe or
+   reduced-motion reset). Interaction and animation transforms belong on the
+   inner elements below, which carry no transform attribute of their own.
+   Enforced by test/world-map.test.js.
+   ========================================================= */
+.landmark-hitbox,
+.egg-hitbox {
+  pointer-events: all;
+}
+
+.map-landmark {
+  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.24s ease;
+  transform-origin: center center;
+  transform-box: fill-box;
+  outline: none;
+}
+
+.map-landmark:hover,
+.map-landmark:focus-visible {
+  transform: translateY(-8px) scale(1.05);
+  filter: drop-shadow(0 12px 14px rgba(45, 30, 20, 0.32));
+}
+
+.map-landmark:focus-visible .landmark-hitbox {
+  stroke: var(--accent, #e07a5f);
+  stroke-width: 3px;
+  stroke-dasharray: 4 4;
+}
+
+.map-landmark.is-active-landmark {
+  filter: drop-shadow(0 0 10px rgba(255, 183, 3, 0.75)) drop-shadow(0 8px 12px rgba(45, 30, 20, 0.28));
+}
+
+.map-landmark.is-active-landmark text {
+  font-weight: 900;
+  fill: #85371f;
+}
+
+.map-landmark.is-active-landmark .landmark-label-pill rect {
+  stroke: #ffb703;
+  stroke-width: 2px;
+  fill: #fffdf5;
+}
+
+/* Locked Landmark Sepia & Mystery */
+.map-landmark.is-locked {
+  filter: grayscale(0.55) contrast(0.9) brightness(0.95);
+  opacity: 0.78;
+}
+
+.map-landmark.is-locked:hover,
+.map-landmark.is-locked:focus-visible {
+  transform: translateY(-4px) scale(1.02);
+  filter: grayscale(0.35) brightness(1);
+  opacity: 0.95;
+}
+
+/* A locked realm reads as unfinished paper rather than a live destination */
+.map-landmark.is-locked .landmark-label-pill rect {
+  fill: #f1e7db;
+  stroke: #bdab95;
+  stroke-dasharray: 4 3;
+}
+
+.map-landmark.is-locked .easter-egg-trigger {
+  pointer-events: none;
+}
+
+/* ================= ACTIVE DOLL MARKER =================
+   The anchor carries the positioning transform attribute set by JS; only its
+   transition may touch `transform`, never a keyframe or a reset. */
+.active-doll-marker-anchor {
+  pointer-events: none;
+  transition: transform 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.active-doll-marker {
+  pointer-events: none;
+}
+
+.marker-flag {
+  animation: flagWave 2.8s ease-in-out infinite alternate;
+  transform-origin: left center;
+  transform-box: fill-box;
+}
+
+@keyframes flagWave {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-2px) rotate(1.5deg); }
+  100% { transform: translateY(1px) rotate(-1.5deg); }
+}
+
+/* Mini doll figure container inside foreignObject */
+.active-marker-doll-slot {
+  position: relative;
+  width: 300px;
+  height: 450px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+}
+
+.active-marker-doll-slot .doll-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ================= EASTER EGG MICRO-ANIMATIONS ================= */
+.easter-egg-trigger {
+  cursor: pointer;
+  outline: none;
+  transform-box: fill-box;
+}
+
+.easter-egg-trigger:hover {
+  filter: brightness(1.15) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
+}
+
+.easter-egg-trigger:focus-visible .egg-hitbox {
+  stroke: #ffb703;
+  stroke-width: 2.5px;
+  stroke-dasharray: 3 3;
+}
+
+/* 1. Bedroom Cottage chimney smoke */
+.smoke-puff {
+  transform-origin: center center;
+  transform-box: fill-box;
+  animation: puffSmoke 2.4s ease-in-out infinite;
+}
+.puff-1 { animation-delay: 0s; }
+.puff-2 { animation-delay: 0.8s; }
+.puff-3 { animation-delay: 1.6s; }
+
+.smoke-puff.is-triggered {
+  animation: smokeBurst 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.smoke-puff.puff-1.is-triggered { animation-delay: 0s !important; }
+.smoke-puff.puff-2.is-triggered { animation-delay: 0.12s !important; }
+.smoke-puff.puff-3.is-triggered { animation-delay: 0.24s !important; }
+
+@keyframes puffSmoke {
+  0% { transform: translateY(0) scale(0.85); opacity: 0.85; }
+  50% { transform: translateY(-8px) scale(1.15); opacity: 0.65; }
+  100% { transform: translateY(-18px) scale(1.4); opacity: 0; }
+}
+
+@keyframes smokeBurst {
+  0% { transform: translateY(0) scale(0.8); opacity: 1; }
+  50% { transform: translateY(-20px) scale(1.8); opacity: 0.85; }
+  100% { transform: translateY(-38px) scale(2.4); opacity: 0; }
+}
+
+/* 2. Cafe Bakery kitten peeking */
+.hidden-kitten {
+  transform-origin: center bottom;
+  transform-box: fill-box;
+  animation: kittenNap 3s ease-in-out infinite alternate;
+}
+.hidden-kitten.is-triggered {
+  animation: kittenPurr 0.45s ease-in-out 3 !important;
+}
+@keyframes kittenNap {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-2px); }
+}
+@keyframes kittenPurr {
+  0%, 100% { transform: translateY(-6px) rotate(0deg) scale(1.2); }
+  25% { transform: translateY(-9px) rotate(-5deg) scale(1.28); }
+  75% { transform: translateY(-9px) rotate(5deg) scale(1.28); }
+}
+
+/* 3. Atelier easel paint splash */
+.paint-splash {
+  transform-origin: center center;
+  transform-box: fill-box;
+}
+.paint-splash.is-triggered {
+  animation: paintSplashBurst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.paint-splash.splash-1.is-triggered { animation-delay: 0s !important; }
+.paint-splash.splash-2.is-triggered { animation-delay: 0.08s !important; }
+.paint-splash.splash-3.is-triggered { animation-delay: 0.16s !important; }
+
+@keyframes paintSplashBurst {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.8); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* 4. Library dome owl */
+.owl-sprite {
+  transform-origin: center center;
+  transform-box: fill-box;
+  transition: transform 0.2s ease;
+  animation: owlBlink 5s ease-in-out infinite;
+}
+.owl-sprite.is-triggered {
+  animation: owlHeadTurn 0.7s ease-in-out !important;
+}
+@keyframes owlBlink {
+  0%, 88%, 100% { transform: rotate(0deg) scale(1); }
+  92% { transform: rotate(-8deg) scale(1.06); }
+  96% { transform: rotate(8deg) scale(1.06); }
+}
+@keyframes owlHeadTurn {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-28deg) scale(1.25); }
+  75% { transform: rotate(28deg) scale(1.25); }
+}
+
+/* 5. Park flowerbed butterfly */
+.flutter-butterfly {
+  transform-origin: center center;
+  transform-box: fill-box;
+  animation: butterflyFlutter 2s ease-in-out infinite alternate;
+}
+.flutter-butterfly.is-triggered {
+  animation: butterflyFlutterBurst 0.8s ease-in-out !important;
+}
+@keyframes butterflyFlutter {
+  0% { transform: translateY(0) rotate(-3deg); }
+  100% { transform: translateY(-6px) rotate(6deg); }
+}
+@keyframes butterflyFlutterBurst {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(10px, -24px) scale(1.5) rotate(20deg); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* 6. Beach message bottle */
+.bobbing-bottle {
+  transform-origin: center center;
+  transform-box: fill-box;
+  animation: bottleBob 2.5s ease-in-out infinite alternate;
+}
+.bobbing-bottle.is-triggered {
+  animation: bottleBobBurst 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+@keyframes bottleBob {
+  0% { transform: translateY(-2px) rotate(-6deg); }
+  100% { transform: translateY(3px) rotate(6deg); }
+}
+@keyframes bottleBobBurst {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  40% { transform: translateY(-14px) rotate(25deg) scale(1.35); }
+  80% { transform: translateY(4px) rotate(-15deg); }
+}
+
+/* 7. Forest oak squirrel */
+.curious-squirrel {
+  transform-origin: center center;
+  transform-box: fill-box;
+  animation: squirrelBlink 4s infinite;
+}
+.curious-squirrel.is-triggered {
+  animation: squirrelPeek 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 2 !important;
+}
+@keyframes squirrelBlink {
+  0%, 90%, 100% { transform: translateY(0); }
+  95% { transform: translateY(-3px); }
+}
+@keyframes squirrelPeek {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.35); }
+}
+
+/* 8. Meadow fireflies */
+.firefly {
+  animation: fireflyGlow 1.8s ease-in-out infinite alternate;
+  transform-origin: center center;
+  transform-box: fill-box;
+}
+.firefly-1 { animation-delay: 0s; }
+.firefly-2 { animation-delay: 0.6s; }
+.firefly-3 { animation-delay: 1.2s; }
+
+.firefly.is-triggered {
+  animation: fireflyTwinkle 0.8s ease-in-out !important;
+}
+.firefly.firefly-1.is-triggered { animation-delay: 0s !important; }
+.firefly.firefly-2.is-triggered { animation-delay: 0.1s !important; }
+.firefly.firefly-3.is-triggered { animation-delay: 0.2s !important; }
+
+@keyframes fireflyGlow {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.3); }
+}
+@keyframes fireflyTwinkle {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(2.4); opacity: 1; filter: drop-shadow(0 0 8px #55efc4); }
+}
+
+/* 9. Snowy village snowflakes */
+.snowflake-puff {
+  transform-origin: center center;
+  transform-box: fill-box;
+  transition: transform 0.2s ease;
+  animation: snowFloat 3.5s ease-in-out infinite alternate;
+}
+.flake-1 { animation-delay: 0s; }
+.flake-2 { animation-delay: 1.75s; }
+
+.snowflake-puff.is-triggered {
+  animation: snowflakeFlurry 0.8s ease-out !important;
+}
+.snowflake-puff.flake-1.is-triggered { animation-delay: 0s !important; }
+.snowflake-puff.flake-2.is-triggered { animation-delay: 0.15s !important; }
+
+@keyframes snowFloat {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.75; }
+  100% { transform: translateY(-4px) rotate(15deg); opacity: 1; }
+}
+
+@keyframes snowflakeFlurry {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.9; }
+  50% { transform: translateY(-18px) rotate(180deg) scale(1.6); opacity: 1; }
+  100% { transform: translateY(-36px) rotate(360deg) scale(0.6); opacity: 0; }
+}
+
+/* 10. City sunset hot air balloon */
+.balloon-drift {
+  animation: balloonDrift 3.5s ease-in-out infinite alternate;
+  transform-origin: center center;
+  transform-box: fill-box;
+}
+.balloon-drift.is-triggered {
+  animation: balloonLift 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+@keyframes balloonDrift {
+  0% { transform: translateY(0) translateX(-2px); }
+  100% { transform: translateY(-8px) translateX(4px); }
+}
+@keyframes balloonLift {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-24px) scale(1.3); }
+}
+
+/* 11. Candy pinwheel spin */
+.spinning-pinwheel {
+  transform-origin: center center;
+  transform-box: fill-box;
+}
+.map-landmark:hover .spinning-pinwheel {
+  animation: spinPinwheel 1.5s linear infinite;
+}
+.spinning-pinwheel.is-triggered {
+  animation: pinwheelSpinFast 0.85s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+@keyframes spinPinwheel {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes pinwheelSpinFast {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(720deg); }
+}
+
+/* ================= LOCATION PREVIEW DOCK ================= */
+.world-map-preview-dock {
+  width: 320px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-radius: var(--radius-md, 16px);
+  padding: 1rem;
+  border: 2px solid #ebd9c3;
+  box-shadow: 0 8px 24px rgba(45, 30, 20, 0.12), 0 2px 6px rgba(45, 30, 20, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  z-index: 15;
+  transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.2s ease;
+  overflow-y: auto;
+}
+
+.dock-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dock-biome-badge {
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.dock-biome-badge.cozyTown { background: #fde8dc; color: #824c31; }
+.dock-biome-badge.theWilds { background: #e3f0e3; color: #2d5a27; }
+.dock-biome-badge.dreamRealms { background: #f1e4fb; color: #582a72; }
+
+.dock-title {
+  font-size: 1.12rem;
+  font-weight: 850;
+  color: #3b2210;
+  margin: 0;
+}
+
+.dock-thumb-container {
+  width: 100%;
+  height: 104px;
+  border-radius: var(--radius-sm, 8px);
+  overflow: hidden;
+  border: 1px solid #e8dbcc;
+  background: #fdfaf3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dock-thumb-svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dock-description {
+  font-size: 0.82rem;
+  color: #5c422d;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.dock-hint {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #8c6a47;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dock-travel-btn {
+  width: 100%;
+  min-height: 44px;
+  font-size: 0.94rem;
+  font-weight: 800;
+  border-radius: var(--radius-sm, 10px);
+  box-shadow: 0 4px 10px rgba(224, 122, 95, 0.3);
+}
+
+.dock-travel-btn.is-current {
+  background: #e9ecef;
+  color: #6c757d;
+  border-color: #ced4da;
+  box-shadow: none;
+  cursor: default;
+}
+
+.dock-locked-box {
+  background: #fdf0ed;
+  border: 1.5px dashed #e07a5f;
+  border-radius: var(--radius-sm, 8px);
+  padding: 0.55rem 0.75rem;
+  font-size: 0.78rem;
+  color: #8d2816;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* ================= SOUVENIR STAMP PASSPORT BORDER ================= */
+.world-map-passport-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.2rem;
+  background: #fbf5e8;
+  border-top: 1.5px solid #ebd9c3;
+  overflow-x: auto;
+  min-height: 62px;
+  z-index: 10;
+}
+
+.passport-label {
+  font-size: 0.78rem;
+  font-weight: 850;
+  color: #6d4c33;
+  white-space: nowrap;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.stamp-passport-list {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.souvenir-stamp-item {
+  display: flex;
+  flex: none;
+}
+
+.souvenir-stamp-slot {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  background: #ffffff;
+  border: 1.5px dashed #d5c2ad;
+  color: #d5c2ad;
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+  padding: 0;
+  outline: none;
+  cursor: default;
+}
+
+.souvenir-stamp-slot:focus-visible {
+  border-color: var(--accent, #e07a5f);
+  box-shadow: 0 0 0 3px rgba(224, 122, 95, 0.35);
+}
+
+.souvenir-stamp-slot.is-collected {
+  background: #fffdfa;
+  border: 2px solid #8d2816;
+  box-shadow: 0 2px 5px rgba(141, 40, 22, 0.22);
+  color: #8d2816;
+  transform: rotate(-3deg);
+  cursor: pointer;
+}
+
+.souvenir-stamp-slot.is-collected:hover,
+.souvenir-stamp-slot.is-collected:focus-visible {
+  transform: scale(1.12) rotate(0deg);
+}
+
+.souvenir-stamp-slot.is-collected::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 1px dashed rgba(141, 40, 22, 0.4);
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+/* Stamp Inking Animation */
+.souvenir-stamp-slot.just-inked {
+  animation: inkThud 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes inkThud {
+  0% { transform: scale(2.2) rotate(14deg); opacity: 0; }
+  60% { transform: scale(0.92) rotate(-5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-3deg); opacity: 1; }
+}
+
+/* ================= STORYBOOK PAGE-TURN TRANSITION ================= */
+.play-stage.is-page-flipping {
+  animation: storybookPageTurn 0.42s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: left center;
+  perspective: 1200px;
+}
+
+@keyframes storybookPageTurn {
+  0% {
+    transform: rotateY(0deg);
+    filter: brightness(1);
+  }
+  40% {
+    transform: rotateY(-18deg) scale(0.97);
+    filter: brightness(0.92);
+    box-shadow: -24px 0 40px rgba(45, 30, 20, 0.25);
+  }
+  100% {
+    transform: rotateY(0deg) scale(1);
+    filter: brightness(1);
+    box-shadow: none;
+  }
+}
+
+/* ================= RESPONSIVE VIEWPORT BREAKPOINTS ================= */
+@media (max-width: 860px) {
+  .world-map-viewport {
+    flex-direction: column;
+    padding: 0.5rem;
+    gap: 0.5rem;
+    overflow-y: auto;
+  }
+
+  .world-map-stage {
+    flex: none;
+  }
+
+  .world-map-camera {
+    height: 46vh;
+    min-height: 260px;
+    flex: none;
+  }
+
+  .world-map-preview-dock {
+    width: 100%;
+    flex-shrink: 0;
+  }
+}
+
+/* ================= REDUCED MOTION SAFEGUARDS ================= */
+@media (prefers-reduced-motion: reduce) {
+  /* Only elements whose transform comes from CSS may be reset here. The
+     positioning anchors (.map-landmark-anchor, .sprite-anchor,
+     .active-doll-marker-anchor) are deliberately absent: resetting their
+     transform would collapse every realm onto the map origin. */
+  .world-map-dialog[open],
+  .map-landmark,
+  .world-map-pill,
+  .souvenir-stamp-slot {
+    transform: none !important;
+    transition-duration: 0.12s !important;
+    animation: none !important;
+  }
+
+  .active-doll-marker-anchor {
+    transition-duration: 0.12s !important;
+  }
+
+  .world-map-camera {
+    scroll-behavior: auto !important;
+  }
+
+  .world-map-dialog .smoke-puff,
+  .world-map-dialog .hidden-kitten,
+  .world-map-dialog .curious-squirrel,
+  .world-map-dialog .spinning-pinwheel,
+  .world-map-dialog .flutter-butterfly,
+  .world-map-dialog .bobbing-bottle,
+  .world-map-dialog .firefly,
+  .world-map-dialog .balloon-drift,
+  .world-map-dialog .marker-flag,
+  .world-map-dialog .paint-splash,
+  .world-map-dialog .owl-sprite,
+  .world-map-dialog .snowflake-puff {
+    animation: none !important;
+  }
+
+  .play-stage.is-page-flipping {
+    animation: simplePageFade 0.18s ease-in-out !important;
+    transform: none !important;
+  }
+}
+
+@keyframes simplePageFade {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

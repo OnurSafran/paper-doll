@@ -25,7 +25,7 @@ export const TRANSLATIONS = Object.freeze({
       brand: 'Paper Doll',
       subtitle: 'Stüdyo',
       skipLink: 'Stüdyoya geç',
-      version: 'Paper Doll Studio v1.18',
+      version: 'Paper Doll Studio v1.19',
       hardReset: '🔄 Yenile ve Önbelleği Temizle',
       clearingCache: 'Önbellek temizleniyor ve yeniden yükleniyor…',
       noscript: 'Paper Doll Studio bebek tasarlamak ve kaydetmek için JavaScript gerektirir.',
@@ -233,6 +233,114 @@ export const TRANSLATIONS = Object.freeze({
       blonde: 'Altın sarısı saç',
       auburn: 'Kızıl saç',
       brown: 'Kahverengi saç'
+    },
+    worldMap: {
+      btnLabel: 'Harita:',
+      openTitle: 'Diyar Haritasını Aç (M)',
+      eyebrow: 'Kâğıttan Masal Haritası',
+      title: 'Diyar Haritası',
+      stampCount: '{found}/{total} Hatıra Pulu',
+      youAreHere: 'Buradasınız',
+      youAreHereBadge: '📍 BURADASINIZ',
+      compassNorth: 'K',
+      compassSouth: 'G',
+      compassEast: 'D',
+      compassWest: 'B',
+      travelBtn: '🚀 Buraya Git',
+      traveling: 'Gidiliyor…',
+      currentLocation: '✓ Şu An Buradasınız',
+      locked: '🔒 Kilitli Diyar',
+      lockedBadge: 'Kilitli',
+      lockedHint: 'Nasıl Açılır: {clue}',
+      defaultUnlockClue: '3 hatıra pulu toplayarak bu diyarın kapısını aralayın.',
+      unlockedNotice: '✨ Tebrikler! Yeni bir diyar keşfedildi!',
+      easterEggDiscovered: '🎉 Yeni bir hatıra pulu damgalandı: {name}',
+      stampClueHint: 'Haritada bir yerlerde gizli!',
+      closeAria: 'Diyar Haritasını Kapat (Esc)',
+      svgAria: 'Kâğıttan masal haritası: 11 diyar',
+      cameraAria: 'Harita kamerası — sürükleyerek veya ok tuşlarıyla gezinin',
+      dockAria: 'Seçili diyar bilgisi',
+      passportAria: 'Hatıra pulları koleksiyonu',
+      minimapAria: 'Mini harita — haritada hızlıca gezinin',
+      panLeftAria: 'Haritayı sola kaydır',
+      panRightAria: 'Haritayı sağa kaydır',
+      zoomToggleAria: 'Tüm haritayı sığdır',
+      zoomCloseAria: 'Haritayı yakınlaştır',
+      biomes: {
+        cozyTown: { name: 'Sevimli Kasaba', banner: '🏡 SEVİMLİ KASABA' },
+        theWilds: { name: 'Doğanın Kalbi', banner: '🌲 DOĞANIN KALBİ' },
+        dreamRealms: { name: 'Rüya Diyarları', banner: '✨ RÜYA DİYARLARI' }
+      },
+      landmarks: {
+        bedroom: {
+          name: 'Sıcak Yatak Odası',
+          desc: 'Ilık şöminesi, parıldayan pencereleri ve yumuşak yatağıyla huzurlu bir kır evi.',
+          eggHint: 'Bacaya dokunun: sevimli dumanlar tüter.'
+        },
+        cafe: {
+          name: 'Pastane & Kafe',
+          desc: 'Taze kruvasan ve kahve kokulu, çizgili tenteli şirin bir Fransız fırını.',
+          eggHint: 'Bankın altına dokunun: uyuyan sevimli kedi uyanır.'
+        },
+        atelier: {
+          name: 'Sanat Atölyesi',
+          desc: 'Tavan penceresinden süzülen güneş ışığı, tuvaller ve boyalarla dolu bir ressam köşkü.',
+          eggHint: 'Şövaleye dokunun: tuvale rengarenk boya sıçrar.'
+        },
+        library: {
+          name: 'Büyük Kütüphane',
+          desc: 'Yüksek kubbesi ve asırlık ciltli masal kitaplarıyla masalsı bir tuğla kütüphane.',
+          eggHint: 'Çatıya dokunun: bilge baykuş başını sallar.'
+        },
+        park: {
+          name: 'Güneşli Park',
+          desc: 'Rengarenk çiçek tarhları, ahşap piknik çardağı ve kelebeklerle dolu bir bahçe.',
+          eggHint: 'Çiçeklere dokunun: rengarenk bir kelebek kanat çırpar.'
+        },
+        beach: {
+          name: 'Kumsal & Deniz',
+          desc: 'Turkuaz dalgalar, ahşap iskele ve çizgili güneş şemsiyesiyle serinletici bir sahil.',
+          eggHint: 'Kıyıya dokunun: içinde gizli not olan bir şişe kıyıya vurur.'
+        },
+        forest: {
+          name: 'Büyülü Orman',
+          desc: 'Asırlık ulu meşe ağacı, yosunlu kökler ve ağaç kovuğunda parıldayan fenerler.',
+          eggHint: 'Ağaç kovuğuna dokunun: meraklı sincap fındığıyla selam verir.'
+        },
+        moonlitMeadow: {
+          name: 'Mehtaplı Çayır',
+          desc: 'Salkımsöğütler ve parıldayan hilal altında romantik bir tepe çardağı.',
+          eggHint: 'Hilale dokunun: parıldayan ateş böcekleri dans eder.'
+        },
+        snowyVillage: {
+          name: 'Karlı Köy',
+          desc: 'Karla kaplı çatıları, çam ağaçları ve tüten bacasıyla sıcacık bir dağ evi.',
+          eggHint: 'Bacaya dokunun: kâğıttan zarif kar taneleri savrulur.'
+        },
+        citySunset: {
+          name: 'Gün Batımı Şehri',
+          desc: 'Sahil kordonunda altın saat ışıklarıyla yükselen art-deco saat kulesi.',
+          eggHint: 'Bulutlara dokunun: gökyüzünde sıcak hava balonu süzülür.'
+        },
+        candyLand: {
+          name: 'Şeker Diyarı',
+          desc: 'Zencefilli kurabiye kalesi, nane şekeri kuleleri ve dönen renkli fırıldak.',
+          eggHint: 'Fırıldağa dokunun: nane şekeri fırıldağı neşeyle döner.'
+        }
+      },
+      stamps: {
+        chimney: { name: 'Sıcak Baca Pulu' },
+        kitten: { name: 'Uykucu Kedi Pulu' },
+        palette: { name: 'Ressam Paleti Pulu' },
+        owl: { name: 'Bilge Baykuş Pulu' },
+        butterfly: { name: 'Uçuşan Kelebek Pulu' },
+        message_bottle: { name: 'Şişedeki Mektup Pulu' },
+        squirrel: { name: 'Fındıkçı Sincap Pulu' },
+        fireflies: { name: 'Ateş Böceği Pulu' },
+        snowflake: { name: 'Kristal Kar Pulu' },
+        balloon: { name: 'Süzülen Balon Pulu' },
+        pinwheel: { name: 'Şeker Fırıldağı Pulu' }
+      }
     },
     play: {
       title: 'Oyun Alanı',
@@ -1073,7 +1181,7 @@ export const TRANSLATIONS = Object.freeze({
       brand: 'Paper Doll',
       subtitle: 'Studio',
       skipLink: 'Skip to studio',
-      version: 'Paper Doll Studio v1.18',
+      version: 'Paper Doll Studio v1.19',
       hardReset: '🔄 Reload & Clear Cache',
       clearingCache: 'Clearing cache and reloading…',
       noscript: 'Paper Doll Studio requires JavaScript to design and save dolls.',
@@ -1281,6 +1389,114 @@ export const TRANSLATIONS = Object.freeze({
       blonde: 'Golden blonde',
       auburn: 'Auburn hair',
       brown: 'Brown hair'
+    },
+    worldMap: {
+      btnLabel: 'Map:',
+      openTitle: 'Open Realm Map (M)',
+      eyebrow: 'The Papercraft World Map',
+      title: 'Realm Map',
+      stampCount: '{found}/{total} Souvenir Stamps',
+      youAreHere: 'You Are Here',
+      youAreHereBadge: '📍 YOU ARE HERE',
+      compassNorth: 'N',
+      compassSouth: 'S',
+      compassEast: 'E',
+      compassWest: 'W',
+      travelBtn: '🚀 Travel Here',
+      traveling: 'Traveling…',
+      currentLocation: '✓ Current Location',
+      locked: '🔒 Locked Realm',
+      lockedBadge: 'Locked',
+      lockedHint: 'How to Unlock: {clue}',
+      defaultUnlockClue: 'Collect 3 souvenir stamps to unlock this secret realm.',
+      unlockedNotice: '✨ Congratulations! A new realm has been unlocked!',
+      easterEggDiscovered: '🎉 New souvenir stamp inked: {name}',
+      stampClueHint: 'Hidden somewhere on the map!',
+      closeAria: 'Close Realm Map (Esc)',
+      svgAria: 'Papercraft world map: 11 realms',
+      cameraAria: 'Map camera — drag or use arrow keys to explore',
+      dockAria: 'Selected realm details',
+      passportAria: 'Souvenir stamp collection',
+      minimapAria: 'Minimap — jump around the map',
+      panLeftAria: 'Pan the map left',
+      panRightAria: 'Pan the map right',
+      zoomToggleAria: 'Fit the whole map',
+      zoomCloseAria: 'Zoom in on the map',
+      biomes: {
+        cozyTown: { name: 'Cozy Town', banner: '🏡 COZY TOWN' },
+        theWilds: { name: 'The Wilds', banner: '🌲 THE WILDS' },
+        dreamRealms: { name: 'Dream Realms', banner: '✨ DREAM REALMS' }
+      },
+      landmarks: {
+        bedroom: {
+          name: 'Cozy Bedroom',
+          desc: 'A comforting cottage room with a warm hearth, glowing windows, and plush paper bed.',
+          eggHint: 'Tap the chimney: puffs cozy paper smoke.'
+        },
+        cafe: {
+          name: 'Bakery & Cafe',
+          desc: 'A charming striped awning bakery smelling of freshly baked croissants and sweet coffee.',
+          eggHint: 'Tap the bench: a sleepy kitten peeks out with a purr.'
+        },
+        atelier: {
+          name: 'Art Atelier',
+          desc: 'A sunlit painter’s loft under timber rafters, loaded with fresh paint tubes and easels.',
+          eggHint: 'Tap the easel: colorful paper paint splashes onto the canvas.'
+        },
+        library: {
+          name: 'Grand Library',
+          desc: 'A stately brick library under a vaulted dome, lined with timeless storybooks.',
+          eggHint: 'Tap the roof: a wise owl turns its head.'
+        },
+        park: {
+          name: 'Sunny Park',
+          desc: 'A delightful picnic pavilion bordered by blooming flowerbeds and sunny paths.',
+          eggHint: 'Tap the flowers: a vibrant paper butterfly flutters up.'
+        },
+        beach: {
+          name: 'Sandy Beach',
+          desc: 'A sun-kissed boardwalk pier extending into soft turquoise waves with a striped umbrella.',
+          eggHint: 'Tap the water: a floating message bottle bobs in the tide.'
+        },
+        forest: {
+          name: 'Enchanted Forest',
+          desc: 'An ancient hollow oak with mossy roots, warm lanterns, and woodland wonder.',
+          eggHint: 'Tap the hollow: a curious squirrel peeks out with an acorn.'
+        },
+        moonlitMeadow: {
+          name: 'Moonlit Meadow',
+          desc: 'A hilltop gazebo under weeping willows bathed in soft crescent moonlight.',
+          eggHint: 'Tap the moon: glowing fireflies begin to dance.'
+        },
+        snowyVillage: {
+          name: 'Snowy Village',
+          desc: 'An alpine chalet under a thick snow blanket with pine trees and a steaming chimney.',
+          eggHint: 'Tap the chimney: a gentle flurry of paper snowflakes drifts down.'
+        },
+        citySunset: {
+          name: 'Sunset City',
+          desc: 'An art-deco clocktower promenade glowing under warm twilight skies.',
+          eggHint: 'Tap the clouds: a hot air balloon drifts through the golden sunset.'
+        },
+        candyLand: {
+          name: 'Candy Land',
+          desc: 'A whimsical gingerbread palace with peppermint spires and spinning pinwheels.',
+          eggHint: 'Tap the pinwheel: the striped peppermint pinwheel spins merrily.'
+        }
+      },
+      stamps: {
+        chimney: { name: 'Cozy Chimney Stamp' },
+        kitten: { name: 'Sleepy Kitten Stamp' },
+        palette: { name: 'Painter Palette Stamp' },
+        owl: { name: 'Wise Owl Stamp' },
+        butterfly: { name: 'Fluttering Butterfly Stamp' },
+        message_bottle: { name: 'Message in a Bottle Stamp' },
+        squirrel: { name: 'Playful Squirrel Stamp' },
+        fireflies: { name: 'Firefly Stamp' },
+        snowflake: { name: 'Paper Snowflake Stamp' },
+        balloon: { name: 'Sky Balloon Stamp' },
+        pinwheel: { name: 'Candy Pinwheel Stamp' }
+      }
     },
     play: {
       title: 'Play Sandbox',
