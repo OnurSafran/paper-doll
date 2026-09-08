@@ -973,9 +973,16 @@
               <div id="world-map-svg-container" class="world-map-svg-frame">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 900" width="2400" height="900" preserveAspectRatio="xMidYMid meet" class="world-map-svg" role="group" data-i18n-aria-label="worldMap.svgAria" aria-label="Kâğıttan Masal Haritası">
   <defs>
-    <clipPath id="world-map-terrain-clip">
-      <rect x="34" y="34" width="2332" height="832" rx="12"/>
-    </clipPath>
+    <pattern id="map-paper-grain" width="19" height="23" patternUnits="userSpaceOnUse">
+      <path d="M2 5h3M12 17h4M7 11h1" stroke="#795c42" stroke-width=".8" opacity=".13"/>
+    </pattern>
+    <g id="map-cardboard-stage">
+      <path d="M-87 37-65 18 62 17 91 38 72 69-66 72Z" fill="#b28a60" stroke="#92704f" stroke-width="2"/>
+      <path d="M-87 31-65 12 62 11 91 32 72 63-66 66Z" fill="#faf0d3" stroke="#c5a77e" stroke-width="2"/>
+      <path d="M-84 39-67 64M-73 39-59 65M68 39 61 63M80 37 72 60" stroke="#d4b58b" stroke-width="2"/>
+      <path d="M-53 23-66 45-43 44-35 24M38 24 49 43 70 43 57 22" fill="#d8bb8e" stroke="#b79972" stroke-width="1.5"/>
+      <path d="M-53 24h18M38 24h19" stroke="#9f805b" stroke-dasharray="3 3"/>
+    </g>
     <!-- Paper texture filters & drop shadows -->
     <filter id="paper-drop-shadow" x="-10%" y="-10%" width="125%" height="125%">
       <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#4a3728" flood-opacity="0.18"/>
@@ -988,90 +995,78 @@
     </filter>
   </defs>
 
-  <!-- ================= MAP BASE PARCHMENT (2400 x 900 wide canvas) ================= -->
-  <g id="map-background">
-    <!-- Parchment base -->
-    <rect x="12" y="12" width="2376" height="876" rx="28" fill="#faf3e0" stroke="#d4b996" stroke-width="3"/>
-    <rect x="24" y="24" width="2352" height="852" rx="20" fill="#fdf8ec" stroke="#ebd5b3" stroke-width="1.5" stroke-dasharray="8 4"/>
-
-    <!-- Storybook concertina fold creases -->
-    <path d="M 799 24 L 799 876" stroke="#c9a882" stroke-width="1.2" stroke-opacity="0.55"/>
-    <path d="M 801 24 L 801 876" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.7"/>
-    <path d="M 1599 24 L 1599 876" stroke="#c9a882" stroke-width="1.2" stroke-opacity="0.55"/>
-    <path d="M 1601 24 L 1601 876" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.7"/>
-    <path d="M 24 449 L 2376 449" stroke="#c9a882" stroke-width="1.2" stroke-opacity="0.55"/>
-    <path d="M 24 451 L 2376 451" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.7"/>
-
-    <!-- Keep wide river/shoreline strokes inside the parchment border. -->
-    <g clip-path="url(#world-map-terrain-clip)">
-    <!-- Biome Region 1: Sevimli Kasaba (Cozy Town) backdrop -->
-    <path d="M 34 34 C 300 50, 560 26, 782 40 C 806 250, 792 470, 800 640 C 806 760, 780 830, 770 866 C 520 852, 260 872, 34 862 C 44 600, 26 300, 34 34 Z" fill="#fdf0e2" opacity="0.62"/>
-    <!-- Cobblestone lanes linking the four town landmarks -->
-    <path d="M 170 392 C 268 452, 356 372, 450 358" fill="none" stroke="#d5bdaf" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 12" opacity="0.85"/>
-    <path d="M 458 362 C 570 372, 606 456, 618 542" fill="none" stroke="#d5bdaf" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 12" opacity="0.85"/>
-    <path d="M 604 636 C 490 710, 360 726, 250 716" fill="none" stroke="#d5bdaf" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 12" opacity="0.85"/>
-    <!-- Town meadow tufts -->
-    <path d="M 700 200 q 14 -22 28 0" fill="none" stroke="#e2cdb9" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
-    <path d="M 120 540 q 14 -22 28 0" fill="none" stroke="#e2cdb9" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
-    <path d="M 400 800 q 14 -22 28 0" fill="none" stroke="#e2cdb9" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
-
-    <!-- Biome Region 2: Doganin Kalbi (The Wilds) backdrop -->
-    <path d="M 806 40 C 1040 22, 1300 52, 1560 36 C 1584 260, 1570 520, 1580 866 C 1320 850, 1060 872, 796 862 C 812 660, 790 300, 806 40 Z" fill="#eaf3ea" opacity="0.66"/>
-    <!-- Forest river winding the length of the wilds -->
-    <path d="M 880 34 C 930 190, 850 330, 910 470 C 968 606, 1088 704, 1108 866" fill="none" stroke="#a3c4bc" stroke-width="16" stroke-linecap="round" opacity="0.55"/>
-    <path d="M 880 34 C 930 190, 850 330, 910 470 C 968 606, 1088 704, 1108 866" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="7 16" opacity="0.75"/>
-    <!-- Shoreline sweeping past the pier -->
-    <path d="M 1320 34 C 1352 200, 1300 330, 1360 452 C 1424 580, 1556 640, 1572 866" fill="none" stroke="#cfdfd7" stroke-width="120" stroke-linecap="round" opacity="0.35"/>
-    <path d="M 1330 34 C 1362 200, 1310 330, 1370 452 C 1434 580, 1566 640, 1582 866" fill="none" stroke="#8cbdb9" stroke-width="6" stroke-dasharray="14 10" opacity="0.5"/>
-    <!-- Woodland canopy tufts -->
-    <path d="M 1010 620 q 18 -26 36 0" fill="none" stroke="#c2dcc2" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
-    <path d="M 1150 200 q 18 -26 36 0" fill="none" stroke="#c2dcc2" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
-    <path d="M 900 760 q 18 -26 36 0" fill="none" stroke="#c2dcc2" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
-
-    <!-- Biome Region 3: Ruya Diyarlari (Dream Realms) backdrop -->
-    <path d="M 1590 36 C 1860 20, 2120 52, 2364 36 C 2352 300, 2372 600, 2364 864 C 2100 874, 1840 850, 1584 866 C 1600 600, 1574 300, 1590 36 Z" fill="#f6edfb" opacity="0.66"/>
-    <!-- Twilight hill contours -->
-    <path d="M 1620 430 C 1760 350, 1900 412, 2040 380 C 2170 350, 2280 402, 2360 386" fill="none" stroke="#d8bbff" stroke-width="2.5" stroke-dasharray="7 7" opacity="0.55"/>
-    <path d="M 1608 776 C 1780 700, 1960 760, 2120 726 C 2240 700, 2310 738, 2364 728" fill="none" stroke="#d8bbff" stroke-width="2.5" stroke-dasharray="7 7" opacity="0.55"/>
-    <!-- Dream stars -->
-    <path d="M 1680 540 l 5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 Z" fill="#cbb0ea" opacity="0.7"/>
-    <path d="M 2300 540 l 5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 Z" fill="#cbb0ea" opacity="0.7"/>
-    <path d="M 1960 830 l 4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 Z" fill="#cbb0ea" opacity="0.6"/>
-    <path d="M 2240 170 l 4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 Z" fill="#cbb0ea" opacity="0.6"/>
-
+  <!-- ================= ONE CONTINUOUS WORLD (2400 x 900 wide canvas) ================= -->
+  <g id="map-background" aria-hidden="true">
+    <!-- A world assembled from construction paper inside an open storybook. -->
+    <rect width="2400" height="900" fill="#c8e4e5"/>
+    <rect width="2400" height="900" fill="url(#map-paper-grain)"/>
+    <g class="map-layer-far" fill="#fff9ea" stroke="#b3cdd0" stroke-width="3">
+      <path d="M-100 130 Q-130 92-80 90 Q-65 43-25 72 Q10 40 35 86 Q85 83 74 130Z"/>
+      <path d="M660 125 Q640 94 680 87 Q700 38 735 75 Q775 56 790 99 Q825 99 824 125Z"/>
+      <path d="M1490 116 Q1470 88 1510 79 Q1525 37 1560 64 Q1602 45 1620 91 Q1662 87 1665 116Z"/>
+      <path d="M2200 140 Q2180 109 2220 102 Q2240 53 2275 90 Q2315 71 2330 114 Q2365 114 2364 140Z"/>
     </g>
-
-    <!-- Decorative Compass Rose (top-right of the Dream Realms) -->
-    <g transform="translate(2286, 118)" opacity="0.45">
-      <circle cx="0" cy="0" r="28" fill="none" stroke="#a3815c" stroke-width="1.5"/>
-      <circle cx="0" cy="0" r="22" fill="none" stroke="#a3815c" stroke-width="0.8" stroke-dasharray="2 2"/>
-      <polygon points="0,-26 5,-5 0,0 -5,-5" fill="#a3815c"/>
-      <polygon points="0,26 5,5 0,0 -5,5" fill="#8c6a47"/>
-      <polygon points="26,0 5,5 0,0 5,-5" fill="#8c6a47"/>
-      <polygon points="-26,0 -5,5 0,0 -5,-5" fill="#a3815c"/>
-      <text x="0" y="-29" font-family="'Outfit', sans-serif" font-size="9" font-weight="bold" fill="#78593a" text-anchor="middle" data-i18n="worldMap.compassNorth">K</text>
-      <text x="0" y="37" font-family="'Outfit', sans-serif" font-size="9" font-weight="bold" fill="#78593a" text-anchor="middle" data-i18n="worldMap.compassSouth">G</text>
-      <text x="35" y="3" font-family="'Outfit', sans-serif" font-size="9" font-weight="bold" fill="#78593a" text-anchor="middle" data-i18n="worldMap.compassEast">D</text>
-      <text x="-35" y="3" font-family="'Outfit', sans-serif" font-size="9" font-weight="bold" fill="#78593a" text-anchor="middle" data-i18n="worldMap.compassWest">B</text>
+    <g transform="translate(110 92)" fill="#f7cf76" stroke="#d3a15a" stroke-width="3">
+      <path d="M0-51 10-35 30-43 31-22 51-15 39 2 50 23 28 27 20 48 0 39-20 48-28 27-50 23-39 2-51-15-31-22-30-43-10-35Z"/>
+      <circle r="29" fill="#ffdf8e"/><path d="M-12 8 Q0 19 12 8" fill="none" stroke-linecap="round"/>
+      <circle cx="-10" cy="-4" r="2" fill="#956b42"/><circle cx="10" cy="-4" r="2" fill="#956b42"/>
     </g>
+    <!-- Stacked page edges and cloth cover follow the same curved horizon. -->
+    <path d="M-30 250 Q1200 50 2430 250 L2430 864 Q1200 980-30 864Z" fill="#9b6557"/>
+    <path d="M-30 232 Q1200 32 2430 232 L2430 845 Q1200 949-30 845Z" fill="#dfc7a2" stroke="#bd9e78" stroke-width="4"/>
+    <path d="M-30 219 Q1200 19 2430 219 L2430 830 Q1200 932-30 830Z" fill="#fff3d9" stroke="#d8bc91" stroke-width="3"/>
+    <path d="M-30 207 Q1200 7 2430 207 L2430 814 Q1200 916-30 814Z" fill="#f7e8c9" stroke="#d8bc91" stroke-width="3"/>
+    <!-- Three overlapping, scissor-cut sheets of colored land. -->
+    <path d="M-30 273 130 229 315 250 465 209 665 227 846 190 924 355 850 537 907 750 723 817 521 790 301 832 115 796-30 815Z" fill="#eac5a2" stroke="#c6a17a" stroke-width="4"/>
+    <path d="M716 259 942 190 1104 223 1266 190 1448 218 1657 186 1710 384 1634 533 1703 764 1491 805 1285 780 1057 823 834 785 872 594 789 446Z" fill="#bbd2a5" stroke="#91ab80" stroke-width="4"/>
+    <path d="M1584 233 1788 213 1960 238 2160 204 2430 265 2430 803 2238 783 2044 820 1856 788 1652 811 1690 605 1604 455Z" fill="#d8c6e5" stroke="#b4a0c5" stroke-width="4"/>
+    <rect y="180" width="2400" height="630" fill="url(#map-paper-grain)"/>
+    <path d="M-30 485 Q160 417 359 486 T767 493 T1200 486 T1623 499 T2040 487 T2440 509" fill="none" stroke="#86b8bf" stroke-width="33"/>
+    <path d="M-30 481 Q160 413 359 482 T767 489 T1200 482 T1623 495 T2040 483 T2440 505" fill="none" stroke="#c7e6e8" stroke-width="20"/>
+    <path class="map-journey-trail" d="M 240 700 C 150 620, 140 460, 170 372 C 210 300, 340 288, 450 300 C 560 312, 604 460, 620 546 C 636 626, 520 690, 430 704 C 560 742, 760 706, 860 560 C 920 466, 930 372, 960 340 C 1030 400, 1080 520, 1170 618 C 1210 662, 1280 690, 1330 640 C 1390 578, 1400 420, 1450 328 C 1548 300, 1640 300, 1730 344 C 1770 468, 1780 592, 1800 640 C 1900 690, 2050 700, 2170 662 C 2230 600, 2140 460, 2060 336" fill="none" stroke="#b8916d" stroke-width="5.5" stroke-linecap="round" stroke-dasharray="2 14" opacity="0.9"/>
+    <g class="map-layer-near" fill="#729b75" stroke="#577b60" stroke-width="3">
+      <g transform="translate(75 620)"><path d="M-25 29 0 18 27 30 0 39Z" fill="#a68a63"/><path d="M-4 25V-30H4V25" fill="#b39469"/><path d="M-32-14 0-77 32-14 20-14 39 12-39 12-20-14Z"/><path d="M0-69V9" fill="none" stroke="#d9e6bd" stroke-width="2"/></g>
+      <g transform="translate(360 590)"><path d="M-25 29 0 18 27 30 0 39Z" fill="#a68a63"/><path d="M-4 25V-30H4V25" fill="#b39469"/><path d="M-32-14 0-77 32-14 20-14 39 12-39 12-20-14Z"/><path d="M0-69V9" fill="none" stroke="#d9e6bd" stroke-width="2"/></g>
+      <g transform="translate(735 375)"><path d="M-25 29 0 18 27 30 0 39Z" fill="#a68a63"/><path d="M-4 25V-30H4V25" fill="#b39469"/><path d="M-32-14 0-77 32-14 20-14 39 12-39 12-20-14Z"/><path d="M0-69V9" fill="none" stroke="#d9e6bd" stroke-width="2"/></g>
+      <g transform="translate(825 714)"><path d="M-25 29 0 18 27 30 0 39Z" fill="#a68a63"/><path d="M-4 25V-30H4V25" fill="#b39469"/><path d="M-32-14 0-77 32-14 20-14 39 12-39 12-20-14Z"/><path d="M0-69V9" fill="none" stroke="#d9e6bd" stroke-width="2"/></g>
+      <g transform="translate(1090 390)"><path d="M-25 29 0 18 27 30 0 39Z" fill="#a68a63"/><path d="M-4 25V-30H4V25" fill="#b39469"/><path d="M-32-14 0-77 32-14 20-14 39 12-39 12-20-14Z"/><path d="M0-69V9" fill="none" stroke="#d9e6bd" stroke-width="2"/></g>
+      <g transform="translate(1515 710)"><path d="M-25 29 0 18 27 30 0 39Z" fill="#a68a63"/><path d="M-4 25V-30H4V25" fill="#b39469"/><path d="M-32-14 0-77 32-14 20-14 39 12-39 12-20-14Z"/><path d="M0-69V9" fill="none" stroke="#d9e6bd" stroke-width="2"/></g>
+      <g transform="translate(1950 420)"><path d="M-25 29 0 18 27 30 0 39Z" fill="#a68a63"/><path d="M-4 25V-30H4V25" fill="#b39469"/><path d="M-32-14 0-77 32-14 20-14 39 12-39 12-20-14Z"/><path d="M0-69V9" fill="none" stroke="#d9e6bd" stroke-width="2"/></g>
+      <g transform="translate(2310 730)"><path d="M-25 29 0 18 27 30 0 39Z" fill="#a68a63"/><path d="M-4 25V-30H4V25" fill="#b39469"/><path d="M-32-14 0-77 32-14 20-14 39 12-39 12-20-14Z"/><path d="M0-69V9" fill="none" stroke="#d9e6bd" stroke-width="2"/></g>
+    </g>
+    <g fill="#f9e0a1" stroke="#c7a56d" stroke-width="2">
+      <path transform="translate(530 400) rotate(12)" d="M0-15 5-5 17-3 8 5 10 17 0 11-11 17-8 5-17-3-5-5Z"/>
+      <path transform="translate(1050 765) rotate(12)" d="M0-15 5-5 17-3 8 5 10 17 0 11-11 17-8 5-17-3-5-5Z"/>
+      <path transform="translate(1600 580) rotate(12)" d="M0-15 5-5 17-3 8 5 10 17 0 11-11 17-8 5-17-3-5-5Z"/>
+      <path transform="translate(1925 735) rotate(12)" d="M0-15 5-5 17-3 8 5 10 17 0 11-11 17-8 5-17-3-5-5Z"/>
+      <path transform="translate(2265 390) rotate(12)" d="M0-15 5-5 17-3 8 5 10 17 0 11-11 17-8 5-17-3-5-5Z"/>
+      <path transform="translate(330 200) rotate(12)" d="M0-15 5-5 17-3 8 5 10 17 0 11-11 17-8 5-17-3-5-5Z"/>
+    </g>
+    <path d="M1194 168 Q1180 490 1195 861 L1209 863 Q1193 490 1207 168" fill="#806341" opacity=".12"/>
+    <path d="M1210 170 Q1198 490 1212 860" fill="none" stroke="#fff9e9" stroke-width="3" opacity=".7"/>
   </g>
 
-  <!-- ================= BIOME TITLES & LABELS ================= -->
-  <g id="biome-labels" font-family="'Outfit', sans-serif" font-weight="800" text-anchor="middle" opacity="0.78">
+  <!-- ================= REALM LABELS ================= -->
+  <!-- Soft banners floating over the sea: they name a stretch of coast rather
+       than fencing the map into panels. -->
+  <g id="biome-labels" font-family="'Outfit', sans-serif" font-weight="800" text-anchor="middle" opacity="0.9">
     <!-- Cozy Town Banner -->
-    <g transform="translate(400, 86)">
-      <rect x="-105" y="-16" width="210" height="32" rx="16" fill="#f4dfcf" stroke="#dcbba3" stroke-width="1.5"/>
-      <text x="0" y="6" font-size="15" fill="#824c31" data-i18n="worldMap.biomes.cozyTown.banner">🏡 SEVİMLİ KASABA</text>
+    <g transform="translate(400, 84)">
+      <rect x="-108" y="-17" width="216" height="34" rx="17" fill="#fdf3e8" fill-opacity="0.9" stroke="#e6c9ae" stroke-width="1.2"/>
+      <circle cx="-92" cy="0" r="4" fill="#e07a5f"/>
+      <text x="6" y="6" font-size="15" fill="#824c31" data-i18n="worldMap.biomes.cozyTown.banner">🏡 SEVİMLİ KASABA</text>
     </g>
     <!-- The Wilds Banner -->
-    <g transform="translate(1200, 86)">
-      <rect x="-100" y="-16" width="200" height="32" rx="16" fill="#d9ebd9" stroke="#b2d4b2" stroke-width="1.5"/>
-      <text x="0" y="6" font-size="15" fill="#355e3b" data-i18n="worldMap.biomes.theWilds.banner">🌲 DOĞANIN KALBİ</text>
+    <g transform="translate(1200, 84)">
+      <rect x="-104" y="-17" width="208" height="34" rx="17" fill="#f0f7ef" fill-opacity="0.9" stroke="#bcd8bc" stroke-width="1.2"/>
+      <circle cx="-88" cy="0" r="4" fill="#588157"/>
+      <text x="6" y="6" font-size="15" fill="#355e3b" data-i18n="worldMap.biomes.theWilds.banner">🌲 DOĞANIN KALBİ</text>
     </g>
     <!-- Dream Realms Banner -->
-    <g transform="translate(1900, 86)">
-      <rect x="-105" y="-16" width="210" height="32" rx="16" fill="#e9daf7" stroke="#ceb3ea" stroke-width="1.5"/>
-      <text x="0" y="6" font-size="15" fill="#582a72" data-i18n="worldMap.biomes.dreamRealms.banner">✨ RÜYA DİYARLARI</text>
+    <g transform="translate(1900, 84)">
+      <rect x="-108" y="-17" width="216" height="34" rx="17" fill="#f6eefd" fill-opacity="0.9" stroke="#d6bdef" stroke-width="1.2"/>
+      <circle cx="-92" cy="0" r="4" fill="#7b2cbf"/>
+      <text x="6" y="6" font-size="15" fill="#582a72" data-i18n="worldMap.biomes.dreamRealms.banner">✨ RÜYA DİYARLARI</text>
     </g>
   </g>
 
@@ -1079,6 +1074,8 @@
 
   <!-- 1. BEDROOM: Paper Cottage with Glowing Windows -->
   <g class="map-landmark-anchor" data-landmark-id="bedroom"><g id="landmark-bedroom" class="map-landmark" data-landmark-id="bedroom" data-bg-id="bg_bedroom" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.bedroom.name" aria-label="Sıcak Yatak Odası">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-61 27-61-23-16-66 12-55 23-77 42-73 44-38 62-23 60 27Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <!-- Landmark Base Hit Box -->
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Cottage Paper Body -->
@@ -1119,6 +1116,8 @@
 
   <!-- 2. CAFE: Striped Awning Bakery & Bistro Bench -->
   <g class="map-landmark-anchor" data-landmark-id="cafe"><g id="landmark-cafe" class="map-landmark" data-landmark-id="cafe" data-bg-id="bg_cafe" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.cafe.name" aria-label="Pastane &amp; Kafe">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-60 28-63-38-45-55-24-52-22-69 21-66 24-53 51-49 64-29 59 28Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Bakery Building -->
     <rect x="-42" y="-22" width="84" height="64" rx="5" fill="#fffdfa" stroke="#d6ccc2" stroke-width="2"/>
@@ -1168,6 +1167,8 @@
 
   <!-- 3. ATELIER: Timber Painter's Loft with Skylight & Easel -->
   <g class="map-landmark-anchor" data-landmark-id="atelier"><g id="landmark-atelier" class="map-landmark" data-landmark-id="atelier" data-bg-id="bg_atelier" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.atelier.name" aria-label="Sanat Atölyesi">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-62 27-59-35-14-68 26-54 59-32 64 26Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Timber Loft Body -->
     <rect x="-42" y="-14" width="84" height="56" rx="4" fill="#ede0d4" stroke="#7f5539" stroke-width="2"/>
@@ -1201,6 +1202,8 @@
 
   <!-- 4. LIBRARY: Grand Classical Brick Library with Green Dome -->
   <g class="map-landmark-anchor" data-landmark-id="library"><g id="landmark-library" class="map-landmark" data-landmark-id="library" data-bg-id="bg_library" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.library.name" aria-label="Büyük Kütüphane">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-65 29-62-31-35-43-23-64 0-73 26-63 37-42 64-31 65 29Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Classical Brick Building -->
     <rect x="-44" y="-12" width="88" height="54" rx="4" fill="#a53826" stroke="#68190d" stroke-width="2"/>
@@ -1238,6 +1241,8 @@
 
   <!-- 5. PARK: Sunny Picnic Pavilion & Flowerbeds -->
   <g class="map-landmark-anchor" data-landmark-id="park"><g id="landmark-park" class="map-landmark" data-landmark-id="park" data-bg-id="bg_park" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.park.name" aria-label="Güneşli Park">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-64 26-60-36-39-46-31-62-8-70 13-58 35-64 62-38 65 27Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Grass Mounds -->
     <ellipse cx="0" cy="22" rx="48" ry="20" fill="#a7c957" stroke="#6a994e" stroke-width="2"/>
@@ -1271,6 +1276,8 @@
 
   <!-- 6. BEACH: Boardwalk Pier, Waves & Striped Umbrella -->
   <g class="map-landmark-anchor" data-landmark-id="beach"><g id="landmark-beach" class="map-landmark" data-landmark-id="beach" data-bg-id="bg_beach" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.beach.name" aria-label="Kumsal &amp; Deniz">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-65 28-64-28Q-74-61-38-58Q-20-86 4-61Q40-85 50-53Q78-52 63-23L64 28Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Sandy Beach Bank -->
     <ellipse cx="-10" cy="18" rx="42" ry="24" fill="#faedcd" stroke="#e0cda7" stroke-width="2"/>
@@ -1306,6 +1313,8 @@
 
   <!-- 7. FOREST: Ancient Hollow Oak Tree & Lantern -->
   <g class="map-landmark-anchor" data-landmark-id="forest"><g id="landmark-forest" class="map-landmark" data-landmark-id="forest" data-bg-id="bg_forest" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.forest.name" aria-label="Büyülü Orman">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-63 29-68-23Q-88-48-52-63Q-45-94-14-77Q15-95 31-70Q69-75 65-46Q85-27 61-9L62 29Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Lush Green Canopy Foliage -->
     <ellipse cx="0" cy="-24" rx="44" ry="34" fill="#2d6a4f" stroke="#1b4332" stroke-width="2.2"/>
@@ -1344,6 +1353,8 @@
 
   <!-- 8. MOONLIT MEADOW: Hilltop Gazebo & Crescent Moon -->
   <g class="map-landmark-anchor" data-landmark-id="moonlit-meadow"><g id="landmark-moonlit-meadow" class="map-landmark" data-landmark-id="moonlit-meadow" data-bg-id="bg_moonlit_meadow" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.moonlitMeadow.name" aria-label="Mehtaplı Çayır">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-63 28-64-32-47-58-14-68 15-60 46-78 65-49 62 28Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Hilltop Knoll -->
     <ellipse cx="0" cy="22" rx="46" ry="18" fill="#4a4e69" stroke="#22223b" stroke-width="2"/>
@@ -1378,6 +1389,8 @@
 
   <!-- 9. SNOWY VILLAGE: Alpine Chalet with Thick Snowdrifts -->
   <g class="map-landmark-anchor" data-landmark-id="snowy-village"><g id="landmark-snowy-village" class="map-landmark" data-landmark-id="snowy-village" data-bg-id="bg_snowy_village" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.snowyVillage.name" aria-label="Karlı Köy">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-63 29-67-24-35-65-13-40 16-77 65-23 62 29Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Snowy Hill -->
     <ellipse cx="0" cy="24" rx="46" ry="16" fill="#e0f2fe" stroke="#bae6fd" stroke-width="2"/>
@@ -1416,6 +1429,8 @@
 
   <!-- 10. SUNSET CITY: Art-Deco Clocktower Promenade -->
   <g class="map-landmark-anchor" data-landmark-id="city-sunset"><g id="landmark-city-sunset" class="map-landmark" data-landmark-id="city-sunset" data-bg-id="bg_city_sunset" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.citySunset.name" aria-label="Gün Batımı Şehri">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-63 28-64-37-43-39-44-76-16-76-15-43 8-43 9-65 37-65 38-29 63-29 62 28Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Promenade Quay Base -->
     <rect x="-46" y="22" width="92" height="18" rx="3" fill="#e76f51" stroke="#b23a22" stroke-width="1.5"/>
@@ -1457,6 +1472,8 @@
 
   <!-- 11. CANDY LAND: Whimsical Gingerbread Castle & Pinwheel -->
   <g class="map-landmark-anchor" data-landmark-id="candy-land"><g id="landmark-candy-land" class="map-landmark" data-landmark-id="candy-land" data-bg-id="bg_candy_land" filter="url(#paper-drop-shadow)" cursor="pointer" role="button" tabindex="0" data-i18n-aria-label="worldMap.landmarks.candyLand.name" aria-label="Şeker Diyarı">
+    <use href="#map-cardboard-stage" aria-hidden="true" pointer-events="none"/>
+    <path d="M-62 28-60-25Q-80-58-48-65Q-16-75-23-36L-7-33-4-62Q-3-86 20-77Q42-68 27-49L40-34Q75-57 68-20L62 28Z" fill="var(--cardboard-color)" stroke="#fff8e9" stroke-width="7" stroke-linejoin="round" aria-hidden="true" pointer-events="none"/>
     <rect x="-65" y="-55" width="130" height="110" rx="16" fill="transparent" class="landmark-hitbox" pointer-events="all"/>
     <!-- Frosted Pastry Hills -->
     <ellipse cx="0" cy="24" rx="46" ry="18" fill="#fbcfe8" stroke="#f472b6" stroke-width="2"/>
@@ -1515,6 +1532,9 @@
             </div>
 
             <!-- Camera HUD: pan controls, minimap and zoom toggle -->
+            <div class="world-map-curve-veil" aria-hidden="true"></div>
+
+            <p class="world-map-turn-hint" data-i18n="worldMap.turnHint">Dünyayı çevirmek için kaydır veya sürükle</p>
             <div class="world-map-camera-hud">
               <button id="world-map-pan-left" class="map-pan-btn" type="button" data-i18n-aria-label="worldMap.panLeftAria" aria-label="Haritayı sola kaydır">◀</button>
               <div id="world-map-minimap" class="world-map-minimap" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0" data-i18n-aria-label="worldMap.minimapAria" aria-label="Harita mini haritası">

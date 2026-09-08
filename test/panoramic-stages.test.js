@@ -50,6 +50,11 @@ test('background layouts repeat native tiles without stretching them', () => {
     tileCount: 3,
     tilePercent: 33.33333333333333,
     centered: false,
+    tiles: [
+      { x: 0, mirrored: false },
+      { x: 1600, mirrored: true },
+      { x: 3200, mirrored: false }
+    ],
     tilePositions: [0, 1600, 3200]
   });
   assert.deepEqual(getBackgroundLayout(getAsset('bg_moonlit_meadow'), 3200), {
@@ -58,6 +63,7 @@ test('background layouts repeat native tiles without stretching them', () => {
     tileCount: 1,
     tilePercent: 100,
     centered: false,
+    tiles: [{ x: 0, mirrored: false }],
     tilePositions: [0]
   });
   assert.deepEqual(getBackgroundLayout(getAsset('bg_moonlit_meadow'), 1600), {
@@ -66,8 +72,24 @@ test('background layouts repeat native tiles without stretching them', () => {
     tileCount: 1,
     tilePercent: 200,
     centered: true,
+    tiles: [{ x: -800, mirrored: false }],
     tilePositions: [-800]
   });
+});
+
+test('a tile row that cannot divide the stage is centred, not chopped off one end', () => {
+  // 3200-wide panorama on a 4800 stage needs two tiles (6400) to cover it. The
+  // 1600 of overflow must be split between both ends rather than clipping the
+  // whole right-hand tile away.
+  const layout = getBackgroundLayout(getAsset('bg_snowy_village'), 4800);
+  assert.equal(layout.tileCount, 2);
+  assert.equal(layout.centered, true);
+  assert.deepEqual(layout.tilePositions, [-800, 2400]);
+  const overflowLeft = -layout.tiles[0].x;
+  const overflowRight = layout.tiles[1].x + layout.tileWidth - layout.stageWidth;
+  assert.equal(overflowLeft, overflowRight, 'overflow is symmetric');
+  // The seam is a reflection, so the repeat reads as continuous artwork.
+  assert.equal(layout.tiles[1].mirrored, true);
 });
 
 test('clampCameraX clamps camera position within [0, stageWidth - 1600]', () => {
@@ -404,15 +426,16 @@ test('Export service repeats normal backgrounds and preserves native panoramas',
   });
 
   const drawnCalls = [];
+  const transformOps = [];
   const fakeCanvas = {
     width: 0,
     height: 0,
     getContext: () => ({
       drawImage: (...args) => drawnCalls.push(args),
-      save: () => {},
-      restore: () => {},
-      translate: () => {},
-      scale: () => {}
+      save: () => transformOps.push(['save']),
+      restore: () => transformOps.push(['restore']),
+      translate: (...args) => transformOps.push(['translate', ...args]),
+      scale: (...args) => transformOps.push(['scale', ...args])
     })
   };
 
@@ -431,9 +454,18 @@ test('Export service repeats normal backgrounds and preserves native panoramas',
   const bgDraws = drawnCalls.filter((call) => call[3] === 1600 && call[4] === 900);
   assert.equal(bgDraws.length, 2);
   assert.equal(bgDraws[0][1], 0);
-  assert.equal(bgDraws[1][1], 1600);
+  // The repeat is mirrored about its own right edge, so it draws at the origin
+  // of a flipped frame rather than at x = 1600.
+  assert.equal(bgDraws[1][1], 0);
+  assert.deepEqual(transformOps, [
+    ['save'],
+    ['translate', 3200, 0],
+    ['scale', -1, 1],
+    ['restore']
+  ]);
 
   drawnCalls.length = 0;
+  transformOps.length = 0;
   await exportService.renderSceneToCanvas({
     sceneId: 'export-panorama',
     title: 'Native Panorama',
@@ -445,6 +477,7 @@ test('Export service repeats normal backgrounds and preserves native panoramas',
   const panoramaDraws = drawnCalls.filter((call) => call[3] === 3200 && call[4] === 900);
   assert.equal(panoramaDraws.length, 1);
   assert.equal(panoramaDraws[0][1], 0);
+  assert.deepEqual(transformOps, [], 'a panorama that already fits is never flipped');
 });
 
 test('Scene Book composite thumbnail SVG repeats normal backgrounds at native width', async () => {
@@ -514,7 +547,12 @@ test('Scene Book composite thumbnail SVG repeats normal backgrounds at native wi
   assert.equal(svg.children.length, 3);
   assert.equal(svg.children[0].getAttribute('class'), 'scene-thumb-bg');
   assert.equal(svg.children[0].getAttribute('transform'), 'translate(0, -50) scale(2, 2)');
-  assert.equal(svg.children[1].getAttribute('transform'), 'translate(1600, -50) scale(2, 2)');
+  // The middle tile mirrors about its own centre (x = 2400) so the repeat
+  // reflects at the seam instead of restarting mid-room.
+  assert.equal(
+    svg.children[1].getAttribute('transform'),
+    'translate(2400, 0) scale(-1, 1) translate(-2400, 0) translate(1600, -50) scale(2, 2)'
+  );
   assert.equal(svg.children[2].getAttribute('transform'), 'translate(3200, -50) scale(2, 2)');
 });
 

@@ -45,13 +45,17 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
     const bvh = Number.isFinite(vbParts[3]) && vbParts[3] > 0 ? vbParts[3] : 500;
 
     const layout = getBackgroundLayout(getAssetFn(bgId), stageWidth);
-    for (const tileX of layout.tilePositions) {
+    for (const tile of layout.tiles) {
       const bgG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       bgG.setAttribute('class', 'scene-thumb-bg');
       const bgScale = Math.max(layout.tileWidth / bvw, 900 / bvh);
-      const bgOffsetX = tileX + (layout.tileWidth - bvw * bgScale) / 2 - bvx * bgScale;
+      const bgOffsetX = tile.x + (layout.tileWidth - bvw * bgScale) / 2 - bvx * bgScale;
       const bgOffsetY = (900 - bvh * bgScale) / 2 - bvy * bgScale;
-      bgG.setAttribute('transform', `translate(${bgOffsetX}, ${bgOffsetY}) scale(${bgScale}, ${bgScale})`);
+      // Mirror about the tile's own centre so the flip stays in place.
+      const mirror = tile.mirrored
+        ? ` translate(${tile.x + layout.tileWidth / 2}, 0) scale(-1, 1) translate(${-(tile.x + layout.tileWidth / 2)}, 0)`
+        : '';
+      bgG.setAttribute('transform', `${mirror} translate(${bgOffsetX}, ${bgOffsetY}) scale(${bgScale}, ${bgScale})`.trim());
       const clone = bgSvg.cloneNode(true);
       while (clone.firstChild) bgG.appendChild(clone.firstChild);
       rootSvg.appendChild(bgG);

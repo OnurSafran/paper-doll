@@ -10,7 +10,14 @@ function setup(t, { width = 600, height = 450, renderDollInto } = {}) {
   class Element {
     constructor() {
       this.dataset = {};
-      this.style = {};
+      // Custom properties are read back through `style.getPropertyValue`, the
+      // same way the real CSSStyleDeclaration exposes them.
+      const customProps = new Map();
+      this.style = {
+        setProperty: (name, value) => customProps.set(name, String(value)),
+        getPropertyValue: (name) => customProps.get(name) ?? '',
+        removeProperty: (name) => customProps.delete(name)
+      };
       this.attrs = {};
       this.childNodes = [];
       this.listeners = {};
@@ -156,6 +163,45 @@ test('camera respects the explicit reduced-motion preference', (t) => {
   assert.ok(camera.scrollLeft > 0);
 });
 
+test('the world lies back on a tilt and turns with the direction of the pan', (t) => {
+  const { $, camera, svg } = setup(t);
+  const tiltOf = (el) => parseFloat(el.style.getPropertyValue('--map-tilt'));
+  const spinOf = (el) => parseFloat(el.style.getPropertyValue('--map-spin'));
+
+  assert.ok(tiltOf(camera) > 0, 'the map opens tilted back like a chart on a table');
+  assert.equal(spinOf(camera), 0, 'and at rest');
+
+  // Scrolling right turns the world one way...
+  camera.scrollLeft = 320;
+  camera.emit('scroll', {});
+  const rightward = spinOf(camera);
+  assert.ok(rightward > 0, 'panning right spins the world right');
+
+  // ...scrolling back turns it the other, and the parallax band follows the
+  // camera rather than the raw scroll pixels.
+  camera.scrollLeft = 0;
+  camera.emit('scroll', {});
+  assert.ok(spinOf(camera) < 0, 'panning left spins the world left');
+  assert.equal(svg.style.getPropertyValue('--map-drift'), '0');
+});
+
+test('the spin is capped so a fast flick cannot roll the map over', (t) => {
+  const { $, camera } = setup(t);
+  camera.scrollLeft = 100000;
+  camera.emit('scroll', {});
+  assert.ok(Math.abs(parseFloat(camera.style.getPropertyValue('--map-spin'))) <= 7);
+});
+
+test('reduced motion keeps the map flat, still and un-parallaxed', (t) => {
+  const { $, state, camera, svg } = setup(t);
+  state.settings.reducedMotion = 'reduce';
+  camera.scrollLeft = 480;
+  camera.emit('scroll', {});
+  assert.equal(camera.style.getPropertyValue('--map-tilt'), '0deg');
+  assert.equal(camera.style.getPropertyValue('--map-spin'), '0deg');
+  assert.equal(svg.style.getPropertyValue('--map-drift'), '0');
+});
+
 test('closing the map invalidates an unfinished doll render', async (t) => {
   let finish;
   const { $, view, state } = setup(t, { renderDollInto: async (container) => {
@@ -249,4 +295,38 @@ test('explicit map close restores the actual opener once when the native close e
   dialog.emit('close');
   assert.equal(openerFocus, 1);
   assert.equal(fallbackFocus, 0);
+});
+
+test('vertical wheel turns the world, normalizes line input and preserves pinch zoom', (t) => {
+  const { camera } = setup(t);
+  let prevented = 0;
+  camera.emit('wheel', { deltaX: 0, deltaY: 3, deltaMode: 1, preventDefault() { prevented++; } });
+  assert.equal(camera.scrollLeft, 48);
+  assert.equal(prevented, 1);
+  camera.emit('wheel', { ctrlKey: true, deltaY: 100, preventDefault() { prevented++; } });
+  assert.equal(camera.scrollLeft, 48);
+  assert.equal(prevented, 1);
+});
+
+test('wheel clamps at both world edges and leaves fit mode stationary', (t) => {
+  const { $, camera, svg } = setup(t);
+  const wheel = (deltaY) => camera.emit('wheel', { deltaY, preventDefault() {} });
+  wheel(100000);
+  assert.equal(camera.scrollLeft, svg.clientWidth - camera.clientWidth);
+  wheel(-100000);
+  assert.equal(camera.scrollLeft, 0);
+  $('#world-map-zoom-toggle').emit('click');
+  wheel(100);
+  assert.equal(camera.scrollLeft, 0);
+});
+
+test('destinations follow the curved horizon and restore catalog positions in fit mode', (t) => {
+  const { $, camera } = setup(t);
+  const anchor = $('.map-landmark-anchor[data-landmark-id="cafe"]');
+  const initial = anchor.attrs.transform;
+  camera.scrollLeft = 200;
+  camera.emit('scroll');
+  assert.notEqual(anchor.attrs.transform, initial);
+  $('#world-map-zoom-toggle').emit('click');
+  assert.equal(anchor.attrs.transform, 'translate(450, 300) scale(1, 1)');
 });

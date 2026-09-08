@@ -359,7 +359,17 @@
   height: 100%;
   min-height: 0;
   display: grid;
-  place-items: center;
+  /*
+   * The panoramic camera HUD is a sibling row of the stage. Without an explicit
+   * track list its appearance turns the single auto row into two, and the
+   * stage's height:100% then resolves against a row sized by content that is
+   * entirely absolutely positioned — so the stage collapsed to a fraction of the
+   * viewport the moment a wide stage was selected. Pinning row 1 to the free
+   * space keeps the percentage height meaningful in both states.
+   */
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  align-items: center;
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -369,9 +379,14 @@
 }
 
 /* Floating Animation Transport Bar */
+/* Lifted clear of the camera HUD strip while a panoramic stage is selected. */
+.play-stage-viewport:has(> #camera-hud:not([hidden])) {
+  --hud-space: 74px;
+}
+
 .play-floating-transport {
   position: absolute;
-  bottom: 12px;
+  bottom: calc(12px + var(--hud-space, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 25;
@@ -600,13 +615,23 @@
 /*
  * Repeated background tiles land on fractional device pixels, and each tile is
  * rasterised on its own, so the shared edge antialiases against whatever is
- * behind it and shows a 1px hairline. Bleed every tile 1px to the left — later
- * tiles paint over earlier ones, the overshoot on the first tile is clipped by
- * .scene-background, and layout is untouched.
+ * behind it and shows a 1px hairline. Bleed every tile 1px on both sides —
+ * neighbours overpaint each other's seam, the overshoot at the ends is clipped
+ * by .scene-background, and layout is untouched. Bleeding both sides (rather
+ * than only the left) keeps the fix working for mirrored tiles too.
  */
 .scene-bg-panel > .asset-svg {
-  width: calc(100% + 1px);
+  width: calc(100% + 2px);
   margin-left: -1px;
+}
+
+/*
+ * Odd repeats are flipped so a tiled room reflects at the seam — walls, floor
+ * lines and horizons stay continuous instead of restarting mid-scene.
+ */
+.scene-bg-panel.is-mirrored,
+.minimap-bg-panel.is-mirrored {
+  transform: scaleX(-1);
 }
 
 .scene-entities {
@@ -1008,11 +1033,13 @@
   color: var(--muted);
 }
 
+/* Top-right, so the centred transport bar never lands on top of the hint. */
 .scene-help {
   position: absolute;
   z-index: 5;
   right: 12px;
-  bottom: 10px;
+  top: 10px;
+  max-width: 52%;
   padding: 0.35rem 0.65rem;
   pointer-events: none;
 }

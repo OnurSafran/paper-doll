@@ -166,9 +166,9 @@ export function createCameraController(context) {
       if (includeSceneMap && minimapBg && background && minimapBg.dataset.mapKey !== mapKey) {
         const layout = getBackgroundLayout(background, stageWidth);
         minimapBg.style.justifyContent = layout.centered ? 'center' : 'flex-start';
-        minimapBg.replaceChildren(...layout.tilePositions.map(() => {
+        minimapBg.replaceChildren(...layout.tiles.map((tile) => {
           const panel = document.createElement('span');
-          panel.className = 'minimap-bg-panel';
+          panel.className = tile.mirrored ? 'minimap-bg-panel is-mirrored' : 'minimap-bg-panel';
           panel.style.flex = `0 0 ${layout.tilePercent}%`;
           panel.style.backgroundImage = `url("${background.path}")`;
           return panel;

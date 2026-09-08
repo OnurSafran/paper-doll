@@ -28,6 +28,16 @@ import { assetName, t } from '../../core/i18n.js';
 const MARKER_LIFT = 50;
 /** Fraction of the visible window a pan button step moves. */
 const PAN_STEP_RATIO = 0.6;
+/** How far the map lies back from the reader, like a chart on a table. */
+const MAP_TILT_DEG = 6;
+/** Softer tilt when the whole map is fitted — there is nothing to pan into. */
+const MAP_TILT_FIT_DEG = 3;
+/** Ceiling on the turn the world takes while panning. */
+const MAX_SPIN_DEG = 7;
+/** Degrees of spin per pixel of scroll movement in one frame. */
+const SPIN_PER_PIXEL = 0.22;
+/** Per-frame decay applied to the spin once the player stops dragging. */
+const SPIN_DECAY = 0.86;
 
 export function createWorldMapView({
   store,
@@ -42,6 +52,9 @@ export function createWorldMapView({
   let markerRenderToken = 0;
   let fitWholeMap = false;
   let cameraGlideId = 0;
+  let spinDeg = 0;
+  let spinRaf = 0;
+  let lastScrollLeft = 0;
 
   function getDialog() {
     return $('#world-map-dialog');
@@ -156,6 +169,94 @@ export function createWorldMapView({
   }
 
   // ==========================================================================
+  // Depth: table tilt, scroll-driven spin, parallax bands
+  // ==========================================================================
+
+  /**
+   * Writes the current tilt/spin/parallax onto the DOM.
+   *
+   * The 3D rotation lives on the camera window rather than on the map artwork:
+   * the window is a fixed box centred on the perspective axis, so the
+   * projection looks identical at every scroll position, whereas rotating the
+   * 2400-unit map itself would fan its far ends out of shape.
+   */
+  function applyMapDepth() {
+    const camera = getCamera();
+    const svg = $('.world-map-svg');
+    const flat = prefersReducedMotion();
+
+    if (camera) {
+      const tilt = flat ? 0 : (fitWholeMap ? MAP_TILT_FIT_DEG : MAP_TILT_DEG);
+      camera.style.setProperty('--map-tilt', `${tilt}deg`);
+      camera.style.setProperty('--map-spin', `${flat ? 0 : spinDeg.toFixed(2)}deg`);
+    }
+    // Bend the destinations around the visible horizon. Catalog coordinates
+    // remain the source of truth; only their presentation follows the globe.
+    const visible = visibleMapWidth();
+    const center = getCameraX() + visible / 2;
+    const project = (landmark, lift = 0) => {
+      const edge = Math.max(-1.4, Math.min(1.4, (landmark.coord.x - center) / (visible / 2)));
+      const curve = flat || fitWholeMap ? 0 : edge * edge;
+      const scale = 1 - curve * 0.12;
+      return `translate(${landmark.coord.x}, ${landmark.coord.y - lift - curve * 48}) scale(${scale}, ${1 - curve * 0.05})`;
+    };
+    for (const landmark of WORLD_MAP_LANDMARKS) {
+      $(`.map-landmark-anchor[data-landmark-id="${landmark.id}"]`)?.setAttribute('transform', project(landmark));
+    }
+    const active = getLandmarkForActiveBackground();
+    if (active) $('#active-doll-marker')?.setAttribute('transform', project(active, MARKER_LIFT));
+
+    if (svg) {
+      // Parallax is expressed in map units so the bands drift by the same
+      // amount whatever size the camera has scaled the artwork to.
+      svg.style.setProperty('--map-drift', flat ? '0' : String(Math.round(getCameraX())));
+    }
+  }
+
+  /** Eases the spin back to rest after the player stops panning. */
+  function stepSpin() {
+    spinDeg *= SPIN_DECAY;
+    if (Math.abs(spinDeg) < 0.05) {
+      spinDeg = 0;
+      spinRaf = 0;
+      applyMapDepth();
+      return;
+    }
+    applyMapDepth();
+    spinRaf = requestAnimationFrame(stepSpin);
+  }
+
+  /** Turns this frame's scroll movement into a nudge of world rotation. */
+  function spinFromScroll() {
+    const camera = getCamera();
+    if (!camera) return;
+    const delta = camera.scrollLeft - lastScrollLeft;
+    lastScrollLeft = camera.scrollLeft;
+    if (prefersReducedMotion()) {
+      spinDeg = 0;
+      applyMapDepth();
+      return;
+    }
+    const nudge = Math.max(-MAX_SPIN_DEG, Math.min(MAX_SPIN_DEG, delta * SPIN_PER_PIXEL));
+    spinDeg = Math.max(-MAX_SPIN_DEG, Math.min(MAX_SPIN_DEG, spinDeg * 0.55 + nudge));
+    applyMapDepth();
+    if (!spinRaf && typeof requestAnimationFrame === 'function') {
+      spinRaf = requestAnimationFrame(stepSpin);
+    }
+  }
+
+  function cancelSpin() {
+    if (spinRaf && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(spinRaf);
+    }
+    spinRaf = 0;
+    spinDeg = 0;
+    const camera = getCamera();
+    lastScrollLeft = camera ? camera.scrollLeft : 0;
+    applyMapDepth();
+  }
+
+  // ==========================================================================
   // Wide-map camera
   // ==========================================================================
 
@@ -236,6 +337,7 @@ export function createWorldMapView({
       cancelCameraGlide();
       camera.scrollLeft = targetScroll;
       renderMinimap();
+      applyMapDepth();
       return;
     }
     glideCameraTo(camera, targetScroll);
@@ -337,8 +439,22 @@ export function createWorldMapView({
     if (!camera || camera.dataset.cameraBound === 'true') return;
     camera.dataset.cameraBound = 'true';
 
-    camera.addEventListener('scroll', renderMinimap, { passive: true });
-    camera.addEventListener('wheel', cancelCameraGlide, { passive: true });
+    camera.addEventListener('scroll', () => {
+      renderMinimap();
+      spinFromScroll();
+    }, { passive: true });
+    camera.addEventListener('wheel', (event) => {
+      cancelCameraGlide();
+      // Preserve browser pinch zoom. A normal vertical wheel turns the world,
+      // while horizontal trackpad gestures retain their natural direction.
+      if (event.ctrlKey || fitWholeMap) return;
+      const delta = Math.abs(event.deltaX || 0) > Math.abs(event.deltaY || 0)
+        ? event.deltaX : event.deltaY;
+      if (!delta) return;
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? camera.clientWidth : 1;
+      event.preventDefault();
+      setCameraX(getCameraX() + delta * unit * MAP_CANVAS.width / ($('.world-map-svg')?.clientWidth || 1), { smooth: false });
+    }, { passive: false });
 
     // Drag-to-pan for mouse/pen; touch uses native scrolling.
     let dragging = false;
@@ -379,6 +495,7 @@ export function createWorldMapView({
       const landmark = getLandmarkById(selectedLandmarkId);
       if (landmark) centerCameraOn(landmark, { smooth: false });
       renderMinimap();
+      cancelSpin();
     });
 
     const minimap = $('#world-map-minimap');
@@ -417,6 +534,7 @@ export function createWorldMapView({
         cancelCameraGlide();
         applyCameraZoom();
         renderMinimap();
+        applyMapDepth();
       });
       observer.observe(camera);
     }
@@ -464,6 +582,7 @@ export function createWorldMapView({
         // Native Escape/backdrop dismissal follows this path too.
         if (dialog.open) return;
         cancelCameraGlide();
+        cancelSpin();
         markerRenderToken++;
         restoreFocusOnClose();
       });
@@ -478,6 +597,7 @@ export function createWorldMapView({
     applyCameraZoom();
     centerCameraOn(focusLandmark, { smooth: false });
     renderMinimap();
+    cancelSpin();
 
     $(`#landmark-${focusLandmark.id}`)?.focus();
   }
@@ -486,6 +606,7 @@ export function createWorldMapView({
     const dialog = getDialog();
     if (!dialog || !dialog.open) return;
     cancelCameraGlide();
+    cancelSpin();
     markerRenderToken++;
     dialog.close();
   }
@@ -824,6 +945,7 @@ export function createWorldMapView({
       window.removeEventListener('languagechange', handleLanguageChange);
     }
     cancelCameraGlide();
+    cancelSpin();
     markerRenderToken++;
   }
 

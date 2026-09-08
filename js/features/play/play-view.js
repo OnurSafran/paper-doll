@@ -120,9 +120,9 @@ export function createPlayView({
       const layout = getBackgroundLayout(currentBackground, stageWidth);
       background.style.justifyContent = layout.centered ? 'center' : 'flex-start';
       const panels = [];
-      for (const _ of layout.tilePositions) {
+      for (const tile of layout.tiles) {
         const panel = document.createElement('div');
-        panel.className = 'scene-bg-panel';
+        panel.className = tile.mirrored ? 'scene-bg-panel is-mirrored' : 'scene-bg-panel';
         panel.style.flex = `0 0 ${layout.tilePercent}%`;
         await appendAsset(panel, state.currentScene.backgroundId, {});
         panels.push(panel);

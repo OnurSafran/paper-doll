@@ -119,8 +119,17 @@ export function createExportService(options = {}) {
         const layout = getBackgroundLayout(getAssetFn(snapshot.backgroundId), stageWidth);
         const bgSvg = await loadSvgFn(snapshot.backgroundId);
         const bgImg = await decodeImage(bgSvg, layout.tileWidth, LIMITS.STAGE_HEIGHT);
-        for (const tileX of layout.tilePositions) {
-          ctx.drawImage(bgImg, tileX, 0, layout.tileWidth, LIMITS.STAGE_HEIGHT);
+        for (const tile of layout.tiles) {
+          if (!tile.mirrored) {
+            ctx.drawImage(bgImg, tile.x, 0, layout.tileWidth, LIMITS.STAGE_HEIGHT);
+            continue;
+          }
+          // Flip about the tile's own centre so the repeat reflects at the seam.
+          ctx.save();
+          ctx.translate(tile.x + layout.tileWidth, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(bgImg, 0, 0, layout.tileWidth, LIMITS.STAGE_HEIGHT);
+          ctx.restore();
         }
       } catch {
         ctx.fillStyle = '#f6efe4';

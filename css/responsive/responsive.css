@@ -57,6 +57,14 @@
     order: 1;
     min-height: auto;
   }
+  /*
+   * Stacked on a phone the viewport takes whatever height is left over, which
+   * on a panoramic stage is the scene minus the camera HUD minus the transport
+   * bar — a sliver. Reserve a 16:9 stage plus the strips that sit under it.
+   */
+  .play-stage-viewport {
+    min-height: calc((100vw - 2.5rem) * 0.5625 + var(--hud-space, 0px) + 1.5rem);
+  }
   .designer-sidebar,
   .spawn-panel {
     order: 2;
