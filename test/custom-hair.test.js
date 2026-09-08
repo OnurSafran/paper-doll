@@ -13,7 +13,7 @@ import { getAsset } from '../js/core/asset-catalog.js';
 import { createPaintSession, WEARABLE_PAINT_SLOTS } from '../js/features/paint/paint-session.js';
 import { getReferenceGuides, guideIsInBounds } from '../js/features/paint/paint-guides.js';
 import { renderDollInto } from '../js/features/designer/designer-view.js';
-import { createExportDollSvg } from '../js/services/export-service.js';
+import { createExportDollSvg } from '../js/core/doll-svg.js';
 import {
   exportProjectPackage,
   mergeProjectEnvelopes,

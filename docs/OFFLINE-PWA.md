@@ -35,10 +35,11 @@ Record device model, iPadOS/Safari version, host URL, date, cache version, and p
 
 The Home Screen icon and URL remain unchanged. To publish an update:
 
-1. Upload the changed project files to the same host.
-2. Run `npm run validate:cache`. It checks content-fingerprinted CSS imports and verifies that `CACHE_NAME` matches the current app-shell fingerprint.
-3. Open the app on the iPad while online. Safari checks the service worker, downloads the new cache, and removes the old cache.
-4. Close and reopen the app if the old screen remains visible during the first update.
+1. Run `npm run update:sw` to automatically collect runtime ES modules, hash stylesheets, and bump `CACHE_NAME` in `sw.js`.
+2. Run `npm run check` (or `npm run validate:cache`) to verify all assets, hashes, docs, and unit tests pass.
+3. Upload the changed project files to the hosting provider.
+4. Open the app on the iPad while online. Safari checks the service worker, downloads the new cache, and removes the old cache.
+5. Close and reopen the app if the old screen remains visible during the first update.
 
 An update needs one online launch on the iPad. It is then available offline again. Existing saved data is kept because the app's local-storage keys are unchanged.
 

@@ -34,6 +34,7 @@ async function fetchAndParse(asset) {
   if (documentNode.querySelector('parsererror')) throw assetError('ASSET_PARSE', `${asset.name} is not valid SVG.`);
   const svg = documentNode.documentElement;
   validateSvg(svg, asset);
+  if (asset.kind === 'wearable') prepareWearableOutlines(svg);
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('focusable', 'false');
   svg.classList.add('asset-svg');
@@ -83,3 +84,12 @@ function assetError(code, message) {
   return Object.assign(new Error(message), { code });
 }
 import { t } from './i18n.js';
+
+/** Keep the original artwork as the default, including in standalone SVG exports. */
+export function prepareWearableOutlines(svg) {
+  for (const node of [svg, ...svg.querySelectorAll('[stroke]')]) {
+    if (node.getAttribute('stroke')?.toLowerCase() === '#2d261e') {
+      node.setAttribute('stroke', 'var(--asset-outline-color, #2d261e)');
+    }
+  }
+}

@@ -1,8 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="accessory_backpack_child">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
-    <path class="tint-primary" d="M103 132 Q96 150 100 213 Q105 232 123 232 L134 220 L128 145 Z" fill="var(--asset-color-primary, #ef7f72)"/>
-    <path class="tint-primary" d="M197 132 Q204 150 200 213 Q195 232 177 232 L166 220 L172 145 Z" fill="var(--asset-color-primary, #ef7f72)"/>
-    <path d="M112 142 Q150 122 188 142 M112 158 Q150 145 188 158" fill="none" stroke="#ffd166" stroke-width="3"/>
-    <circle cx="150" cy="176" r="7" fill="#ffd166" stroke="none"/>
+    <!-- Front view: shoulder straps sit on the torso, leaving arms free. -->
+    <path class="tint-primary" d="M123 115 Q131 112 134 119 L130 182 L121 183 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <path class="tint-primary" d="M177 115 Q169 112 166 119 L170 182 L179 183 Z" fill="var(--asset-color-primary, #ef7f72)"/>
+    <rect x="121" y="164" width="10" height="10" rx="2" fill="#ffd166"/>
+    <rect x="169" y="164" width="10" height="10" rx="2" fill="#ffd166"/>
+    <path d="M132 148 L168 148" fill="none" stroke="#ffd166" stroke-width="4"/>
+    <rect x="145" y="144" width="10" height="8" rx="2" fill="#fffdf7"/>
   </g>
 </svg>

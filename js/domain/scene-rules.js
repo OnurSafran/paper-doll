@@ -37,7 +37,31 @@ export const CHARACTER_BASE_WIDTH = CHARACTER_DIMENSIONS.BASE_WIDTH;
 export const CHARACTER_BASE_HEIGHT = CHARACTER_DIMENSIONS.BASE_HEIGHT;
 export const CHARACTER_GROUND_ANCHOR = CHARACTER_DIMENSIONS.GROUND_ANCHOR;
 
-export function getEntityBounds(entity, getAsset = () => undefined) {
+// Bounded per-instance cache survives immutable position updates during dragging.
+// Compare geometry inputs, not asset IDs: custom asset dimensions can change.
+const entityBoundsCache = new Map();
+const MAX_BOUNDS_CACHE_ENTRIES = 256;
+
+export function getEntityBounds(entity, getAsset = (_id) => undefined) {
+  const asset = entity?.kind === 'character' || entity?.kind === 'bubble'
+    ? undefined : (typeof getAsset === 'function' ? getAsset(entity?.sourceId) : undefined);
+  const inputs = [entity?.kind, entity?.scale, entity?.width,
+    typeof entity?.text === 'string' ? entity.text.length : 10, entity?.bubbleStyle,
+    asset?.displayWidth, asset?.displayHeight, asset?.groundAnchor?.x, asset?.groundAnchor?.y];
+  const key = entity?.instanceId ?? entity;
+  const cached = entityBoundsCache.get(key);
+  if (cached && inputs.every((value, index) => Object.is(value, cached.inputs[index]))) {
+    return { ...cached.bounds };
+  }
+  const bounds = calculateEntityBounds(entity, () => asset);
+  if (entityBoundsCache.size >= MAX_BOUNDS_CACHE_ENTRIES) {
+    entityBoundsCache.delete(entityBoundsCache.keys().next().value);
+  }
+  entityBoundsCache.set(key, { inputs, bounds });
+  return { ...bounds };
+}
+
+function calculateEntityBounds(entity, getAsset) {
   const scale = clampScale(entity?.scale ?? 1);
   if (entity?.kind === 'character') {
     return {
@@ -133,6 +157,10 @@ export function clamp(value, min, max) {
   return Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
 }
 
+/** @param {number} x
+ * @param {number} y
+ * @param {Object} bounds
+ * @param {number} stageWidth */
 export function clampPoint(x, y, bounds = null, stageWidth = STAGE_WIDTH) {
   const currentStageWidth = Number(stageWidth) || STAGE_WIDTH;
   if (!bounds) {
@@ -172,7 +200,7 @@ export function clampScale(scale) {
   return Math.round(clamp(Number(scale), MIN_SCALE, MAX_SCALE) * 100) / 100;
 }
 
-export function addEntity(scene, entity, getAsset = () => undefined) {
+export function addEntity(scene, entity, getAsset = (_id) => undefined) {
   if (scene.entities.length >= MAX_ENTITIES || scene.entities.some((item) => item.instanceId === entity.instanceId)) return scene;
   const bounds = getEntityBounds(entity, getAsset);
   const stageWidth = scene?.stageWidth || STAGE_WIDTH;
@@ -253,7 +281,7 @@ export function getAttachedDescendants(scene, parentInstanceId) {
   return descendants;
 }
 
-export function attachEntity(scene, childInstanceId, parentInstanceId, getAsset = () => undefined) {
+export function attachEntity(scene, childInstanceId, parentInstanceId, getAsset = (_id) => undefined) {
   const child = scene.entities.find((e) => e.instanceId === childInstanceId);
   const parent = scene.entities.find((e) => e.instanceId === parentInstanceId);
   if (!child || !parent || child.pinned || childInstanceId === parentInstanceId) return scene;
@@ -278,7 +306,7 @@ export function detachEntity(scene, childInstanceId) {
   });
 }
 
-export function getEntityAllowedRange(entity, getAsset = () => undefined, stageWidth = STAGE_WIDTH) {
+export function getEntityAllowedRange(entity, getAsset = (_id) => undefined, stageWidth = STAGE_WIDTH) {
   const currentStageWidth = Number(stageWidth) || STAGE_WIDTH;
   const bounds = getEntityBounds(entity, getAsset);
   const width = Math.max(0, Number(bounds.width) || 0);
@@ -299,7 +327,7 @@ export function getEntityAllowedRange(entity, getAsset = () => undefined, stageW
   };
 }
 
-export function getCompoundEntityRange(scene, instanceId, getAsset = () => undefined) {
+export function getCompoundEntityRange(scene, instanceId, getAsset = (_id) => undefined) {
   const stageWidth = scene?.stageWidth || STAGE_WIDTH;
   const root = scene?.entities?.find((e) => e.instanceId === instanceId);
   if (!root) return { minX: 0, maxX: stageWidth, minY: 0, maxY: STAGE_HEIGHT };
@@ -332,7 +360,7 @@ export function getCompoundEntityRange(scene, instanceId, getAsset = () => undef
   return { minX: safeMinX, maxX: safeMaxX, minY: safeMinY, maxY: safeMaxY };
 }
 
-export function clampCompoundEntityPoint(x, y, scene, instanceId, getAsset = () => undefined) {
+export function clampCompoundEntityPoint(x, y, scene, instanceId, getAsset = (_id) => undefined) {
   const range = getCompoundEntityRange(scene, instanceId, getAsset);
   return {
     x: Math.round(clamp(Number(x), range.minX, range.maxX)),
@@ -340,7 +368,7 @@ export function clampCompoundEntityPoint(x, y, scene, instanceId, getAsset = () 
   };
 }
 
-export function moveEntity(scene, instanceId, targetX, targetY, getAsset = () => undefined) {
+export function moveEntity(scene, instanceId, targetX, targetY, getAsset = (_id) => undefined) {
   const root = scene.entities.find((e) => e.instanceId === instanceId);
   if (!root || root.pinned) return scene;
 
@@ -396,7 +424,7 @@ export function moveEntity(scene, instanceId, targetX, targetY, getAsset = () =>
   }));
 }
 
-export function scaleEntity(scene, instanceId, scale, getAsset = () => undefined) {
+export function scaleEntity(scene, instanceId, scale, getAsset = (_id) => undefined) {
   const nextScale = clampScale(scale);
   const target = scene.entities.find((e) => e.instanceId === instanceId);
   if (!target || target.pinned || target.scale === nextScale) return scene;
@@ -468,7 +496,7 @@ export function deleteEntity(scene, instanceId) {
   });
 }
 
-export function duplicateEntity(scene, instanceId, newInstanceId, getAsset = () => undefined) {
+export function duplicateEntity(scene, instanceId, newInstanceId, getAsset = (_id) => undefined) {
   const source = scene.entities.find((entity) => entity.instanceId === instanceId);
   if (!source || scene.entities.length >= MAX_ENTITIES) return scene;
   const duplicate = {
@@ -514,7 +542,7 @@ export function setBubbleWidth(scene, instanceId, width) {
   });
 }
 
-export function getEntityVisualBox(entity, getAsset = () => undefined) {
+export function getEntityVisualBox(entity, getAsset = (_id) => undefined) {
   const bounds = getEntityBounds(entity, getAsset);
   const left = entity.x - bounds.width * bounds.anchorX;
   const right = entity.x + bounds.width * (1 - bounds.anchorX);
@@ -534,7 +562,7 @@ export function getEntityVisualBox(entity, getAsset = () => undefined) {
   };
 }
 
-export function alignEntities(scene, instanceIds, alignmentMode, getAsset = () => undefined) {
+export function alignEntities(scene, instanceIds, alignmentMode, getAsset = (_id) => undefined) {
   if (!isAlignmentMode(alignmentMode) || !Array.isArray(instanceIds) || instanceIds.length < 2) return scene;
   const idSet = new Set(instanceIds);
   const targets = scene.entities.filter((e) => idSet.has(e.instanceId) && !e.pinned);
@@ -635,7 +663,7 @@ export function alignEntities(scene, instanceIds, alignmentMode, getAsset = () =
   return current;
 }
 
-export function moveEntities(scene, moves, getAsset = () => undefined) {
+export function moveEntities(scene, moves, getAsset = (_id) => undefined) {
   if (!Array.isArray(moves) || moves.length === 0) return scene;
   const moveIds = new Set(moves.map((m) => m?.instanceId));
   const rootsToMove = moves.filter((m) => {
@@ -658,7 +686,7 @@ export function moveEntities(scene, moves, getAsset = () => undefined) {
   return current;
 }
 
-export function scaleEntities(scene, instanceIds, delta, getAsset = () => undefined) {
+export function scaleEntities(scene, instanceIds, delta, getAsset = (_id) => undefined) {
   if (!Array.isArray(instanceIds) || instanceIds.length === 0 || !Number.isFinite(delta)) return scene;
   let current = scene;
   for (const id of instanceIds) {
@@ -720,7 +748,10 @@ export function togglePinEntities(scene, instanceIds, forcedPinned = null) {
   return current;
 }
 
-export function reclampSceneEntities(scene, targetStageWidth = STAGE_WIDTH, getAsset = () => undefined) {
+/** @param {Object} scene
+ * @param {number} targetStageWidth
+ * @param {(id: string) => any} getAsset */
+export function reclampSceneEntities(scene, targetStageWidth = STAGE_WIDTH, getAsset = (_id) => undefined) {
   if (!scene || !Array.isArray(scene.entities)) return scene;
   let nextScene = { ...scene, stageWidth: targetStageWidth };
   for (const entity of nextScene.entities) {

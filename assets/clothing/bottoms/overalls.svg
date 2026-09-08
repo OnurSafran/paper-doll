@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="bottom_overalls">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
     <!-- Dungaree Shoulder Straps -->
-    <line class="tint-primary" x1="134" y1="112" x2="134" y2="150" stroke="var(--asset-color-primary, #73513d)" stroke-width="8"/>
-    <line class="tint-primary" x1="166" y1="112" x2="166" y2="150" stroke="var(--asset-color-primary, #73513d)" stroke-width="8"/>
+    <line x1="134" y1="112" x2="134" y2="150" stroke="var(--asset-color-primary, #73513d)" stroke-width="8"/>
+    <line x1="166" y1="112" x2="166" y2="150" stroke="var(--asset-color-primary, #73513d)" stroke-width="8"/>
     <!-- Buckles -->
     <rect x="130" y="146" width="8" height="8" rx="2" fill="#ffd166" stroke="#2d261e" stroke-width="1.8"/>
     <rect x="162" y="146" width="8" height="8" rx="2" fill="#ffd166" stroke="#2d261e" stroke-width="1.8"/>

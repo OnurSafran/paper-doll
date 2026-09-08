@@ -46,3 +46,35 @@ export function enableDialogLightDismiss(dialog) {
     pointerDownOnBackdrop = false;
   });
 }
+
+/**
+ * Enables context-aware focus restoration for native <dialog> elements.
+ * Records document.activeElement when the dialog opens, and restores
+ * focus to that trigger element upon dialog close.
+ */
+export function enableDialogFocusRestoration(dialog, fallbackSelector = null) {
+  if (!dialog || dialog.dataset.focusRestorationBound) return;
+  dialog.dataset.focusRestorationBound = 'true';
+
+  let triggerElement = null;
+
+  if (typeof dialog.showModal === 'function') {
+    const originalShowModal = dialog.showModal;
+    dialog.showModal = function (...args) {
+      if (!this.open && typeof document !== 'undefined' && document.activeElement) {
+        triggerElement = document.activeElement;
+      }
+      return originalShowModal.apply(this, args);
+    };
+  }
+
+  dialog.addEventListener('close', () => {
+    if (dialog.open) return;
+    if (triggerElement && typeof triggerElement.focus === 'function' && (typeof document === 'undefined' || document.contains?.(triggerElement))) {
+      triggerElement.focus();
+    } else if (fallbackSelector && typeof document !== 'undefined') {
+      document.querySelector(fallbackSelector)?.focus();
+    }
+    triggerElement = null;
+  });
+}

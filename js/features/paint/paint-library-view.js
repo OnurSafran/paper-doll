@@ -10,43 +10,43 @@ import { captureHistorySnapshot } from './paint-history.js';
 
 export function createPaintLibraryView({
   rootElement = document,
-  store,
-  customArtRepo,
-  onNavigate,
-  askConfirm,
-  showAlert,
-  getSession,
-  getCanvasState,
-  resetCanvas,
-  updateLivePreview,
-  updateHistoryButtons,
-  announceStatus,
-  checkDirtyBeforeAction
+  store = undefined,
+  customArtRepo = undefined,
+  onNavigate = undefined,
+  askConfirm = undefined,
+  showAlert = undefined,
+  getSession = undefined,
+  getCanvasState = undefined,
+  resetCanvas = undefined,
+  updateLivePreview = undefined,
+  updateHistoryButtons = undefined,
+  announceStatus = undefined,
+  checkDirtyBeforeAction = undefined
 } = {}) {
   const doc = rootElement?.ownerDocument || rootElement || document;
-  const myArtBtn = rootElement.querySelector('#paint-myart-btn');
-  const myArtDialog = rootElement.querySelector('#paint-myart-dialog');
-  const closeMyArtBtn = rootElement.querySelector('#close-myart-dialog');
-  const myArtGrid = rootElement.querySelector('#paint-myart-grid');
-  const myArtTabs = rootElement.querySelectorAll('#paint-myart-dialog .myart-tab-btn');
-  const myArtTrashActions = rootElement.querySelector('#myart-trash-actions');
-  const myArtEmptyTrashBtn = rootElement.querySelector('#myart-empty-trash-btn');
-  const impactDialog = rootElement.querySelector('#paint-impact-dialog');
-  const impactThumb = rootElement.querySelector('#impact-art-thumb');
-  const impactName = rootElement.querySelector('#impact-art-name');
-  const impactSummary = rootElement.querySelector('#impact-art-summary');
-  const impactDetailsBox = rootElement.querySelector('#impact-details-box');
-  const impactCancelBtn = rootElement.querySelector('#paint-impact-cancel-btn');
-  const impactRemoveBtn = rootElement.querySelector('#paint-impact-remove-btn');
-  const impactDeleteAllBtn = rootElement.querySelector('#paint-impact-delete-all-btn');
-  const renameDialog = rootElement.querySelector('#paint-rename-dialog');
-  const renameForm = rootElement.querySelector('#paint-rename-form');
-  const renameInput = rootElement.querySelector('#paint-rename-input');
-  const renameCancelBtn = rootElement.querySelector('#paint-rename-cancel-btn');
-  const collectionsDialog = rootElement.querySelector('#paint-collections-dialog');
-  const collectionsForm = rootElement.querySelector('#paint-collections-form');
-  const collectionsOptions = rootElement.querySelector('#paint-collections-options');
-  const collectionsCancelBtn = rootElement.querySelector('#paint-collections-cancel-btn');
+  const myArtBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-myart-btn'));
+  const myArtDialog = /** @type {HTMLDialogElement} */ (rootElement.querySelector('#paint-myart-dialog'));
+  const closeMyArtBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#close-myart-dialog'));
+  const myArtGrid = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-myart-grid'));
+  const myArtTabs = /** @type {NodeListOf<HTMLButtonElement>} */ (rootElement.querySelectorAll('#paint-myart-dialog .myart-tab-btn'));
+  const myArtTrashActions = /** @type {HTMLElement} */ (rootElement.querySelector('#myart-trash-actions'));
+  const myArtEmptyTrashBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#myart-empty-trash-btn'));
+  const impactDialog = /** @type {HTMLDialogElement} */ (rootElement.querySelector('#paint-impact-dialog'));
+  const impactThumb = /** @type {HTMLElement} */ (rootElement.querySelector('#impact-art-thumb'));
+  const impactName = /** @type {HTMLElement} */ (rootElement.querySelector('#impact-art-name'));
+  const impactSummary = /** @type {HTMLElement} */ (rootElement.querySelector('#impact-art-summary'));
+  const impactDetailsBox = /** @type {HTMLElement} */ (rootElement.querySelector('#impact-details-box'));
+  const impactCancelBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-impact-cancel-btn'));
+  const impactRemoveBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-impact-remove-btn'));
+  const impactDeleteAllBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-impact-delete-all-btn'));
+  const renameDialog = /** @type {HTMLDialogElement} */ (rootElement.querySelector('#paint-rename-dialog'));
+  const renameForm = /** @type {HTMLFormElement} */ (rootElement.querySelector('#paint-rename-form'));
+  const renameInput = /** @type {HTMLInputElement} */ (rootElement.querySelector('#paint-rename-input'));
+  const renameCancelBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-rename-cancel-btn'));
+  const collectionsDialog = /** @type {HTMLDialogElement} */ (rootElement.querySelector('#paint-collections-dialog'));
+  const collectionsForm = /** @type {HTMLFormElement} */ (rootElement.querySelector('#paint-collections-form'));
+  const collectionsOptions = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-collections-options'));
+  const collectionsCancelBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-collections-cancel-btn'));
 
   let currentMyArtTab = 'all';
   let activeImpactAsset = null;
@@ -417,7 +417,7 @@ export function createPaintLibraryView({
   function handleSaveCollections(event) {
     event?.preventDefault?.();
     if (!activeCollectionsAsset || !collectionsOptions) return;
-    const collections = [...collectionsOptions.querySelectorAll('input[name="collection"]:checked')].map((input) => input.value);
+    const collections = [.../** @type {NodeListOf<HTMLInputElement>} */ (collectionsOptions.querySelectorAll('input[name="collection"]:checked'))].map((input) => input.value);
     const result = store.dispatch({ type: 'customAsset/setCollections', assetId: activeCollectionsAsset.assetId, collections });
     if (!result?.ok) return;
     collectionsDialog?.close();

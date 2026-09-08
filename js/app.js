@@ -1,3 +1,11 @@
+import { createAppStateEffects } from './app-state-effects.js';
+import { createAppLifecycle } from './app-lifecycle.js';
+import { createAppShellEvents } from './app-shell-events.js';
+import { createAppSceneControls } from './app-scene-controls.js';
+import { createAppProjectController } from './app-project-controller.js';
+import { createAppShortcuts } from './app-shortcuts.js';
+import { createAppRouter } from './app-router.js';
+import { createAppDialogs } from './app-dialogs.js';
 /**
  * Paper Doll Studio - Application Bootstrap & Orchestrator
  */
@@ -5,42 +13,26 @@
 import { ASSETS, getAsset } from './core/asset-catalog.js';
 import { createAppStore } from './core/app-store.js';
 import { createAssetRegistry } from './core/asset-registry.js';
-import { clientToLogical } from './core/coordinate-space.js';
+
 import { loadAssetSvg } from './core/svg-loader.js';
-import { createProjectRepository, loadProject, STORAGE_KEY } from './services/project-repository.js';
+import { createProjectRepository, loadProject } from './services/project-repository.js';
 import { createCustomArtRepository } from './services/custom-art-repository.js';
 import { createExportService } from './services/export-service.js';
 import { applyMouthExpression } from './core/mouth-expression.js';
 import { createVoicePuppetryService } from './services/voice-puppetry.js';
 import { createSceneAnimationService, resolveVoiceTargetCharacter } from './services/scene-animation-service.js';
-import { createDesignerView, previewCustomColor } from './features/designer/designer-view.js';
+import { createDesignerView } from './features/designer/designer-view.js';
 import { createPaintView } from './features/paint/paint-view.js';
 import { createPlayView, findSceneSkinSvg } from './features/play/play-view.js';
 import { createSceneOutlineView } from './features/play/scene-outline-view.js';
 import { createSceneBookView } from './features/scene-book/scene-book-view.js';
 import { createWorldMapView } from './features/world-map/world-map-view.js';
 import { enableDialogLightDismiss } from './core/dialog-dismiss.js';
-import { persistedProjection } from './core/state-schema.js';
-import { classifyError, executeSafeTeardown } from './core/error-boundary.js';
-import { CLEARABLE_OUTFIT_SLOTS, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, LIMITS } from './domain/vocabulary.js';
-import {
-  clearProjectBackup,
-  exportProjectPackage,
-  formatProjectExportFilename,
-  getAvailableBackup,
-  mergeProjectEnvelopes,
-  saveProjectBackup,
-  validateImportPayload
-} from './services/project-portability.js';
-import {
-  initLanguage,
-  setLanguage,
-  getCurrentLanguage,
-  t,
-  translateMessage,
-  updateDomTranslations
-} from './core/i18n.js';
 
+import { createDisposableRegistry } from './core/error-boundary.js';
+import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY } from './domain/vocabulary.js';
+
+import { initLanguage, getCurrentLanguage, t, updateDomTranslations } from './core/i18n.js';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -61,133 +53,103 @@ const storage = createProjectRepository({
 });
 const exportService = createExportService({ getAsset: getEffectiveAsset, loadAssetSvg, customArtRepo });
 
-let confirmQueue = Promise.resolve();
-
-export function miniButton(label, title, onClick) {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.textContent = label;
-  button.title = title;
-  button.setAttribute('aria-label', title);
-  button.addEventListener('click', (event) => {
-    event.stopPropagation();
-    onClick();
-  });
-  return button;
-}
-
-function showToast(message) {
-  if (!message) return;
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  $('#toast-region').append(toast);
-  window.setTimeout(() => toast.remove(), 2900);
-}
-
 export { enableDialogLightDismiss };
 
-function askConfirm(title, message) {
-  const show = () => new Promise((resolve) => {
-    const dialog = $('#confirm-dialog');
-    if (!dialog) {
-      resolve(true);
-      return;
-    }
-    dialog.returnValue = '';
-    $('#confirm-title').textContent = title;
-    $('#confirm-message').textContent = message;
-    const ok = $('#confirm-ok');
-    const cancel = $('#confirm-cancel');
-    const onOk = () => { cleanup(); resolve(true); };
-    const onCancel = () => { cleanup(); resolve(false); };
-    const onClose = () => { cleanup(); resolve(dialog.returnValue === 'ok'); };
-    function cleanup() {
-      ok?.removeEventListener('click', onOk);
-      cancel?.removeEventListener('click', onCancel);
-      dialog?.removeEventListener('close', onClose);
-      if (dialog.open) dialog.close();
-    }
-    ok?.addEventListener('click', onOk);
-    cancel?.addEventListener('click', onCancel);
-    dialog.addEventListener('close', onClose);
-    dialog.showModal();
-  });
-  const result = confirmQueue.then(show, show);
-  confirmQueue = result.then(() => undefined, () => undefined);
-  return result;
-}
+const { miniButton, showToast, askConfirm, showAlert, askPrompt } = createAppDialogs({
+  $
+});
 
-let alertQueue = Promise.resolve();
+const { modeFromHash, openPaintStudio, wireStaticEvents, renderApp } = createAppRouter({
+  $,
+  $$,
+  store,
+  get designerView() { return designerView; },
+  get playView() { return playView; },
+  get paintView() { return paintView; },
+  get stopVoicePuppetry() { return stopVoicePuppetry; },
+  get cancelPointerController() { return cancelPointerController; },
+  get wireDesignerEvents() { return wireDesignerEvents; },
+  get wireSceneEvents() { return wireSceneEvents; },
+  get wireShellEvents() { return wireShellEvents; },
+  get wireDropEvents() { return wireDropEvents; },
+  get wireLifecycleEvents() { return wireLifecycleEvents; }
+});
 
-function showAlert(message, title = t('alertDialog.defaultTitle')) {
-  const show = () => new Promise((resolve) => {
-    const dialog = $('#alert-dialog');
-    dialog.returnValue = '';
-    $('#alert-title').textContent = title;
-    $('#alert-message').textContent = message;
-    const ok = $('#alert-ok');
-    const onOk = () => { cleanup(); resolve(); };
-    const onClose = () => { cleanup(); resolve(); };
-    function cleanup() {
-      ok.removeEventListener('click', onOk);
-      dialog.removeEventListener('close', onClose);
-      if (dialog.open) dialog.close();
-    }
-    ok.addEventListener('click', onOk);
-    dialog.addEventListener('close', onClose);
-    dialog.showModal();
-    ok.focus();
-  });
-  const result = alertQueue.then(show, show);
-  alertQueue = result.then(() => undefined, () => undefined);
-  return result;
-}
+const { handleTabKeys, handleGlobalShortcuts } = createAppShortcuts({
+  store,
+  get worldMapView() { return worldMapView; }
+});
 
-let promptQueue = Promise.resolve();
+const { openProjectDialog, exportProjectJsonFile, handleProjectFile, executeImportMerge, executeImportReplace, executeRestoreBackup, executeDismissBackup } = createAppProjectController({
+  $,
+  storageRef,
+  customArtRepo,
+  store,
+  storage,
+  get showToast() { return showToast; },
+  get askConfirm() { return askConfirm; },
+  get pendingImportEnvelope() { return pendingImportEnvelope; }, set pendingImportEnvelope(value) { pendingImportEnvelope = value; }
+});
 
-function askPrompt(title, message, initialValue = '') {
-  const show = () => new Promise((resolve) => {
-    const dialog = $('#prompt-dialog');
-    if (!dialog) { resolve(null); return; }
-    dialog.returnValue = '';
-    $('#prompt-title').textContent = title;
-    $('#prompt-message').textContent = message;
-    const input = $('#prompt-input');
-    const form = $('#prompt-form');
-    const cancel = $('#prompt-cancel');
-    input.value = initialValue;
-    let settled = false;
-    const finish = (value) => { if (settled) return; settled = true; cleanup(); resolve(value); };
-    // Submit rather than the OK button's click: Enter inside the field reaches the
-    // form directly, so the prompt does not depend on implicit-submission quirks.
-    const onSubmit = (event) => { event.preventDefault(); finish(input.value); };
-    const onCancel = () => finish(null);
-    const onClose = () => finish(dialog.returnValue === 'ok' ? input.value : null);
-    function cleanup() {
-      form.removeEventListener('submit', onSubmit);
-      cancel.removeEventListener('click', onCancel);
-      dialog.removeEventListener('close', onClose);
-      if (dialog.open) dialog.close();
-    }
-    form.addEventListener('submit', onSubmit);
-    cancel.addEventListener('click', onCancel);
-    dialog.addEventListener('close', onClose);
-    dialog.showModal();
-    input.focus();
-    input.select?.();
-  });
-  const result = promptQueue.then(show, show);
-  promptQueue = result.then(() => undefined, () => undefined);
-  return result;
-}
+const { wireSceneEvents, exportSceneAsPng, exportCurrentFrameAsPng } = createAppSceneControls({
+  $,
+  $$,
+  store,
+  exportService,
+  get showToast() { return showToast; },
+  get askConfirm() { return askConfirm; },
+  get sceneOutlineView() { return sceneOutlineView; },
+  get worldMapView() { return worldMapView; },
+  get playView() { return playView; },
+  get sceneBookView() { return sceneBookView; },
+  get sceneAnimationService() { return sceneAnimationService; },
+  get toggleVoicePuppetry() { return toggleVoicePuppetry; }
+});
 
-let pendingPaintContext = null;
+const { wireDesignerEvents, wireShellEvents, wireDropEvents } = createAppShellEvents({
+  $,
+  $$,
+  store,
+  get showToast() { return showToast; },
+  get askConfirm() { return askConfirm; },
+  get playView() { return playView; },
+  get handleTabKeys() { return handleTabKeys; },
+  get handleGlobalShortcuts() { return handleGlobalShortcuts; },
+  get exportSceneAsPng() { return exportSceneAsPng; },
+  get exportCurrentFrameAsPng() { return exportCurrentFrameAsPng; },
+  get pendingImportEnvelope() { return pendingImportEnvelope; }, set pendingImportEnvelope(value) { pendingImportEnvelope = value; },
+  get openProjectDialog() { return openProjectDialog; },
+  get exportProjectJsonFile() { return exportProjectJsonFile; },
+  get handleProjectFile() { return handleProjectFile; },
+  get executeImportMerge() { return executeImportMerge; },
+  get executeImportReplace() { return executeImportReplace; },
+  get executeRestoreBackup() { return executeRestoreBackup; },
+  get executeDismissBackup() { return executeDismissBackup; }
+});
 
-function openPaintStudio(options = {}) {
-  pendingPaintContext = options;
-  location.hash = '#paint';
-}
+const { wireLifecycleEvents } = createAppLifecycle({
+  $,
+  customArtRepo,
+  store,
+  storage,
+  exportService,
+  get askConfirm() { return askConfirm; },
+  get paintView() { return paintView; },
+  get sceneAnimationService() { return sceneAnimationService; },
+  get stopVoicePuppetry() { return stopVoicePuppetry; },
+  get cancelPointerController() { return cancelPointerController; }
+});
+
+const { handleStoreChange } = createAppStateEffects({
+  $,
+  $$,
+  storage,
+  get showToast() { return showToast; },
+  get sceneOutlineView() { return sceneOutlineView; },
+  get playView() { return playView; },
+  get sceneAnimationService() { return sceneAnimationService; },
+  get renderApp() { return renderApp; }
+});
 
 const designerView = createDesignerView({
   store,
@@ -198,8 +160,7 @@ const designerView = createDesignerView({
   miniButton,
   customArtRepo,
   openPaintStudio,
-  getAsset: getEffectiveAsset,
-  getAssetsByKind: getEffectiveAssetsByKind
+  getAsset: getEffectiveAsset
 });
 
 const sceneOutlineView = createSceneOutlineView({
@@ -307,6 +268,15 @@ const sceneAnimationService = createSceneAnimationService({
   isVoiceActive: () => voiceService.isActive()
 });
 
+const appDisposables = createDisposableRegistry();
+appDisposables.register(playView);
+appDisposables.register(paintView);
+appDisposables.register(worldMapView);
+appDisposables.register(sceneAnimationService);
+window.addEventListener('pagehide', (event) => {
+  if (!event.persisted) appDisposables.disposeAll();
+});
+
 function toggleVoicePuppetry() {
   if (voiceService.isActive()) {
     voiceService.stop();
@@ -320,7 +290,6 @@ function toggleVoicePuppetry() {
   }
 }
 
-
 function stopVoicePuppetry() {
   voiceService.stop();
 }
@@ -329,100 +298,7 @@ function cancelPointerController() {
   playView.cancelPointerController();
 }
 
-const toastActions = new Set([
-  'designer/equip', 'designer/clearOutfit', 'designer/shuffle', 'preset/save', 'preset/update', 'preset/delete',
-  'scene/spawnCharacter', 'scene/spawnProp', 'scene/spawnBubble', 'scene/duplicateEntity', 'scene/deleteEntity', 'scene/deleteEntities', 'scene/new',
-  'scene/togglePin', 'scene/togglePinEntities', 'scene/attachEntity', 'scene/detachEntity', 'scene/alignEntities',
-  'scene/saveToLibrary', 'scene/duplicateCurrentToLibrary', 'scene/updateLibraryScene', 'scene/loadFromLibrary', 'scene/loadTemplate', 'scene/duplicateLibraryScene', 'scene/deleteLibraryScene',
-  'project/importReplace', 'project/importMerge', 'project/restoreBackup',
-  'app/undo', 'app/redo'
-]);
-
-store.subscribe(({ action, previousState, state, persist }) => {
-  if (persist) storage.schedule(persistedProjection(state));
-  if (toastActions.has(action.type)) {
-    showToast(state.ui.messageKey ? translateMessage(state.ui.messageKey, state.ui.messageParams || {}) : state.ui.message);
-  }
-
-  if (action.type === 'scene/setCameraX' || action.type === 'scene/panCamera') {
-    playView.syncCamera(state);
-    return;
-  }
-
-  if (action.type === 'ui/selectEntity' || action.type === 'ui/selectEntities' || action.type === 'ui/toggleEntitySelection' || action.type === 'ui/clearSelection') {
-    const selectedSet = new Set(state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []));
-    for (const element of $$('.scene-entity-positioner')) {
-      const isSelected = selectedSet.has(element.dataset.instanceId);
-      const isPrimary = element.dataset.instanceId === state.ui.selectedEntityId;
-      element.classList.toggle('is-selected', isPrimary || (isSelected && selectedSet.size === 1));
-      element.classList.toggle('is-multi-selected', isSelected && selectedSet.size > 1);
-    }
-    playView.renderSelectedActions(state);
-    playView.renderContextRing(state);
-    if ($('#scene-outline-dialog')?.open) {
-      sceneOutlineView.renderSceneOutline(state);
-    }
-    return;
-  }
-  if (action.type === 'scene/setDollExpression') {
-    const targetIds = action.instanceIds || (action.instanceId ? [action.instanceId] : (state.ui.selectedEntityIds?.length ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : [])));
-    for (const targetId of targetIds) {
-      const entity = state.currentScene?.entities?.find((e) => e.instanceId === targetId);
-      const domSkin = findSceneSkinSvg(targetId, $$);
-      if (domSkin && entity) {
-        applyMouthExpression(domSkin, action.expression, entity.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY);
-      }
-    }
-    playView.renderSelectedActions(state);
-    return;
-  }
-  if (action.type === 'scene/setAnimationSettings' || action.type === 'scene/toggleScenePlayback' || action.type === 'scene/playbackFinished') {
-    playView.renderSelectedActions(state);
-    if (action.type === 'scene/playbackFinished') return;
-  }
-  if (action.type === 'scene/toggleSceneLoop') {
-    playView.renderSelectedActions(state);
-    return;
-  }
-  if (action.type === 'scene/setDollExpressionIntensity' || action.type === 'scene/setDollPose' || action.type === 'scene/setDollAnimation') {
-    playView.renderSelectedActions(state);
-    sceneAnimationService.applyStaticPoseToDom();
-  }
-  if (
-    action.type === 'settings/setReducedMotion' ||
-    action.type === 'project/importReplace' ||
-    action.type === 'project/importMerge' ||
-    action.type === 'project/restoreBackup'
-  ) {
-    sceneAnimationService.handleSettingsChange();
-    playView.renderSelectedActions(state);
-  }
-  
-  // Sync global playback with current scene and mode
-  const currentSceneEnabled = Boolean(state.currentScene?.animationSettings?.enabled);
-  const isPlayMode = state.ui.mode === 'play';
-  const motionAllowed = sceneAnimationService.getEffectiveMotionAllowed ? sceneAnimationService.getEffectiveMotionAllowed() : true;
-  const shouldAnimate = isPlayMode && currentSceneEnabled && motionAllowed;
-
-  const enteredPlay = previousState.ui.mode !== 'play' && isPlayMode;
-  const sceneChanged = previousState.currentScene?.sceneId !== state.currentScene?.sceneId;
-  const toggledPlayOn = action.type === 'scene/toggleScenePlayback' && currentSceneEnabled;
-
-  if (enteredPlay || sceneChanged || toggledPlayOn) {
-    sceneAnimationService.resetClock();
-  }
-
-  if (shouldAnimate && !sceneAnimationService.isPlaying()) {
-    sceneAnimationService.play();
-  } else if (!shouldAnimate && sceneAnimationService.isPlaying()) {
-    sceneAnimationService.pause();
-  }
-
-  if ($('#scene-outline-dialog')?.open) {
-    sceneOutlineView.renderSceneOutline(state);
-  }
-  renderApp();
-});
+store.subscribe(handleStoreChange);
 
 // Initialize language on startup (defaults to Turkish 'tr')
 initLanguage();
@@ -473,830 +349,7 @@ if (!loaded.available || loaded.recovered === false) {
 }
 renderApp();
 
-function renderApp() {
-  const state = store.getState();
-  const designerActive = state.ui.mode === 'designer';
-  const paintActive = state.ui.mode === 'paint';
-  const playActive = state.ui.mode === 'play';
-
-  $('#designer-screen').hidden = !designerActive;
-  $('#paint-screen').hidden = !paintActive;
-  $('#play-screen').hidden = !playActive;
-
-  const sectionName = paintActive ? t('paint.title') : designerActive ? t('designer.title') : t('play.title');
-  document.title = `${sectionName} · ${t('app.title')}`;
-  for (const link of $$('[data-mode-link]')) {
-    if (link.dataset.modeLink === state.ui.mode) link.setAttribute('aria-current', 'page');
-    else link.removeAttribute('aria-current');
-  }
-  const undoBtn = $('#undo-button');
-  const redoBtn = $('#redo-button');
-  if (undoBtn) undoBtn.disabled = !store.canUndo();
-  if (redoBtn) redoBtn.disabled = !store.canRedo();
-  const saveStatus = $('#save-status');
-  saveStatus.dataset.status = state.ui.storageStatus;
-  const statusTexts = {
-    saved: t('header.statusSaved'),
-    saving: t('header.statusSaving'),
-    unsaved: t('header.statusUnsaved')
-  };
-  saveStatus.textContent = statusTexts[state.ui.storageStatus] ?? t('header.statusSaved');
-  saveStatus.title = state.ui.storageStatus === 'saved' ? t('header.savedDevice') : saveStatus.textContent;
-  const count = $('#dollbox-count');
-  count.textContent = String(state.presets.length);
-  count.setAttribute('aria-label', t('nav.dollboxCountAria', { count: state.presets.length }));
-  const sceneLibCount = $('#scene-library-count');
-  if (sceneLibCount) sceneLibCount.textContent = String(state.scenes?.length ?? 0);
-  const voiceBtn = $('#voice-puppetry-btn');
-  if (voiceBtn) voiceBtn.classList.toggle('voice-puppetry-active', Boolean(state.ui.voicePuppetryActive));
-  const uiMessage = state.ui.messageKey ? translateMessage(state.ui.messageKey, state.ui.messageParams || {}) : state.ui.message;
-  $('#designer-status').textContent = uiMessage;
-  $('#play-status').textContent = uiMessage;
-  if (paintActive) {
-    designerView.bumpToken();
-    playView.bumpToken();
-  } else if (designerActive) {
-    playView.bumpToken();
-    void designerView.render(state);
-  } else {
-    designerView.bumpToken();
-    void playView.render(state);
-  }
-}
-
-
-function modeFromHash() {
-  if (location.hash === '#paint') return 'paint';
-  return location.hash === '#designer' ? 'designer' : 'play';
-}
-
-function wireStaticEvents() {
-  window.addEventListener('hashchange', () => {
-    cancelPointerController();
-    if (store.getState().ui.voicePuppetryActive) {
-      store.dispatch({ type: 'ui/setVoicePuppetry', active: false });
-      stopVoicePuppetry();
-    }
-    const nextMode = modeFromHash();
-    store.dispatch({ type: 'ui/setMode', mode: nextMode });
-    if (nextMode === 'paint') {
-      const options = pendingPaintContext || {
-        itemType: 'wearable',
-        slot: store.getState().designer?.selectedSlot || 'top',
-        originContext: 'designer'
-      };
-      pendingPaintContext = null;
-      paintView.openSession(options);
-      if (options.editAssetId) {
-        void paintView.editCopyOfArtwork?.(options.editAssetId);
-      }
-    }
-    $('#main-content').focus({ preventScroll: true });
-  });
-
-  $('#save-preset-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    store.dispatch({ type: 'preset/save', name: new FormData(event.currentTarget).get('dollName') });
-  });
-  $('#update-preset').addEventListener('click', () => store.dispatch({ type: 'preset/update', name: $('#doll-name').value }));
-  $('#remove-piece').addEventListener('click', () => store.dispatch({ type: 'designer/remove' }));
-  $('#shuffle-outfit').addEventListener('click', () => store.dispatch({ type: 'designer/shuffle' }));
-  $('#clear-outfit').addEventListener('click', async () => {
-    const dressed = CLEARABLE_OUTFIT_SLOTS.some((slot) => store.getState().designer.draft.slots[slot]);
-    if (!dressed || await askConfirm(t('designer.clearOutfitTitle'), t('designer.clearOutfitMessage'))) {
-      store.dispatch({ type: 'designer/clearOutfit' });
-    }
-  });
-  $('#custom-color').addEventListener('input', (event) => previewCustomColor(event.target.value, store.getState().designer.selectedSlot));
-  $('#custom-color').addEventListener('change', (event) => {
-    const slot = store.getState().designer.selectedSlot;
-    store.dispatch({ type: 'designer/setColor', slot, color: event.target.value });
-  });
-  $('#designer-mode-wardrobe')?.addEventListener('click', () => store.dispatch({ type: 'designer/setActiveTab', tab: 'wardrobe' }));
-  $('#designer-mode-face')?.addEventListener('click', () => store.dispatch({ type: 'designer/setActiveTab', tab: 'face' }));
-  $('#reset-doll').addEventListener('click', async () => {
-    if (!store.getState().designer.dirty || await askConfirm(t('designer.resetDollTitle'), t('designer.resetDollMessage'))) {
-      store.dispatch({ type: 'designer/reset' });
-    }
-  });
-  $('#background-select').addEventListener('change', (event) => store.dispatch({ type: 'scene/setBackground', backgroundId: event.target.value }));
-  $('#new-scene').addEventListener('click', async () => {
-    const hasItems = store.getState().currentScene.entities.length > 0;
-    if (!hasItems || await askConfirm(t('play.newSceneTitle'), t('play.newSceneMessage'))) {
-      store.dispatch({ type: 'scene/new' });
-    }
-  });
-
-  // World Map dialog wiring
-  $('#open-world-map-btn')?.addEventListener('click', () => worldMapView.openWorldMapDialog());
-  $('#close-world-map')?.addEventListener('click', () => worldMapView.closeWorldMapDialog());
-
-  // Scene Library, Templates, Outline & Save Scene dialog wiring
-  $('#scene-templates-btn')?.addEventListener('click', () => sceneBookView.openSceneTemplatesDialog());
-  $('#close-scene-templates')?.addEventListener('click', () => $('#scene-templates-dialog')?.close());
-  $('#scene-outline-btn')?.addEventListener('click', () => sceneOutlineView.openSceneOutlineDialog());
-  $('#close-scene-outline')?.addEventListener('click', () => $('#scene-outline-dialog')?.close());
-  $('#outline-select-all-btn')?.addEventListener('click', () => {
-    const allIds = store.getState().currentScene.entities.map((e) => e.instanceId);
-    store.dispatch({ type: 'ui/selectEntities', instanceIds: allIds });
-  });
-  $('#outline-deselect-btn')?.addEventListener('click', () => store.dispatch({ type: 'ui/clearSelection' }));
-  $('#save-scene-copy-btn')?.addEventListener('click', () => store.dispatch({ type: 'scene/duplicateCurrentToLibrary' }));
-
-  $('#scene-library-btn')?.addEventListener('click', () => sceneBookView.openSceneLibraryDialog());
-  $('#close-scene-library')?.addEventListener('click', () => $('#scene-library-dialog')?.close());
-  $('#save-scene-btn')?.addEventListener('click', () => sceneBookView.openSaveSceneDialog());
-  $('#cancel-save-scene')?.addEventListener('click', () => $('#save-scene-dialog')?.close());
-  $('#save-scene-form')?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const title = $('#scene-title-input')?.value;
-    store.dispatch({ type: 'scene/saveToLibrary', name: title });
-    $('#save-scene-dialog')?.close();
-  });
-  $('#update-existing-scene')?.addEventListener('click', () => {
-    const title = $('#scene-title-input')?.value;
-    store.dispatch({ type: 'scene/updateLibraryScene', name: title });
-    $('#save-scene-dialog')?.close();
-  });
-
-  // Light-dismiss wiring for library dialogs (outside click closes dialog)
-  $$('dialog[closedby="any"], dialog.library-dialog').forEach(enableDialogLightDismiss);
-
-  // Alignment buttons wiring
-  $('#alignment-controls')?.addEventListener('click', (event) => {
-    const action = event.target.closest('button')?.dataset.action;
-    if (action) void playView.handleEntityAction(action);
-  });
-
-  // Expression buttons wiring
-  $('#character-expression-controls')?.addEventListener('click', (event) => {
-    const expr = event.target.closest('button')?.dataset.expression;
-    if (expr) store.dispatch({ type: 'scene/setDollExpression', expression: expr });
-  });
-
-  // Expression Intensity buttons wiring
-  $('#character-expression-intensity-controls')?.addEventListener('click', (event) => {
-    const intensity = event.target.closest('button')?.dataset.expressionIntensity;
-    if (intensity !== undefined) {
-      store.dispatch({ type: 'scene/setDollExpressionIntensity', expressionIntensity: Number(intensity) });
-    }
-  });
-
-  // Static Pose buttons wiring
-  $('#character-pose-controls')?.addEventListener('click', (event) => {
-    const pose = event.target.closest('button')?.dataset.pose;
-    if (pose) store.dispatch({ type: 'scene/setDollPose', pose });
-  });
-
-  // Animation Clip buttons wiring
-  $('#character-animation-clip-controls')?.addEventListener('click', (event) => {
-    const clipId = event.target.closest('button')?.dataset.clipId;
-    if (clipId) {
-      store.dispatch({
-        type: 'scene/setDollAnimation',
-        animation: {
-          clipId,
-          enabled: clipId !== 'none'
-        }
-      });
-    }
-  });
-
-  // Motion Intensity buttons wiring
-  $('#character-motion-intensity-controls')?.addEventListener('click', (event) => {
-    const intensity = event.target.closest('button')?.dataset.motionIntensity;
-    if (intensity !== undefined) {
-      store.dispatch({
-        type: 'scene/setDollAnimation',
-        animation: {
-          intensity: Number(intensity)
-        }
-      });
-    }
-  });
-
-  // Phase Offset buttons wiring
-  $('#character-phase-offset-controls')?.addEventListener('click', (event) => {
-    const offset = event.target.closest('button')?.dataset.phaseOffset;
-    if (offset !== undefined) {
-      store.dispatch({
-        type: 'scene/setDollAnimation',
-        animation: {
-          phaseOffset: Number(offset)
-        }
-      });
-    }
-  });
-
-  // Motion Preference (Reduced Motion mode) buttons wiring
-  $('#character-motion-preference-controls')?.addEventListener('click', (event) => {
-    const mode = event.target.closest('button')?.dataset.motionMode;
-    if (mode) {
-      store.dispatch({ type: 'settings/setReducedMotion', mode });
-    }
-  });
-
-  // Animation Transport Controls wiring
-  $('#play-animation-btn')?.addEventListener('click', () => {
-    store.dispatch({ type: 'scene/toggleScenePlayback' });
-  });
-  $('#loop-animation-btn')?.addEventListener('click', () => {
-    store.dispatch({ type: 'scene/toggleSceneLoop' });
-  });
-  $('#reset-animation-btn')?.addEventListener('click', () => {
-    sceneAnimationService.reset();
-  });
-  $('#scene-playback-rate-controls')?.addEventListener('click', (event) => {
-    const rate = event.target.closest('button')?.dataset.playbackRate;
-    if (rate !== undefined) {
-      store.dispatch({ type: 'scene/setPlaybackRate', playbackRate: Number(rate) });
-    }
-  });
-
-  // Attached entity joint selection wiring
-  $('#attach-joint-controls')?.addEventListener('click', (event) => {
-    const joint = event.target.closest('button')?.dataset.attachJoint;
-    if (joint) {
-      store.dispatch({ type: 'scene/setAttachJoint', attachJoint: joint });
-    }
-  });
-
-  // Rhythm synchronization wiring
-  $('#rhythm-sync-controls')?.addEventListener('click', (event) => {
-    const mode = event.target.closest('button')?.dataset.rhythmMode;
-    if (mode) {
-      store.dispatch({ type: 'scene/syncCharacterBeats', mode });
-    }
-  });
-
-  // Speech bubble controls & dialog wiring
-  $('#bubble-controls')?.addEventListener('click', (event) => {
-    const style = event.target.closest('button')?.dataset.bubbleStyle;
-    if (style) store.dispatch({ type: 'scene/setBubbleStyle', bubbleStyle: style });
-  });
-  $('#bubble-text-input')?.addEventListener('input', (event) => {
-    const count = $('#bubble-char-count');
-    if (count) count.textContent = `${event.target.value.length}/120`;
-  });
-  $('#cancel-bubble-text')?.addEventListener('click', () => $('#bubble-text-dialog')?.close());
-  $('#bubble-text-form')?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const text = $('#bubble-text-input')?.value;
-    store.dispatch({ type: 'scene/setBubbleText', text });
-    $('#bubble-text-dialog')?.close();
-  });
-
-  // Voice Puppetry wiring
-  $('#voice-puppetry-btn')?.addEventListener('click', () => void toggleVoicePuppetry());
-
-  // Language Toggle wiring
-  $('#lang-toggle-btn')?.addEventListener('click', () => {
-    const nextLang = getCurrentLanguage() === 'tr' ? 'en' : 'tr';
-    setLanguage(nextLang);
-  });
-
-  // Guide Dialog & Tabs wiring
-  function selectGuideTab(tabKey) {
-    const tabButtons = $$('#guide-tabs [data-guide-tab]');
-    const panels = $$('.guide-tab-panel');
-    tabButtons.forEach((btn) => {
-      const isActive = btn.dataset.guideTab === tabKey;
-      btn.classList.toggle('is-active', isActive);
-      btn.setAttribute('aria-selected', String(isActive));
-    });
-    panels.forEach((panel) => {
-      const isTarget = panel.id === `guide-panel-${tabKey}`;
-      panel.hidden = !isTarget;
-      panel.classList.toggle('is-active', isTarget);
-    });
-  }
-
-  $('#guide-tabs')?.addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-guide-tab]');
-    if (btn) {
-      selectGuideTab(btn.dataset.guideTab);
-    }
-  });
-
-  $('#guide-menu-btn')?.addEventListener('click', () => {
-    selectGuideTab('quickstart');
-    $('#guide-dialog')?.showModal();
-  });
-  $('#close-guide-dialog')?.addEventListener('click', () => $('#guide-dialog')?.close());
-  $('#project-menu-btn')?.addEventListener('click', () => openProjectDialog());
-  $('#close-project-dialog')?.addEventListener('click', () => $('#project-dialog')?.close());
-  $('#export-project-btn')?.addEventListener('click', () => exportProjectJsonFile());
-
-  async function handleHardResetAction() {
-    const confirmed = await askConfirm(
-      t('projectDialog.forceReloadBtn'),
-      t('projectDialog.updateCopy')
-    );
-    if (confirmed) {
-      showToast(t('toasts.clearingReloading'));
-      await window.hardRefresh();
-    }
-  }
-
-  $('#project-hard-reset-btn')?.addEventListener('click', () => void handleHardResetAction());
-  $('#footer-hard-reset-btn')?.addEventListener('click', () => void handleHardResetAction());
-  $('#browse-project-file-btn')?.addEventListener('click', () => $('#project-file-input')?.click());
-  $('#project-file-input')?.addEventListener('change', (event) => {
-    const file = event.target.files?.[0];
-    if (file) void handleProjectFile(file);
-  });
-
-  const importDropzone = $('#import-dropzone');
-  if (importDropzone) {
-    importDropzone.addEventListener('dragover', (event) => {
-      event.preventDefault();
-      event.dataTransfer.dropEffect = 'copy';
-      importDropzone.classList.add('is-drop-target');
-    });
-    importDropzone.addEventListener('dragleave', () => {
-      importDropzone.classList.remove('is-drop-target');
-    });
-    importDropzone.addEventListener('drop', (event) => {
-      event.preventDefault();
-      importDropzone.classList.remove('is-drop-target');
-      const file = event.dataTransfer.files?.[0];
-      if (file) void handleProjectFile(file);
-    });
-  }
-
-  $('#import-merge-btn')?.addEventListener('click', () => void executeImportMerge());
-  $('#import-replace-btn')?.addEventListener('click', () => void executeImportReplace());
-  $('#import-cancel-btn')?.addEventListener('click', () => {
-    const previewCard = $('#import-preview-card');
-    if (previewCard) previewCard.hidden = true;
-    const fileInput = $('#project-file-input');
-    if (fileInput) fileInput.value = '';
-    pendingImportEnvelope = null;
-  });
-
-  $('#restore-backup-btn')?.addEventListener('click', () => void executeRestoreBackup());
-  $('#dismiss-backup-btn')?.addEventListener('click', () => executeDismissBackup());
-
-  // Global action buttons
-  $('#undo-button')?.addEventListener('click', () => store.dispatch({ type: 'app/undo' }));
-  $('#redo-button')?.addEventListener('click', () => store.dispatch({ type: 'app/redo' }));
-  $('#export-scene-png')?.addEventListener('click', () => void exportSceneAsPng());
-  $('#export-frame-btn')?.addEventListener('click', () => void exportCurrentFrameAsPng());
-  $('#play-stage')?.addEventListener('keydown', playView.handleStageKeydown);
-  document.addEventListener('keydown', handleTabKeys);
-  document.addEventListener('keydown', handleGlobalShortcuts);
-
-  // Ensure reliable virtual keyboard activation on iPad/iOS Safari upon click/tap
-  document.addEventListener('pointerup', (event) => {
-    const input = event.target?.closest?.('input:not([type="file"]):not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]), textarea');
-    if (input && document.activeElement !== input) {
-      input.focus();
-    }
-  });
-
-  // Drag & drop into designer
-  const designerStage = $('.designer-stage');
-  designerStage.addEventListener('dragover', (event) => {
-    if (!Array.from(event.dataTransfer.types).includes('text/plain')) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
-    designerStage.classList.add('is-drop-target');
-  });
-  designerStage.addEventListener('dragleave', (event) => {
-    if (!designerStage.contains(event.relatedTarget)) designerStage.classList.remove('is-drop-target');
-  });
-  designerStage.addEventListener('drop', (event) => {
-    event.preventDefault();
-    designerStage.classList.remove('is-drop-target');
-    const payload = event.dataTransfer.getData('text/plain');
-    const match = payload.match(/^paper-doll-wearable:([a-z0-9_-]+)$/);
-    if (match) store.dispatch({ type: 'designer/equip', assetId: match[1] });
-  });
-
-  // Drag & drop into play stage
-  const playStage = $('#play-stage');
-  playStage.addEventListener('dragover', (event) => {
-    if (!Array.from(event.dataTransfer.types).includes('text/plain')) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
-    playStage.classList.add('is-spawn-target');
-  });
-  playStage.addEventListener('dragleave', (event) => {
-    if (!playStage.contains(event.relatedTarget)) playStage.classList.remove('is-spawn-target');
-  });
-  playStage.addEventListener('drop', (event) => {
-    event.preventDefault();
-    playStage.classList.remove('is-spawn-target');
-    const match = event.dataTransfer.getData('text/plain').match(/^paper-doll-spawn:(character|prop|bubble):([a-zA-Z0-9_-]+)(?::(.*))?$/);
-    if (!match) return;
-    const cameraX = store.getState().currentScene.cameraX || 0;
-    const point = clientToLogical(event.clientX, event.clientY, playStage.getBoundingClientRect(), cameraX);
-    const hostElement = event.target.closest?.('.scene-entity-positioner');
-    const targetEntityId = hostElement?.dataset?.instanceId;
-
-    if (match[1] === 'character') store.dispatch({ type: 'scene/spawnCharacter', presetId: match[2], ...point });
-    else if (match[1] === 'bubble') store.dispatch({ type: 'scene/spawnBubble', bubbleStyle: match[2], text: match[3] ? decodeURIComponent(match[3]) : 'Hello!', targetEntityId, ...point });
-    else store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, ...point });
-  });
-
-  const handleTeardownFlush = () => {
-    cancelPointerController();
-    paintView.cancelAsyncOperations?.();
-    void paintView.flushDraftCheckpoint?.();
-    exportService.cancel();
-    sceneAnimationService.pause();
-    customArtRepo.revokeAllTrackedUrls();
-    if (store.getState().ui.voicePuppetryActive) {
-      store.dispatch({ type: 'ui/setVoicePuppetry', active: false });
-      stopVoicePuppetry();
-    }
-    storage.flush();
-  };
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      handleTeardownFlush();
-    } else if (document.visibilityState === 'visible') {
-      const state = store.getState();
-      if (state.ui.mode === 'play' && state.currentScene?.animationSettings?.enabled) {
-        sceneAnimationService.play();
-      }
-    }
-  });
-  window.addEventListener('pagehide', handleTeardownFlush);
-  window.addEventListener('resize', cancelPointerController);
-  window.addEventListener('beforeunload', () => storage.flush());
-  window.addEventListener('storage', async (event) => {
-    if (event.key === STORAGE_KEY) {
-      const storageRev = storage.getStorageRevision();
-      const baseRev = storage.getBaseRevision();
-      if (storageRev != null && storageRev > baseRev) {
-        const shouldReload = await askConfirm(
-          t('sync.crossTabTitle'),
-          t('sync.crossTabMessage')
-        );
-        if (shouldReload) {
-          location.reload();
-        } else {
-          store.dispatch({
-            type: 'ui/storageStatus',
-            status: 'unsaved',
-            message: t('sync.tabLocalState')
-          });
-        }
-      }
-    }
-  });
-
-  window.addEventListener('error', (event) => {
-    handleTopLevelError(event.error, 'error');
-  });
-  window.addEventListener('unhandledrejection', (event) => {
-    handleTopLevelError(event.reason, 'unhandledrejection');
-  });
-
-  $('#dismiss-error-btn')?.addEventListener('click', () => {
-    const dialog = $('#error-boundary-dialog');
-    if (dialog?.open) dialog.close();
-  });
-  $('#reload-error-btn')?.addEventListener('click', () => {
-    location.reload();
-  });
-}
-
-function handleTopLevelError(error, source = 'runtime') {
-  const code = classifyError(error);
-  executeSafeTeardown({
-    cancelPointer: cancelPointerController,
-    stopAudio: () => {
-      if (store.getState().ui.voicePuppetryActive) {
-        store.dispatch({ type: 'ui/setVoicePuppetry', active: false });
-        stopVoicePuppetry();
-      }
-    },
-    stopAnimation: () => sceneAnimationService.teardown(),
-    cancelExport: () => exportService.cancel(),
-    cancelStorage: () => storage?.cancel()
-  });
-
-  const dialog = $('#error-boundary-dialog');
-  const codeEl = $('#error-boundary-code');
-  if (codeEl) codeEl.textContent = code;
-  if (dialog && typeof dialog.showModal === 'function' && !dialog.open) {
-    dialog.showModal();
-  }
-  store.dispatch({ type: 'ui/storageStatus', status: 'unsaved', message: t('sync.errorMessage') });
-}
-
-function handleTabKeys(event) {
-  const tab = event.target.closest('[role="tab"]');
-  if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-  const list = tab.closest('[role="tablist"]');
-  if (!list) return;
-  const allTabs = [...list.querySelectorAll('[role="tab"]')];
-  const visibleTabs = allTabs.filter((t) => !t.hidden && t.getAttribute('hidden') === null && t.style.display !== 'none');
-  const index = visibleTabs.indexOf(tab);
-  if (index === -1) return;
-  event.preventDefault();
-  let nextIndex = index;
-  if (event.key === 'ArrowLeft') nextIndex = (index - 1 + visibleTabs.length) % visibleTabs.length;
-  else if (event.key === 'ArrowRight') nextIndex = (index + 1) % visibleTabs.length;
-  else if (event.key === 'Home') nextIndex = 0;
-  else if (event.key === 'End') nextIndex = visibleTabs.length - 1;
-  const targetTab = visibleTabs[nextIndex];
-  if (targetTab) {
-    for (const t of allTabs) {
-      t.setAttribute('tabindex', '-1');
-    }
-    targetTab.setAttribute('tabindex', '0');
-    targetTab.focus();
-    targetTab.click();
-  }
-}
-
-function handleGlobalShortcuts(event) {
-  if (event.target.matches('input, textarea, select, [contenteditable="true"]') || document.querySelector('dialog[open]')) return;
-  const isMac = typeof navigator !== 'undefined' && (/Mac|iPod|iPhone|iPad/.test(navigator.platform) || /Macintosh/.test(navigator.userAgent));
-  const modifier = isMac ? event.metaKey : event.ctrlKey;
-
-  // 'm' shortcut for World Map in Play mode without modifier
-  if (!modifier && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'm') {
-    if (store.getState().activeTab === 'play') {
-      event.preventDefault();
-      worldMapView.openWorldMapDialog();
-      return;
-    }
-  }
-
-  if (!modifier || event.altKey) return;
-  const key = event.key.toLowerCase();
-  if (key === 'z') {
-    event.preventDefault();
-    if (event.shiftKey) store.dispatch({ type: 'app/redo' });
-    else store.dispatch({ type: 'app/undo' });
-  } else if (key === 'y' && !isMac) {
-    event.preventDefault();
-    store.dispatch({ type: 'app/redo' });
-  }
-}
-
-async function exportSceneAsPng() {
-  const state = store.getState();
-  const result = await exportService.exportSceneAndDownload(state.currentScene);
-  if (result.ok) {
-    showToast(t('toasts.sceneExportedPng'));
-  } else {
-    showToast(result.message || t('toasts.sceneExportFailed'));
-  }
-}
-
-async function exportCurrentFrameAsPng() {
-  const state = store.getState();
-  const isPlaying = sceneAnimationService.isPlaying();
-  const elapsedMs = isPlaying ? sceneAnimationService.getElapsedMs() : 0;
-  const result = await exportService.exportSceneAndDownload(state.currentScene, {
-    animationTimeMs: elapsedMs,
-    playbackEnabled: isPlaying
-  });
-  if (result.ok) {
-    showToast(t('toasts.sceneExportedPng'));
-  } else {
-    showToast(result.message || t('toasts.sceneExportFailed'));
-  }
-}
-
 let pendingImportEnvelope = null;
-let pendingImportArtwork = [];
-
-function openProjectDialog() {
-  const state = store.getState();
-  const statsContainer = $('#project-export-stats');
-  if (statsContainer) {
-    const dollCount = state.presets.length;
-    const sceneCount = state.scenes.length;
-    const entityCount = state.currentScene?.entities?.length ?? 0;
-    const customCount = state.customAssets?.length ?? 0;
-    statsContainer.replaceChildren(
-      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statDolls', { count: dollCount }) }),
-      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statScenes', { count: sceneCount }) }),
-      Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: entityCount > 0 ? t('projectDialog.statActiveStage', { count: entityCount }) : t('projectDialog.statEmptyStage') }),
-      ...(customCount > 0 ? [Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statCustomArt', { count: customCount }) })] : [])
-    );
-  }
-
-  const backupSection = $('#project-backup-section');
-  const backupRes = getAvailableBackup(storageRef, getAsset);
-  if (backupSection) {
-    if (backupRes.available) {
-      backupSection.hidden = false;
-      const backupTime = $('#backup-timestamp');
-      const backupDetails = $('#backup-details');
-      if (backupTime) backupTime.textContent = t('projectDialog.backupFrom', { date: new Date(backupRes.backedUpAt).toLocaleString() });
-      if (backupDetails) backupDetails.textContent = t('projectDialog.backupDetails', { presets: backupRes.summary.presetCount, scenes: backupRes.summary.sceneCount });
-    } else {
-      backupSection.hidden = true;
-    }
-  }
-
-  const previewCard = $('#import-preview-card');
-  if (previewCard) previewCard.hidden = true;
-  const fileInput = $('#project-file-input');
-  if (fileInput) fileInput.value = '';
-  pendingImportEnvelope = null;
-  pendingImportArtwork = [];
-
-  $('#project-dialog')?.showModal();
-}
-
-async function exportProjectJsonFile() {
-  try {
-    const state = store.getState();
-    const jsonStr = await exportProjectPackage(state, customArtRepo);
-    const filename = formatProjectExportFilename();
-    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 6000);
-    showToast(t('toasts.projectDownloaded'));
-  } catch {
-    showToast(t('toasts.projectExportFailed'));
-  }
-}
-
-async function handleProjectFile(file) {
-  if (!file) return;
-  if (file.size > LIMITS.MAX_PACKAGE_BYTES) {
-    showToast(t('toasts.packageTooLarge'));
-    return;
-  }
-  try {
-    const text = await file.text();
-    const res = await validateImportPayload(text, getAsset);
-    if (!res.ok) {
-      showToast(res.error || t('toasts.projectParseError'));
-      return;
-    }
-    pendingImportEnvelope = res.envelope;
-    pendingImportArtwork = res.customArtwork || [];
-
-    const previewCard = $('#import-preview-card');
-    const filenameEl = $('#import-filename');
-    const badgesEl = $('#import-summary-badges');
-    const warningsEl = $('#import-warnings-box');
-
-    if (filenameEl) filenameEl.textContent = file.name || 'project.json';
-    if (badgesEl) {
-      badgesEl.replaceChildren(
-        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statDolls', { count: res.summary.presetCount }) }),
-        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statScenes', { count: res.summary.sceneCount }) }),
-        Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: res.summary.hasCurrentScene ? t('projectDialog.statActiveStage', { count: res.summary.currentSceneEntityCount }) : t('projectDialog.statEmptyStage') }),
-        ...(res.summary.customAssetCount > 0 ? [Object.assign(document.createElement('span'), { className: 'stat-chip', textContent: t('projectDialog.statCustomArt', { count: res.summary.customAssetCount }) })] : [])
-      );
-    }
-
-    if (warningsEl) {
-      if (res.warnings.length > 0) {
-        warningsEl.hidden = false;
-        warningsEl.textContent = `Note: ${res.warnings.join(' ')}`;
-      } else {
-        warningsEl.hidden = true;
-      }
-    }
-
-    if (previewCard) previewCard.hidden = false;
-  } catch {
-    showToast(t('toasts.projectReadError'));
-  }
-}
-
-async function executeImportMerge() {
-  if (!pendingImportEnvelope) return;
-  const currentEnv = persistedProjection(store.getState());
-  const merged = mergeProjectEnvelopes(currentEnv, pendingImportEnvelope, pendingImportArtwork);
-
-  const sessionId = 'merge_' + Date.now();
-  const staged = await customArtRepo.stageArtworkBatch(sessionId, merged.customArtwork || []);
-  if (!staged.ok) {
-    showToast(t('toasts.mergeStagingError', { error: staged.error || 'storage issue' }));
-    return;
-  }
-  const committed = await customArtRepo.commitStagedArtwork(sessionId);
-  if (!committed.ok) {
-    await customArtRepo.pruneStaging(sessionId);
-    showToast(t('toasts.mergeCommitError', { error: committed.error || 'storage issue' }));
-    return;
-  }
-
-  store.dispatch({
-    type: 'project/importMerge',
-    envelope: merged.envelope,
-    messageKey: 'toasts.importMergedStats',
-    messageParams: {
-      dolls: merged.stats.addedPresets,
-      scenes: merged.stats.addedScenes,
-      custom: merged.stats.addedCustomAssets ?? 0
-    }
-  });
-  $('#project-dialog')?.close();
-}
-
-async function executeImportReplace() {
-  if (!pendingImportEnvelope) return;
-  const confirmed = await askConfirm(
-    t('projectDialog.replaceConfirmTitle'),
-    t('projectDialog.replaceConfirmMessage')
-  );
-  if (!confirmed) return;
-
-  const currentEnv = persistedProjection(store.getState());
-  const backupResult = saveProjectBackup(storageRef, currentEnv);
-  const currentArtworkIds = new Set((currentEnv.customAssets || [])
-    .filter((asset) => asset.status === 'available')
-    .map((asset) => asset.assetId));
-  const currentArtwork = (await customArtRepo.getAllArtwork())
-    .filter((item) => currentArtworkIds.has(item.assetId));
-  const customBackupResult = await customArtRepo.saveBackup('latest', currentEnv, currentArtwork);
-  if (!backupResult.ok || !customBackupResult.ok) {
-    clearProjectBackup(storageRef);
-    showToast(t('toasts.replaceBackupError', { error: backupResult.error || customBackupResult.error || 'storage issue' }));
-    return;
-  }
-
-  const sessionId = 'import_' + Date.now();
-  const staged = await customArtRepo.stageArtworkBatch(sessionId, pendingImportArtwork);
-  if (!staged.ok) {
-    await customArtRepo.pruneStaging(sessionId);
-    showToast(t('toasts.replaceStagingError', { error: staged.error || 'storage issue' }));
-    return;
-  }
-  const committed = await customArtRepo.commitStagedArtwork(sessionId);
-  if (!committed.ok) {
-    await customArtRepo.pruneStaging(sessionId);
-    showToast(t('toasts.replaceCommitError', { error: committed.error || 'storage issue' }));
-    return;
-  }
-
-  store.dispatch({
-    type: 'project/importReplace',
-    envelope: pendingImportEnvelope,
-    messageKey: backupResult.ok
-      ? 'toasts.importReplacedWithBackup'
-      : 'toasts.importReplaced'
-  });
-  const importedCustomIds = (pendingImportEnvelope.customAssets || []).map((asset) => asset.assetId);
-  const orphanIds = await customArtRepo.scanOrphans(importedCustomIds);
-  await customArtRepo.pruneOrphans(orphanIds, importedCustomIds);
-  $('#project-dialog')?.close();
-}
-
-async function executeRestoreBackup() {
-  const backup = getAvailableBackup(storageRef, getAsset);
-  if (!backup.available) {
-    showToast(t('toasts.noBackupFound'));
-    return;
-  }
-  const confirmed = await askConfirm(
-    t('projectDialog.restoreBackupBtn'),
-    t('projectDialog.backupCopy')
-  );
-  if (!confirmed) return;
-
-  const latestArtBackup = await customArtRepo.getLatestBackup();
-  if (backup.envelope.customAssets?.length && !latestArtBackup) {
-    showToast(t('toasts.backupRestoreUnavailable'));
-    return;
-  }
-  if (latestArtBackup) {
-    const restored = await customArtRepo.restoreBackup(latestArtBackup.backupId);
-    if (!restored.ok) {
-      showToast(t('toasts.backupRestoreError', { error: restored.error || 'custom artwork could not be restored.' }));
-      return;
-    }
-  }
-
-  store.dispatch({
-    type: 'project/restoreBackup',
-    envelope: backup.envelope,
-    messageKey: 'toasts.backupRestored'
-  });
-
-  const saveResult = storage.flush({ force: true });
-  if (saveResult?.ok) {
-    clearProjectBackup(storageRef);
-  }
-  $('#project-dialog')?.close();
-}
-
-function executeDismissBackup() {
-  clearProjectBackup(storageRef);
-  const backupSection = $('#project-backup-section');
-  if (backupSection) backupSection.hidden = true;
-  showToast(t('toasts.backupDismissed'));
-}
-
 
 window.hardRefresh = async function hardRefresh() {
   if ('serviceWorker' in navigator) {
@@ -1311,5 +364,7 @@ window.hardRefresh = async function hardRefresh() {
       for (const key of keys) await caches.delete(key);
     } catch { /* ignore */ }
   }
-  window.location.reload(true);
+  window.location.reload();
 };
+
+export { miniButton };

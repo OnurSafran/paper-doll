@@ -5,7 +5,6 @@ import {
   CAMERA_CONSTANTS,
   DEFAULT_STAGE_WIDTH,
   isStageWidth,
-  LIMITS,
   STAGE_WIDTHS
 } from '../js/domain/vocabulary.js';
 import { clientToLogical, logicalToClient, clampCameraX } from '../js/core/coordinate-space.js';
@@ -19,12 +18,13 @@ import {
   reclampSceneEntities,
   scaleEntity
 } from '../js/domain/scene-rules.js';
-import { cloneScene, sanitizeScene } from '../js/core/state-schema.js';
+import { sanitizeScene } from '../js/core/state-schema.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { getAsset } from '../js/core/asset-catalog.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { createExportService } from '../js/services/export-service.js';
 import { createCompositeSceneThumbnailSvg } from '../js/features/scene-book/scene-book-view.js';
+import { createPlayView } from '../js/features/play/play-view.js';
 import { getBackgroundLayout } from '../js/core/background-layout.js';
 
 test('Panoramic vocabulary defines valid stage widths and camera constants', () => {
@@ -516,4 +516,77 @@ test('Scene Book composite thumbnail SVG repeats normal backgrounds at native wi
   assert.equal(svg.children[0].getAttribute('transform'), 'translate(0, -50) scale(2, 2)');
   assert.equal(svg.children[1].getAttribute('transform'), 'translate(1600, -50) scale(2, 2)');
   assert.equal(svg.children[2].getAttribute('transform'), 'translate(3200, -50) scale(2, 2)');
+});
+
+test('handleStageKeydown supports panoramic keyboard navigation with PageUp and PageDown', () => {
+  const store = createAppStore({
+    presets: [],
+    scenes: [],
+    currentScene: {
+      sceneId: 'wide-scene',
+      title: 'Wide Scene',
+      stageWidth: 4800,
+      cameraX: 1000,
+      backgroundId: 'bg_bedroom',
+      entities: []
+    }
+  });
+
+  const playView = createPlayView({
+    store,
+    $: () => null,
+    $$: () => [],
+    renderDollInto: () => {},
+    askConfirm: async () => true,
+    openSceneOutlineDialog: () => {},
+    openWorldMapDialog: () => {},
+    customArtRepo: {},
+    openPaintStudio: () => {},
+    getAsset: () => undefined,
+    getAssetsByKind: () => []
+  });
+
+  // PageDown pans camera by +STEP (CAMERA_CONSTANTS.STEP = 300)
+  let prevented = false;
+  playView.handleStageKeydown({
+    key: 'PageDown',
+    preventDefault: () => { prevented = true; },
+    target: { matches: () => false }
+  });
+  assert.equal(prevented, true);
+  assert.equal(store.getState().currentScene.cameraX, 1000 + CAMERA_CONSTANTS.STEP);
+
+  // PageUp pans camera by -STEP
+  playView.handleStageKeydown({
+    key: 'PageUp',
+    preventDefault: () => {},
+    target: { matches: () => false }
+  });
+  assert.equal(store.getState().currentScene.cameraX, 1000);
+
+  // PageDown on slider input
+  playView.handleStageKeydown({
+    key: 'PageDown',
+    preventDefault: () => {},
+    target: { matches: (sel) => sel === '#camera-slider' }
+  });
+  assert.equal(store.getState().currentScene.cameraX, 1000 + CAMERA_CONSTANTS.STEP);
+});
+
+test('camera HUD arrows pan with an entity selected and never move or delete that entity', () => {
+  const store = createAppStore();
+  store.dispatch({ type: 'scene/setStageWidth', stageWidth: 4800 });
+  const entity = store.getState().currentScene.entities[0];
+  store.dispatch({ type: 'ui/selectEntity', instanceId: entity.instanceId });
+  const view = createPlayView({ store, $: () => null, $$: () => [] });
+  const initialEntities = store.getState().currentScene.entities;
+  const initialCamera = store.getState().currentScene.cameraX;
+  const event = { currentTarget: { id: 'camera-hud' }, target: { matches: () => false }, preventDefault() {} };
+  view.handleStageKeydown({ ...event, key: 'ArrowRight', shiftKey: true });
+  assert.equal(store.getState().currentScene.cameraX, initialCamera + CAMERA_CONSTANTS.STEP);
+  view.handleStageKeydown({ ...event, key: 'ArrowRight' });
+  view.handleStageKeydown({ ...event, key: 'Delete' });
+  assert.equal(store.getState().currentScene.entities, initialEntities);
+  view.handleStageKeydown({ ...event, target: { matches: (selector) => selector === '#camera-slider' }, key: 'ArrowLeft', shiftKey: true });
+  assert.equal(store.getState().currentScene.cameraX, initialCamera);
 });

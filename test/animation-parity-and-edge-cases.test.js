@@ -9,7 +9,8 @@ import {
   resolveEntityAttachmentTransform
 } from '../js/domain/motion-evaluator.js';
 import { createSceneAnimationService } from '../js/services/scene-animation-service.js';
-import { createExportService, createExportDollSvg } from '../js/services/export-service.js';
+import { createExportService } from '../js/services/export-service.js';
+import { createExportDollSvg } from '../js/core/doll-svg.js';
 import { createCompositeSceneThumbnailSvg } from '../js/features/scene-book/scene-book-view.js';
 import { CHARACTER_DIMENSIONS, LIMITS } from '../js/domain/vocabulary.js';
 import fs from 'node:fs';

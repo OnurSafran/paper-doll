@@ -95,6 +95,7 @@ export function emptySlots() {
   return Object.fromEntries(OUTFIT_SLOTS.map((slot) => [slot, null]));
 }
 
+/** @returns {import('../types.js').CharacterSnapshot} */
 export function createStarterDraft() {
   return {
     baseDollId: DEFAULT_BASE_DOLL_ID,
@@ -121,7 +122,7 @@ export function cloneDraft(draft) {
   };
 }
 
-export function isWearableCompatible(draft, asset, getAsset = () => undefined) {
+export function isWearableCompatible(draft, asset, getAsset = (_id) => undefined) {
   if (!asset) return true;
   if (asset.kind && asset.kind !== 'wearable') return false;
   if (asset.slot && !isOutfitSlot(asset.slot)) return false;
@@ -130,14 +131,14 @@ export function isWearableCompatible(draft, asset, getAsset = () => undefined) {
   return !fitFamily || !asset.supportedFitFamilies || asset.supportedFitFamilies.includes(fitFamily);
 }
 
-export function isFaceCompatible(draft, asset, getAsset = () => undefined) {
+export function isFaceCompatible(draft, asset, getAsset = (_id) => undefined) {
   if (!asset || asset.kind !== 'face' || !isFaceGroup(asset.faceGroup)) return false;
   const doll = getAsset(draft?.baseDollId);
   const fitFamily = doll?.fitFamily;
   return !fitFamily || !asset.supportedFitFamilies || asset.supportedFitFamilies.includes(fitFamily);
 }
 
-export function equipWearable(draft, asset, color, getAsset = () => undefined) {
+export function equipWearable(draft, asset, color, getAsset = (_id) => undefined) {
   if (!asset || asset.kind !== 'wearable' || !isOutfitSlot(asset.slot)) {
     return { draft, changed: false, message: 'That item cannot be equipped.', messageKey: 'designer.cannotEquip' };
   }
@@ -189,7 +190,7 @@ export function clearOutfit(draft) {
   return next;
 }
 
-export function setFaceFeature(draft, group, assetId, getAsset = () => undefined) {
+export function setFaceFeature(draft, group, assetId, getAsset = (_id) => undefined) {
   if (!isFaceGroup(group)) return { draft, changed: false };
   const asset = getAsset(assetId);
   if (asset && (asset.kind !== 'face' || asset.faceGroup !== group || !isFaceCompatible(draft, asset, getAsset))) {
@@ -243,7 +244,7 @@ export function resetFace(draft) {
   return { draft: next, changed: true };
 }
 
-export function setBaseDoll(draft, nextBaseDollId, getAsset = () => undefined) {
+export function setBaseDoll(draft, nextBaseDollId, getAsset = (_id) => undefined) {
   const dollAsset = getAsset(nextBaseDollId);
   if (!dollAsset || dollAsset.kind !== 'doll' || nextBaseDollId === draft.baseDollId) {
     return { draft, changed: false, incompatibleSlots: [] };

@@ -1,3 +1,4 @@
+import { readControllerBundle } from './source-bundle.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -186,7 +187,7 @@ test('World map dialog supports light-dismiss via closedby="any" and the shared 
   const fs = await import('node:fs');
   const html = fs.readFileSync('index.html', 'utf-8');
   const viewJs = fs.readFileSync('js/features/world-map/world-map-view.js', 'utf-8');
-  const appJs = fs.readFileSync('js/app.js', 'utf-8');
+  const appJs = readControllerBundle('js/app.js');
 
   // Declarative modern standard closedby="any"
   assert.match(html, /<dialog id="world-map-dialog"[^>]*closedby="any"/);

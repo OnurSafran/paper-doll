@@ -137,7 +137,7 @@ export function createWorldMapView({
 
     const state = store.getState();
     const entities = state.currentScene?.entities || [];
-    const primaryId = state.ui?.primarySelectedId;
+    const primaryId = state.ui?.selectedEntityId;
     const activeEntity =
       entities.find((e) => e.instanceId === primaryId && e.kind === 'character' && e.characterSnapshot) ||
       entities.find((e) => e.kind === 'character' && e.characterSnapshot);
@@ -426,10 +426,23 @@ export function createWorldMapView({
   // Dialog lifecycle
   // ==========================================================================
 
+  let lastFocusedElement = null;
+
+  function restoreFocusOnClose() {
+    $('#open-world-map-btn')?.setAttribute('aria-expanded', 'false');
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function' && (typeof document === 'undefined' || document.contains?.(lastFocusedElement))) {
+      lastFocusedElement.focus();
+    } else {
+      $('#open-world-map-btn')?.focus();
+    }
+    lastFocusedElement = null;
+  }
+
   function openWorldMapDialog() {
     const dialog = getDialog();
     if (!dialog || dialog.open) return;
 
+    lastFocusedElement = typeof document !== 'undefined' ? document.activeElement : null;
     $('#open-world-map-btn')?.setAttribute('aria-expanded', 'true');
     paperAudio.playPaperRustle();
 
@@ -452,8 +465,7 @@ export function createWorldMapView({
         if (dialog.open) return;
         cancelCameraGlide();
         markerRenderToken++;
-        $('#open-world-map-btn')?.setAttribute('aria-expanded', 'false');
-        $('#open-world-map-btn')?.focus();
+        restoreFocusOnClose();
       });
     }
     // Backdrop light-dismiss is wired centrally by enableDialogLightDismiss()
@@ -476,8 +488,6 @@ export function createWorldMapView({
     cancelCameraGlide();
     markerRenderToken++;
     dialog.close();
-    $('#open-world-map-btn')?.setAttribute('aria-expanded', 'false');
-    $('#open-world-map-btn')?.focus();
   }
 
   /**
@@ -760,7 +770,7 @@ export function createWorldMapView({
       item.className = 'souvenir-stamp-item';
 
       const slot = document.createElement(isCollected ? 'button' : 'div');
-      if (isCollected) slot.type = 'button';
+      if (isCollected) slot.setAttribute('type', 'button');
       slot.className = `souvenir-stamp-slot ${isCollected ? 'is-collected' : 'is-empty'}`;
       if (stamp.id === justInkedStampId) {
         slot.classList.add('just-inked');
@@ -793,23 +803,35 @@ export function createWorldMapView({
   }
 
   // Internationalization change listener
+  function handleLanguageChange() {
+    syncHeaderPill();
+    if (getDialog()?.open) {
+      layoutLandmarks();
+      renderMapHeader();
+      renderPassportStamps();
+      applyCameraZoom();
+      const landmark = getLandmarkById(selectedLandmarkId) || WORLD_MAP_LANDMARKS[0];
+      renderPreviewDock(landmark);
+    }
+  }
+
   if (typeof window !== 'undefined') {
-    window.addEventListener('languagechange', () => {
-      syncHeaderPill();
-      if (getDialog()?.open) {
-        layoutLandmarks();
-        renderMapHeader();
-        renderPassportStamps();
-        applyCameraZoom();
-        const landmark = getLandmarkById(selectedLandmarkId) || WORLD_MAP_LANDMARKS[0];
-        renderPreviewDock(landmark);
-      }
-    });
+    window.addEventListener('languagechange', handleLanguageChange);
+  }
+
+  function teardown() {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('languagechange', handleLanguageChange);
+    }
+    cancelCameraGlide();
+    markerRenderToken++;
   }
 
   return {
     openWorldMapDialog,
     closeWorldMapDialog,
-    syncHeaderPill
+    syncHeaderPill,
+    teardown,
+    destroy: teardown
   };
 }

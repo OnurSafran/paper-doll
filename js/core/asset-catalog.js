@@ -84,6 +84,7 @@ const dollRequiredGroups = Object.freeze([
   'torso'
 ]);
 
+/** @type {ReadonlyArray<Readonly<import('../types.js').AssetDescriptor>>} */
 export const ASSETS = Object.freeze([
   {
     id: 'doll_classic_a',
@@ -236,7 +237,7 @@ export const ASSETS = Object.freeze([
   wearable('bottom_jeans', 'bottom', 'High-waist jeans', 'assets/clothing/bottoms/jeans.svg', 'denim'),
   wearable('bottom_skirt', 'bottom', 'Tennis skirt', 'assets/clothing/bottoms/skirt.svg', 'marigold', ['garment'], ['teen'], ['feminine']),
   wearable('bottom_shorts', 'bottom', 'Pleated shorts', 'assets/clothing/bottoms/shorts.svg', 'sage'),
-  wearable('bottom_overalls', 'bottom', 'Dungaree overalls', 'assets/clothing/bottoms/overalls.svg', 'cocoa'),
+  { ...wearable('bottom_overalls', 'bottom', 'Dungaree overalls', 'assets/clothing/bottoms/overalls.svg', 'cocoa'), layerOrder: 42 },
   wearable('bottom_pleated_skirt', 'bottom', 'Plaid pleated skirt', 'assets/clothing/bottoms/pleated-skirt.svg', 'cherry', ['garment'], ['teen'], ['feminine']),
   wearable('bottom_culottes', 'bottom', 'Garden culottes', 'assets/clothing/bottoms/culottes.svg', 'lavender'),
   wearable('bottom_cargo', 'bottom', 'Pocket cargo pants', 'assets/clothing/bottoms/cargo.svg', 'sage', ['garment'], ['teen'], ['masculine']),
@@ -366,6 +367,7 @@ export function assetsByKind(kind, { collectionId = null } = {}) {
   return ASSETS.filter((asset) => asset.kind === kind);
 }
 
+/** @type {ReadonlyArray<Readonly<{id: string, labelKey: string, customOnly?: boolean}>>} */
 export const PROP_COLLECTIONS = Object.freeze([
   Object.freeze({ id: 'home', labelKey: 'play.propCollectionHome' }),
   Object.freeze({ id: 'outdoors', labelKey: 'play.propCollectionOutdoors' }),

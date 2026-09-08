@@ -122,7 +122,7 @@ export function createSceneOutlineView({
     });
 
     const activeEl = document.activeElement;
-    const focusedInstanceId = activeEl?.closest?.('.outline-row')?.dataset?.instanceId;
+    const focusedInstanceId = /** @type {HTMLElement} */ (activeEl?.closest?.('.outline-row'))?.dataset.instanceId;
     const focusedActionTitle = activeEl?.getAttribute?.('title');
     const isCheckbox = activeEl?.classList?.contains?.('outline-select-checkbox');
 

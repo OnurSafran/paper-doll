@@ -9,28 +9,28 @@ import { t } from '../../core/i18n.js';
 
 export function createPaintSaveService({
   rootElement = document,
-  store,
-  customArtRepo,
-  onNavigate,
-  showAlert,
-  getSession,
-  getCanvasState,
-  resetCanvas,
-  updateLivePreview,
-  announceStatus
+  store = undefined,
+  customArtRepo = undefined,
+  onNavigate = undefined,
+  showAlert = undefined,
+  getSession = undefined,
+  getCanvasState = undefined,
+  resetCanvas = undefined,
+  updateLivePreview = undefined,
+  announceStatus = undefined
 } = {}) {
   const doc = rootElement?.ownerDocument || (typeof document !== 'undefined' ? document : rootElement);
-  const saveDialog = rootElement.querySelector('#paint-save-dialog');
-  const saveForm = rootElement.querySelector('#paint-save-form');
-  const saveThumb = rootElement.querySelector('#paint-save-thumb');
-  const saveFitNote = rootElement.querySelector('#paint-save-fit-note');
-  const nameInput = rootElement.querySelector('#paint-artwork-name');
-  const saveMyArtBtn = rootElement.querySelector('#paint-save-myart-btn');
-  const saveContextBtn = rootElement.querySelector('#paint-save-context-btn');
-  const cancelSaveBtn = rootElement.querySelector('#paint-cancel-save-btn');
-  const recoveryDialog = rootElement.querySelector('#paint-draft-recovery-dialog');
-  const recoverContinueBtn = rootElement.querySelector('#paint-recover-continue-btn');
-  const recoverDiscardBtn = rootElement.querySelector('#paint-recover-discard-btn');
+  const saveDialog = /** @type {HTMLDialogElement} */ (rootElement.querySelector('#paint-save-dialog'));
+  const saveForm = /** @type {HTMLFormElement} */ (rootElement.querySelector('#paint-save-form'));
+  const saveThumb = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-save-thumb'));
+  const saveFitNote = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-save-fit-note'));
+  const nameInput = /** @type {HTMLInputElement} */ (rootElement.querySelector('#paint-artwork-name'));
+  const saveMyArtBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-save-myart-btn'));
+  const saveContextBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-save-context-btn'));
+  const cancelSaveBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-cancel-save-btn'));
+  const recoveryDialog = /** @type {HTMLDialogElement} */ (rootElement.querySelector('#paint-draft-recovery-dialog'));
+  const recoverContinueBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-recover-continue-btn'));
+  const recoverDiscardBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-recover-discard-btn'));
   let draftTimer = null;
   let draftCheckpointInFlight = false;
   let draftCheckpointPending = false;

@@ -1,3 +1,4 @@
+import { readControllerBundle } from './source-bundle.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -15,8 +16,8 @@ function loadCssBundle(entryPath = '../css/app.css') {
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = loadCssBundle();
-const playJs = readFileSync(new URL('../js/features/play/play-view.js', import.meta.url), 'utf8');
-const paintJs = readFileSync(new URL('../js/features/paint/paint-view.js', import.meta.url), 'utf8');
+const playJs = readControllerBundle(new URL('../js/features/play/play-view.js', import.meta.url));
+const paintJs = readControllerBundle(new URL('../js/features/paint/paint-view.js', import.meta.url));
 
 test('Issue 1: Paint studio crops prop pixels on save eliminating transparent offset', async () => {
   let savedMetadata = null;

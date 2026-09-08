@@ -33,7 +33,59 @@ export function classifyError(error) {
   return 'ERR_RUNTIME';
 }
 
-export function executeSafeTeardown({ cancelPointer, stopAudio, stopAnimation, cancelExport, cancelStorage, onNotify } = {}) {
+export function createDisposableRegistry() {
+  const disposables = new Map();
+  return {
+    register(disposable) {
+      const cleanup = typeof disposable === 'function' ? disposable
+        : typeof disposable?.teardown === 'function' ? () => disposable.teardown()
+        : typeof disposable?.destroy === 'function' ? () => disposable.destroy()
+        : null;
+      if (!cleanup) return () => {};
+      disposables.set(disposable, cleanup);
+      return () => disposables.delete(disposable);
+    },
+    unregister(disposable) {
+      disposables.delete(disposable);
+    },
+    disposeAll() {
+      const warnings = [];
+      const pending = [...disposables.values()];
+      // Clear first so nested disposal cannot invoke a cleanup twice.
+      disposables.clear();
+      for (const cleanup of pending) {
+        try {
+          cleanup();
+        } catch (err) {
+          warnings.push(err?.message || 'teardown error');
+        }
+      }
+      return { ok: true, warnings };
+    },
+    get size() {
+      return disposables.size;
+    }
+  };
+}
+
+export function executeSafeTeardown(options = {}) {
+  // If a DisposableRegistry instance was directly passed:
+  if (options && typeof options.disposeAll === 'function') {
+    return options.disposeAll();
+  }
+
+  const {
+    cancelPointer,
+    stopAudio,
+    stopAnimation,
+    cancelExport,
+    cancelStorage,
+    cancelPaint,
+    registry,
+    disposables,
+    onNotify
+  } = options;
+
   const warnings = [];
 
   if (typeof cancelPointer === 'function') {
@@ -73,6 +125,33 @@ export function executeSafeTeardown({ cancelPointer, stopAudio, stopAnimation, c
       cancelStorage();
     } catch (err) {
       warnings.push(`Storage cancel failed: ${err?.message || 'unknown'}`);
+    }
+  }
+
+  if (typeof cancelPaint === 'function') {
+    try {
+      cancelPaint();
+    } catch (err) {
+      warnings.push(`Paint cancel failed: ${err?.message || 'unknown'}`);
+    }
+  }
+
+  if (registry && typeof registry.disposeAll === 'function') {
+    const regResult = registry.disposeAll();
+    if (Array.isArray(regResult?.warnings)) {
+      warnings.push(...regResult.warnings);
+    }
+  }
+
+  if (Array.isArray(disposables) || disposables instanceof Set) {
+    for (const item of disposables) {
+      try {
+        if (typeof item === 'function') item();
+        else if (typeof item?.teardown === 'function') item.teardown();
+        else if (typeof item?.destroy === 'function') item.destroy();
+      } catch (err) {
+        warnings.push(err?.message || 'disposable error');
+      }
     }
   }
 

@@ -201,7 +201,7 @@ export function createCustomArtRepository(options = {}) {
 
   function transactionToPromise(tx) {
     return new Promise((resolve, reject) => {
-      tx.oncomplete = () => resolve();
+      tx.oncomplete = () => resolve(undefined);
       tx.onerror = () => reject(tx.error || new Error('IndexedDB transaction failed.'));
       tx.onabort = () => reject(tx.error || new Error('IndexedDB transaction aborted.'));
     });

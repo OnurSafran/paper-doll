@@ -1,23 +1,20 @@
+import { canExportInWorker, exportInWorker } from './export-worker-client.js';
 /**
  * Export Service
  * Single authority for deterministic PNG scene export with immutable snapshot isolation.
  */
 
-import { getAsset, getLimbBoundChannel, isHeadBoundLayer, isLimbBoundLayer } from '../core/asset-catalog.js';
+import { getAsset } from '../core/asset-catalog.js';
 import { loadAssetSvg } from '../core/svg-loader.js';
-import { paletteValue } from '../core/palette.js';
 import { cloneScene } from '../core/state-schema.js';
 import { t } from '../core/i18n.js';
 import { getEntityBounds } from '../domain/scene-rules.js';
-import { isDefaultFace, isWearableCompatible } from '../domain/outfit-rules.js';
 import { applyMouthExpression } from '../core/mouth-expression.js';
 import { getBackgroundLayout } from '../core/background-layout.js';
-export { applyMouthExpression } from '../core/mouth-expression.js';
+import { createExportDollSvg } from '../core/doll-svg.js';
+import { createBubbleSvg } from '../core/bubble-svg.js';
 import {
   CHARACTER_DIMENSIONS,
-  DEFAULT_BASE_DOLL_ID,
-  DEFAULT_EXPRESSION,
-  DEFAULT_EXPRESSION_INTENSITY,
   LIMITS,
   isCustomAssetId
 } from '../domain/vocabulary.js';
@@ -38,17 +35,26 @@ export function loadImageFromUrl(url) {
 }
 
 /**
- * Converts an SVG DOM element to an HTMLImageElement for canvas drawing.
+ * Converts an SVG DOM element to an ImageBitmap or fallback Image for canvas drawing.
+ * Callers own returned ImageBitmaps and must close them after drawing.
  */
-export function svgElementToImage(svgElement, width, height) {
+export async function svgElementToImage(svgElement, width, height) {
+  const clone = svgElement.cloneNode(true);
+  clone.setAttribute('width', String(width));
+  clone.setAttribute('height', String(height));
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(clone);
+  const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+  // SVG bitmap decoding is not supported by every browser.
+  if (typeof createImageBitmap === 'function') {
+    try {
+      return await createImageBitmap(blob);
+    } catch {
+      // Retain the established SVG image decoder as the compatibility path.
+    }
+  }
   return new Promise((resolve, reject) => {
-    const clone = svgElement.cloneNode(true);
-    clone.setAttribute('width', String(width));
-    clone.setAttribute('height', String(height));
-    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(clone);
-    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => {
@@ -63,426 +69,7 @@ export function svgElementToImage(svgElement, width, height) {
   });
 }
 
-function createJointTransformAttr(t, pivot) {
-  if (!t || (!t.x && !t.y && !t.rotate && (t.scaleX === undefined || t.scaleX === 1) && (t.scaleY === undefined || t.scaleY === 1))) {
-    return '';
-  }
-  const px = pivot?.x ?? 150;
-  const py = pivot?.y ?? 90;
-  const tx = t.x || 0;
-  const ty = t.y || 0;
-  const rot = t.rotate || 0;
-  const sx = t.scaleX ?? 1;
-  const sy = t.scaleY ?? 1;
-  return `translate(${tx}, ${ty}) translate(${px}, ${py}) rotate(${rot}) scale(${sx}, ${sy}) translate(${-px}, ${-py})`;
-}
 
-/**
- * Composites layered SVG geometry for an exported character doll.
- */
-export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION, options = {}) {
-  const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
-  const resolveAsset = options.getAsset ?? getAsset;
-  const customArtRepo = options.customArtRepo;
-  const enforceFit = options.enforceFit !== false;
-  const expressionIntensity = options.expressionIntensity ?? draft?.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY;
-  const canRenderWearable = (item) => item && (!enforceFit || isWearableCompatible(draft, resolveAsset(item.assetId), resolveAsset));
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('viewBox', '0 0 300 450');
-  svg.setAttribute('width', '300');
-  svg.setAttribute('height', '450');
-  svg.style.setProperty('--skin-color', paletteValue(draft?.skinTone, 'peach'));
-
-  const baseDoll = resolveAsset(draft?.baseDollId || DEFAULT_BASE_DOLL_ID);
-  const headPivot = baseDoll?.headPivot || { x: 150, y: 90 };
-  const shoulderLeftPivot = baseDoll?.shoulderLeftPivot || { x: 126, y: 120 };
-  const shoulderRightPivot = baseDoll?.shoulderRightPivot || { x: 174, y: 120 };
-  const hipLeftPivot = baseDoll?.hipLeftPivot || { x: 138, y: 230 };
-  const hipRightPivot = baseDoll?.hipRightPivot || { x: 162, y: 230 };
-
-  const head = options.headTransform || options.pose?.head;
-  const armLeft = options.armLeftTransform || options.pose?.armLeft;
-  const armRight = options.armRightTransform || options.pose?.armRight;
-  const legLeft = options.legLeftTransform || options.pose?.legLeft;
-  const legRight = options.legRightTransform || options.pose?.legRight;
-
-  const headTransformAttr = createJointTransformAttr(head, headPivot);
-  const armLeftTransformAttr = createJointTransformAttr(armLeft, shoulderLeftPivot);
-  const armRightTransformAttr = createJointTransformAttr(armRight, shoulderRightPivot);
-  const legLeftTransformAttr = createJointTransformAttr(legLeft, hipLeftPivot);
-  const legRightTransformAttr = createJointTransformAttr(legRight, hipRightPivot);
-
-  const eyesHeadTransform = (head || Number.isFinite(options.blinkScaleY))
-    ? {
-        x: head?.x || 0,
-        y: head?.y || 0,
-        rotate: head?.rotate || 0,
-        scaleX: head?.scaleX ?? 1,
-        scaleY: (head?.scaleY ?? 1) * (Number.isFinite(options.blinkScaleY) ? options.blinkScaleY : 1)
-      }
-    : null;
-  const eyesTransformAttr = createJointTransformAttr(eyesHeadTransform, headPivot);
-
-  const layers = [];
-  const hair = draft?.slots?.hair;
-  const showBakedFace = isDefaultFace(draft?.face, draft?.baseDollId) && expression === DEFAULT_EXPRESSION;
-  if (hair && canRenderWearable(hair) && !isCustomAssetId(hair.assetId)) {
-    layers.push([10, hair.assetId, hair.color, 'hairBack', 'hair']);
-  }
-  const customFullId = draft?.customArtId || (isCustomAssetId(draft?.baseDollId) ? draft?.baseDollId : null) || (draft?.kind === 'custom_full' ? (draft?.customArtId || draft?.baseDollId) : null);
-  const isCustomFull = Boolean(draft?.kind === 'custom_full' || customFullId);
-  if (isCustomFull && customFullId) {
-    layers.push([20, customFullId, null, null, 'skin']);
-  } else {
-    layers.push([20, draft?.baseDollId || DEFAULT_BASE_DOLL_ID, null, null, 'skin']);
-  }
-
-  const face = draft?.face;
-  if (face && !showBakedFace) {
-    if (face.eyes) layers.push([22, face.eyes.assetId, null, null, 'face-eyes', face.eyes.irisColor]);
-    if (face.eyebrows) layers.push([24, face.eyebrows.assetId, null, null, 'face-eyebrows']);
-    if (face.detail) layers.push([25, face.detail.assetId, null, null, 'face-detail']);
-    if (face.nose) layers.push([26, face.nose.assetId, null, null, 'face-nose']);
-    if (face.mouth) layers.push([28, face.mouth.assetId, null, null, 'face-mouth']);
-  }
-
-  for (const [slot, order] of [['bottom', 30], ['shoes', 35], ['top', 40], ['dress', 45]]) {
-    const item = draft?.slots?.[slot];
-    if (canRenderWearable(item)) {
-      layers.push([order, item.assetId, item.color, null, slot]);
-    }
-  }
-  if (canRenderWearable(hair)) {
-    layers.push([70, hair.assetId, hair.color, 'hairFront', 'hair']);
-  }
-  const accessory = draft?.slots?.accessory;
-  if (canRenderWearable(accessory)) {
-    layers.push([80, accessory.assetId, accessory.color, null, 'accessory']);
-  }
-
-  for (const [order, id, color, group, slot, extra] of layers) {
-    try {
-      if (isCustomAssetId(id)) {
-        const url = await customArtRepo?.getTrackedObjectUrl?.(id) || await options.getCustomArtUrl?.(id);
-        if (url) {
-          const imgEl = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-          imgEl.setAttribute('href', url);
-          imgEl.setAttribute('x', '0');
-          imgEl.setAttribute('y', '0');
-          imgEl.setAttribute('width', '300');
-          imgEl.setAttribute('height', '450');
-          imgEl.setAttribute('preserveAspectRatio', 'none');
-          svg.appendChild(imgEl);
-          continue;
-        }
-      }
-      const assetSvg = await loadSvg(id);
-      const clone = assetSvg.cloneNode(true);
-      const groupEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      groupEl.style.setProperty('--skin-color', paletteValue(draft?.skinTone, 'peach'));
-      groupEl.style.setProperty('--hair-color', paletteValue(color, 'brown'));
-      groupEl.style.setProperty('--asset-color-primary', paletteValue(color, 'coral'));
-      if (slot === 'face-eyes') {
-        if (extra) {
-          groupEl.style.setProperty('--iris-color', paletteValue(extra, 'cocoa'));
-        }
-      }
-      if (group) {
-        for (const candidate of ['hairBack', 'hairFront']) {
-          const node = clone.querySelector(`#${candidate}`);
-          if (node && candidate !== group) node.style.display = 'none';
-        }
-      }
-      if (slot === 'skin') {
-        const baked = clone.querySelector('#baked-face');
-        if (baked && face && !showBakedFace) {
-          baked.style.display = 'none';
-        } else if (!face) {
-          applyMouthExpression(clone, expression, expressionIntensity);
-        }
-      }
-      if (headTransformAttr) {
-        const poseHead = clone.querySelector('#pose-head');
-        if (poseHead) poseHead.setAttribute('transform', headTransformAttr);
-      }
-      if (armLeftTransformAttr) {
-        const armLeftEl = clone.querySelector('#pose-arm-left') || clone.querySelector('#arm-left');
-        if (armLeftEl) armLeftEl.setAttribute('transform', armLeftTransformAttr);
-      }
-      if (armRightTransformAttr) {
-        const armRightEl = clone.querySelector('#pose-arm-right') || clone.querySelector('#arm-right');
-        if (armRightEl) armRightEl.setAttribute('transform', armRightTransformAttr);
-      }
-      if (legLeftTransformAttr) {
-        const legLeftEl = clone.querySelector('#pose-leg-left') || clone.querySelector('#leg-left');
-        if (legLeftEl) legLeftEl.setAttribute('transform', legLeftTransformAttr);
-      }
-      if (legRightTransformAttr) {
-        const legRightEl = clone.querySelector('#pose-leg-right') || clone.querySelector('#leg-right');
-        if (legRightEl) legRightEl.setAttribute('transform', legRightTransformAttr);
-      }
-
-      if (slot !== 'skin') {
-        if (slot === 'face-eyes' && eyesTransformAttr) {
-          groupEl.setAttribute('transform', eyesTransformAttr);
-        } else if (headTransformAttr && isHeadBoundLayer(slot, id, resolveAsset)) {
-          groupEl.setAttribute('transform', headTransformAttr);
-        } else {
-          const limbChannel = getLimbBoundChannel(slot, id, resolveAsset);
-          if (limbChannel === 'armLeft' && armLeftTransformAttr) {
-            groupEl.setAttribute('transform', armLeftTransformAttr);
-          } else if (limbChannel === 'armRight' && armRightTransformAttr) {
-            groupEl.setAttribute('transform', armRightTransformAttr);
-          } else if (limbChannel === 'legLeft' && legLeftTransformAttr) {
-            groupEl.setAttribute('transform', legLeftTransformAttr);
-          } else if (limbChannel === 'legRight' && legRightTransformAttr) {
-            groupEl.setAttribute('transform', legRightTransformAttr);
-          }
-        }
-      }
-      if (slot === 'face-mouth') {
-        if (expression && expression !== 'neutral') {
-          applyMouthExpression(clone, expression, expressionIntensity);
-        }
-      }
-      while (clone.firstChild) groupEl.appendChild(clone.firstChild);
-      svg.appendChild(groupEl);
-    } catch {
-      const placeholder = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      placeholder.setAttribute('data-missing-layer', slot || 'asset');
-      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      rect.setAttribute('x', '90');
-      rect.setAttribute('y', slot === 'hair' ? '20' : '55');
-      rect.setAttribute('width', '120');
-      rect.setAttribute('height', '24');
-      rect.setAttribute('rx', '6');
-      rect.setAttribute('fill', '#fff4d6');
-      rect.setAttribute('stroke', '#8b6f47');
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      label.setAttribute('x', '150');
-      label.setAttribute('y', slot === 'hair' ? '36' : '71');
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('font-size', '9');
-      label.setAttribute('fill', '#5d4930');
-      label.textContent = t('designer.missingArtwork');
-      placeholder.appendChild(rect);
-      placeholder.appendChild(label);
-      svg.appendChild(placeholder);
-    }
-  }
-  return svg;
-}
-
-/**
- * Wraps text into lines given an approximate character line capacity.
- */
-export function wrapBubbleText(text, maxCharsPerLine = 22) {
-  if (!text) return [''];
-  const words = text.split(/\s+/);
-  const lines = [];
-  let currentLine = '';
-
-  for (const word of words) {
-    if (!currentLine) {
-      currentLine = word;
-    } else if ((currentLine + ' ' + word).length <= maxCharsPerLine) {
-      currentLine += ' ' + word;
-    } else {
-      lines.push(currentLine);
-      currentLine = word;
-    }
-  }
-  if (currentLine) lines.push(currentLine);
-  return lines.length > 0 ? lines : [''];
-}
-
-/**
- * Creates an SVG Element safely across browser DOM and Node.js environments.
- */
-function createSvgElement(tag) {
-  if (typeof globalThis.document !== 'undefined' && globalThis.document.createElementNS) {
-    return globalThis.document.createElementNS('http://www.w3.org/2000/svg', tag);
-  }
-  const attrs = new Map();
-  const children = [];
-  return {
-    tagName: tag,
-    style: {},
-    className: { baseVal: '' },
-    setAttribute(name, value) { attrs.set(name, String(value)); },
-    getAttribute(name) { return attrs.get(name) ?? null; },
-    appendChild(child) { children.push(child); return child; },
-    append(...nodes) { children.push(...nodes); },
-    replaceChildren(...nodes) { children.length = 0; children.push(...nodes); },
-    get textContent() { return this._text || ''; },
-    set textContent(v) { this._text = v; },
-    querySelector(sel) {
-      if (sel.startsWith('.')) {
-        const cls = sel.slice(1);
-        if (this.className?.baseVal?.includes(cls)) return this;
-        for (const c of children) {
-          const match = c.querySelector?.(sel);
-          if (match) return match;
-        }
-      } else if (sel === 'text') {
-        if (this.tagName === 'text') return this;
-        for (const c of children) {
-          const match = c.querySelector?.(sel);
-          if (match) return match;
-        }
-      }
-      return null;
-    },
-    cloneNode() { return createSvgElement(tag); }
-  };
-}
-
-/**
- * Creates an SVG Element representing a speech, thought, shout, or caption bubble.
- */
-export function createBubbleSvg(entity) {
-  const width = Math.round(Number(entity?.width) || LIMITS.DEFAULT_BUBBLE_WIDTH);
-  const text = typeof entity?.text === 'string' ? entity.text : 'Hello!';
-  const style = entity?.bubbleStyle || 'speech';
-
-  const charsPerLine = Math.max(10, Math.floor(width / 11));
-  const lines = wrapBubbleText(text, charsPerLine);
-  const lineHeight = 20;
-  const paddingY = 16;
-  const textBlockHeight = lines.length * lineHeight;
-  const tailHeight = style === 'caption' ? 0 : 18;
-  const bubbleBodyHeight = Math.max(48, textBlockHeight + paddingY * 2);
-  const totalHeight = bubbleBodyHeight + tailHeight;
-
-  const svg = createSvgElement('svg');
-  svg.setAttribute('viewBox', `0 0 ${width} ${totalHeight}`);
-  svg.setAttribute('width', String(width));
-  svg.setAttribute('height', String(totalHeight));
-  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  svg.style.overflow = 'visible';
-
-  const g = createSvgElement('g');
-  g.className.baseVal = `bubble-shape bubble-${style}`;
-
-  if (style === 'speech') {
-    const rx = 16;
-    const bodyW = width - 4;
-    const bodyH = bubbleBodyHeight;
-    const tailX = width / 2;
-    const pathD = `
-      M ${rx + 2} 2
-      H ${bodyW - rx}
-      A ${rx} ${rx} 0 0 1 ${bodyW} ${rx + 2}
-      V ${bodyH - rx}
-      A ${rx} ${rx} 0 0 1 ${bodyW - rx} ${bodyH}
-      H ${tailX + 12}
-      L ${tailX} ${totalHeight - 2}
-      L ${tailX - 8} ${bodyH}
-      H ${rx + 2}
-      A ${rx} ${rx} 0 0 1 2 ${bodyH - rx}
-      V ${rx + 2}
-      A ${rx} ${rx} 0 0 1 ${rx + 2} 2
-      Z
-    `.replace(/\s+/g, ' ').trim();
-
-    const path = createSvgElement('path');
-    path.setAttribute('d', pathD);
-    path.setAttribute('fill', '#ffffff');
-    path.setAttribute('stroke', '#2d261e');
-    path.setAttribute('stroke-width', '2.5');
-    path.setAttribute('stroke-linejoin', 'round');
-    g.appendChild(path);
-  } else if (style === 'thought') {
-    const rx = 20;
-    const bodyW = width - 4;
-    const bodyH = bubbleBodyHeight;
-    const rect = createSvgElement('rect');
-    rect.setAttribute('x', '2');
-    rect.setAttribute('y', '2');
-    rect.setAttribute('width', String(bodyW));
-    rect.setAttribute('height', String(bodyH));
-    rect.setAttribute('rx', String(rx));
-    rect.setAttribute('ry', String(rx));
-    rect.setAttribute('fill', '#ffffff');
-    rect.setAttribute('stroke', '#2d261e');
-    rect.setAttribute('stroke-width', '2.5');
-    g.appendChild(rect);
-
-    const tailX = width / 2;
-    const circles = [
-      { cx: tailX, cy: bodyH + 5, r: 4.5 },
-      { cx: tailX - 4, cy: bodyH + 11, r: 3 },
-      { cx: tailX - 7, cy: bodyH + 15, r: 1.8 }
-    ];
-    for (const c of circles) {
-      const circle = createSvgElement('circle');
-      circle.setAttribute('cx', String(c.cx));
-      circle.setAttribute('cy', String(c.cy));
-      circle.setAttribute('r', String(c.r));
-      circle.setAttribute('fill', '#ffffff');
-      circle.setAttribute('stroke', '#2d261e');
-      circle.setAttribute('stroke-width', '2');
-      g.appendChild(circle);
-    }
-  } else if (style === 'shout') {
-    const w = width - 4;
-    const h = bubbleBodyHeight;
-    const tailX = width / 2;
-    const points = [
-      `2,${h * 0.3}`, `12,8`, `${w * 0.25},2`, `${w * 0.4},10`, `${w * 0.6},2`, `${w * 0.75},10`, `${w - 8},4`,
-      `${w},${h * 0.35}`, `${w - 6},${h * 0.55}`, `${w},${h * 0.75}`, `${w - 10},${h - 4}`,
-      `${w * 0.75},${h - 2}`, `${w * 0.6},${h - 8}`, `${tailX + 14},${h - 2}`, `${tailX},${totalHeight - 1}`, `${tailX - 8},${h - 2}`,
-      `${w * 0.35},${h - 8}`, `${w * 0.2},${h - 2}`, `8,${h - 6}`, `2,${h * 0.7}`, `8,${h * 0.5}`
-    ];
-    const polygon = createSvgElement('polygon');
-    polygon.setAttribute('points', points.join(' '));
-    polygon.setAttribute('fill', '#fffdf2');
-    polygon.setAttribute('stroke', '#d93829');
-    polygon.setAttribute('stroke-width', '2.5');
-    polygon.setAttribute('stroke-linejoin', 'round');
-    g.appendChild(polygon);
-  } else {
-    const rect = createSvgElement('rect');
-    rect.setAttribute('x', '2');
-    rect.setAttribute('y', '2');
-    rect.setAttribute('width', String(width - 4));
-    rect.setAttribute('height', String(bubbleBodyHeight));
-    rect.setAttribute('rx', '6');
-    rect.setAttribute('fill', '#fff9ee');
-    rect.setAttribute('stroke', '#7c5e3f');
-    rect.setAttribute('stroke-width', '2.5');
-    g.appendChild(rect);
-
-    const bar = createSvgElement('rect');
-    bar.setAttribute('x', '2');
-    bar.setAttribute('y', '2');
-    bar.setAttribute('width', String(width - 4));
-    bar.setAttribute('height', '5');
-    bar.setAttribute('rx', '3');
-    bar.setAttribute('fill', '#d4a373');
-    g.appendChild(bar);
-  }
-
-  const startY = (bubbleBodyHeight - textBlockHeight) / 2 + lineHeight * 0.75;
-  const textColor = style === 'shout' ? '#8b0000' : (style === 'caption' ? '#4a3525' : '#2d261e');
-  const fontWeight = style === 'shout' ? 'bold' : '600';
-
-  lines.forEach((line, index) => {
-    const textEl = createSvgElement('text');
-    textEl.setAttribute('x', String(width / 2));
-    textEl.setAttribute('y', String(startY + index * lineHeight));
-    textEl.setAttribute('text-anchor', 'middle');
-    textEl.setAttribute('fill', textColor);
-    textEl.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
-    textEl.setAttribute('font-size', '14px');
-    textEl.setAttribute('font-weight', fontWeight);
-    textEl.textContent = line;
-    g.appendChild(textEl);
-  });
-
-  svg.appendChild(g);
-  return svg;
-}
 
 /**
  * Creates an Export Service instance that renders snapshot-isolated PNG images.
@@ -505,6 +92,7 @@ export function createExportService(options = {}) {
     onProgress({ percent: 0, phase: 'cancelled' });
   }
 
+  /** @param {HTMLCanvasElement | OffscreenCanvas | ReturnType<typeof import('./export-draw-list.js').createExportDrawList>} canvas */
   async function renderSceneToCanvas(sceneSnapshot, canvas = document.createElement('canvas'), signal = null, options = {}) {
     const effectiveSignal = (signal && typeof signal.aborted === 'boolean') ? signal : null;
     const effectiveOptions = (signal && typeof signal === 'object' && typeof signal.aborted !== 'boolean') ? signal : (options || {});
@@ -520,106 +108,129 @@ export function createExportService(options = {}) {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Could not acquire 2D canvas context');
 
+    const bitmaps = new Set();
+    const decodeImage = async (...args) => {
+      const image = await toImageFn(...args);
+      if (typeof image?.close === 'function') bitmaps.add(image);
+      return image;
+    };
     try {
-      const layout = getBackgroundLayout(getAssetFn(snapshot.backgroundId), stageWidth);
-      const bgSvg = await loadSvgFn(snapshot.backgroundId);
-      const bgImg = await toImageFn(bgSvg, layout.tileWidth, LIMITS.STAGE_HEIGHT);
-      for (const tileX of layout.tilePositions) {
-        ctx.drawImage(bgImg, tileX, 0, layout.tileWidth, LIMITS.STAGE_HEIGHT);
-      }
-    } catch {
-      ctx.fillStyle = '#f6efe4';
-      ctx.fillRect(0, 0, stageWidth, LIMITS.STAGE_HEIGHT);
-    }
-
-    const isLooping = snapshot.animationSettings?.loop !== false;
-    const allEntitiesMap = new Map(snapshot.entities.map((e) => [e.instanceId, e]));
-    const attachedTransformMemo = new Map();
-    const characterEntities = new Map();
-    const characterPoses = new Map();
-    for (const ent of snapshot.entities) {
-      if (ent.kind === 'character') {
-        characterEntities.set(ent.instanceId, ent);
-        characterPoses.set(ent.instanceId, evaluateCharacterPose(ent, animTimeMs, { playbackEnabled: isAnimatedExport, loop: isLooping, getAsset: getAssetFn }));
-      }
-    }
-
-    const ordered = [...snapshot.entities].sort((a, b) => a.order - b.order);
-    for (const entity of ordered) {
-      if (effectiveSignal?.aborted) throw new Error('Export cancelled');
-      ctx.save();
-
-      let attachedTransform = null;
-      if (entity.attachedTo) {
-        attachedTransform = resolveEntityAttachmentTransform(
-          entity,
-          allEntitiesMap,
-          characterPoses,
-          getAssetFn,
-          attachedTransformMemo
-        );
+      try {
+        const layout = getBackgroundLayout(getAssetFn(snapshot.backgroundId), stageWidth);
+        const bgSvg = await loadSvgFn(snapshot.backgroundId);
+        const bgImg = await decodeImage(bgSvg, layout.tileWidth, LIMITS.STAGE_HEIGHT);
+        for (const tileX of layout.tilePositions) {
+          ctx.drawImage(bgImg, tileX, 0, layout.tileWidth, LIMITS.STAGE_HEIGHT);
+        }
+      } catch {
+        ctx.fillStyle = '#f6efe4';
+        ctx.fillRect(0, 0, stageWidth, LIMITS.STAGE_HEIGHT);
       }
 
-      ctx.translate(entity.x, entity.y);
-      if (attachedTransform) {
-        ctx.translate(attachedTransform.tx, attachedTransform.ty);
-        if (attachedTransform.rot) ctx.rotate(attachedTransform.rot * Math.PI / 180);
+      const isLooping = snapshot.animationSettings?.loop !== false;
+      const allEntitiesMap = new Map(snapshot.entities.map((e) => [e.instanceId, e]));
+      const attachedTransformMemo = new Map();
+      const characterEntities = new Map();
+      const characterPoses = new Map();
+      for (const ent of snapshot.entities) {
+        if (ent.kind === 'character') {
+          characterEntities.set(ent.instanceId, ent);
+          characterPoses.set(ent.instanceId, evaluateCharacterPose(ent, animTimeMs, { playbackEnabled: isAnimatedExport, loop: isLooping, getAsset: getAssetFn }));
+        }
       }
-      const flipSign = entity.flipped ? -1 : 1;
-      ctx.scale(flipSign * entity.scale, entity.scale);
 
-      if (entity.kind === 'character') {
-        const pose = characterPoses.get(entity.instanceId) || evaluateCharacterPose(entity, animTimeMs, { playbackEnabled: isAnimatedExport, loop: isLooping, getAsset: getAssetFn });
-        ctx.translate(pose.root.x, pose.root.y);
-        if (pose.root.rotate) ctx.rotate(pose.root.rotate * Math.PI / 180);
-        ctx.scale(pose.root.scaleX, pose.root.scaleY);
+      const ordered = [...snapshot.entities].sort((a, b) => a.order - b.order);
+      for (const entity of ordered) {
+        if (effectiveSignal?.aborted) throw new Error('Export cancelled');
+        ctx.save();
 
-        const blink = (isAnimatedExport && pose.isAnimated)
-          ? evaluateProceduralBlink(entity.instanceId, animTimeMs, { reducedMotion: false })
-          : { scaleY: 1.0 };
+        let attachedTransform = null;
+        if (entity.attachedTo) {
+          attachedTransform = resolveEntityAttachmentTransform(
+            entity,
+            allEntitiesMap,
+            characterPoses,
+            getAssetFn,
+            attachedTransformMemo
+          );
+        }
 
-        const dollSvg = await createExportDollSvg(entity.characterSnapshot, pose.expression, {
-          loadAssetSvg: loadSvgFn,
-          customArtRepo,
-          getAsset: getAssetFn,
-          enforceFit: false,
-          expressionIntensity: pose.expressionIntensity,
-          headTransform: pose.head,
-          blinkScaleY: blink.scaleY,
-          pose
-        });
-        const dollImg = await toImageFn(dollSvg, 300, 450);
-        ctx.drawImage(
-          dollImg,
-          -CHARACTER_DIMENSIONS.BASE_WIDTH * CHARACTER_DIMENSIONS.GROUND_ANCHOR.x,
-          -CHARACTER_DIMENSIONS.BASE_HEIGHT * CHARACTER_DIMENSIONS.GROUND_ANCHOR.y,
-          CHARACTER_DIMENSIONS.BASE_WIDTH,
-          CHARACTER_DIMENSIONS.BASE_HEIGHT
-        );
-      } else if (entity.kind === 'bubble') {
-        const bounds = getEntityBounds(entity, getAssetFn);
-        const bubbleSvg = createBubbleSvg(entity);
-        const renderW = bounds.width / entity.scale;
-        const renderH = bounds.height / entity.scale;
-        const bubbleImg = await toImageFn(bubbleSvg, renderW, renderH);
-        ctx.drawImage(
-          bubbleImg,
-          -renderW * bounds.anchorX,
-          -renderH * bounds.anchorY,
-          renderW,
-          renderH
-        );
-      } else {
-        const bounds = getEntityBounds(entity, getAssetFn);
-        const renderW = bounds.width / entity.scale;
-        const renderH = bounds.height / entity.scale;
-        const asset = getAssetFn(entity.sourceId);
-        let rendered = false;
-        if (isCustomAssetId(entity.sourceId)) {
-          const url = await customArtRepo?.getTrackedObjectUrl?.(entity.sourceId);
-          if (url) {
+        ctx.translate(entity.x, entity.y);
+        if (attachedTransform) {
+          ctx.translate(attachedTransform.tx, attachedTransform.ty);
+          if (attachedTransform.rot) ctx.rotate(attachedTransform.rot * Math.PI / 180);
+        }
+        const flipSign = entity.flipped ? -1 : 1;
+        ctx.scale(flipSign * entity.scale, entity.scale);
+
+        if (entity.kind === 'character') {
+          const pose = characterPoses.get(entity.instanceId) || evaluateCharacterPose(entity, animTimeMs, { playbackEnabled: isAnimatedExport, loop: isLooping, getAsset: getAssetFn });
+          ctx.translate(pose.root.x, pose.root.y);
+          if (pose.root.rotate) ctx.rotate(pose.root.rotate * Math.PI / 180);
+          ctx.scale(pose.root.scaleX, pose.root.scaleY);
+
+          const blink = (isAnimatedExport && pose.isAnimated)
+            ? evaluateProceduralBlink(entity.instanceId, animTimeMs, { reducedMotion: false })
+            : { scaleY: 1.0 };
+
+          const dollSvg = await createExportDollSvg(entity.characterSnapshot, pose.expression, {
+            loadAssetSvg: loadSvgFn,
+            customArtRepo,
+            getAsset: getAssetFn,
+            enforceFit: false,
+            expressionIntensity: pose.expressionIntensity,
+            headTransform: pose.head,
+            blinkScaleY: blink.scaleY,
+            pose
+          });
+          const dollImg = await decodeImage(dollSvg, 300, 450);
+          ctx.drawImage(
+            dollImg,
+            -CHARACTER_DIMENSIONS.BASE_WIDTH * CHARACTER_DIMENSIONS.GROUND_ANCHOR.x,
+            -CHARACTER_DIMENSIONS.BASE_HEIGHT * CHARACTER_DIMENSIONS.GROUND_ANCHOR.y,
+            CHARACTER_DIMENSIONS.BASE_WIDTH,
+            CHARACTER_DIMENSIONS.BASE_HEIGHT
+          );
+        } else if (entity.kind === 'bubble') {
+          const bounds = getEntityBounds(entity, getAssetFn);
+          const bubbleSvg = createBubbleSvg(entity);
+          const renderW = bounds.width / entity.scale;
+          const renderH = bounds.height / entity.scale;
+          const bubbleImg = await decodeImage(bubbleSvg, renderW, renderH);
+          ctx.drawImage(
+            bubbleImg,
+            -renderW * bounds.anchorX,
+            -renderH * bounds.anchorY,
+            renderW,
+            renderH
+          );
+        } else {
+          const bounds = getEntityBounds(entity, getAssetFn);
+          const renderW = bounds.width / entity.scale;
+          const renderH = bounds.height / entity.scale;
+          const asset = getAssetFn(entity.sourceId);
+          let rendered = false;
+          if (isCustomAssetId(entity.sourceId)) {
+            const url = await customArtRepo?.getTrackedObjectUrl?.(entity.sourceId);
+            if (url) {
+              try {
+                const propImg = await loadImageFromUrl(url);
+                ctx.drawImage(
+                  propImg,
+                  -renderW * bounds.anchorX,
+                  -renderH * bounds.anchorY,
+                  renderW,
+                  renderH
+                );
+                rendered = true;
+              } catch {
+                rendered = false;
+              }
+            }
+          } else if (asset) {
             try {
-              const propImg = await loadImageFromUrl(url);
+              const propSvg = await loadSvgFn(asset.id);
+              const propImg = await decodeImage(propSvg, renderW, renderH);
               ctx.drawImage(
                 propImg,
                 -renderW * bounds.anchorX,
@@ -632,43 +243,34 @@ export function createExportService(options = {}) {
               rendered = false;
             }
           }
-        } else if (asset) {
-          try {
-            const propSvg = await loadSvgFn(asset.id);
-            const propImg = await toImageFn(propSvg, renderW, renderH);
-            ctx.drawImage(
-              propImg,
-              -renderW * bounds.anchorX,
-              -renderH * bounds.anchorY,
-              renderW,
-              renderH
-            );
-            rendered = true;
-          } catch {
-            rendered = false;
+          if (!rendered) {
+            const px = -renderW * bounds.anchorX;
+            const py = -renderH * bounds.anchorY;
+            ctx.fillStyle = 'rgba(235, 230, 220, 0.85)';
+            ctx.fillRect(px, py, renderW, renderH);
+            ctx.strokeStyle = '#c4b5a2';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeRect(px, py, renderW, renderH);
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#8c7e6c';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('?', px + renderW / 2, py + renderH / 2);
           }
         }
-        if (!rendered) {
-          const px = -renderW * bounds.anchorX;
-          const py = -renderH * bounds.anchorY;
-          ctx.fillStyle = 'rgba(235, 230, 220, 0.85)';
-          ctx.fillRect(px, py, renderW, renderH);
-          ctx.strokeStyle = '#c4b5a2';
-          ctx.lineWidth = 2;
-          ctx.setLineDash([6, 4]);
-          ctx.strokeRect(px, py, renderW, renderH);
-          ctx.setLineDash([]);
-          ctx.fillStyle = '#8c7e6c';
-          ctx.font = 'bold 14px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('?', px + renderW / 2, py + renderH / 2);
-        }
+        ctx.restore();
       }
-      ctx.restore();
-    }
 
-    return canvas;
+      return canvas;
+    } finally {
+      try {
+        if ('flush' in canvas) await canvas.flush();
+      } finally {
+        for (const bitmap of bitmaps) bitmap.close();
+      }
+    }
   }
 
   async function exportSceneBlob(sceneSnapshot, options = {}) {
@@ -689,10 +291,36 @@ export function createExportService(options = {}) {
       if (effectiveSignal.aborted) throw new Error('Export cancelled');
       const snapshot = cloneScene(sceneSnapshot);
       reportProgress({ percent: 30, phase: 'rendering' });
-      const canvas = await renderSceneToCanvas(snapshot, document.createElement('canvas'), effectiveSignal, options);
-      if (effectiveSignal.aborted) throw new Error('Export cancelled');
-      reportProgress({ percent: 75, phase: 'encoding' });
-      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      let blob;
+      if (options.useWorker !== false && canExportInWorker()) {
+        try {
+          blob = await exportInWorker(
+            canvas => renderSceneToCanvas(snapshot, canvas, effectiveSignal, options),
+            effectiveSignal
+          );
+        } catch {
+          if (effectiveSignal.aborted) throw new Error('Export cancelled');
+          // Unsupported worker contexts, transfer failures, or failed encoders use the same snapshot.
+        }
+      }
+      if (!blob) {
+        const canvas = createExportCanvas();
+        await renderSceneToCanvas(snapshot, canvas, effectiveSignal, options);
+        if (effectiveSignal.aborted) throw new Error('Export cancelled');
+        reportProgress({ percent: 75, phase: 'encoding' });
+        if ('convertToBlob' in canvas) {
+          try {
+            blob = await canvas.convertToBlob({ type: 'image/png' });
+          } catch {
+            if (effectiveSignal.aborted) throw new Error('Export cancelled');
+            const fallbackCanvas = document.createElement('canvas');
+            await renderSceneToCanvas(snapshot, fallbackCanvas, effectiveSignal, options);
+            blob = await new Promise((resolve) => fallbackCanvas.toBlob(resolve, 'image/png'));
+          }
+        } else {
+          blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+        }
+      }
       if (!blob) {
         return { ok: false, code: 'BLOB_CREATION_FAILED', message: 'Could not generate PNG image blob.' };
       }
@@ -735,4 +363,16 @@ export function createExportService(options = {}) {
     exportSceneBlob,
     exportSceneAndDownload
   };
+}
+
+function createExportCanvas() {
+  if (typeof OffscreenCanvas === 'function') {
+    try {
+      const canvas = new OffscreenCanvas(1, 1);
+      if (typeof canvas.convertToBlob === 'function' && canvas.getContext('2d')) return canvas;
+    } catch {
+      // Some environments expose the API without a usable 2D implementation.
+    }
+  }
+  return document.createElement('canvas');
 }

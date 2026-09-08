@@ -1,14 +1,14 @@
 # Implementation Status and Roadmap
 
-Updated: 2026-09-03
+Updated: 2026-09-07
 
-This is the single authority for implementation status, open work, and delivery order. Product behavior belongs in [PROJECT.md](PROJECT.md); release evidence belongs in [QUALITY.md](QUALITY.md).
+This is the single authority for implementation status, open work, and delivery order. Product behavior belongs in [PROJECT.md](PROJECT.md); release evidence belongs in [QUALITY.md](QUALITY.md); foundation roadmap belongs in [IMPROVEMENTS.md](IMPROVEMENTS.md).
 
 ## Current snapshot
 
-- Working dependency-free Designer and Play vertical slice (v1.18.0)
+- Working dependency-free Designer and Play vertical slice (v1.20.0)
 - 6 base dolls across 5 life stages (Baby, Child, Teen, Adult, Elder), 19 modular face features, 87 wearable/hair/accessory assets, 11 backgrounds, and 22 props
-- Dollbox, Scene Book, current-scene autosave/reload, and local schema migration (v4 modular face)
+- Dollbox, Scene Book, current-scene autosave/reload, and local schema migration (v4 modular face, v5 animations, v6 joints)
 - Pointer/keyboard scene editing, bounded Undo/Redo, and PNG export (scene & animation frame)
 - Seven in-session expressions, strictly local voice puppetry, character poses, and looping scene animation engine
 - Custom Paint Studio Gates 0–3B complete with IndexedDB storage, portability, mixed renderers, bounded history, My Art lifecycle, non-destructive wearable slot switching, trusted cutout actions, and precision body/alignment overlays
@@ -18,7 +18,7 @@ This is the single authority for implementation status, open work, and delivery 
   - Gate 2: 6 base doll models across 5 life stages, fit-family wardrobe filtering, retention on model switch
   - Gate 3: Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage hair/garments
   - Gate 4: Single-layer custom hair architecture with Layer 70 rendering, Paint Studio guides for all 6 models, and portability
-  - Gate 5: Automated tests passing, 142 cataloged SVGs validated, complete release evidence and documentation
+  - Gate 5: Automated tests passing, 145 cataloged SVGs validated, complete release evidence and documentation
 - Character Expressions, Poses, and Looping Scene Animation complete:
   - Multi-channel limb gesture presets, head tilt/orientation evaluator, animation clips (idle, talk, celebrate, walk, wave, bow, laugh, listen)
   - Looping scene animation playback transport HUD (Play/Pause, Loop toggle, Reset, 0.5x-2.0x playback speed)
@@ -27,13 +27,15 @@ This is the single authority for implementation status, open work, and delivery 
   - Segmented rail tabs (`➕ Ekle` / `⚙️ Seçili`) for spawn tray and inspector
   - Dedicated play-status and paint-status pill rows above stages
 - 100% store status message localization across Designer, Play, Custom Art, and Project operations with `messageKey` and `translateMessage`
-- 412 automated tests passing
-- 142 cataloged SVG files passing asset validation
+- 461 automated tests passing
+- 145 cataloged SVG files passing asset validation
 - Catalog assets carry `added_date`, `creator`, `concept`, `dlc`, and `source` provenance metadata; current content pack is `core`
 - Props are grouped in Play by `Home`, `Outdoors`, `Creative`, `Fun`, and derived `My Art`; custom prop collection membership is persisted and editable from My Art
 - Installable offline PWA shell with comprehensive multi-tab Turkish & English in-app guide
 - Documentation validation passing with canonical documents
 - Designer, Paint, and Play source hardening passes complete; hosted iPad smoke test remains before family release
+- Phase 1 Foundation Improvements complete: automated service worker manifest sync (`npm run update:sw`), modularized isolated locale dictionaries (`tr.js`, `en.js`), RAF-throttled live previews in Paint Studio, scoped dropdown lifecycle in play-view, context-aware focus restoration on dialog dismissal, and accessible screen reader live announcements for batch studio operations.
+- Phase 2 Foundation Improvements complete: domain slice reducers (`js/core/reducers/`), action payload validation, generalized teardown disposable registry (`js/core/error-boundary.js`), JSDoc static type checking (`tsc --noEmit`), keyboard panoramic navigation shortcuts (`PageUp`/`PageDown`/`Home`/`End`/`Shift+Arrow`), and ESLint flat config code quality guardrails (`eslint.config.js`). See [IMPROVEMENTS.md](IMPROVEMENTS.md) and [DECISIONS.md](DECISIONS.md) (D-041 through D-044).
 
 ## Status by capability
 
@@ -155,6 +157,14 @@ Ordered by player impact. Sourced from the 2026-08-18 Play review; full detail i
 
 Gate F is closed. The hosted iPad smoke test is the last item before family release.
 
+### Gate G — Foundation & Architecture Improvements
+
+Structured foundation improvements tracked with quantitative metrics in [IMPROVEMENTS.md](IMPROVEMENTS.md).
+
+1. [x] **Phase 1 — Guardrails & DX**: Automated service worker manifest sync (`npm run update:sw`), isolated locale dictionaries (`locales/tr.js`, `en.js`), Paint Studio RAF live preview throttling, scoped dropdown lifecycle in `play-view.js`, context-aware dialog focus restoration, screen reader live announcements (`#sr-announcements`).
+2. [x] **Phase 2 — Core Architectural Modularization**: Domain slice reducers in `app-store.js`, disposable teardown registry in `error-boundary.js`, JSDoc/TypeScript static type verification (`checkJs`), keyboard panoramic viewport shortcuts, and lightweight linter.
+3. [ ] **Phase 3 — Sub-Controller Decomposition & Performance**: View sub-controllers, OffscreenCanvas in export service, SVG symbology `<use>` reuse, bounding box memoization, and dynamic outline contrast.
+4. [ ] **Phase 4 — Real Browser E2E Suite**: Headless browser automation for multi-browser rendering and PWA installation verification.
 
 ## Acceptance summaries for planned features
 

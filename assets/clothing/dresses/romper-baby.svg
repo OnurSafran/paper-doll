@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="dress_romper_baby">
   <g id="garment" stroke="#2d261e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
     <!-- Baby Romper Body -->
-    <path class="tint-primary" d="M121 114 C113 140 111 176 116 210 C119 228 127 241 135 246 L165 246 C173 241 181 228 184 210 C189 176 187 140 179 114 Z" fill="var(--asset-color-primary, #a8dadc)"/>
+    <path class="tint-primary" d="M121 114 C113 140 111 176 116 210 C116 225 116 236 120 244 Q135 254 150 246 Q165 254 180 244 C184 236 184 225 184 210 C189 176 187 140 179 114 Z" fill="var(--asset-color-primary, #a8dadc)"/>
     <!-- Cute Straps / Sleeves -->
     <rect class="tint-primary" x="120" y="112" width="12" height="25" rx="4" fill="var(--asset-color-primary, #a8dadc)"/>
     <rect class="tint-primary" x="168" y="112" width="12" height="25" rx="4" fill="var(--asset-color-primary, #a8dadc)"/>

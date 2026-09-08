@@ -6,7 +6,8 @@
 
 import { getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { loadAssetSvg } from '../../core/svg-loader.js';
-import { createBubbleSvg, createExportDollSvg } from '../../services/export-service.js';
+import { createBubbleSvg } from '../../core/bubble-svg.js';
+import { createExportDollSvg } from '../../core/doll-svg.js';
 import { getEntityBounds } from '../../domain/scene-rules.js';
 import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION, defaultMakeId, isCustomAssetId } from '../../domain/vocabulary.js';
 import { createStarterDraft } from '../../domain/outfit-rules.js';
@@ -223,7 +224,7 @@ export function createSceneBookView({
   $,
   $$,
   askConfirm,
-  askPrompt = (_title, message, initialValue) => window.prompt(message, initialValue),
+  askPrompt = async (_title, message, initialValue) => window.prompt(message, initialValue),
   miniButton,
   customArtRepo,
   getAsset = getBuiltinAsset

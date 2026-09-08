@@ -1,14 +1,16 @@
+import { createAppLifecycle } from '../js/app-lifecycle.js';
+import { readControllerBundle } from './source-bundle.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { classifyError, executeSafeTeardown } from '../js/core/error-boundary.js';
+import { classifyError, createDisposableRegistry, executeSafeTeardown } from '../js/core/error-boundary.js';
 import { createStorageAdapter } from '../js/core/storage-adapter.js';
 import { createDefaultEnvelope, STORAGE_KEY } from '../js/core/state-schema.js';
 
 const root = resolve(import.meta.dirname, '..');
 const html = await readFile(resolve(root, 'index.html'), 'utf8');
-const js = await readFile(resolve(root, 'js/app.js'), 'utf8');
+const js = readControllerBundle(resolve(root, 'js/app.js'));
 
 function memoryStorage(initial = {}) {
   const data = new Map(Object.entries(initial));
@@ -62,19 +64,22 @@ test('executeSafeTeardown runs all callbacks safely and collects warnings if any
   let exportCancelled = false;
   let storageCancelled = false;
   let animationStopped = false;
+  let paintCancelled = false;
 
   const result = executeSafeTeardown({
     cancelPointer: () => { pointerCancelled = true; },
     stopAudio: () => { throw new Error('Audio hardware busy'); },
     stopAnimation: () => { animationStopped = true; },
     cancelExport: () => { exportCancelled = true; },
-    cancelStorage: () => { storageCancelled = true; }
+    cancelStorage: () => { storageCancelled = true; },
+    cancelPaint: () => { paintCancelled = true; }
   });
 
   assert.equal(pointerCancelled, true);
   assert.equal(animationStopped, true);
   assert.equal(exportCancelled, true);
   assert.equal(storageCancelled, true);
+  assert.equal(paintCancelled, true);
   assert.equal(result.ok, true);
   assert.equal(result.warnings.length, 1);
   assert.match(result.warnings[0], /Audio teardown failed/);
@@ -110,4 +115,68 @@ test('index.html and app.js expose accessible error boundary dialog and event li
   assert.match(js, /window\.addEventListener\('error'/);
   assert.match(js, /window\.addEventListener\('unhandledrejection'/);
   assert.match(js, /function handleTopLevelError\(/);
+});
+
+test('createDisposableRegistry tracks, deregisters, and disposes mixed disposables safely', () => {
+  const registry = createDisposableRegistry();
+  let fnCalled = false;
+  let teardownCalled = false;
+  let destroyCalled = false;
+  let unregCalled = false;
+
+  const unreg = registry.register(() => { unregCalled = true; });
+  registry.register(() => { fnCalled = true; });
+  registry.register({ teardown: () => { teardownCalled = true; } });
+  registry.register({ destroy: () => { destroyCalled = true; } });
+  registry.register(() => { throw new Error('Simulated disposable failure'); });
+
+  assert.equal(registry.size, 5);
+  unreg();
+  assert.equal(registry.size, 4);
+
+  const result = executeSafeTeardown(registry);
+  assert.equal(fnCalled, true);
+  assert.equal(teardownCalled, true);
+  assert.equal(destroyCalled, true);
+  assert.equal(unregCalled, false);
+  assert.equal(result.ok, true);
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /Simulated disposable failure/);
+  assert.equal(registry.size, 0);
+});
+
+test('registry deduplicates and unregisters objects and supports nested disposal', () => {
+  const registry = createDisposableRegistry();
+  let calls = 0;
+  const view = { destroy() { calls++; registry.disposeAll(); } };
+  registry.register(view);
+  registry.register(view);
+  assert.equal(registry.size, 1);
+  registry.unregister(view);
+  assert.equal(registry.size, 0);
+  registry.register(view);
+  registry.disposeAll();
+  assert.equal(calls, 1);
+  assert.equal(registry.size, 0);
+});
+
+test('app error recovery cancels restarted work on every error without destroying reusable views', () => {
+  const calls = [];
+  let playing = false;
+  const store = { getState: () => ({ ui: { voicePuppetryActive: false } }), dispatch() { playing = true; } };
+  const dependencies = {
+    classifyError, createDisposableRegistry, executeSafeTeardown, store,
+    cancelPointerController: () => calls.push('pointer'),
+    stopVoicePuppetry: () => calls.push('voice'),
+    sceneAnimationService: { pause() { calls.push('animation'); playing = false; } },
+    exportService: { cancel: () => calls.push('export') },
+    storage: { cancel: () => calls.push('storage') },
+    paintView: { cancelAsyncOperations: () => calls.push('paint'), destroy() { assert.fail('Recovery must keep paint listeners'); } },
+    $: () => null, t: (key) => key
+  };
+  const recover = createAppLifecycle(dependencies).handleTopLevelError;
+  recover(new Error('first'));
+  recover(new Error('second'));
+  assert.equal(playing, false);
+  assert.deepEqual(calls, ['pointer', 'animation', 'export', 'storage', 'paint', 'pointer', 'animation', 'export', 'storage', 'paint']);
 });

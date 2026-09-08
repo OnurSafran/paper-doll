@@ -240,7 +240,7 @@ export function sanitizeCustomAsset(candidate) {
   };
 }
 
-export function sanitizeEnvelope(value, getAsset = () => undefined) {
+export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
   const defaults = createDefaultEnvelope();
   const warnings = [];
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -335,7 +335,7 @@ export function sanitizeEnvelope(value, getAsset = () => undefined) {
 }
 
 
-export function sanitizePreset(candidate, getAsset = () => undefined, warnings = []) {
+export function sanitizePreset(candidate, getAsset = (_id) => undefined, warnings = []) {
   if (!candidate || typeof candidate !== 'object') return null;
   if (!validId(candidate.presetId) || !validPresetName(candidate.name)) return null;
   const dollAsset = getAsset(candidate.baseDollId);
@@ -352,7 +352,7 @@ export function sanitizePreset(candidate, getAsset = () => undefined, warnings =
   };
 }
 
-export function sanitizeDraft(candidate, getAsset = () => undefined, warnings = []) {
+export function sanitizeDraft(candidate, getAsset = (_id) => undefined, warnings = []) {
   if (!candidate) return null;
   const dollAsset = getAsset(candidate.baseDollId);
   const isValidDoll = candidate.baseDollId === DEFAULT_BASE_DOLL_ID || (dollAsset && dollAsset.kind === 'doll');
@@ -410,7 +410,7 @@ function sanitizeFaceFeature(group, item, fallback, getAsset, baseDollId, warnin
   return { assetId: item.assetId };
 }
 
-export function sanitizeScene(candidate, getAsset = () => undefined, warnings = []) {
+export function sanitizeScene(candidate, getAsset = (_id) => undefined, warnings = []) {
   if (candidate == null) return null;
   if (typeof candidate !== 'object' || !validId(candidate.sceneId)) {
     warnings.push('The current scene was invalid and was not restored.');

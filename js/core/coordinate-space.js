@@ -3,6 +3,8 @@ import { LIMITS, VIEWPORT_HEIGHT, VIEWPORT_WIDTH } from '../domain/vocabulary.js
 const STAGE_WIDTH = VIEWPORT_WIDTH;
 const STAGE_HEIGHT = VIEWPORT_HEIGHT;
 
+/** @param {number} cameraX
+ * @param {number} stageWidth */
 export function clampCameraX(cameraX, stageWidth = STAGE_WIDTH) {
   const num = Number(cameraX) || 0;
   const maxCameraX = Math.max(0, stageWidth - VIEWPORT_WIDTH);

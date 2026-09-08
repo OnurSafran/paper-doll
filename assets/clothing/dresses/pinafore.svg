@@ -5,6 +5,8 @@
     <ellipse cx="182" cy="128" rx="14" ry="16" fill="#fffdf7"/>
     <path d="M136 112 C142 120 158 120 164 112" fill="none" stroke="#2d261e" stroke-width="2"/>
 
+    <path d="M125 112 Q150 122 175 112 L180 181 L120 181 Z" fill="#fffdf7"/>
+
     <!-- Pinafore Frilly Straps -->
     <path class="tint-primary" d="M128 112 L134 175 L124 175 L118 112 Z" fill="var(--asset-color-primary, #e9aa3a)"/>
     <path class="tint-primary" d="M172 112 L166 175 L176 175 L182 112 Z" fill="var(--asset-color-primary, #e9aa3a)"/>

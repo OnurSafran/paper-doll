@@ -77,15 +77,18 @@ All small project records live under `paperDollStudio.state`.
 
 ```json
 {
-  "schemaVersion": 3,
+  "schemaVersion": 6,
+  "revision": 1,
   "savedAt": "2026-08-16T00:00:00.000Z",
   "settings": {
     "reducedMotion": "system",
-    "soundEnabled": false
+    "soundEnabled": false,
+    "stamps": [],
+    "unlockedBackgrounds": []
   },
+  "customAssets": [],
   "presets": [],
   "scenes": [],
-  "customAssets": [],
   "currentScene": null
 }
 ```
@@ -100,6 +103,13 @@ All small project records live under `paperDollStudio.state`.
   "updatedAt": "2026-08-14T00:00:00.000Z",
   "baseDollId": "doll_classic_a",
   "skinTone": "peach",
+  "face": {
+    "eyes": { "assetId": "eyes_classic", "irisColor": "cocoa" },
+    "eyebrows": { "assetId": "brows_soft" },
+    "nose": { "assetId": "nose_dot" },
+    "mouth": { "assetId": "mouth_gentle_smile" },
+    "detail": null
+  },
   "slots": {
     "hair": { "assetId": "hair_ponytail", "color": "brown" },
     "top": { "assetId": "top_tshirt", "color": "coral" },
@@ -124,6 +134,16 @@ All small project records live under `paperDollStudio.state`.
   "scale": 1,
   "flipped": false,
   "expression": "smile",
+  "expressionIntensity": 1.0,
+  "pose": "standing",
+  "animation": {
+    "clipId": "sway",
+    "enabled": false,
+    "intensity": 1.0,
+    "phaseOffset": 0
+  },
+  "attachedTo": null,
+  "attachJoint": null,
   "order": 1
 }
 ```
@@ -165,7 +185,7 @@ Derived thumbnails, DOM, SVG source, object URLs, pointer events, UI selection, 
 - Keyboard-complete flow, visible focus, named controls, polite status, reduced motion, forced colors, and WCAG AA functional contrast.
 - 60 FPS drag goal with 20 mixed entities; no sustained drag task over `50 ms`; warm local interactivity under `2 s`.
 - No remote fonts, analytics, accounts, cookies, uploads, or server-side image processing.
-- One-language MVP. Message catalogs, long-string/RTL layouts, and locale-aware formatting are future work.
+- Full bilingual Turkish and English support with isolated locale dictionaries (`js/core/locales/tr.js` and `en.js`), dynamic DOM translation, and 100% store message localization.
 
 ## Planned feature contracts
 

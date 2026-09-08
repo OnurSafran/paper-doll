@@ -557,7 +557,7 @@ test('AppStore handles character phase offset selection and updates entity state
 });
 
 test('Full-body custom artwork correctly resolves root profile and renders skin layer in export', async () => {
-  const { createExportDollSvg } = await import('../js/services/export-service.js');
+  const { createExportDollSvg } = await import('../js/core/doll-svg.js');
   
   const customFullDraft = {
     kind: 'custom_full',

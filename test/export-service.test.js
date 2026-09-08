@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applyMouthExpression, createExportDollSvg, createExportService } from '../js/services/export-service.js';
+import { createExportService } from '../js/services/export-service.js';
+import { createExportDollSvg } from '../js/core/doll-svg.js';
+import { applyMouthExpression } from '../js/core/mouth-expression.js';
 import { createDefaultEnvelope } from '../js/core/state-schema.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { EXPRESSIONS } from '../js/domain/vocabulary.js';

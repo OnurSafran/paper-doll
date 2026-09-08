@@ -465,7 +465,7 @@ export function resolveEntityAttachmentTransform(
   entity,
   allEntitiesMap,
   characterPoses,
-  getAssetFn = () => undefined,
+  getAssetFn = (_id) => undefined,
   memoMap = new Map(),
   visited = new Set()
 ) {

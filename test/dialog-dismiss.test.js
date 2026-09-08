@@ -1,6 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { enableDialogLightDismiss } from '../js/core/dialog-dismiss.js';
+import { enableDialogFocusRestoration, enableDialogLightDismiss } from '../js/core/dialog-dismiss.js';
+
+test('focus restoration preserves the opener on repeated opens and uses a connected fallback', (t) => {
+  const original = globalThis.document;
+  t.after(() => { globalThis.document = original; });
+  const focus = [];
+  const opener = { focus: () => focus.push('opener') };
+  const inside = { focus: () => focus.push('inside') };
+  const fallback = { focus: () => focus.push('fallback') };
+  globalThis.document = { activeElement: opener, contains: () => true, querySelector: () => fallback };
+  const listeners = {};
+  const dialog = { dataset: {}, open: false, addEventListener: (name, fn) => { listeners[name] = fn; }, showModal() { this.open = true; } };
+  enableDialogFocusRestoration(dialog, '#fallback');
+  dialog.showModal();
+  document.activeElement = inside;
+  dialog.showModal();
+  dialog.open = false;
+  listeners.close();
+  assert.deepEqual(focus, ['opener']);
+  document.activeElement = opener;
+  dialog.showModal();
+  document.contains = () => false;
+  dialog.open = false;
+  listeners.close();
+  assert.deepEqual(focus, ['opener', 'fallback']);
+});
 
 test('enableDialogLightDismiss handles light-dismiss backdrop clicks and protects internal interactions', () => {
   let closed = false;
@@ -88,4 +113,38 @@ test('enableDialogLightDismiss handles light-dismiss backdrop clicks and protect
     clientY: 200
   });
   assert.equal(closed, true, 'Synthetic click outside bounds MUST close dialog');
+});
+
+test('enableDialogFocusRestoration records active element on open and restores it on close', (t) => {
+  const original = globalThis.document;
+  t.after(() => { globalThis.document = original; });
+  let focused = false;
+  const mockTrigger = {
+    focus() {
+      focused = true;
+    }
+  };
+
+  globalThis.document = {
+    activeElement: mockTrigger,
+    contains: (el) => el === mockTrigger
+  };
+
+  const listeners = {};
+  const mockDialog = {
+    dataset: {},
+    addEventListener(event, fn) {
+      listeners[event] = fn;
+    },
+    showModal() {
+      // triggers patched showModal
+    }
+  };
+
+    enableDialogFocusRestoration(mockDialog);
+    assert.equal(mockDialog.dataset.focusRestorationBound, 'true');
+
+    mockDialog.showModal();
+    listeners.close();
+    assert.equal(focused, true, 'Active trigger element must regain focus on dialog close');
 });

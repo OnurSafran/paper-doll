@@ -36,6 +36,7 @@ These are the canonical project documents:
 | [QUALITY.md](docs/QUALITY.md) | Automated checks, browser/accessibility/performance matrices, and release gate |
 | [DECISIONS.md](docs/DECISIONS.md) | Accepted decisions and pending architecture commitments |
 | [OFFLINE-PWA.md](docs/OFFLINE-PWA.md) | iPad installation, offline behavior, hosting, and update procedure |
+| [IMPROVEMENTS.md](docs/IMPROVEMENTS.md) | Architectural review, foundation improvements, quantitative metrics, and roadmap |
 
 Dated audits are non-canonical history under [`review/`](review/). If a review conflicts with a canonical document, the canonical document wins.
 
@@ -49,16 +50,20 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000`.
 
+To run all automated validations and tests:
+
 ```bash
 npm run check
 ```
 
-The equivalent commands are:
+The individual validation and tooling commands are:
 
 ```bash
-node scripts/validate-docs.mjs
-node scripts/validate-assets.mjs
-node --test
+node scripts/validate-docs.mjs         # Check documentation and relative links
+node scripts/validate-assets.mjs       # Check SVG assets against security and layout rules
+node scripts/validate-cache-busting.mjs # Verify CSS hashes and service-worker cache version
+npm run update:sw                      # Auto-sync ES modules and regenerate sw.js manifest
+node --test                            # Run all unit and integration tests
 ```
 
 ## Definition of done

@@ -15,33 +15,46 @@
 The extraction described by D-019 is complete: `app.js` is bootstrap and routing, and each feature owns its own view module.
 
 ```text
-js/app.js                            bootstrap, routes, cross-tab coordination
+js/app.js                            bootstrap and controller composition
+js/app-*.js                          routing, shortcuts, dialogs, events, recovery, effects
 js/features/designer/                Designer view and Dollbox
 js/features/paint/                   Paint Studio view, session, raster ops, guides
 js/features/play/                    stage, tray, selection, actions
 js/features/scene-book/              dialogs and derived previews
+js/features/world-map/               World Map view, landmarks, and souvenir passport
 js/services/project-repository.js    load/save/revision/recovery/conflicts
 js/services/custom-art-repository.js IndexedDB artwork, drafts, staging, backups, trash
 js/services/project-portability.js   versioned export/import bundling
-js/services/export-service.js        immutable-snapshot PNG export
+js/services/export-service.js        immutable-snapshot PNG export and fallback
+js/services/export-worker*.js        worker ownership, transfer, cancellation
+js/services/export-draw-list.js      shared canvas operation recording/replay
 js/services/voice-puppetry.js        microphone/AudioContext lifecycle
+js/services/scene-animation-service.js looping animation coordinator
 js/domain/vocabulary.js              expressions, slots, limits, enums, reference doll IDs
 js/domain/outfit-rules.js            equip, fit, and face compatibility rules
 js/domain/scene-rules.js             scene geometry, clamping, alignment
 js/domain/scene-templates.js         curated storytelling starters
-js/core/app-store.js                 commands, subscriptions, history
+js/domain/world-map-catalog.js       biomes, landmarks, and souvenir stamp catalog
+js/core/app-store.js                 commands, subscriptions, history, prefix routing
+js/core/reducers/                    pure domain slice reducers and payload validation
 js/core/state-schema.js              validation and migration
 js/core/asset-catalog.js             catalog lookup and discovery filtering
 js/core/asset-registry.js            unified built-in and custom descriptors
 js/core/preview-viewboxes.js         shared slot preview viewBoxes
 js/core/mouth-expression.js          expression mutation shared by render and export
-js/core/i18n.js                      Turkish/English strings and DOM translation
+js/core/doll-svg.js                  character doll SVG compositing
+js/core/bubble-svg.js                procedural dialogue bubble SVG generator
+js/core/i18n.js                      runtime translation engine and DOM updater
+js/core/locales/                     isolated Turkish and English translation dictionaries
 js/core/svg-loader.js                validated same-origin SVG loading and caching
+js/core/svg-symbols.js               stage-local built-in prop symbol reuse
 js/core/coordinate-space.js          logical/client conversion
 js/core/pointer-controller.js        pointer session lifecycle
 js/core/palette.js                   palette tokens and normalization
 js/core/storage-adapter.js           guarded localStorage access
-js/core/error-boundary.js            top-level error and rejection handling
+js/core/error-boundary.js            top-level error handling and disposable registry
+js/core/dialog-dismiss.js            light-dismiss and context-aware focus restoration
+js/types.js                          JSDoc type definitions for AppState, SceneRecord, CustomAsset
 ```
 
 ### Dependency rules
@@ -52,7 +65,7 @@ js/core/error-boundary.js            top-level error and rejection handling
 - Shared rendering helpers live in `core/`. A feature view never imports a helper from `services/`.
 - Catalog fit, style, and prop-collection filtering happens in `core/asset-catalog.js` and the unified `core/asset-registry.js`; views pass parameters instead of re-implementing predicates.
 - Views raise prompts through the injected dialog service, never `alert`/`confirm`/`prompt` (D-035).
-- A view that registers window-level listeners exposes a teardown that removes them.
+- A view that registers window-level or document-level listeners exposes a `teardown` / `destroy` method that removes them.
 - The repository is the only owner of serialized envelope revisions and conflict checks.
 - Export snapshots state once; later edits cannot affect the in-flight result.
 - Voice frames are ephemeral DOM previews. Only explicit static-expression commands persist.
@@ -61,9 +74,9 @@ js/core/error-boundary.js            top-level error and rejection handling
 
 ```javascript
 {
-  schemaVersion: 4,
+  schemaVersion: 6,
   revision: 1,
-  settings: { reducedMotion: 'system', soundEnabled: false },
+  settings: { reducedMotion: 'system', soundEnabled: false, stamps: [], unlockedBackgrounds: [] },
   customAssets: [],
   designer: { draft: { baseDollId: 'doll_classic_a', skinTone: 'peach', face: { eyes: { assetId: 'eyes_classic', irisColor: 'cocoa' }, eyebrows: { assetId: 'brows_soft' }, nose: { assetId: 'nose_dot' }, mouth: { assetId: 'mouth_gentle_smile' }, detail: null }, slots: {} }, selectedSlot: 'top', editingPresetId: null, dirty: false },
   presets: [],
@@ -112,7 +125,7 @@ History snapshots only domain state. A pointer drag updates transient preview co
 ## Rendering
 
 - Monotonic tokens prevent stale async SVG rendering from replacing newer output.
-- Parsed SVG templates are cached; every use receives an independent clone.
+- Parsed SVG templates are cached. Dolls, wearables, previews, and exports receive independent clones; stage props share scoped symbols through `core/svg-symbols.js`. Each stage owns and prunes its symbol catalog, while entity transforms remain independent.
 - Collections render from stable IDs and restore focus when the focused item remains.
 - Unknown assets render labeled placeholders and remain selectable/removable.
 - Scene Book and export derive from state; thumbnails are never persisted. Background layout uses the asset's declared native width (`1600`, `3200`, or `4800`) and repeats or crops it without non-uniform stretching.
@@ -244,6 +257,20 @@ Only cataloged `assets/` paths are fetched. The loader rejects malformed XML, pr
 
 Add top-level `error` and `unhandledrejection` handling that records stable privacy-safe codes without player content, stops unsafe follow-on work, keeps prior persisted state, and offers retry/reload. Local asset/export fallbacks do not replace this boundary.
 
+## Accessibility and view lifecycle contracts
+
+- **Live announcements**: `#sr-announcements` (`role="status"`, `aria-live="polite"`) delivers screen reader feedback for batch studio actions (e.g. multi-select alignments, bulk removals, and store messages) without polluting the visual canvas.
+- **Context-aware dialog focus restoration**: `enableDialogFocusRestoration(dialog, fallbackSelector)` tracks the opening trigger element and restores focus to that exact element upon dialog dismissal (satisfying WCAG 2.1 SC 2.4.3 Focus Order).
+- **View teardown lifecycle**: Feature views with document or window listeners expose standard `teardown()` and `destroy()` methods. Error boundaries, route navigations, and test suites invoke these hooks to prevent event listener leakage (D-040).
+- **Disposable registry**: `createDisposableRegistry()` in `js/core/error-boundary.js` tracks arbitrary disposable resources (cleanup callbacks, `{ teardown }`, `{ destroy }`), aggregating errors safely without stopping execution during teardowns (D-042).
+
+## Tooling and cache synchronization
+
+- `scripts/update-sw-manifest.mjs` (`npm run update:sw`): Discovers runtime ES modules in `js/`, fingerprints styles in `index.html`, and regenerates `APP_SHELL` and `CACHE_NAME` in `sw.js` (D-038).
+- `scripts/validate-cache-busting.mjs` (`npm run validate:cache`): Verifies that all CSS `@import` links and `CACHE_NAME` match real file SHA-256 digests.
+- `eslint.config.js` (`npm run lint`): Flat config enforcing code quality and browser/node global separation.
+- `tsconfig.json` / `jsconfig.json` (`npm run check:types`): TypeScript compiler configuration running `tsc --noEmit` with `checkJs: true` across runtime JavaScript and `type-tests/contracts.ts`; state, reducer action, asset, and DOM contracts use JSDoc (`js/types.js`). Strict mode is not enabled.
+
 ## Architecture migration order
 
 Steps 1–7 are complete; the list is retained as the record of the order the boundaries were established.
@@ -256,4 +283,10 @@ Steps 1–7 are complete; the list is retained as the record of the order the bo
 6. Add project portability and story tools. — Done
 7. Begin panoramic stages or custom paint only after the prior boundaries are stable. — Done
 
-Subsequent work follows the dependency rules above rather than this sequence. The 2026-08-18 Designer/Paint hardening pass added `core/preview-viewboxes.js` and `core/mouth-expression.js` and moved reference doll IDs into `domain/vocabulary.js` under those rules.
+Subsequent work follows the dependency rules above rather than this sequence. The 2026-08-18 Designer/Paint hardening pass added `core/preview-viewboxes.js` and `core/mouth-expression.js` and moved reference doll IDs into `domain/vocabulary.js`. Phase 1 Foundation Improvements added automated service worker manifest sync (`update-sw-manifest.mjs`), modular locale dictionaries (`locales/tr.js`, `en.js`), requestAnimationFrame live preview throttling, and standardized view teardown lifecycles. Phase 2 Foundation Improvements decomposed `app-store.js` into domain slice reducers (`js/core/reducers/`), added runtime action payload validation, a generalized disposable registry in `error-boundary.js`, JSDoc type definitions (`js/types.js`), keyboard panoramic navigation in `play-view.js`, and ESLint/TypeScript static checks.
+
+## Phase 3 controller and export boundaries
+
+Play, Paint, and application entry modules compose focused controllers below 500 lines each. State used by one controller stays local; explicitly injected callbacks and live getter/setter ports preserve shared render tokens and replaceable Paint sessions. Existing public view APIs remain stable.
+
+PNG export uses one scene renderer for both paths: normal canvas operations or a recorded draw list. When Worker, OffscreenCanvas, and ImageBitmap are available, the worker owns stage composition and PNG encoding. SVG DOM construction and image compatibility decoding still run on the main thread. Export keeps one immutable snapshot and one in-flight lock; worker failure falls back to the established canvas path, while cancellation terminates the worker and skips fallback. Bitmap copies close on every exit. Worker and direct SVG drawing can differ slightly at rasterized edges.

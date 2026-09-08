@@ -5,14 +5,14 @@
 
 import { assetsByKind, facesByGroup, getLimbBoundChannel, getOfferedWearables, isHeadBoundLayer, matchesDiscoveryFilters, wearablesBySlot, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { escapeCss } from '../../core/css-escape.js';
-import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, PALETTE, paletteValue, SKIN_COLORS } from '../../core/palette.js';
+import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, PALETTE, paletteValue, customColorOutline, SKIN_COLORS } from '../../core/palette.js';
 import { loadAssetSvg, makeAssetPlaceholder } from '../../core/svg-loader.js';
 import { DEFAULT_BASE_DOLL_ID, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, FACE_GROUPS, FIT_FAMILIES, PRESENTATION_STYLES, isCustomAssetId } from '../../domain/vocabulary.js';
 import { isDefaultFace, isFaceCompatible, isWearableCompatible } from '../../domain/outfit-rules.js';
 import { customAssetToDescriptor } from '../../core/asset-registry.js';
 import { applyMouthExpression } from '../../core/mouth-expression.js';
 import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
-import { SLOT_PREVIEW_VIEWBOX } from '../../core/preview-viewboxes.js';
+import { SLOT_PREVIEW_VIEWBOX, wearablePreviewViewBox } from '../../core/preview-viewboxes.js';
 
 export const WARDROBE_SLOTS = [
   ['top', 'Tops'],
@@ -64,7 +64,7 @@ export function dollsForLifeStagePicker(dollAssets = assetsByKind('doll')) {
   return FIT_FAMILIES.map((lifeStage) => representativeByStage.get(lifeStage)).filter(Boolean);
 }
 
-export async function appendAsset(container, assetId, { color, isPreview = false, customArtRepo, getCustomArtUrl, getAsset = getBuiltinAsset, loadAssetSvg: injectedLoadSvg } = {}) {
+export async function appendAsset(container, assetId, { color = undefined, isPreview = false, customArtRepo = undefined, getCustomArtUrl = undefined, getAsset = getBuiltinAsset, loadAssetSvg: injectedLoadSvg = undefined } = {}) {
   try {
     if (isCustomAssetId(assetId)) {
       const url = await customArtRepo?.getTrackedObjectUrl?.(assetId) || await getCustomArtUrl?.(assetId);
@@ -84,12 +84,16 @@ export async function appendAsset(container, assetId, { color, isPreview = false
     const loadSvg = injectedLoadSvg ?? loadAssetSvg;
     const svg = await loadSvg(assetId);
     const asset = getAsset(assetId);
+    container.style.setProperty('--asset-outline-color', customColorOutline(color));
     container.style.setProperty('--asset-color-primary', paletteValue(color ?? asset?.defaultColors?.primary, 'coral'));
+    if (asset?.slot === 'hair') {
+      container.style.setProperty('--hair-color', paletteValue(color ?? asset.defaultColors?.primary, 'brown'));
+    }
     if (asset?.kind === 'face' && asset.faceGroup === 'eyes') {
       container.style.setProperty('--iris-color', paletteValue(color, 'cocoa'));
     }
     if (isPreview && asset?.kind === 'wearable' && SLOT_PREVIEW_VIEWBOX[asset.slot]) {
-      svg.setAttribute('viewBox', SLOT_PREVIEW_VIEWBOX[asset.slot]);
+      svg.setAttribute('viewBox', wearablePreviewViewBox(asset));
     } else if (isPreview && asset?.kind === 'face' && FACE_PREVIEW_VIEWBOX[asset.faceGroup]) {
       svg.setAttribute('viewBox', FACE_PREVIEW_VIEWBOX[asset.faceGroup]);
     }
@@ -148,7 +152,7 @@ export async function renderDollInto(container, draft, options = {}) {
     const item = draft?.slots?.[slot];
     if (!item) return;
     const asset = getAsset(item.assetId);
-    layers.push([order, item.assetId, item.color, group, slot, enforceFit && !isWearableCompatible(draft, asset, getAsset)]);
+    layers.push([asset?.layerOrder ?? order, item.assetId, item.color, group, slot, enforceFit && !isWearableCompatible(draft, asset, getAsset)]);
   };
   if (hair && !isCustomAssetId(hair.assetId) && (!enforceFit || isWearableCompatible(draft, getAsset(hair.assetId), getAsset))) {
     layers.push([10, hair.assetId, hair.color, 'hairBack', 'hair', false]);
@@ -198,6 +202,7 @@ export async function renderDollInto(container, draft, options = {}) {
     layer.style.setProperty('--skin-color', paletteValue(draft.skinTone, 'peach'));
     layer.style.setProperty('--hair-color', paletteValue(color, 'brown'));
     layer.style.setProperty('--asset-color-primary', paletteValue(color, 'coral'));
+    layer.style.setProperty('--asset-outline-color', customColorOutline(color));
     if (incompatible) {
       const displayName = assetName(getAsset(id), 'Asset');
       const warningText = t('designer.fitWarningPlaceholder', { name: displayName });
@@ -271,6 +276,7 @@ export function previewCustomColor(color, slot = 'top', queryAll = (selector) =>
   const layers = queryAll(`#doll-stage .doll-layer[data-slot="${slot}"]`);
   for (const layer of layers) {
     layer.style.setProperty(slot === 'hair' ? '--hair-color' : '--asset-color-primary', color);
+    layer.style.setProperty('--asset-outline-color', customColorOutline(color));
   }
 }
 
@@ -309,6 +315,7 @@ export function patchDollColors(container, previousDraft, nextDraft) {
     const previousItem = previousDraft.slots?.[slot];
     const nextItem = nextDraft.slots?.[slot];
     if (previousItem?.color === nextItem?.color) continue;
+    setLayers(slot, '--asset-outline-color', customColorOutline(nextItem?.color));
     setLayers(slot, slot === 'hair' ? '--hair-color' : '--asset-color-primary', paletteValue(
       nextItem?.color,
       slot === 'hair' ? 'brown' : 'coral'
@@ -328,7 +335,7 @@ export function createDesignerView({
   $,
   $$,
   askConfirm,
-  askPrompt = (_title, message, initialValue) => window.prompt(message, initialValue),
+  askPrompt = async (_title, message, initialValue) => window.prompt(message, initialValue),
   miniButton,
   customArtRepo,
   openPaintStudio,
@@ -342,7 +349,7 @@ export function createDesignerView({
 
   function renderSwatches(container, tokens, selected, onSelect) {
     if (!container) return;
-    const focusedToken = document.activeElement?.closest?.('.swatch')?.dataset.token;
+    const focusedToken = /** @type {HTMLElement} */ (document.activeElement?.closest?.('.swatch'))?.dataset.token;
     container.replaceChildren(...tokens.map((token) => {
       const colorName = t('colors.' + token) || PALETTE[token]?.name || token;
       const button = document.createElement('button');
@@ -382,7 +389,7 @@ export function createDesignerView({
     const tabs = $('#wardrobe-tabs');
     const items = $('#wardrobe-items');
     if (!tabs || !items) return;
-    const focusedTabId = document.activeElement?.closest?.('#wardrobe-tabs [role="tab"]')?.id;
+    const focusedTabId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#wardrobe-tabs [role="tab"]'))?.id;
     tabs.replaceChildren(...WARDROBE_SLOTS.map(([slot]) => {
       const label = t('wardrobeSlots.' + slot) || slot;
       const button = document.createElement('button');
@@ -407,7 +414,7 @@ export function createDesignerView({
     const styleNav = $('#style-filter-nav');
     if (styleNav) {
       const activeStyle = state.designer.selectedStyleFilter || 'all';
-      const focusedStyle = document.activeElement?.closest?.('#style-filter-nav [data-style]')?.dataset.style;
+      const focusedStyle = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#style-filter-nav [data-style]'))?.dataset.style;
       styleNav.replaceChildren(...PRESENTATION_STYLES.map((style) => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -437,7 +444,7 @@ export function createDesignerView({
       .filter((asset) => matchesDiscoveryFilters(asset, targetFit || 'teen', activeStyle));
     const allWearables = [...builtins, ...customs];
 
-    const focusedAssetId = document.activeElement?.closest?.('#wardrobe-items [data-asset-id]')?.dataset.assetId;
+    const focusedAssetId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#wardrobe-items [data-asset-id]'))?.dataset.assetId;
     const cards = allWearables.map((asset) => {
       const button = document.createElement('button');
       button.type = 'button';
@@ -535,7 +542,7 @@ export function createDesignerView({
     const selectedGroup = state.designer.selectedFaceGroup || 'eyes';
     const draft = state.designer.draft;
     const face = draft.face;
-    const focusedTabId = document.activeElement?.closest?.('#face-tabs [role="tab"]')?.id;
+    const focusedTabId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#face-tabs [role="tab"]'))?.id;
 
     tabs.replaceChildren(...FACE_GROUPS.map((group) => {
       const label = t('faceGroups.' + group) || group;
@@ -573,7 +580,7 @@ export function createDesignerView({
       }
     }
 
-    const focusedAssetId = document.activeElement?.closest?.('#face-items [data-asset-id]')?.dataset.assetId;
+    const focusedAssetId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#face-items [data-asset-id]'))?.dataset.assetId;
     const faceAssets = facesByGroup(selectedGroup, getAsset(draft.baseDollId)?.fitFamily || 'teen');
     const cards = faceAssets.map((asset) => {
       const isSelected = face?.[selectedGroup]?.assetId === asset.id;
@@ -607,7 +614,7 @@ export function createDesignerView({
 
   function renderDollModels(container, selectedDollId) {
     if (!container) return;
-    const focusedDollId = document.activeElement?.closest?.('.model-picker-btn')?.dataset.assetId;
+    const focusedDollId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('.model-picker-btn'))?.dataset.assetId;
     const dollAssets = dollsForLifeStagePicker();
     const selectedDoll = getBuiltinAsset(selectedDollId);
     const selectedLifeStage = selectedDoll?.lifeStages?.[0];
@@ -683,7 +690,7 @@ export function createDesignerView({
     if (signature === dollboxSignature) return;
     dollboxSignature = signature;
     const token = ++dollboxRenderToken;
-    const focusedAction = document.activeElement?.closest?.('#dollbox-list [data-preset-action]');
+    const focusedAction = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#dollbox-list [data-preset-action]'));
     const focusedPresetId = focusedAction?.dataset.presetId;
     const focusedActionName = focusedAction?.dataset.presetAction;
     if (!state.presets.length) {

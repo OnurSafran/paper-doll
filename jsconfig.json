@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true,
+    "strict": false,
+    "types": [
+      "node"
+    ],
+    "maxNodeModuleJsDepth": 0
+  },
+  "include": [
+    "js/**/*",
+    "type-tests/**/*.ts"
+  ]
+}

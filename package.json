@@ -1,6 +1,6 @@
 {
   "name": "paper-doll-studio",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,15 @@
     "validate:docs": "node scripts/validate-docs.mjs",
     "validate:assets": "node scripts/validate-assets.mjs",
     "validate:cache": "node scripts/validate-cache-busting.mjs",
-    "check": "node scripts/validate-docs.mjs && node scripts/validate-assets.mjs && node scripts/validate-cache-busting.mjs && node --test"
+    "update:sw": "node scripts/update-sw-manifest.mjs",
+    "lint": "eslint .",
+    "check:types": "tsc --noEmit",
+    "check": "npm run lint && npm run check:types && node scripts/validate-docs.mjs && node scripts/validate-assets.mjs && node scripts/validate-cache-busting.mjs && node --test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.4.1",
+    "eslint": "^10.10.0",
+    "typescript": "^7.0.2"
   }
 }

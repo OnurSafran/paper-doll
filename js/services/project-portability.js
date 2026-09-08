@@ -142,7 +142,7 @@ export async function exportProjectPackage(state, customArtRepo = null, now = ()
  */
 export async function validateImportPayload(
   rawInput,
-  getAsset = () => undefined,
+  getAsset = (_id) => undefined,
   { maxBytes = LIMITS.MAX_PACKAGE_BYTES, cryptoInstance = globalThis.crypto } = {}
 ) {
   const warnings = [];
@@ -619,7 +619,7 @@ export function saveProjectBackup(storage, envelope, now = () => new Date()) {
 /**
  * Retrieves the latest recoverable backup from storage if one exists.
  */
-export function getAvailableBackup(storage, getAsset = () => undefined) {
+export function getAvailableBackup(storage, getAsset = (_id) => undefined) {
   if (!storage) return { available: false };
   try {
     const raw = storage.getItem(BACKUP_KEY_LATEST);

@@ -1,15 +1,15 @@
 # Quality and Release Plan
 
-Updated: 2026-09-03
+Updated: 2026-09-08
 
-Character Customization Gates 0–5, Custom Paint, and Gate E Animation/Stage milestones: **complete**. Automated tests, asset validation, and source contracts are green. Hosted-device evidence is still required before family release.
+Character Customization Gates 0–5, Custom Paint, Gate E Animation/Stage milestones, and Phase 1 Foundation Improvements: **complete**. Automated tests, asset validation, and source contracts are green. Hosted-device evidence is still required before family release.
 
 ## Current evidence
 
 | Check | Current result | What it proves |
 |:--|:--|:--|
-| `node --test` | 412 pass, 0 fail | Domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, library coverage, modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, resting-face restoration, Designer/Paint/Play hardening, character poses, multi-channel gesture animation, looping scene playback, 100% status message localization, and built-in asset-name coverage. |
-| Asset validator | 142 pass | All 142 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 87 wearables, 11 backgrounds, 22 props). |
+| `node --test` | 456 pass, 0 fail | Domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, library coverage, modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, resting-face restoration, Designer/Paint/Play hardening, character poses, multi-channel gesture animation, looping scene playback, 100% status message localization, built-in asset-name coverage, isolated locale dictionaries, throttled paint live preview, dialog focus restoration, screen reader announcements, and scoped view teardown lifecycles. |
+| Asset validator | 145 pass | All 145 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 87 wearables, 11 backgrounds, 22 props). |
 | Documentation validator | Canonical documents, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
 | PWA shell validation | Pass | Manifest, service-worker syntax, and all offline app-shell assets validate. |
 
@@ -17,7 +17,9 @@ Character Customization Gates 0–5, Custom Paint, and Gate E Animation/Stage mi
 
 | Evidence | Result | Notes |
 |:--|:--|:--|
-| `npm run check` | Pass | 412 tests, documentation validation, cache-busting validation, and 142 cataloged SVG assets passed on 2026-09-03. |
+| `npm run check` | Pass | 456 tests, documentation validation, cache-busting validation, and 145 cataloged SVG assets passed on 2026-09-07. |
+| Phase 3 controllers and performance | Pass | 488 automated tests; controller refactor, worker replay/fallback/cancellation, scoped SVG symbol reuse, and Chromium navigation/paint/4800×900 export smoke checks. |
+| Phase 1 Foundation Improvements | Pass | Automated SW manifest sync (`npm run update:sw`), isolated locale dictionaries (`tr.js`, `en.js`), RAF live preview throttling, scoped dropdown lifecycle, context-aware focus restoration, and live announcements pass automated tests. |
 | Modular Face Customization (Gates 0–1) | Pass | 19 face SVGs, iris palette, schema v4 migration, resting-face restoration, and full undo/redo pass automated test suites. |
 | Body Models & Fit Families (Gate 2) | Pass | 6 base dolls (Baby, Child, Teen Classic A/B, Adult, Elder), fit-family filtering, presentation style discovery filters pass tests. |
 | Expanded Catalog & Shuffle (Gate 3) | Pass | Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage wardrobe items pass tests. |

@@ -25,7 +25,8 @@ import {
   setBubbleWidth
 } from '../js/domain/scene-rules.js';
 import { createAppStore } from '../js/core/app-store.js';
-import { createBubbleSvg, createExportService, wrapBubbleText } from '../js/services/export-service.js';
+import { createBubbleSvg, wrapBubbleText } from '../js/core/bubble-svg.js';
+import { createExportService } from '../js/services/export-service.js';
 
 test('Bubble vocabulary defines entity kinds, styles, and limits', () => {
   assert.ok(ENTITY_KINDS.includes('bubble'), 'ENTITY_KINDS includes bubble');

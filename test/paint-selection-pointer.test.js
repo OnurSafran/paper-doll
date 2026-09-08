@@ -187,3 +187,47 @@ test('paint select tool tracks pointer movement rather than freezing at pointerd
       `marquee should grow with the pointer (${afterFirstMove} -> ${afterSecondMove})`);
   });
 });
+
+test('paint preview coalesces moves and flushes or cancels even when RAF returns zero', () => {
+  withStubDocument(() => {
+    const frames = new Map();
+    let nextId = 0;
+    const previousCancel = globalThis.cancelAnimationFrame;
+    globalThis.requestAnimationFrame = (fn) => { const id = nextId++; frames.set(id, fn); return id; };
+    globalThis.cancelAnimationFrame = (id) => frames.delete(id);
+    try {
+      const root = createStubRoot();
+      const view = createPaintView({ rootElement: root, store: { getState: () => ({ customAssets: [] }), dispatch: () => ({ ok: true }) } });
+      view.resetCanvas({ itemType: 'prop' });
+      const canvas = root.querySelector('#paint-canvas');
+      const preview = root.querySelector('#paint-preview-stage').children.at(-1);
+      let draws = 0;
+      preview.getContext = () => ({ drawImage() { draws++; } });
+      canvas.dispatch('pointerdown', pointerEvent(10, 10));
+      draws = 0;
+      canvas.dispatch('pointermove', pointerEvent(30, 30));
+      canvas.dispatch('pointermove', pointerEvent(50, 50));
+      assert.equal(frames.size, 1);
+      assert.equal(draws, 0);
+      const [id, callback] = frames.entries().next().value;
+      frames.delete(id);
+      callback();
+      assert.equal(draws, 1);
+      canvas.dispatch('pointermove', pointerEvent(80, 80));
+      canvas.dispatch('pointerup', pointerEvent(80, 80));
+      assert.equal(frames.size, 0);
+      assert.equal(draws, 2);
+      canvas.dispatch('pointerdown', pointerEvent(10, 10));
+      canvas.dispatch('pointermove', pointerEvent(40, 40));
+      assert.equal(frames.size, 1);
+      canvas.dispatch('pointercancel', pointerEvent(40, 40));
+      assert.equal(frames.size, 0);
+      canvas.dispatch('pointerdown', pointerEvent(10, 10));
+      canvas.dispatch('pointermove', pointerEvent(40, 40));
+      view.destroy();
+      assert.equal(frames.size, 0);
+    } finally {
+      globalThis.cancelAnimationFrame = previousCancel;
+    }
+  });
+});

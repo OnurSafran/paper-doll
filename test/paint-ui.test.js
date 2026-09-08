@@ -1,3 +1,4 @@
+import { readControllerBundle } from './source-bundle.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -15,10 +16,10 @@ function loadCssBundle(entryPath = '../css/app.css') {
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = loadCssBundle();
-const appJs = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+const appJs = readControllerBundle(new URL('../js/app.js', import.meta.url));
 const designerJs = readFileSync(new URL('../js/features/designer/designer-view.js', import.meta.url), 'utf8');
-const playJs = readFileSync(new URL('../js/features/play/play-view.js', import.meta.url), 'utf8');
-const paintViewJs = readFileSync(new URL('../js/features/paint/paint-view.js', import.meta.url), 'utf8');
+const playJs = readControllerBundle(new URL('../js/features/play/play-view.js', import.meta.url));
+const paintViewJs = readControllerBundle(new URL('../js/features/paint/paint-view.js', import.meta.url));
 const paintSaveServiceJs = readFileSync(new URL('../js/features/paint/paint-save-service.js', import.meta.url), 'utf8');
 const paintSessionJs = readFileSync(new URL('../js/features/paint/paint-session.js', import.meta.url), 'utf8');
 const paintRasterJs = readFileSync(new URL('../js/features/paint/paint-raster.js', import.meta.url), 'utf8');
@@ -89,10 +90,10 @@ test('starting cutouts are trusted slot-matched built-ins with explicit pixel ac
   assert.equal(isTrustedCutoutDescriptor({ id: 'custom_top', custom: true, kind: 'wearable', slot: 'top' }, 'top'), false);
   assert.equal(isTrustedCutoutDescriptor({ id: 'dress_party', kind: 'wearable', slot: 'dress' }, 'top'), false);
   assert.equal(isTrustedCutoutDescriptor({ id: 'prop_cat', kind: 'prop' }, 'top'), false);
-  assert.match(paintViewJs, /requestToken !== cutoutActionToken/);
+  assert.match(paintViewJs, /requestToken !== context\.cutoutActionToken/);
   assert.match(paintViewJs, /URL\.revokeObjectURL\(url\)/);
-  assert.match(paintViewJs, /rasterizeCutoutIntoCanvas\(session\.getState\(\)\.cutoutAssetId, 'add'\)/);
-  assert.match(paintViewJs, /rasterizeCutoutIntoCanvas\(session\.getState\(\)\.cutoutAssetId, 'replace'\)/);
+  assert.match(paintViewJs, /rasterizeCutoutIntoCanvas\(context\.session\.getState\(\)\.cutoutAssetId, 'add'\)/);
+  assert.match(paintViewJs, /rasterizeCutoutIntoCanvas\(context\.session\.getState\(\)\.cutoutAssetId, 'replace'\)/);
   assert.match(paintViewJs, /cutout-none-card/);
   assert.match(paintViewJs, /session\.setCutoutAssetId\(null\)/);
   assert.match(paintViewJs, /selectColor/);

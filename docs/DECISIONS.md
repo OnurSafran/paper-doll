@@ -36,6 +36,13 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-035 | Feature views raise prompts through the injected dialog service, never `alert`/`confirm`/`prompt`. | Implemented | Native dialogs are unstyled, untranslatable, and blocking, and break the documented `alertdialog` accessibility contract. |
 | D-036 | Prop discovery uses short multi-membership collections (`home`, `outdoors`, `creative`, `fun`) plus derived `my-art`; content-pack provenance stays in `metadata.dlc`. | Implemented | Short thematic labels fit the current inventory, allow future overlap, and keep catalog placement separate from DLC ownership. |
 | D-037 | Backgrounds declare a native width of `1600`, `3200`, or `4800`; wide scenes repeat or crop that native background without stretching it in Play, export, Scene Book, or the minimap. | Implemented | A single stretched copy distorts normal backgrounds; native-width tiling preserves the authored artwork while allowing optional wide panoramas. |
+| D-038 | Automated Service Worker Manifest & Hash Sync via `scripts/update-sw-manifest.mjs`. | Implemented | Eliminates manual recalculation of `APP_SHELL` hashes and prevents cache-version drift across modular refactorings. |
+| D-039 | Extract dictionary tables to isolated locale modules (`js/core/locales/tr.js` and `en.js`). | Implemented | Isolates content copywriting from the runtime translation engine, reducing git diff contention and keeping `i18n.js` concise. |
+| D-040 | Feature views with document or window-level listeners expose standard `teardown` and `destroy` methods. | Implemented | Eliminates leaky global state (e.g. `__playDropdownsBound`) and prevents event listener accumulation across view transitions and test runs. |
+| D-041 | Decompose `app-store.js` into pure domain slice reducers under `js/core/reducers/`. | Implemented | Eliminates 1,350-line monolithic switch, enables O(1) prefix dispatch, and isolates domain mutations. |
+| D-042 | Generalized Teardown & Disposable Registry in `error-boundary.js`. | Implemented | Replaces hardcoded teardown parameters with flexible `createDisposableRegistry` for safe lifecycle management. |
+| D-043 | Static Type Checking via `jsconfig.json`, JSDoc `@typedef`, and ESLint rules. | Implemented | Establishes compile-time contract safety and prevents accidental globals without introducing build-time runtime bloat (D-011). |
+| D-044 | Comprehensive Panoramic Keyboard Navigation across stage, camera HUD, and slider. | Implemented | Supports `PageUp`, `PageDown`, `Home`, `End`, and `Shift+Arrows` for accessible camera panning across panoramic stages. |
 
 ## Decision details
 
@@ -141,3 +148,73 @@ to the full `stageWidth × 900` canvas. That distorted normal backgrounds. Each
 background now declares a native width of `1600`, `3200`, or `4800`; Play, the
 minimap, PNG export, and Scene Book share the same repeat-or-crop layout rule and
 never non-uniformly stretch the artwork.
+
+### D-038 — Automated Service Worker Manifest & Hash Sync
+
+The application is an offline-capable PWA whose app shell is defined and cached in `sw.js`. Previously, whenever any file in `APP_SHELL` changed or new ES modules were created, developers were required to manually recalculate content hashes, update `<link>` fingerprinted stylesheets in `index.html`, and edit `CACHE_NAME` in `sw.js`.
+
+`scripts/update-sw-manifest.mjs` (invoked via `npm run update:sw`) automates this process:
+1. Dynamically discovers all runtime ES modules in `js/` and catalog dependencies.
+2. Calculates deterministic SHA-256 digests of all stylesheet inputs and fingerprints them in `index.html`.
+3. Computes the composite hash across all cached app-shell files and regenerates `CACHE_NAME` and `APP_SHELL` in `sw.js`.
+4. Guarantees that `npm run validate:cache` passes cleanly without manual arithmetic.
+
+### D-039 — Isolated Locale Dictionaries
+
+`js/core/i18n.js` bundled full Turkish and English literal dictionary trees alongside runtime translation logic (`t`, `setLanguage`, `translateMessage`, `updateDomTranslations`), exceeding 2,460 lines and 130 KB. This caused massive git diff contention whenever copy or translations were revised.
+
+Translation tables are now extracted into standalone locale modules:
+- `js/core/locales/tr.js`: Turkish translations dictionary.
+- `js/core/locales/en.js`: English translations dictionary.
+
+`i18n.js` imports these modules, freezes `TRANSLATIONS = Object.freeze({ tr, en })`, and retains all public API contracts. This reduces `i18n.js` to ~150 lines of pure translation logic while isolating copywriting changes to dedicated locale files.
+
+### D-040 — Standardized View Lifecycle Teardown
+
+Views that listen to document or window-level events previously used ad-hoc globals (such as `window.__playDropdownsBound` in `play-view.js`) to prevent duplicate bindings across route transitions. This leaked state to the global scope and prevented clean unmounting in test runners and future multi-view lifecycles.
+
+Feature views with document or window listeners must scope their listeners to the view instance and expose standard `teardown()` and `destroy()` methods. Error boundaries, route navigations, and test suites invoke these teardown hooks to ensure zero listener accumulation and prevent memory leaks.
+
+### D-041 — Domain Slice Reducers & Direct Action Routing
+
+`js/core/app-store.js` previously contained all application mutations inside a single 1,350+ line `switch` statement mixing UI selection, outfit equipping, scene positioning, presets, custom artwork, and project backups.
+
+Mutations are now factored into pure domain slice reducers in `js/core/reducers/`:
+- `ui-reducer.js`: Mode, selection, toasts, audio status (`ui/*`)
+- `designer-reducer.js`: Slots, wearables, swatches, modular faces, base dolls (`designer/*`)
+- `preset-reducer.js`: Dollbox presets persistence, update, deletion (`preset/*`)
+- `scene-reducer.js`: Stage geometry, camera panning, entity lifecycles, bubbles, expressions, poses, clips (`scene/*`)
+- `custom-asset-reducer.js`: Custom PNG art descriptors, collections, trashing, purge (`customAsset/*`)
+- `settings-reducer.js`: Motion preferences, stamps, backgrounds, project envelope import/export (`settings/*`, `project/*`)
+- `action-validator.js`: Explicit payload contract validation via `validateActionPayload`
+
+`app-store.js` routes actions directly via an O(1) prefix lookup (`action.type.slice(0, slashIndex)`), shrinking from 1,774 lines to ~200 lines focused purely on state coordination, bounded history (undo/redo), and subscription broadcasts.
+
+### D-042 — Generalized Teardown & Disposable Registry
+
+Previous teardown in `error-boundary.js` hardcoded 6 specific parameters (`cancelPointer`, `stopAudio`, `stopAnimation`, `cancelExport`, `cancelStorage`, `cancelPaint`). Adding a new subsystem required updating the function signature and manual wiring in `app.js`.
+
+`createDisposableRegistry()` introduces a generalized registration mechanism:
+- Accepts functions, objects with `.teardown()`, or objects with `.destroy()`.
+- Returns an unregister handle.
+- `disposeAll()` catches individual errors and aggregates warnings, guaranteeing clean teardown of all active subsystems without breaking error boundary presentation.
+- `executeSafeTeardown()` supports both legacy parameter callbacks and registry instances.
+
+### D-043 — Static Type Checking & Linting Guardrails
+
+In adherence to Decision **D-011** ("Keep runtime dependency-free; allow platform dev tools"), runtime code uses pure ES modules without build-step transpilation. However, static type verification and code quality rules are vital to catch property misnomers and accidental globals.
+
+- `js/types.js` authors JSDoc `@typedef` definitions for `AppState`, `SceneRecord`, `SceneEntity`, `CustomAsset`, and `StoreAction`.
+- `jsconfig.json` and `tsconfig.json` configure `tsc` for non-emitting static type checking (`npm run check:types`).
+- `eslint.config.js` configures standard ES2022 rules, browser globals, and prevents unused imports or accidental globals (`npm run lint`).
+- Both checks are integrated into the automated `npm run check` pre-commit gate.
+
+### D-044 — Keyboard Panoramic Navigation
+
+Stage panning across panoramic stages (1,600 / 3,200 / 4,800 px) previously relied heavily on mouse/touch dragging or clicking HUD stepper buttons.
+
+Keyboard navigation is now first-class across the stage and camera HUD:
+- `PageUp` / `PageDown`: Smoothly pan virtual camera left/right by `CAMERA_CONSTANTS.STEP` (300 logical units).
+- `Home` / `End`: Jump camera directly to stage origin (0) or max panoramic boundary (`stageWidth - 1600`).
+- `Shift + ArrowLeft` / `Shift + ArrowRight`: Nudge camera left/right when no entities are selected.
+- Navigation listeners are wired to both `#play-stage` and `#camera-hud`, and work seamlessly even when `#camera-slider` has focus.

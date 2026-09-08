@@ -6,13 +6,13 @@
     <path d="M124 116 Q150 125 176 116" fill="none" stroke="#fffdf7" stroke-width="6"/>
 
     <!-- Fitted Corset Bodice -->
-    <path class="tint-primary" d="M126 122 L174 122 L172 185 L150 196 L128 185 Z" fill="var(--asset-color-primary, #a78bc4)"/>
+    <path class="tint-primary" d="M123 120 Q150 125 177 120 L179 185 L150 196 L121 185 Z" fill="var(--asset-color-primary, #a78bc4)"/>
     <!-- Bodice Boning Lines -->
     <line x1="142" y1="124" x2="144" y2="188" stroke="#2d261e" stroke-width="1.5"/>
     <line x1="158" y1="124" x2="156" y2="188" stroke="#2d261e" stroke-width="1.5"/>
 
     <!-- Big Flared Princess Gown Skirt -->
-    <path class="tint-primary" d="M128 185 L150 196 L172 185 C210 230 230 290 234 370 L66 370 C70 290 90 230 128 185 Z" fill="var(--asset-color-primary, #a78bc4)"/>
+    <path class="tint-primary" d="M121 185 L150 196 L179 185 C210 230 230 290 234 370 L66 370 C70 290 90 230 121 185 Z" fill="var(--asset-color-primary, #a78bc4)"/>
 
     <!-- Side Pannier Drapes -->
     <path d="M128 185 Q90 240 135 270 Q110 210 128 185" fill="#fffdf7" opacity="0.8"/>

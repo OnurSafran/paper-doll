@@ -41,8 +41,19 @@ function setup(t, { width = 600, height = 450, renderDollInto } = {}) {
   const timers = new Map();
   let nextTimer = 0;
   t.mock.method(globalThis, 'setTimeout', (fn) => { timers.set(++nextTimer, fn); return nextTimer; });
+  const windowListeners = {};
+  const mockWindow = {
+    listeners: windowListeners,
+    addEventListener(name, fn) { (windowListeners[name] ||= []).push(fn); },
+    removeEventListener(name, fn) {
+      if (windowListeners[name]) {
+        windowListeners[name] = windowListeners[name].filter((f) => f !== fn);
+      }
+    },
+    matchMedia: () => ({ matches: false })
+  };
   const globals = { document: { createElement: () => new Element() },
-    window: { addEventListener() {}, matchMedia: () => ({ matches: false }) },
+    window: mockWindow,
     requestAnimationFrame: (fn) => { frames.set(++nextFrame, fn); return nextFrame; },
     cancelAnimationFrame: (id) => frames.delete(id) };
   for (const [key, value] of Object.entries(globals)) {
@@ -84,7 +95,7 @@ function setup(t, { width = 600, height = 450, renderDollInto } = {}) {
   const view = createWorldMapView({ store, $, $$: () => landmarks, renderDollInto,
     getAsset: (id) => ({ id, name: id, path: `${id}.svg` }) });
   view.openWorldMapDialog();
-  return { view, $, state, frames, camera, svg, dock, timers, Element };
+  return { view, $, state, frames, camera, svg, dock, timers, Element, mockWindow };
 }
 
 const keyEvent = (key) => ({ key, preventDefault() {}, stopPropagation() {} });
@@ -193,4 +204,49 @@ test('reduced motion suppresses egg movement while still awarding the stamp', (t
   egg.emit('keydown', keyEvent('Enter'));
   assert.equal(sprite.classList.contains('is-triggered'), false);
   assert.deepEqual(state.settings.stamps, ['kitten']);
+});
+
+test('renderActiveDollMarker selects character matching state.ui.selectedEntityId over first character', async (t) => {
+  let renderedDraft = null;
+  const renderDollInto = async (container, draft) => {
+    renderedDraft = draft;
+  };
+  const { view, state } = setup(t, { renderDollInto });
+  state.currentScene.entities = [
+    { instanceId: 'char-1', kind: 'character', characterSnapshot: { name: 'Doll 1' } },
+    { instanceId: 'char-2', kind: 'character', characterSnapshot: { name: 'Doll 2' } }
+  ];
+  state.ui = { selectedEntityId: 'char-2' };
+  view.closeWorldMapDialog();
+  view.openWorldMapDialog();
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(renderedDraft?.name, 'Doll 2');
+});
+
+test('view.teardown() and view.destroy() remove window languagechange listener', (t) => {
+  const { view, mockWindow } = setup(t);
+  assert.equal(mockWindow.listeners['languagechange']?.length, 1);
+  view.teardown();
+  assert.equal(mockWindow.listeners['languagechange']?.length, 0);
+});
+
+
+test('explicit map close restores the actual opener once when the native close event arrives', (t) => {
+  const { view, $, Element } = setup(t);
+  view.closeWorldMapDialog();
+  const opener = new Element();
+  let openerFocus = 0;
+  let fallbackFocus = 0;
+  opener.focus = () => { openerFocus++; };
+  $('#open-world-map-btn').focus = () => { fallbackFocus++; };
+  document.activeElement = opener;
+  document.contains = (el) => el === opener;
+  const dialog = $('#world-map-dialog');
+  dialog.close = () => { dialog.open = false; };
+  view.openWorldMapDialog();
+  view.closeWorldMapDialog();
+  dialog.emit('close');
+  assert.equal(openerFocus, 1);
+  assert.equal(fallbackFocus, 0);
 });

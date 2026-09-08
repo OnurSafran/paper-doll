@@ -1,3 +1,4 @@
+import { readControllerBundle } from './source-bundle.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -195,14 +196,14 @@ test('Item 2: Non-looping playback completion applies static pose deterministica
 });
 
 test('Item 3: Play view tab validation preserves Joints tab for attached bubbles', async () => {
-  const playJs = readFileSync(new URL('../js/features/play/play-view.js', import.meta.url), 'utf8');
+  const playJs = readControllerBundle(new URL('../js/features/play/play-view.js', import.meta.url));
   assert.ok(playJs.includes("activeInspectorTab === 'joints' && isAttached"));
   assert.ok(playJs.includes("activeInspectorTab === 'bubble' && isBubble"));
   assert.ok(playJs.includes("if (!isTabValid) {"));
 });
 
 test('Item 4: Keyboard tab navigation skips hidden tabs and applies roving tabindex', async () => {
-  const appJs = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+  const appJs = readControllerBundle(new URL('../js/app.js', import.meta.url));
   assert.ok(appJs.includes("filter((t) => !t.hidden"));
   assert.ok(appJs.includes("t.setAttribute('tabindex', '-1')"));
   assert.ok(appJs.includes("targetTab.setAttribute('tabindex', '0')"));
@@ -223,7 +224,7 @@ test('Item 5: index.html has valid aria-labelledby id, tabpanel roles, and aria-
 });
 
 test('Item 6 & 7: Rhythm controls reflect sync/alternate/wave and motion pref shows on multi-select', () => {
-  const playJs = readFileSync(new URL('../js/features/play/play-view.js', import.meta.url), 'utf8');
+  const playJs = readControllerBundle(new URL('../js/features/play/play-view.js', import.meta.url));
   assert.ok(playJs.includes('is-selected-rhythm'), 'Rhythm buttons apply is-selected-rhythm class');
   assert.ok(playJs.includes("btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false')"));
   assert.ok(playJs.includes('motionPrefGroup.hidden = !hasCharactersSelected'));

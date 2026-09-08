@@ -1,3 +1,4 @@
+import { readControllerBundle } from './source-bundle.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -13,11 +14,14 @@ function loadCssBundle(entryPath = '../css/app.css') {
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = loadCssBundle();
-const js = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+const js = readControllerBundle(new URL('../js/app.js', import.meta.url));
 const exportJs = readFileSync(new URL('../js/services/export-service.js', import.meta.url), 'utf8');
-const playJs = readFileSync(new URL('../js/features/play/play-view.js', import.meta.url), 'utf8');
+const bubbleJs = readFileSync(new URL('../js/core/bubble-svg.js', import.meta.url), 'utf8');
+const playJs = readControllerBundle(new URL('../js/features/play/play-view.js', import.meta.url));
 const designerJs = readFileSync(new URL('../js/features/designer/designer-view.js', import.meta.url), 'utf8');
 const sceneBookJs = readFileSync(new URL('../js/features/scene-book/scene-book-view.js', import.meta.url), 'utf8');
+const worldMapJs = readFileSync(new URL('../js/features/world-map/world-map-view.js', import.meta.url), 'utf8');
+const paintJs = readControllerBundle(new URL('../js/features/paint/paint-view.js', import.meta.url));
 
 test('every view built in app.js receives the registry-backed asset resolvers it declares', () => {
   // Guards PLR-1: createPlayView declared getAssetsByKind but app.js only passed it to
@@ -26,7 +30,8 @@ test('every view built in app.js receives the registry-backed asset resolvers it
     createDesignerView: designerJs,
     createPlayView: playJs,
     createSceneOutlineView: readFileSync(new URL('../js/features/play/scene-outline-view.js', import.meta.url), 'utf8'),
-    createSceneBookView: readFileSync(new URL('../js/features/scene-book/scene-book-view.js', import.meta.url), 'utf8')
+    createSceneBookView: sceneBookJs,
+    createWorldMapView: worldMapJs
   };
   const effective = { getAsset: 'getEffectiveAsset', getAssetsByKind: 'getEffectiveAssetsByKind' };
 
@@ -152,7 +157,7 @@ test('dialogs, export coordinates, drag cleanup, and voice puppetry enforce safe
   assert.match(html, /id="confirm-dialog"/);
   assert.match(html, /id="confirm-ok"/);
   assert.match(html, /id="confirm-cancel"/);
-  assert.match(js, /dialog\.returnValue\s*=\s*'';\s*\$\('#confirm-title'\)/);
+  assert.match(js, /dialog\.returnValue\s*=\s*'';\s*context\.\$\('#confirm-title'\)/);
 
   // PNG export accurately offsets props and characters without NaN
   assert.match(exportJs, /ctx\.drawImage\(\s*propImg,\s*-renderW\s*\*\s*bounds\.anchorX,\s*-renderH\s*\*\s*bounds\.anchorY,\s*renderW,\s*renderH\s*\)/);
@@ -234,8 +239,8 @@ test('speech bubbles and captions expose accessible controls, spawner tabs, dial
   assert.match(playJs, /action === 'editBubbleText'/);
   assert.match(playJs, /openEditBubbleDialog/);
 
-  assert.match(exportJs, /export function createBubbleSvg/);
-  assert.match(exportJs, /export function wrapBubbleText/);
+  assert.match(bubbleJs, /export function createBubbleSvg/);
+  assert.match(bubbleJs, /export function wrapBubbleText/);
 });
 
 test('multi-select, alignment controls, scene outline, and templates expose accessible UI and dialogs', () => {
@@ -400,4 +405,44 @@ test('All library dialogs declare closedby="any" and light-dismiss backdrop wiri
   assert.match(dismissJs, /export function enableDialogLightDismiss/);
   assert.match(dismissJs, /dialog\.dataset\.lightDismissBound/);
 });
+
+test('architectural layering: feature views do not import from services/', () => {
+  const featureSources = [
+    { name: 'play-view.js', source: playJs },
+    { name: 'designer-view.js', source: designerJs },
+    { name: 'scene-book-view.js', source: sceneBookJs },
+    { name: 'scene-outline-view.js', source: readFileSync(new URL('../js/features/play/scene-outline-view.js', import.meta.url), 'utf8') },
+    { name: 'world-map-view.js', source: worldMapJs },
+    { name: 'paint-view.js', source: paintJs }
+  ];
+
+  for (const { name, source } of featureSources) {
+    assert.doesNotMatch(
+      source,
+      /from\s+['"][^'"]*services\//,
+      `${name} violates ARCHITECTURE.md rule: feature views must not import from services/`
+    );
+  }
+});
+
+test('app.js handles "m" shortcut for World Map using canonical ui.mode === "play"', () => {
+  assert.match(js, /store\.getState\(\)\.ui\?\.mode\s*===\s*'play'/);
+  assert.doesNotMatch(js, /store\.getState\(\)\.activeTab\s*===\s*'play'/);
+});
+
+test('views with window-level listeners expose teardown / destroy methods', () => {
+  assert.match(worldMapJs, /teardown\s*,/);
+  assert.match(worldMapJs, /destroy:\s*teardown/);
+  assert.match(paintJs, /destroy\s*,/);
+  assert.match(playJs, /teardown\s*,/);
+  assert.match(playJs, /destroy:\s*teardown/);
+  assert.doesNotMatch(playJs, /__playDropdownsBound/);
+});
+
+test('accessible screen reader live announcements region is wired in app shell and app.js', () => {
+  assert.match(html, /id="sr-announcements"[^>]*role="status"[^>]*aria-live="polite"/);
+  assert.match(js, /announceForScreenReader/);
+});
+
+
 

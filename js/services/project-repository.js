@@ -13,7 +13,7 @@ export { STORAGE_KEY };
  * Load and validate a persisted project envelope from storage.
  * Separates storage availability from recovery outcome.
  */
-export function loadEnvelope(storage, getAsset = () => undefined) {
+export function loadEnvelope(storage, getAsset = (_id) => undefined) {
   if (!storage) {
     const defaults = createDefaultEnvelope();
     return {
@@ -104,11 +104,11 @@ export const loadProject = loadEnvelope;
  * guarded writes, monotonic revisions, and cross-tab conflict detection.
  */
 export function createProjectRepository({
-  storage,
+  storage = undefined,
   delay = LIMITS.AUTOSAVE_DEBOUNCE_MS,
-  onStatus = () => {},
+  onStatus = (_status) => {},
   initialRevision = 1,
-  getAsset = () => undefined
+  getAsset = (_id) => undefined
 } = {}) {
   let timer = null;
   let pending = null;

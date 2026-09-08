@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <base href="../">
+  <title>Wardrobe fit review</title>
+  <link rel="stylesheet" href="css/features/designer.css">
+  <style>
+    body { margin: 16px; font: 14px system-ui; background: #f4f0e8; color: #2d261e; }
+    nav { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px; background: white; }
+    select, button { padding: 6px; } main { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    article { padding: 8px; background: white; border: 1px solid #d6cdc0; text-align: center; min-width: 0; }
+    h2 { font-size: 12px; margin: 0; overflow-wrap: anywhere; } p { font-size: 11px; margin: 4px 0; }
+    .fit { position: relative; overflow: hidden; height: 290px; width: 100%; } .fit > svg, .fit > img { width: 100%; height: 100%; }
+    .fit .doll-layer { position: absolute; inset: 0; } .fit .doll-layer svg { width: 100%; height: 100%; }
+    #status { padding: 8px 0; } #status[data-result="fail"] { color: #b42318; }
+    pre { white-space: pre-wrap; } .measurement { position: absolute; left: -10000px; width: 300px; height: 450px; }
+  </style>
+</head>
+<body>
+  <h1>Wardrobe fit review</h1>
+  <nav>
+    <label>Category <select id="slot"><option>top</option><option>bottom</option><option>dress</option><option>shoes</option><option>hair</option><option>accessory</option><option>outfits</option></select></label>
+    <label>Render <select id="mode"><option value="export">Exported image</option><option value="designer">Designer layers</option><option value="preview">Wardrobe thumbnail</option></select></label>
+    <label>Color <select id="color"><option value="default">Default</option><option value="sky">Sky</option><option value="cherry">Cherry</option></select></label>
+    <button id="previous">Previous</button><span id="page"></span><button id="next">Next</button>
+  </nav>
+  <div id="status">Checking SVGs, fit coverage, preview bounds, and recoloring…</div><details><summary>Checks</summary><pre id="checks"></pre></details>
+  <main></main>
+  <script type="module" src="review/wardrobe-fit.js"></script>
+</body>
+</html>

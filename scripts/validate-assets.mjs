@@ -87,6 +87,15 @@ for (const asset of ASSETS) {
   if (externalReferences.test(source)) failures.push(`${asset.path}: contains an external or embedded reference`);
   if (unsupportedXml.test(source)) failures.push(`${asset.path}: contains unsupported XML or namespaces`);
 
+  // Export serializes SVG without page CSS. Every tint class needs its own
+  // variable-backed fill, including classes placed on a parent group.
+  for (const [tag] of source.matchAll(/<[a-z]+\b[^>]*\bclass=["'][^"']*(?:tint-primary|hair-fill)[^"']*["'][^>]*>/gi)) {
+    const variable = tag.includes('hair-fill') ? '--hair-color' : '--asset-color-primary';
+    if (!tag.includes(`fill="var(${variable},`)) {
+      failures.push(`${asset.path}: tint class needs an explicit ${variable} fill for standalone export`);
+    }
+  }
+
   const shapeCount = [...source.matchAll(/<(?:path|rect|circle|ellipse|line|polyline|polygon)\b/gi)].length;
   const maxShapes = asset.kind === 'background' ? 800 : asset.kind === 'prop' ? 350 : 250;
   if (shapeCount > maxShapes) failures.push(`${asset.path}: ${shapeCount} shapes exceeds ${maxShapes}`);

@@ -444,7 +444,7 @@ test('createExportDollSvg renders face layers in exact visual hierarchy', async 
   };
 
   try {
-    const { createExportDollSvg } = await import('../js/services/export-service.js');
+    const { createExportDollSvg } = await import('../js/core/doll-svg.js');
 
     const draft = createStarterDraft();
     draft.face = {
@@ -532,7 +532,7 @@ test('createExportDollSvg keeps the baked default face visible', async () => {
   };
 
   try {
-    const { createExportDollSvg } = await import('../js/services/export-service.js');
+    const { createExportDollSvg } = await import('../js/core/doll-svg.js');
     const draft = createStarterDraft();
     draft.slots = { hair: null, top: null, bottom: null, dress: null, shoes: null, accessory: null };
     await createExportDollSvg(draft, 'neutral', { loadAssetSvg: fakeLoadSvg });
@@ -610,7 +610,7 @@ test('FACE_PREVIEW_VIEWBOX zooms preview cards and appendAsset sets iris color',
 });
 
 test('applyMouthExpression applies non-neutral expressions and cleanly restores resting face on neutral', async () => {
-  const { applyMouthExpression } = await import('../js/services/export-service.js');
+  const { applyMouthExpression } = await import('../js/core/mouth-expression.js');
 
   const restingPath = { localName: 'path', style: { display: '' } };
   const faceFeatureG = {

@@ -28,6 +28,8 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 - Ordinary wearables require `#garment` and declare `supportedFitFamilies` and `presentationStyles`.
 - Built-in hair requires `#hairBack` and `#hairFront`. Single-layer custom hair renders as transparent PNG at Layer 70.
 - Geometry is authored in doll coordinates; equip selects a slot and never guesses anchors.
+- Garments normally use the slot's layer order. Dungaree overalls declare `layerOrder: 42` so their bib and straps cover the top in both Designer and export.
+- Wardrobe framing comes from `wearablePreviewViewBox`: body accessories, baby footwear, long hair, and overalls have crops matching their artwork instead of the slot's default crop.
 
 ### Backgrounds
 
@@ -60,6 +62,8 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 | `.fixed-detail` | authored literal color |
 
 State stores only catalog palette tokens or normalized six-digit hex colors. Arbitrary CSS, alpha, gradient, `url(...)`, and other style text are rejected.
+
+Every `.tint-primary` and `.hair-fill` element also declares a matching variable-backed `fill` attribute. Standalone SVG/PNG export does not inherit page CSS. For recolorable strokes (glasses frames, straps), use the color variable on `stroke` and omit the fill class so transparent areas remain clear.
 
 ## SVG safety
 
@@ -160,5 +164,7 @@ Total: 145 cataloged SVG files, including 87 wearable/hair/accessory assets, 6 b
 6. Test long hair + hat + dress, hoodie + skirt, and largest prop at `2×`.
 
 Each asset must pass validator, alternate-tint, `200%` zoom, preview, bounds, flip/scale, placeholder-label, and distribution-provenance checks.
+
+Serve the repository locally and open [the wardrobe fit review](../review/wardrobe-fit.html) to compare all supported doll/garment pairs, complete outfits, Designer layers, exported images, and wardrobe thumbnails. The review also runs browser pixel checks for standalone recoloring, thumbnail clipping, repaired fit landmarks, clear eyes, the rattle grip, and overalls layering. This developer page is not part of the offline app shell.
 
 Adding ordinary assets should require only SVG plus catalog entry. New slots, interactive state, uploads, patterns, or coordinate changes require schema, security, migration, test, and roadmap updates.
