@@ -38,7 +38,7 @@ export function createAppDialogs(context) {
     announceForScreenReader(message);
   }
 
-  function askConfirm(title, message) {
+  function askConfirm(title, message, options = {}) {
     const show = () => new Promise((resolve) => {
       const dialog = context.$('#confirm-dialog');
       if (!dialog) {
@@ -46,10 +46,18 @@ export function createAppDialogs(context) {
         return;
       }
       dialog.returnValue = '';
-      context.$('#confirm-title').textContent = title;
-      context.$('#confirm-message').textContent = message;
+      context.$('#confirm-title') && (context.$('#confirm-title').textContent = title);
+      context.$('#confirm-message') && (context.$('#confirm-message').textContent = message);
       const ok = context.$('#confirm-ok');
       const cancel = context.$('#confirm-cancel');
+      const prevOkText = ok ? ok.textContent : '';
+      const prevCancelText = cancel ? cancel.textContent : '';
+      if (ok && options.okText) ok.textContent = options.okText;
+      if (cancel && options.cancelText) cancel.textContent = options.cancelText;
+      if (ok && options.danger === false) {
+        ok.classList.remove('danger-fill');
+        ok.classList.add('primary');
+      }
       const onOk = () => { cleanup(); resolve(true); };
       const onCancel = () => { cleanup(); resolve(false); };
       const onClose = () => { cleanup(); resolve(dialog.returnValue === 'ok'); };
@@ -57,6 +65,12 @@ export function createAppDialogs(context) {
         ok?.removeEventListener('click', onOk);
         cancel?.removeEventListener('click', onCancel);
         dialog?.removeEventListener('close', onClose);
+        if (ok && prevOkText) ok.textContent = prevOkText;
+        if (cancel && prevCancelText) cancel.textContent = prevCancelText;
+        if (ok && options.danger === false) {
+          ok.classList.remove('primary');
+          ok.classList.add('danger-fill');
+        }
         if (dialog.open) dialog.close();
       }
       ok?.addEventListener('click', onOk);
@@ -74,21 +88,27 @@ export function createAppDialogs(context) {
   function showAlert(message, title = t('alertDialog.defaultTitle')) {
     const show = () => new Promise((resolve) => {
       const dialog = context.$('#alert-dialog');
+      if (!dialog) {
+        resolve(undefined);
+        return;
+      }
       dialog.returnValue = '';
-      context.$('#alert-title').textContent = title;
-      context.$('#alert-message').textContent = message;
+      const titleEl = context.$('#alert-title');
+      if (titleEl) titleEl.textContent = title;
+      const msgEl = context.$('#alert-message');
+      if (msgEl) msgEl.textContent = message;
       const ok = context.$('#alert-ok');
       const onOk = () => { cleanup(); resolve(undefined); };
       const onClose = () => { cleanup(); resolve(undefined); };
       function cleanup() {
-        ok.removeEventListener('click', onOk);
-        dialog.removeEventListener('close', onClose);
+        ok?.removeEventListener('click', onOk);
+        dialog?.removeEventListener('close', onClose);
         if (dialog.open) dialog.close();
       }
-      ok.addEventListener('click', onOk);
+      ok?.addEventListener('click', onOk);
       dialog.addEventListener('close', onClose);
       dialog.showModal();
-      ok.focus();
+      ok?.focus?.();
     });
     const result = alertQueue.then(show, show);
     alertQueue = result.then(() => undefined, () => undefined);
@@ -102,31 +122,33 @@ export function createAppDialogs(context) {
       const dialog = context.$('#prompt-dialog');
       if (!dialog) { resolve(null); return; }
       dialog.returnValue = '';
-      context.$('#prompt-title').textContent = title;
-      context.$('#prompt-message').textContent = message;
+      const titleEl = context.$('#prompt-title');
+      if (titleEl) titleEl.textContent = title;
+      const msgEl = context.$('#prompt-message');
+      if (msgEl) msgEl.textContent = message;
       const input = context.$('#prompt-input');
       const form = context.$('#prompt-form');
       const cancel = context.$('#prompt-cancel');
-      input.value = initialValue;
+      if (input) input.value = initialValue;
       let settled = false;
       const finish = (value) => { if (settled) return; settled = true; cleanup(); resolve(value); };
       // Submit rather than the OK button's click: Enter inside the field reaches the
       // form directly, so the prompt does not depend on implicit-submission quirks.
-      const onSubmit = (event) => { event.preventDefault(); finish(input.value); };
+      const onSubmit = (event) => { event.preventDefault(); finish(input ? input.value : ''); };
       const onCancel = () => finish(null);
-      const onClose = () => finish(dialog.returnValue === 'ok' ? input.value : null);
+      const onClose = () => finish(dialog.returnValue === 'ok' ? (input ? input.value : '') : null);
       function cleanup() {
-        form.removeEventListener('submit', onSubmit);
-        cancel.removeEventListener('click', onCancel);
-        dialog.removeEventListener('close', onClose);
+        form?.removeEventListener('submit', onSubmit);
+        cancel?.removeEventListener('click', onCancel);
+        dialog?.removeEventListener('close', onClose);
         if (dialog.open) dialog.close();
       }
-      form.addEventListener('submit', onSubmit);
-      cancel.addEventListener('click', onCancel);
+      form?.addEventListener('submit', onSubmit);
+      cancel?.addEventListener('click', onCancel);
       dialog.addEventListener('close', onClose);
       dialog.showModal();
-      input.focus();
-      input.select?.();
+      input?.focus?.();
+      input?.select?.();
     });
     const result = promptQueue.then(show, show);
     promptQueue = result.then(() => undefined, () => undefined);

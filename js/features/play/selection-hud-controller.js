@@ -26,10 +26,10 @@ export function createSelectionHudController(context) {
     if (selectedIds.length === 0) return;
 
     const isMulti = selectedIds.length > 1;
-    let label = t('play.noItemSelected');
-    let ringX = 0;
-    let ringY = 0;
-    let placeBelow = true;
+    let label;
+    let ringX;
+    let ringY;
+    let placeBelow;
     let selected = null;
 
     if (isMulti) {
@@ -112,7 +112,7 @@ export function createSelectionHudController(context) {
     });
     ring.append(deselectBtn);
 
-    let controls = [];
+    let controls;
     if (isMulti) {
       const allSelectedPinned = state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId)).every((e) => e.pinned);
       controls = [
@@ -232,7 +232,7 @@ export function createSelectionHudController(context) {
 
   function handleStageKeydown(event) {
     const isSlider = Boolean(event.target?.matches?.('#camera-slider'));
-    if (!isSlider && event.target.matches('input, select, textarea, [contenteditable]')) return;
+    if (!isSlider && event.target?.matches?.('input, select, textarea, [contenteditable]')) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     const state = context.store.getState();
     const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;

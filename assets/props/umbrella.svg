@@ -11,15 +11,15 @@
 
     <!-- Umbrella Canopy (Striped Scalloped Dome) -->
     <!-- Outer Canopy Arc -->
-    <path d="M120 440 C160 140 840 140 880 440 L880 460 Q800 490 720 450 Q640 490 560 450 Q480 490 400 450 Q320 490 240 450 Q160 490 120 450 Z" fill="#4ea8de"/>
+    <path d="M120 450 Q210 200 500 140 Q790 200 880 450 L880 460 Q800 490 720 450 Q640 490 560 450 Q480 490 400 450 Q320 490 240 450 Q160 490 120 450 Z" fill="#4ea8de"/>
 
     <!-- Striped Segments -->
     <!-- Yellow Segment 1 -->
-    <path d="M500 140 Q320 180 240 450 Q320 490 400 450 Q430 250 500 140 Z" fill="#ffd166"/>
+    <path d="M500 140 Q350 220 240 450 Q320 490 400 450 Q430 250 500 140 Z" fill="#ffd166"/>
     <!-- Coral Segment 2 -->
-    <path d="M500 140 Q450 250 400 450 Q480 490 560 450 Q530 250 500 140 Z" fill="#ef476f"/>
+    <path d="M500 140 Q430 250 400 450 Q480 490 560 450 Q530 250 500 140 Z" fill="#ef476f"/>
     <!-- White Segment 3 -->
-    <path d="M500 140 Q530 250 560 450 Q640 490 720 450 Q660 250 500 140 Z" fill="#fffdf7"/>
+    <path d="M500 140 Q530 250 560 450 Q640 490 720 450 Q630 250 500 140 Z" fill="#fffdf7"/>
 
     <!-- Rib Lines -->
     <path d="M500 140 Q350 220 240 450" fill="none" stroke="#2d261e" stroke-width="16"/>

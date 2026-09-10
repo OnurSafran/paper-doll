@@ -162,3 +162,29 @@ test('cancelling an active worker export skips fallback and releases the service
     assert.equal(terminated, 1);
   } finally { restore(); }
 });
+
+test('renderExportDrawList supports 3, 5, and 9 argument drawImage commands', async () => {
+  const img = { close: () => {} };
+  const calls = [];
+  const fakeCtx = {
+    drawImage: (...args) => calls.push(args)
+  };
+  const payload = {
+    width: 100,
+    height: 100,
+    images: [img],
+    commands: [
+      ['drawImage', 0, 10, 20],
+      ['drawImage', 0, 10, 20, 30, 40],
+      ['drawImage', 0, 1, 2, 3, 4, 5, 6, 7, 8]
+    ]
+  };
+  await renderExportDrawList(payload, () => ({
+    getContext: () => fakeCtx,
+    convertToBlob: async () => new Blob(['ok'])
+  }));
+  assert.equal(calls.length, 3);
+  assert.deepEqual(calls[0], [img, 10, 20]);
+  assert.deepEqual(calls[1], [img, 10, 20, 30, 40]);
+  assert.deepEqual(calls[2], [img, 1, 2, 3, 4, 5, 6, 7, 8]);
+});

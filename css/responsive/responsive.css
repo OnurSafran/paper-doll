@@ -14,7 +14,50 @@
   }
 }
 
+/*
+ * The full header needs ~1050px and grows with the save-status text
+ * ("Kaydedilmedi" is the widest). Undo/Redo keep their icons, so their labels
+ * go first; that alone lets 1024px iPads fit every status.
+ */
+@media (max-width: 1100px) {
+  .history-btn-text {
+    display: none;
+  }
+}
+
+/*
+ * Every iPad in portrait (744–834px) and narrow split-screen windows land
+ * here. Below ~960px even the trimmed header overflows and pushes Redo
+ * off-screen.
+ */
+@media (max-width: 960px) {
+  .app-header {
+    grid-template-columns: auto 1fr auto;
+    padding: 0 0.75rem;
+    gap: 0.5rem;
+  }
+  .brand-subtitle,
+  .save-status {
+    display: none;
+  }
+  .mode-nav a {
+    padding-inline: 0.65rem;
+    font-size: 0.8rem;
+  }
+  .header-btn-text {
+    display: none;
+  }
+}
+
 @media (max-width: 920px) {
+  /*
+   * Stacked screens grow taller than the viewport, so <main> becomes the
+   * scroller. html/body stay overflow:hidden for the fixed desktop workspace.
+   */
+  main {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
   .designer-grid, .play-grid {
     display: flex;
     flex-direction: column;
@@ -36,6 +79,9 @@
   .paint-heading-secondary {
     justify-content: center;
   }
+  .paint-heading-primary {
+    flex-wrap: wrap;
+  }
   .paint-title-group {
     margin-right: 0;
     justify-content: center;
@@ -49,7 +95,8 @@
   #play-screen,
   #paint-screen {
     height: auto;
-    min-height: calc(100dvh - var(--app-header-height));
+    min-height: 100%;
+    max-height: none;
     overflow: visible;
   }
   .designer-stage-wrap,
@@ -64,6 +111,10 @@
    */
   .play-stage-viewport {
     min-height: calc((100vw - 2.5rem) * 0.5625 + var(--hud-space, 0px) + 1.5rem);
+  }
+  /* A swipe that starts on the stage scrolls the page; entities keep touch-action:none for dragging. */
+  .play-stage {
+    touch-action: pan-y;
   }
   .designer-sidebar,
   .spawn-panel {
@@ -93,26 +144,62 @@
   }
 }
 
+/*
+ * iPad Pro 12.9"/13" in portrait (1024–1032px) still fits the two-column Play
+ * grid, but its tall, narrow scene column can only hold a 16:9 stage with huge
+ * letterbox gaps. Stack Play the same way the smaller iPads do.
+ */
+@media (orientation: portrait) and (min-width: 921px) and (max-width: 1100px) {
+  main {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  .play-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .play-rail {
+    order: 2;
+  }
+  #play-screen {
+    height: auto;
+    min-height: 100%;
+    max-height: none;
+    overflow: visible;
+  }
+  .play-stage-viewport {
+    order: 1;
+    min-height: calc((100vw - 2.5rem) * 0.5625 + var(--hud-space, 0px) + 1.5rem);
+  }
+  .play-stage {
+    touch-action: pan-y;
+  }
+  .spawn-panel {
+    order: 2;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+  }
+  .spawn-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/*
+ * Both stacked Play layouts above. Left at the desktop height:100%, the stage
+ * column and rail split the screen 50/50, the column shrinks below the
+ * viewport's reserved 16:9 height, and the stage spills over the rail tabs.
+ * Size them to their content and let <main> scroll instead.
+ */
+@media (max-width: 920px), (orientation: portrait) and (min-width: 921px) and (max-width: 1100px) {
+  .play-grid,
+  .play-stage-column,
+  .play-rail {
+    height: auto;
+  }
+}
+
 @media (max-width: 800px) {
-  .app-header {
-    grid-template-columns: auto 1fr auto;
-    padding: 0 0.75rem;
-    gap: 0.5rem;
-  }
-  .brand-subtitle,
-  .save-status {
-    display: none;
-  }
-  .mode-nav a {
-    padding-inline: 0.65rem;
-    font-size: 0.8rem;
-  }
-  .header-btn-text {
-    display: none;
-  }
-  .history-btn-text {
-    display: none;
-  }
   .designer-topbar {
     flex-wrap: wrap;
   }
@@ -130,6 +217,25 @@
 }
 
 @media (max-width: 600px) {
+  /*
+   * Brand + nav + actions need ~560px in one row, which pushed Settings (the
+   * only way to switch language) off a phone screen. Give the nav its own row;
+   * <main> is flex: 1 and absorbs the taller header.
+   */
+  .app-header {
+    height: auto;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "brand actions"
+      "nav nav";
+    row-gap: 0.3rem;
+    padding-block: 0.35rem;
+  }
+  .brand { grid-area: brand; }
+  /* The mark alone keeps the first row inside 375px with the language toggle. */
+  .brand-titles { display: none; }
+  .header-actions { grid-area: actions; }
+  .mode-nav { grid-area: nav; }
   .asset-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -154,6 +260,50 @@
   }
   .scene-help {
     display: none;
+  }
+}
+
+/* Touch screens: controls sized for a mouse grow to Apple's 44pt minimum. */
+@media (pointer: coarse) {
+  .brand {
+    min-height: 44px;
+  }
+  .header-actions .compact-action {
+    min-width: 44px;
+  }
+  .scene-picker-group select,
+  .scene-picker-group .world-map-pill,
+  .menu-dropdown-panel .dropdown-item,
+  .rail-mode-tabs .mode-tab,
+  .inspector-tabs .tab-btn,
+  .custom-color input[type="color"],
+  .paint-item-chip-container .paint-item-chip-btn,
+  #paint-brush-size-slider {
+    min-height: 44px;
+  }
+  .paint-history-controls button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .paint-active-color-swatch,
+  .paint-color-picker-label input[type="color"] {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+  .paint-swatch {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+}
+
+/* The larger transport bar only fits stages wider than a phone's. */
+@media (pointer: coarse) and (min-width: 601px) {
+  .play-floating-transport button,
+  .play-floating-transport .speed-buttons button {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 

@@ -308,10 +308,12 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.asset-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--coral);
-  box-shadow: var(--shadow-md);
+@media (hover: hover) {
+  .asset-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--coral);
+    box-shadow: var(--shadow-md);
+  }
 }
 
 .asset-card[aria-pressed="true"] {
@@ -422,10 +424,12 @@
   transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.model-picker-btn:hover {
-  transform: translateY(-1px);
-  border-color: var(--coral);
-  background: #fffdf7;
+@media (hover: hover) {
+  .model-picker-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--coral);
+    background: #fffdf7;
+  }
 }
 
 .model-picker-btn[aria-pressed="true"] {
@@ -470,9 +474,11 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease, outline 0.15s ease;
 }
 
-.swatch:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(46, 38, 31, 0.18);
+@media (hover: hover) {
+  .swatch:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(46, 38, 31, 0.18);
+  }
 }
 
 .swatch[aria-pressed="true"] {
@@ -560,12 +566,16 @@ input:focus, select:focus, textarea:focus {
   justify-content: flex-end;
 }
 
+.dollbox-dialog {
+  max-width: 520px;
+  width: min(92vw, 520px);
+}
+
+/* The dialog itself scrolls, so the list no longer needs its own scroller. */
 .dollbox-list {
   display: grid;
   gap: 0.45rem;
-  margin-top: 0.65rem;
-  max-height: 200px;
-  overflow-y: auto;
+  margin-top: 0.85rem;
 }
 
 .dollbox-item {
@@ -624,6 +634,9 @@ input:focus, select:focus, textarea:focus {
 
 /* Designer Mode Navigation & Face Customization */
 .designer-mode-tabs {
+  /* .tab-list scrolls horizontally; as a scroll container in the column rail it
+     would otherwise shrink to its padding and hide the tabs. */
+  flex: 0 0 auto;
   width: 100%;
   gap: 0.5rem;
   margin-bottom: 0.5rem;

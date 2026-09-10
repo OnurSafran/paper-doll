@@ -100,7 +100,7 @@ export function createAppProjectController(context) {
       if (warningsEl) {
         if (res.warnings.length > 0) {
           warningsEl.hidden = false;
-          warningsEl.textContent = `Note: ${res.warnings.join(' ')}`;
+          warningsEl.textContent = `${t('projectDialog.importWarningsPrefix')} ${res.warnings.join(' ')}`;
         } else {
           warningsEl.hidden = true;
         }
@@ -237,5 +237,36 @@ export function createAppProjectController(context) {
     context.showToast(t('toasts.backupDismissed'));
   }
 
-  return { openProjectDialog, exportProjectJsonFile, handleProjectFile, executeImportMerge, executeImportReplace, executeRestoreBackup, executeDismissBackup };
+  async function executeFactoryReset() {
+    const confirmed = await context.askConfirm(
+      t('projectDialog.factoryResetTitle'),
+      t('projectDialog.factoryResetMessage'),
+      {
+        okText: t('common.delete'),
+        cancelText: t('common.cancel'),
+        danger: true
+      }
+    );
+    if (!confirmed) return;
+
+    // A failing artwork store must not block the reset (it may be why the user is
+    // resetting), but the user has to learn that some pixels survived.
+    const wiped = context.customArtRepo?.isAvailable?.()
+      ? await context.customArtRepo.resetAll()
+      : { ok: true };
+    clearProjectBackup(context.storageRef);
+
+    context.store.dispatch({
+      type: 'project/factoryReset'
+    });
+    context.storage.flush({ force: true });
+    context.$('#project-dialog')?.close();
+    if (wiped.ok) {
+      context.showToast(t('toasts.factoryResetCompleted'));
+    } else {
+      await context.showAlert?.(t('projectDialog.factoryResetArtworkFailed'));
+    }
+  }
+
+  return { openProjectDialog, exportProjectJsonFile, handleProjectFile, executeImportMerge, executeImportReplace, executeRestoreBackup, executeDismissBackup, executeFactoryReset };
 }

@@ -22,6 +22,12 @@ dialog::backdrop {
   padding: 1.25rem;
 }
 
+/* Confirmation copy may carry line breaks (e.g. the factory reset bullet list). */
+#confirm-message,
+#alert-message {
+  white-space: pre-line;
+}
+
 .danger-eyebrow {
   color: var(--coral-dark);
   font-weight: 800;
@@ -60,6 +66,24 @@ dialog::backdrop {
   align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.dialog-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.myart-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.danger-hint {
+  color: var(--coral-dark);
+  font-weight: 700;
+  font-size: 0.82rem;
 }
 
 .icon-close-btn {
@@ -201,6 +225,97 @@ dialog::backdrop {
   min-height: 38px;
   padding: 0.2rem 0.45rem;
   font-size: 0.82rem;
+}
+
+/* Settings Dialog */
+.settings-dialog {
+  max-width: 560px;
+  width: min(92vw, 560px);
+}
+
+.settings-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: var(--paper-warm);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.settings-section h3 {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.settings-section .panel-copy {
+  margin: 0;
+  max-width: 60ch;
+}
+
+.settings-section .export-meta-row {
+  align-self: stretch;
+}
+
+.settings-segmented {
+  flex-wrap: wrap;
+}
+
+.settings-segmented button {
+  padding-inline: 0.85rem;
+  font-size: 0.82rem;
+}
+
+.settings-segmented button[aria-pressed="true"] {
+  background: var(--paper-card);
+  border-color: var(--coral);
+  color: var(--coral-dark);
+  box-shadow: var(--shadow-sm);
+  font-weight: 800;
+}
+
+.settings-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.5rem;
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Opt out of the global 44px text-field sizing; the label is the touch target. */
+.settings-toggle input {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  padding: 0;
+  accent-color: var(--coral);
+}
+
+.app-version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 4px 10px;
+  background: var(--paper-card);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.8rem;
+  color: var(--ink);
+  font-weight: 600;
 }
 
 /* Project Portability Dialog */

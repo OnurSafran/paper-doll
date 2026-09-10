@@ -77,8 +77,6 @@ export function createPaintView({
   const canvasStage = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-canvas-stage'));
   const guideLayer = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-guide-layer'));
 
-  const previewVariants = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-preview-variants'));
-
   const statusElem = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-status'));
 
   // Controls
@@ -89,8 +87,6 @@ export function createPaintView({
   const zoomBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-zoom-btn'));
 
   // Sidebar & Item Chip Popover
-  const itemChip = /** @type {HTMLElement} */ (rootElement.querySelector('#paint-item-chip'));
-
   const itemConfigPopover = /** @type {HTMLDetailsElement} */ (rootElement.querySelector('#paint-item-config-popover'));
 
   const cutoutAddBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#paint-cutout-add-btn'));
@@ -203,7 +199,7 @@ export function createPaintView({
   }
 
   function handleDocumentClick(event) {
-    if (itemConfigPopover && itemConfigPopover.open && !event.target.closest('#paint-item-config-popover')) {
+    if (itemConfigPopover && itemConfigPopover.open && !event.target?.closest?.('#paint-item-config-popover')) {
       itemConfigPopover.open = false;
     }
   }
@@ -292,6 +288,8 @@ export function createPaintView({
     undoBtn,
     redoBtn,
     colorPicker,
+    canvasStage,
+    zoomBtn,
     backingScale,
     get updatePaletteActive() { return updatePaletteActive; },
     get updateUIFromState() { return updateUIFromState; },

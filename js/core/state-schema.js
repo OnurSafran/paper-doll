@@ -1,6 +1,6 @@
 import { isColorValue, isIrisColor, isPaletteToken, normalizeColorValue } from './palette.js';
 import { cloneDraft, createDefaultFace, createStarterDraft, emptySlots, OUTFIT_SLOTS } from '../domain/outfit-rules.js';
-import { clamp, clampPoint, clampScale, createEmptyScene, createSampleScene, getEntityBounds, reclampSceneEntities } from '../domain/scene-rules.js';
+import { clamp, clampPoint, clampScale, createSampleScene, getEntityBounds, reclampSceneEntities } from '../domain/scene-rules.js';
 import {
   resolveMotionProfile,
   resolveSafeClipId,
@@ -34,7 +34,6 @@ import {
   isEntityKind,
   isExpression,
   isExpressionIntensity,
-  isFaceGroup,
   isFitFamily,
   isMotionClipId,
   isMotionIntensity,
@@ -46,8 +45,7 @@ import {
   isStageWidth,
   isStaticPose,
   isValidId,
-  LIMITS,
-  STAGE_WIDTHS
+  LIMITS
 } from '../domain/vocabulary.js';
 
 export const SCHEMA_VERSION = 6;
@@ -61,6 +59,8 @@ export function createDefaultEnvelope() {
     settings: {
       reducedMotion: DEFAULT_REDUCED_MOTION,
       soundEnabled: false,
+      clothingTabs: false,
+      cardboardFinish: true,
       stamps: [],
       unlockedBackgrounds: []
     },
@@ -320,6 +320,9 @@ export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
           ? value.settings.reducedMotion
           : DEFAULT_REDUCED_MOTION,
         soundEnabled: Boolean(value.settings?.soundEnabled),
+        clothingTabs: value.settings?.clothingTabs === true,
+        // On unless the player switched it off (D-047).
+        cardboardFinish: typeof value.settings?.cardboardFinish === 'boolean' ? value.settings.cardboardFinish : true,
         stamps: sanitizeStringList(value.settings?.stamps),
         unlockedBackgrounds: sanitizeStringList(value.settings?.unlockedBackgrounds)
       },

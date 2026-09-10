@@ -11,6 +11,7 @@ import {
   settingsReducer
 } from '../js/core/app-store.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
+import { shuffleDraft } from '../js/core/reducers/reducer-helpers.js';
 
 test('dispatch ignores inherited domain names and rejects malformed actions without changing state', () => {
   const store = createAppStore();
@@ -119,4 +120,16 @@ test('createAppStore with strictValidation rejects invalid action payloads immed
   assert.equal(result.ok, false);
   assert.equal(result.code, 'INVALID_PAYLOAD');
   assert.match(result.reason, /invalid for type/);
+});
+
+test('shuffleDraft equips dress if bottom slot is missing or empty', () => {
+  const assets = [
+    { id: 'dress_1', kind: 'wearable', slot: 'dress', supportedFitFamilies: ['teen'] },
+    { id: 'top_1', kind: 'wearable', slot: 'top', supportedFitFamilies: ['teen'] }
+  ];
+  const draft = createStarterDraft();
+  const shuffled = shuffleDraft(draft, assets, () => 0.9);
+  assert.equal(shuffled.slots.dress?.assetId, 'dress_1');
+  assert.equal(shuffled.slots.top, null);
+  assert.equal(shuffled.slots.bottom, null);
 });

@@ -1,21 +1,21 @@
-const CACHE_NAME = 'paper-doll-studio-v05022829';
+const CACHE_NAME = 'paper-doll-studio-v33bfec3d';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/app.css?v=3c674d3d',
+  './css/app.css?v=24d7d5ee',
   './css/base/base.css?v=ca3e518c',
-  './css/components/buttons.css?v=2192815b',
+  './css/components/buttons.css?v=422a84cb',
   './css/components/cards.css?v=f90fb1b6',
-  './css/components/dialogs.css?v=952c2cff',
-  './css/components/footer.css?v=c08c6b14',
+  './css/components/dialogs.css?v=de782876',
   './css/components/toasts.css?v=f236a6dc',
-  './css/features/designer.css?v=dc56ed78',
-  './css/features/header.css?v=d8b179f1',
-  './css/features/paint.css?v=6477e867',
-  './css/features/play.css?v=097aa40e',
-  './css/features/world-map.css?v=70b0fc9a',
-  './css/responsive/responsive.css?v=049f926f',
+  './css/features/designer.css?v=374651fd',
+  './css/features/header.css?v=c0a66f14',
+  './css/features/paint.css?v=72fe71aa',
+  './css/features/papercraft.css?v=fda10ee8',
+  './css/features/play.css?v=ad32cec9',
+  './css/features/world-map.css?v=bc8392e3',
+  './css/responsive/responsive.css?v=7b6f96ad',
   './css/tokens.css?v=5cb25082',
   './js/app.js',
   './js/app-dialogs.js',
@@ -272,7 +272,9 @@ self.addEventListener('fetch', (event) => {
 
   if (isCodeOrDoc) {
     event.respondWith(
-      fetch(event.request)
+      // Bypass the browser HTTP cache for the shell. Cache Storage remains the
+      // offline fallback, while online refreshes always see the latest module.
+      fetch(event.request, { cache: 'no-store' })
         .then((response) => {
           if (response && response.status === 200) {
             const copy = response.clone();

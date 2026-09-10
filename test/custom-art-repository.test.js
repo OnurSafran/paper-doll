@@ -176,6 +176,16 @@ test('computeSha256 and base64 codecs round-trip accurately', async () => {
   assert.equal(hash.length, 64);
 });
 
+test('uint8ArrayToBase64 chunks large buffers correctly across chunk boundaries', () => {
+  const largeBytes = new Uint8Array(70000);
+  for (let i = 0; i < largeBytes.length; i++) {
+    largeBytes[i] = i % 256;
+  }
+  const b64 = uint8ArrayToBase64(largeBytes);
+  const decoded = base64ToUint8Array(b64);
+  assert.deepEqual(decoded, largeBytes);
+});
+
 test('parsePngHeader validates 8-byte signature and dimensions', () => {
   const parsed = parsePngHeader(MINIMAL_PNG_BYTES);
   assert.equal(parsed.ok, true);
@@ -351,3 +361,49 @@ test('CustomArtRepository lists artwork and restores validated backup bytes', as
   assert.equal(restored.ok, true);
   assert.ok(await repo.getArtwork('custom_backup_restore'));
 });
+
+test('CustomArtRepository resetAll wipes all stores and revokes tracked URLs', async () => {
+  let revokedUrls = [];
+  const mockIDB = createMockIndexedDB();
+  const repo = createCustomArtRepository({
+    indexedDB: mockIDB,
+    createObjectURL: (b) => `blob:reset/${b.size}`,
+    revokeObjectURL: (url) => revokedUrls.push(url)
+  });
+
+  await repo.saveArtwork('custom_art_1', MINIMAL_PNG_BYTES);
+  await repo.saveDraft(MINIMAL_PNG_BYTES);
+  const url = await repo.getTrackedObjectUrl('custom_art_1');
+  assert.ok(url);
+
+  const resetResult = await repo.resetAll();
+  assert.equal(resetResult.ok, true);
+  assert.equal((await repo.getAllArtwork()).length, 0);
+  assert.equal(await repo.getDraft(), null);
+  assert.equal(revokedUrls.includes(url), true);
+});
+
+test('CustomArtRepository clearArtworkLibrary keeps the paint draft and import backup', async () => {
+  const revokedUrls = [];
+  const repo = createCustomArtRepository({
+    indexedDB: createMockIndexedDB(),
+    createObjectURL: (b) => `blob:clear/${b.size}`,
+    revokeObjectURL: (url) => revokedUrls.push(url)
+  });
+
+  await repo.saveArtwork('custom_art_1', MINIMAL_PNG_BYTES);
+  await repo.saveArtwork('custom_art_2', MINIMAL_PNG_BYTES);
+  await repo.moveToTrash('custom_art_2');
+  await repo.saveDraft(MINIMAL_PNG_BYTES);
+  await repo.saveBackup('latest', { schemaVersion: 3 }, []);
+  const url = await repo.getTrackedObjectUrl('custom_art_1');
+
+  const cleared = await repo.clearArtworkLibrary();
+  assert.equal(cleared.ok, true);
+  assert.equal((await repo.getAllArtwork()).length, 0);
+  assert.equal(await repo.getTrackedObjectUrl('custom_art_2'), null);
+  assert.ok(await repo.getDraft());
+  assert.ok(await repo.getLatestBackup());
+  assert.equal(revokedUrls.includes(url), true);
+});
+

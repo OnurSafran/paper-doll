@@ -44,6 +44,10 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-043 | Static Type Checking via `jsconfig.json`, JSDoc `@typedef`, and ESLint rules. | Implemented | Establishes compile-time contract safety and prevents accidental globals without introducing build-time runtime bloat (D-011). |
 | D-044 | Comprehensive Panoramic Keyboard Navigation across stage, camera HUD, and slider. | Implemented | Supports `PageUp`, `PageDown`, `Home`, `End`, and `Shift+Arrows` for accessible camera panning across panoramic stages. |
 
+| D-045 | Retain the papercraft pilot unchanged; deprioritize clothing tabs and favor broader cardboard finish coverage later. | Accepted; expansion deferred | Clothing tabs add little value to the intended experience; cardboard finish can carry the papercraft style across more artwork. |
+| D-046 | Consolidate app-wide preferences into a header Settings dialog and move the Dollbox into a dialog opened from the Designer topbar. | Implemented | The papercraft bar, footer, and header Project button competed with the workspace; the Dollbox pushed the Wardrobe below the fold. Language stays a one-tap header toggle. |
+| D-047 | Cardboard finish is on by default for new studios and for projects that lack the setting; clothing tabs stay off. Refines D-045. | Implemented | Cardboard finish is the preferred papercraft direction, so new players should see it without finding the switch. An explicit off is preserved. |
+
 ## Decision details
 
 ### D-017 — Panoramic camera
@@ -218,3 +222,23 @@ Keyboard navigation is now first-class across the stage and camera HUD:
 - `Home` / `End`: Jump camera directly to stage origin (0) or max panoramic boundary (`stageWidth - 1600`).
 - `Shift + ArrowLeft` / `Shift + ArrowRight`: Nudge camera left/right when no entities are selected.
 - Navigation listeners are wired to both `#play-stage` and `#camera-hud`, and work seamlessly even when `#camera-slider` has focus.
+
+### D-045 — Papercraft pilot direction
+
+**Date:** 2026-09-09. **Status:** Accepted; expansion deferred.
+
+After reviewing the pilot, the product decision is to leave its current behavior and both controls unchanged for now. Clothing tabs feel unnecessary and are deprioritized; further tab placement or garment coverage is not planned.
+
+Cardboard finish is the preferred direction for future expansion across dolls, clothing, props, and other suitable artwork, consistent with the world map's existing papercraft style. Broader applicability is a design direction, not a claim that every asset has been validated or authorization to expand the implementation now.
+
+The current pilot remains screen-only: Teen (Classic A), sailor stripe tee, tennis skirt, tiered party dress, armchair, and cafe table, with independent persisted switches. Broader cardboard coverage and image-export support are deferred. Revisit their scope when this work is resumed; do not treat clothing-tab expansion as a pending requirement.
+
+### D-046 — Settings dialog and Dollbox dialog
+
+**Date:** 2026-09-10. **Status:** Implemented.
+
+The header carried separate 🌐 language and 📦 Project buttons, a papercraft `<details>` bar floated between the header and every screen, a footer repeated the Project dialog's update action, and the reduced-motion choice only appeared in the Play inspector while a doll was selected. `settings.soundEnabled` existed with no control at all.
+
+A ⚙️ Settings button in the header now opens `#settings-dialog`, which holds language, motion mode, sound effects, the papercraft pilot switches (behavior unchanged per D-045), a link to Project & Backups, and the app version with Update & Reload. The papercraft bar, footer, and the Project dialog's update section were removed. The 🌐 header toggle stays so switching language remains one tap; on phones (≤600px) the brand wordmark hides and the section nav takes a second header row so every header action stays on-screen.
+
+In the Designer, the Dollbox card sat at the top of the rail and pushed the Wardrobe below the fold on a 720px-tall window. It now lives in `#dollbox-dialog`, opened from 🧺 Dollbox and 💾 Save Doll in the stage topbar — the same heading pattern as Paint (My Art / Save Art) and Play (Save Scene / Scenes). The rail order is style & colors, then the Wardrobe/Face mode tabs directly above the panels they switch. The mode tabs also get `flex: 0 0 auto`: as a horizontal scroll container in the column rail they previously shrank to their padding and were effectively invisible.

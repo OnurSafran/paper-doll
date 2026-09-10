@@ -110,6 +110,8 @@
  * @property {number} [width]
  * @property {string} [targetEntityId]
  * @property {{ instanceId: string, x: number, y: number }[]} [moves]
+ * @property {string} [setting]
+ * @property {boolean} [enabled]
  * @property {string} [mode]
  * @property {string} [instanceId]
  * @property {string[]} [instanceIds]
@@ -159,7 +161,7 @@
  * @typedef {Object} AppState
  * @property {number} [schemaVersion]
  * @property {number} [revision]
- * @property {{ reducedMotion: string, soundEnabled: boolean, stamps: string[], unlockedBackgrounds: string[] }} settings
+ * @property {{ reducedMotion: string, soundEnabled: boolean, clothingTabs?: boolean, cardboardFinish?: boolean, stamps: string[], unlockedBackgrounds: string[] }} settings
  * @property {CustomAsset[]} customAssets
  * @property {{ draft: CharacterSnapshot, selectedSlot: string, editingPresetId: string|null, dirty: boolean, activeTab?: string, selectedFaceGroup?: string, selectedStyleFilter?: string }} designer
  * @property {Object[]} presets

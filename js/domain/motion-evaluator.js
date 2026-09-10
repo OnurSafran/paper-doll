@@ -12,7 +12,6 @@ import {
 } from './animation-clips.js';
 import { hasRigidWearableForLimb } from '../core/asset-catalog.js';
 import {
-  CHARACTER_DIMENSIONS,
   DEFAULT_ATTACH_JOINT,
   DEFAULT_EXPRESSION,
   DEFAULT_EXPRESSION_INTENSITY,
@@ -362,7 +361,7 @@ export function evaluateProceduralBlink(instanceId, timeMs = 0, options = {}) {
 
   if (cycleTime < blinkDuration) {
     const half = blinkDuration * 0.4;
-    let scaleY = 1.0;
+    let scaleY;
     if (cycleTime < half) {
       const p = cycleTime / half;
       scaleY = 1.0 - 0.95 * smoothCosine(p);

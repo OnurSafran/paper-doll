@@ -165,7 +165,11 @@ export function createAppStore(envelope, options = {}) {
       previousState.customAssets !== result.state.customAssets;
     const nonUndoAction = action.type === 'scene/setCameraX' || action.type === 'scene/panCamera' || action.type === 'scene/playbackFinished';
 
-    if (domainChanged && !nonUndoAction) {
+    if (result.clearHistory) {
+      // Storage wipes are irreversible: undo would resurrect references to deleted artwork.
+      undoStack.length = 0;
+      redoStack.length = 0;
+    } else if (domainChanged && !nonUndoAction) {
       undoStack.push(snapshotDomain(previousState));
       if (undoStack.length > maxHistory) undoStack.shift();
       redoStack.length = 0;

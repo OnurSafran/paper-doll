@@ -856,6 +856,22 @@ export function sceneReducer(state, action, context) {
       };
     }
 
+    case 'scene/clearLibraryScenes': {
+      if (state.scenes.length === 0) return null;
+      return {
+        state: localizedMessage('toasts.allScenesCleared', {}, {
+          ...state,
+          scenes: [],
+          ui: {
+            ...state.ui,
+            activeSceneLibraryId: null
+          }
+        }),
+        persist: true,
+        result: { ok: true }
+      };
+    }
+
     default:
       return null;
   }

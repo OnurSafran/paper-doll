@@ -2,9 +2,9 @@
 
 export function createAppShortcuts(context) {
   function handleTabKeys(event) {
-    const tab = event.target.closest('[role="tab"]');
+    const tab = event.target?.closest?.('[role="tab"]');
     if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    const list = tab.closest('[role="tablist"]');
+    const list = tab.closest?.('[role="tablist"]');
     if (!list) return;
     const allTabs = [...list.querySelectorAll('[role="tab"]')];
     const visibleTabs = allTabs.filter((t) => !t.hidden && t.getAttribute('hidden') === null && t.style.display !== 'none');
@@ -28,7 +28,7 @@ export function createAppShortcuts(context) {
   }
 
   function handleGlobalShortcuts(event) {
-    if (event.target.matches('input, textarea, select, [contenteditable="true"]') || document.querySelector('dialog[open]')) return;
+    if (event.target?.matches?.('input, textarea, select, [contenteditable="true"]') || document.querySelector('dialog[open]')) return;
     const isMac = typeof navigator !== 'undefined' && (/Mac|iPod|iPhone|iPad/.test(navigator.platform) || /Macintosh/.test(navigator.userAgent));
     const modifier = isMac ? event.metaKey : event.ctrlKey;
 

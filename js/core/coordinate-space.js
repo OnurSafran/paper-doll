@@ -1,4 +1,4 @@
-import { LIMITS, VIEWPORT_HEIGHT, VIEWPORT_WIDTH } from '../domain/vocabulary.js';
+import { VIEWPORT_HEIGHT, VIEWPORT_WIDTH } from '../domain/vocabulary.js';
 
 const STAGE_WIDTH = VIEWPORT_WIDTH;
 const STAGE_HEIGHT = VIEWPORT_HEIGHT;

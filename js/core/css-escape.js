@@ -13,5 +13,5 @@
 export function escapeCss(value) {
   const str = String(value);
   if (typeof globalThis.CSS?.escape === 'function') return globalThis.CSS.escape(str);
-  return str.replace(/([!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~])/g, '\\$1');
+  return str.replace(new RegExp('([!"#$%&\'()*+,./:;<=>?@[\\\\\\]^`{|}~])', 'g'), '\\$1');
 }

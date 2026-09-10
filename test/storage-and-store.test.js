@@ -657,3 +657,65 @@ test('AppStore uses injected clock and makeId consistently across scene operatio
   assert.equal(store.getState().currentScene.updatedAt, fixedTime.toISOString());
   assert.ok(store.getState().currentScene.sceneId.startsWith('injected-id-'));
 });
+
+test('AppStore handles preset/clearAll and removes all saved presets', () => {
+  const store = createAppStore(createDefaultEnvelope());
+  store.dispatch({ type: 'preset/save', name: 'Doll 1' });
+  store.dispatch({ type: 'preset/save', name: 'Doll 2' });
+  assert.equal(store.getState().presets.length, 2);
+
+  const res = store.dispatch({ type: 'preset/clearAll' });
+  assert.equal(res.ok, true);
+  assert.equal(store.getState().presets.length, 0);
+  assert.equal(store.getState().designer.editingPresetId, null);
+});
+
+test('AppStore handles scene/clearLibraryScenes and empties library scenes', () => {
+  const store = createAppStore(createDefaultEnvelope());
+  store.dispatch({ type: 'scene/saveToLibrary', name: 'Scene 1' });
+  store.dispatch({ type: 'scene/saveToLibrary', name: 'Scene 2' });
+  assert.equal(store.getState().scenes.length, 2);
+
+  const res = store.dispatch({ type: 'scene/clearLibraryScenes' });
+  assert.equal(res.ok, true);
+  assert.equal(store.getState().scenes.length, 0);
+});
+
+test('AppStore handles customAsset/clearAll, strips references and clears customAssets', () => {
+  const store = createAppStore(createDefaultEnvelope());
+  store.dispatch({
+    type: 'customAsset/add',
+    asset: { assetId: 'custom_top_1', kind: 'wearable', name: 'Top 1', slot: 'top', fitFamily: 'classic', presentationStyles: [] }
+  });
+  store.dispatch({ type: 'designer/equip', assetId: 'custom_top_1' });
+  assert.equal(store.getState().designer.draft.slots.top?.assetId, 'custom_top_1');
+
+  const res = store.dispatch({ type: 'customAsset/clearAll' });
+  assert.equal(res.ok, true);
+  assert.equal(store.getState().customAssets.length, 0);
+  assert.equal(store.getState().designer.draft.slots.top, null);
+  // The artwork pixels are gone, so undo must not resurrect references to them.
+  assert.equal(store.canUndo(), false);
+  assert.equal(store.dispatch({ type: 'app/undo' }).code, 'NOTHING_TO_UNDO');
+});
+
+test('AppStore handles project/factoryReset and restores pristine default state', () => {
+  const store = createAppStore(createDefaultEnvelope());
+  store.dispatch({ type: 'preset/save', name: 'Doll A' });
+  store.dispatch({ type: 'scene/saveToLibrary', name: 'Scene A' });
+  store.dispatch({ type: 'settings/unlockStamp', stampId: 'stamp_garden' });
+  assert.equal(store.getState().presets.length, 1);
+  assert.equal(store.getState().scenes.length, 1);
+  assert.equal(store.getState().settings.stamps.length, 1);
+
+  const res = store.dispatch({ type: 'project/factoryReset' });
+  assert.equal(res.ok, true);
+  assert.equal(store.canUndo(), false);
+  assert.equal(store.getState().currentScene.sceneId, 'sample-scene');
+  assert.equal(store.getState().presets.length, 0);
+  assert.equal(store.getState().scenes.length, 0);
+  assert.equal(store.getState().settings.stamps.length, 0);
+  assert.equal(store.getState().customAssets.length, 0);
+  assert.ok(store.getState().currentScene);
+});
+

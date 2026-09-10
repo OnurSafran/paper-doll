@@ -36,6 +36,7 @@ export const ACTION_PAYLOAD_VALIDATORS = {
   'preset/rename': (action) => typeof action.name === 'string' && typeof action.presetId === 'string',
   'preset/delete': (action) => typeof action.presetId === 'string',
   'preset/load': (action) => typeof action.presetId === 'string',
+  'preset/clearAll': () => true,
 
   'scene/setBackground': (action) => typeof action.backgroundId === 'string',
   'scene/setStageWidth': (action) => isStageWidth(action.stageWidth),
@@ -53,6 +54,7 @@ export const ACTION_PAYLOAD_VALIDATORS = {
   'scene/setDollExpressionIntensity': (action) => isExpressionIntensity(action.expressionIntensity),
   'scene/setPlaybackRate': (action) => isPlaybackRate(Number(action.playbackRate)),
   'scene/setAttachJoint': (action) => isAttachJoint(action.attachJoint),
+  'scene/clearLibraryScenes': () => true,
 
   'customAsset/add': (action) => Boolean(action.asset && typeof action.asset === 'object'),
   'customAsset/rename': (action) => typeof action.assetId === 'string' && typeof action.name === 'string',
@@ -60,7 +62,12 @@ export const ACTION_PAYLOAD_VALIDATORS = {
   'customAsset/remove': (action) => typeof action.assetId === 'string',
   'customAsset/restore': (action) => typeof action.assetId === 'string',
   'customAsset/deleteWithUses': (action) => typeof action.assetId === 'string',
+  'customAsset/clearAll': () => true,
 
+  'project/factoryReset': () => true,
+
+  'settings/setPapercraft': (action) => ['clothingTabs', 'cardboardFinish'].includes(action.setting) && typeof action.enabled === 'boolean',
+  'settings/setSound': (action) => typeof action.enabled === 'boolean',
   'settings/setReducedMotion': (action) => ['system', 'reduce', 'full'].includes(action.mode),
   'settings/unlockStamp': (action) => typeof action.stampId === 'string' && action.stampId.length > 0 && action.stampId.length <= 50,
   'settings/unlockBackground': (action) => typeof action.backgroundId === 'string'

@@ -5,7 +5,6 @@
  */
 
 import {
-  evaluateAttachedEntityTransform,
   evaluateCharacterPose,
   evaluateProceduralBlink,
   getSceneActiveAnimationDuration,

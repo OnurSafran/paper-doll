@@ -1,16 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_tea_set">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-    <!-- Teapot -->
-    <path d="M360 400 C360 240 640 240 640 400 C740 560 720 840 500 880 C280 840 260 560 360 400 Z" fill="#b56576"/>
-    <circle cx="500" cy="280" r="40" fill="#e9c46a"/>
-    <path d="M630 520 C740 520 740 720 630 760" fill="none" stroke-width="18"/>
-    <path d="M320 560 L200 440" fill="none" stroke-width="24"/>
-    <path d="M310 550 Q230 520 220 620 Q230 700 315 660" fill="none" stroke-width="18"/>
-    <ellipse cx="500" cy="410" rx="110" ry="24" fill="#8c4b60" stroke="none"/>
-    <path d="M440 180 Q420 130 450 90 M500 180 Q480 125 510 80 M560 180 Q540 130 570 95" fill="none" stroke="#fffdf7" stroke-width="10" opacity="0.7"/>
-    <!-- Teacup -->
-    <path d="M740 640 C740 840 920 840 920 640 Z" fill="#ffffff"/>
-    <path d="M895 690 Q980 680 980 750 Q980 815 900 790" fill="none" stroke-width="16"/>
-    <line x1="720" y1="840" x2="940" y2="840" stroke-width="18"/>
+    <!-- Handle and open spout connect behind the teapot body. -->
+    <path d="M610 470 C820 365 820 775 610 715" fill="none" stroke-width="46"/>
+    <path d="M610 470 C820 365 820 775 610 715" fill="none" stroke="#b56576" stroke-width="24"/>
+    <path d="M355 590 C245 595 190 490 165 410 L235 390 Q245 495 365 470 Z" fill="#b56576"/>
+    <ellipse cx="200" cy="400" rx="37" ry="14" transform="rotate(-16 200 400)" fill="#8c4b60" stroke-width="10"/>
+    <path d="M360 410 C265 525 280 800 485 820 C690 800 705 525 610 410 Z" fill="#b56576"/>
+    <path d="M380 520 Q345 595 370 665" fill="none" stroke="#dc9dad" stroke-width="16"/>
+    <path d="M350 420 Q350 345 485 345 Q620 345 620 420 Z" fill="#dc9dad"/>
+    <circle cx="485" cy="330" r="28" fill="#e9c46a"/>
+    <path d="M425 735 Q485 760 545 735" fill="none" stroke="#e9c46a" stroke-width="12"/>
+    <!-- Matching cup, tea surface, handle and saucer. -->
+    <ellipse cx="805" cy="835" rx="145" ry="28" fill="#e9c46a" stroke-width="12"/>
+    <path d="M885 665 C985 640 985 765 890 765" fill="none" stroke="#2d261e" stroke-width="28"/>
+    <path d="M885 665 C985 640 985 765 890 765" fill="none" stroke="#dc9dad" stroke-width="12"/>
+    <path d="M705 650 C705 865 905 865 905 650 Z" fill="#fffdf7"/>
+    <ellipse cx="805" cy="650" rx="100" ry="27" fill="#dc9dad"/>
+    <ellipse cx="805" cy="653" rx="78" ry="15" fill="#a47148" stroke="none"/>
+    <path d="M750 747 Q805 775 860 747" fill="none" stroke="#b56576" stroke-width="12"/>
+    <path d="M775 570 Q745 535 775 495 M835 570 Q805 535 835 495" fill="none" stroke="#bc8a5f" stroke-width="10" opacity="0.6"/>
   </g>
 </svg>

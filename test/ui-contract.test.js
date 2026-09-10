@@ -22,6 +22,10 @@ const designerJs = readFileSync(new URL('../js/features/designer/designer-view.j
 const sceneBookJs = readFileSync(new URL('../js/features/scene-book/scene-book-view.js', import.meta.url), 'utf8');
 const worldMapJs = readFileSync(new URL('../js/features/world-map/world-map-view.js', import.meta.url), 'utf8');
 const paintJs = readControllerBundle(new URL('../js/features/paint/paint-view.js', import.meta.url));
+const shellEventsJs = readFileSync(new URL('../js/app-shell-events.js', import.meta.url), 'utf8');
+const shortcutsJs = readFileSync(new URL('../js/app-shortcuts.js', import.meta.url), 'utf8');
+const enLocaleJs = readFileSync(new URL('../js/core/locales/en.js', import.meta.url), 'utf8');
+const trLocaleJs = readFileSync(new URL('../js/core/locales/tr.js', import.meta.url), 'utf8');
 
 test('every view built in app.js receives the registry-backed asset resolvers it declares', () => {
   // Guards PLR-1: createPlayView declared getAssetsByKind but app.js only passed it to
@@ -97,14 +101,20 @@ test('Designer uses one viewport workspace with a deliberate scrolling rail', ()
   assert.match(css, /--app-header-height:\s*58px/);
 });
 
-test('Designer sidebar follows the requested hierarchy and consistent face spacing', () => {
+test('Designer sidebar keeps design controls first and consistent face spacing', () => {
+  const sidebar = html.slice(html.indexOf('class="designer-sidebar"'), html.indexOf('</aside>', html.indexOf('class="designer-sidebar"')));
   const order = [
-    html.indexOf('id="dollbox-title"'),
-    html.indexOf('id="doll-colors-title"'),
-    html.indexOf('id="wardrobe-panel-section"')
+    sidebar.indexOf('id="doll-colors-title"'),
+    sidebar.indexOf('id="designer-mode-nav"'),
+    sidebar.indexOf('id="wardrobe-panel-section"')
   ];
   assert.ok(order.every((position) => position >= 0));
   assert.ok(order[0] < order[1] && order[1] < order[2]);
+  // Dollbox lives in a dialog opened from the stage topbar, not in the rail.
+  assert.doesNotMatch(sidebar, /id="dollbox-title"/);
+  assert.match(html, /<dialog id="dollbox-dialog"[\s\S]*id="save-preset-form"[\s\S]*id="dollbox-list"[\s\S]*<\/dialog>/);
+  assert.match(html, /class="designer-top-actions"[\s\S]*id="open-dollbox-btn"[\s\S]*id="save-doll-btn"/);
+  assert.match(css, /\.designer-mode-tabs\s*{[^}]*flex:\s*0 0 auto/s);
   assert.match(css, /\.face-panel\s*{[^}]*padding:\s*0\.85rem/s);
 });
 
@@ -188,7 +198,8 @@ test('Scene Book localizes background metadata through assetName', () => {
 });
 
 test('project portability and backup controls expose accessible dialogs, dropzones, and handlers', () => {
-  assert.match(html, /id="project-menu-btn"/);
+  assert.match(html, /class="header-actions"[\s\S]*id="settings-menu-btn"[^>]*aria-haspopup="dialog"/);
+  assert.match(html, /<dialog id="settings-dialog"[\s\S]*id="settings-open-project-btn"[\s\S]*id="settings-hard-reset-btn"[\s\S]*<\/dialog>/);
   assert.match(html, /id="project-dialog"/);
   assert.match(html, /id="export-project-btn"/);
   assert.match(html, /id="import-dropzone"/);
@@ -196,18 +207,35 @@ test('project portability and backup controls expose accessible dialogs, dropzon
   assert.match(html, /id="import-merge-btn"/);
   assert.match(html, /id="import-replace-btn"/);
   assert.match(html, /id="restore-backup-btn"/);
-  assert.match(html, /id="project-hard-reset-btn"/);
-  assert.match(html, /id="footer-hard-reset-btn"/);
-  assert.match(html, /class="app-footer"/);
+  assert.match(html, /id="project-factory-reset-btn"/);
+  assert.match(html, /id="clear-all-presets-btn"/);
+  assert.match(html, /id="clear-all-scenes-btn"/);
+  assert.match(html, /id="myart-clear-all-btn"/);
+  // The footer, Project button, and papercraft bar moved into Settings; language stays one tap away.
+  assert.doesNotMatch(html, /class="app-footer"|class="papercraft-controls"|id="project-menu-btn"/);
+  assert.match(html, /class="header-actions"[\s\S]*id="lang-toggle-btn"[\s\S]*id="settings-menu-btn"/);
   assert.match(css, /\.project-dialog\s*{/);
+  assert.match(css, /\.settings-dialog\s*{/);
   assert.match(css, /\.import-dropzone\s*{/);
   assert.match(css, /\.import-preview-card\s*{/);
-  assert.match(css, /\.app-footer\s*{/);
   assert.match(js, /openProjectDialog/);
   assert.match(js, /exportProjectJsonFile/);
   assert.match(js, /handleProjectFile/);
   assert.match(js, /handleHardResetAction/);
   assert.match(js, /window\.hardRefresh/);
+  assert.match(js, /executeFactoryReset/);
+});
+
+test('project and paint copy do not duplicate localized labels on narrow layouts', () => {
+  assert.match(html, /<p><strong data-i18n="projectDialog\.dropzonePrompt">[^<]*drag|<p><strong data-i18n="projectDialog\.dropzonePrompt">[^<]*sürükleyip/);
+  assert.doesNotMatch(html, /data-i18n="projectDialog\.dropzonePrompt"[^>]*>[^<]*<\/strong>\s+(?:or|veya)\s+/);
+  assert.doesNotMatch(paintJs, /`👗 \$\{t\('paint\.wearableTypeBtn'\)/);
+  assert.doesNotMatch(paintJs, /`🧸 \$\{t\('paint\.propTypeBtn'\)/);
+  assert.match(css, /@media \(max-width: 920px\)[\s\S]*\.paint-heading-primary\s*\{[^}]*flex-wrap:\s*wrap/s);
+  assert.match(html, /app-version-badge[^>]*>Paper Doll Studio <strong>v1\.20\.0/);
+  assert.doesNotMatch(js, /registration\.unregister\(\)/);
+  assert.match(js, /registration\.update\(\)/);
+  assert.match(readFileSync(new URL('../sw.js', import.meta.url), 'utf8'), /fetch\(event\.request, \{ cache: 'no-store' \}\)/);
 });
 
 test('scene stickiness and pinning expose accessible HUD controls, visual badge, and keyboard shortcuts', () => {
@@ -444,5 +472,22 @@ test('accessible screen reader live announcements region is wired in app shell a
   assert.match(js, /announceForScreenReader/);
 });
 
+test('language switch and guide tabs declare localized aria-labels and locale definitions', () => {
+  assert.match(html, /id="settings-language-group"[^>]*data-i18n-aria-label="settings\.languageGroupAria"/);
+  assert.match(html, /id="settings-language-group"[\s\S]*data-lang="tr"[\s\S]*data-lang="en"/);
+  assert.match(html, /id="guide-tabs"[^>]*data-i18n-aria-label="guideDialog\.tabsAria"/);
+  assert.match(html, /id="dollbox-count"[^>]*aria-label="0 kayıtlı bebek"/);
+  assert.match(enLocaleJs, /tabsAria:\s*['"]Guide tabs['"]/);
+  assert.match(trLocaleJs, /tabsAria:\s*['"]Rehber sekmeleri['"]/);
+});
 
+test('wearable drop regex accepts uppercase IDs and bubble drops catch decode errors safely', () => {
+  assert.match(shellEventsJs, /paper-doll-wearable:\(\[a-zA-Z0-9_-\]\+\)/);
+  assert.match(shellEventsJs, /try\s*\{\s*text\s*=\s*decodeURIComponent\(match\[3\]\);\s*\}\s*catch/);
+});
+
+test('global tab and shortcut handlers guard non-element event targets with optional chaining', () => {
+  assert.match(shortcutsJs, /event\.target\?\.closest\?\.?\(['"]\[role="tab"\]['"]\)/);
+  assert.match(shortcutsJs, /event\.target\?\.matches\?\.?\(/);
+});
 

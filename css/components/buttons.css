@@ -22,10 +22,13 @@
   user-select: none;
 }
 
-.button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: var(--ink-soft);
-  box-shadow: var(--shadow-md);
+/* Touch screens keep :hover after a tap, so only lift where a pointer can hover. */
+@media (hover: hover) {
+  .button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: var(--ink-soft);
+    box-shadow: var(--shadow-md);
+  }
 }
 
 .button:active:not(:disabled) {
@@ -47,10 +50,12 @@
   box-shadow: 0 2px 6px rgba(184, 67, 59, 0.3);
 }
 
-.button.primary:hover:not(:disabled) {
-  background: #a83a33;
-  border-color: #a83a33;
-  box-shadow: 0 4px 12px rgba(184, 67, 59, 0.4);
+@media (hover: hover) {
+  .button.primary:hover:not(:disabled) {
+    background: #a83a33;
+    border-color: #a83a33;
+    box-shadow: 0 4px 12px rgba(184, 67, 59, 0.4);
+  }
 }
 
 .button.secondary {
@@ -65,8 +70,10 @@
   box-shadow: 0 2px 6px rgba(242, 170, 53, 0.25);
 }
 
-.button.playful:hover:not(:disabled) {
-  background: linear-gradient(135deg, #f9c768, #f0a324);
+@media (hover: hover) {
+  .button.playful:hover:not(:disabled) {
+    background: linear-gradient(135deg, #f9c768, #f0a324);
+  }
 }
 
 .button.danger-fill {

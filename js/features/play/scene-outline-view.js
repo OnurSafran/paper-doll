@@ -13,7 +13,7 @@ import { assetName, t } from '../../core/i18n.js';
 export function createSceneOutlineView({
   store,
   $,
-  $$,
+  $$: _$$ = undefined,
   askConfirm,
   miniButton,
   getAsset = getBuiltinAsset
@@ -63,7 +63,7 @@ export function createSceneOutlineView({
       icon.className = 'outline-icon';
       icon.setAttribute('aria-hidden', 'true');
 
-      let labelText = '';
+      let labelText;
       if (entity.kind === 'character') {
         icon.textContent = '👗';
         const preset = state.presets.find((p) => p.presetId === entity.sourceId);

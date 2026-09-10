@@ -80,7 +80,7 @@ const { handleTabKeys, handleGlobalShortcuts } = createAppShortcuts({
   get worldMapView() { return worldMapView; }
 });
 
-const { openProjectDialog, exportProjectJsonFile, handleProjectFile, executeImportMerge, executeImportReplace, executeRestoreBackup, executeDismissBackup } = createAppProjectController({
+const { openProjectDialog, exportProjectJsonFile, handleProjectFile, executeImportMerge, executeImportReplace, executeRestoreBackup, executeDismissBackup, executeFactoryReset } = createAppProjectController({
   $,
   storageRef,
   customArtRepo,
@@ -88,6 +88,7 @@ const { openProjectDialog, exportProjectJsonFile, handleProjectFile, executeImpo
   storage,
   get showToast() { return showToast; },
   get askConfirm() { return askConfirm; },
+  get showAlert() { return showAlert; },
   get pendingImportEnvelope() { return pendingImportEnvelope; }, set pendingImportEnvelope(value) { pendingImportEnvelope = value; }
 });
 
@@ -112,6 +113,7 @@ const { wireDesignerEvents, wireShellEvents, wireDropEvents } = createAppShellEv
   store,
   get showToast() { return showToast; },
   get askConfirm() { return askConfirm; },
+  get showAlert() { return showAlert; },
   get playView() { return playView; },
   get handleTabKeys() { return handleTabKeys; },
   get handleGlobalShortcuts() { return handleGlobalShortcuts; },
@@ -124,7 +126,8 @@ const { wireDesignerEvents, wireShellEvents, wireDropEvents } = createAppShellEv
   get executeImportMerge() { return executeImportMerge; },
   get executeImportReplace() { return executeImportReplace; },
   get executeRestoreBackup() { return executeRestoreBackup; },
-  get executeDismissBackup() { return executeDismissBackup; }
+  get executeDismissBackup() { return executeDismissBackup; },
+  get executeFactoryReset() { return executeFactoryReset; }
 });
 
 const { wireLifecycleEvents } = createAppLifecycle({
@@ -308,6 +311,9 @@ function updateLangButtonUI() {
   const current = getCurrentLanguage();
   const textEl = $('#current-lang-text');
   if (textEl) textEl.textContent = current.toUpperCase();
+  for (const button of document.querySelectorAll('#settings-language-group [data-lang]')) {
+    button.setAttribute('aria-pressed', String(/** @type {HTMLElement} */ (button).dataset.lang === current));
+  }
 }
 updateLangButtonUI();
 
@@ -352,19 +358,35 @@ renderApp();
 let pendingImportEnvelope = null;
 
 window.hardRefresh = async function hardRefresh() {
-  if ('serviceWorker' in navigator) {
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const reg of registrations) await reg.unregister();
-    } catch { /* ignore */ }
-  }
   if ('caches' in window) {
     try {
       const keys = await caches.keys();
       for (const key of keys) await caches.delete(key);
     } catch { /* ignore */ }
   }
-  window.location.reload();
+  if ('serviceWorker' in navigator) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.update()));
+    } catch { /* ignore */ }
+  }
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('_v', Date.now().toString());
+    window.location.replace(url.toString());
+  } catch {
+    window.location.reload();
+  }
 };
+
+// hardRefresh appends ?_v= to bypass the HTTP cache; drop it after boot so
+// later reloads and bookmarks keep the canonical URL.
+try {
+  const bootUrl = new URL(window.location.href);
+  if (bootUrl.searchParams.has('_v')) {
+    bootUrl.searchParams.delete('_v');
+    window.history.replaceState(window.history.state, '', bootUrl.toString());
+  }
+} catch { /* ignore */ }
 
 export { miniButton };

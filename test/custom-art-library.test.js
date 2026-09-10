@@ -198,7 +198,7 @@ test('countAssetUses accurately counts references across draft, presets, stage, 
   assert.equal(propImpact.currentSceneUses, 1);
 });
 
-test('AppStore customAsset/remove vs customAsset/deleteWithUses and single-step undo behavior', () => {
+test('AppStore customAsset/remove is undoable but destructive asset deletion is not', () => {
   const customWearable = sanitizeCustomAsset({
     assetId: 'custom_dress_1',
     name: 'Party Gown',
@@ -273,15 +273,9 @@ test('AppStore customAsset/remove vs customAsset/deleteWithUses and single-step 
   assert.equal(store.getState().presets[0].slots.dress, null);
   assert.equal(store.getState().currentScene.entities[0].characterSnapshot.slots.dress, null);
 
-  // 3. Test single-step undo
-  assert.equal(store.canUndo(), true);
-  const undoRes = store.dispatch({ type: 'app/undo' });
-  assert.equal(undoRes.ok, true);
-
-  // References and customAssets restored
-  assert.equal(store.getState().customAssets.length, 1);
-  assert.equal(store.getState().presets[0].slots.dress.assetId, 'custom_dress_1');
-  assert.equal(store.getState().currentScene.entities[0].characterSnapshot.slots.dress.assetId, 'custom_dress_1');
+  // The binary has already been moved/deleted, so undo must not recreate
+  // metadata references to artwork that no longer exists.
+  assert.equal(store.canUndo(), false);
 });
 
 test('CustomArtRepository trash lifecycle and emptyTrash safety', async () => {

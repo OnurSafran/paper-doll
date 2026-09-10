@@ -7,6 +7,7 @@
 
     <!-- Acoustic Guitar (slanted / centered) -->
     <!-- Headstock & Tuning Pegs -->
+    <path d="M435 115 H565 M435 155 H565 M435 195 H565" fill="none" stroke="#d4a373" stroke-width="10"/>
     <polygon points="460,80 540,80 530,220 470,220" fill="#8b5e34"/>
     <circle cx="435" cy="115" r="14" fill="#ffd166"/>
     <circle cx="435" cy="155" r="14" fill="#ffd166"/>
@@ -36,16 +37,19 @@
 
     <!-- Bridge & Saddle -->
     <rect x="440" y="740" width="120" height="30" rx="8" fill="#583e2e"/>
-    <circle cx="460" cy="755" r="5" fill="#fffdf7" stroke="none"/>
-    <circle cx="480" cy="755" r="5" fill="#fffdf7" stroke="none"/>
-    <circle cx="500" cy="755" r="5" fill="#fffdf7" stroke="none"/>
-    <circle cx="520" cy="755" r="5" fill="#fffdf7" stroke="none"/>
-    <circle cx="540" cy="755" r="5" fill="#fffdf7" stroke="none"/>
+    <circle cx="480" cy="755" r="4" fill="#fffdf7" stroke="none"/>
+    <circle cx="488" cy="755" r="4" fill="#fffdf7" stroke="none"/>
+    <circle cx="496" cy="755" r="4" fill="#fffdf7" stroke="none"/>
+    <circle cx="504" cy="755" r="4" fill="#fffdf7" stroke="none"/>
+    <circle cx="512" cy="755" r="4" fill="#fffdf7" stroke="none"/>
+    <circle cx="520" cy="755" r="4" fill="#fffdf7" stroke="none"/>
 
-    <!-- Strings -->
-    <line x1="485" y1="100" x2="485" y2="745" stroke="#ffffff" stroke-width="4"/>
-    <line x1="495" y1="100" x2="495" y2="745" stroke="#ffffff" stroke-width="4"/>
-    <line x1="505" y1="100" x2="505" y2="745" stroke="#ffffff" stroke-width="4"/>
-    <line x1="515" y1="100" x2="515" y2="745" stroke="#ffffff" stroke-width="4"/>
+    <!-- Six strings run from the headstock to the saddle. -->
+    <line x1="480" y1="100" x2="480" y2="745" stroke="#fffdf7" stroke-width="3"/>
+    <line x1="488" y1="100" x2="488" y2="745" stroke="#fffdf7" stroke-width="3"/>
+    <line x1="496" y1="100" x2="496" y2="745" stroke="#fffdf7" stroke-width="3"/>
+    <line x1="504" y1="100" x2="504" y2="745" stroke="#fffdf7" stroke-width="3"/>
+    <line x1="512" y1="100" x2="512" y2="745" stroke="#fffdf7" stroke-width="3"/>
+    <line x1="520" y1="100" x2="520" y2="745" stroke="#fffdf7" stroke-width="3"/>
   </g>
 </svg>

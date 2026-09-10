@@ -35,7 +35,7 @@ export function classifyAudioFrequency(dataArray) {
     return { isSilent: true, mouth: DEFAULT_EXPRESSION, avgVolume, avgLow, avgMid };
   }
 
-  let mouth = 'smile';
+  let mouth;
   if (avgVolume > 62) {
     mouth = 'wide_open';
   } else if (avgLow > avgMid * 1.35 && avgLow > 26) {
@@ -66,7 +66,6 @@ export function createVoicePuppetryService(options = {}) {
   let requestId = 0;
   let audioStream = null;
   let audioContext = null;
-  let audioAnalyser = null;
   let audioRaf = null;
   let currentViseme = DEFAULT_EXPRESSION;
   let silenceFrames = 0;
@@ -87,7 +86,6 @@ export function createVoicePuppetryService(options = {}) {
       try { void audioContext.close(); } catch { /* best effort */ }
       audioContext = null;
     }
-    audioAnalyser = null;
     currentViseme = DEFAULT_EXPRESSION;
     silenceFrames = 0;
     if (isActive) {
@@ -120,7 +118,6 @@ export function createVoicePuppetryService(options = {}) {
       analyser.fftSize = 512;
       analyser.smoothingTimeConstant = 0.45;
       source.connect(analyser);
-      audioAnalyser = analyser;
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
       isActive = true;
@@ -133,7 +130,7 @@ export function createVoicePuppetryService(options = {}) {
         analyser.getByteFrequencyData(dataArray);
         const analysis = classifyAudioFrequency(dataArray);
 
-        let targetMouth = DEFAULT_EXPRESSION;
+        let targetMouth;
         if (analysis.isSilent) {
           silenceFrames += 1;
           if (silenceFrames > 4) {

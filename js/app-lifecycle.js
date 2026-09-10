@@ -70,7 +70,7 @@ export function createAppLifecycle(context) {
     });
   }
 
-  function handleTopLevelError(error, source = 'runtime') {
+  function handleTopLevelError(error, _source = 'runtime') {
     const code = classifyError(error);
     const recoveryDisposables = createDisposableRegistry();
     recoveryDisposables.register(context.cancelPointerController);

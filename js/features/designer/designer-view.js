@@ -3,7 +3,7 @@
  * Owns wardrobe palettes, dress-up layers, swatch picking, and Dollbox presets.
  */
 
-import { assetsByKind, facesByGroup, getLimbBoundChannel, getOfferedWearables, isHeadBoundLayer, matchesDiscoveryFilters, wearablesBySlot, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
+import { assetsByKind, facesByGroup, getLimbBoundChannel, getOfferedWearables, isHeadBoundLayer, matchesDiscoveryFilters, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { escapeCss } from '../../core/css-escape.js';
 import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, PALETTE, paletteValue, customColorOutline, SKIN_COLORS } from '../../core/palette.js';
 import { loadAssetSvg, makeAssetPlaceholder } from '../../core/svg-loader.js';
@@ -114,6 +114,33 @@ export async function renderAssetPreview(container, asset, options = {}) {
   });
 }
 
+// Preview geometry is deliberately limited to three hand-fitted Classic A garments.
+// Keep it separate from source artwork and the export compositor during the pilot.
+function createClothingTabs(assetId) {
+  const paths = {
+    top_tshirt: ['M124 114 117 102 108 106 113 124Z M176 114 183 102 192 106 187 124Z', 'M119 113 113 116 M181 113 187 116'],
+    bottom_skirt: ['M123 190 108 187 104 199 120 203Z M177 190 192 187 196 199 180 203Z', 'M121 192 119 199 M179 192 181 199'],
+    dress_party: ['M125 118 118 103 108 107 117 128Z M175 118 182 103 192 107 183 128Z', 'M122 117 116 120 M178 117 184 120']
+  };
+  if (!Object.hasOwn(paths, assetId)) return null;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 300 450');
+  svg.setAttribute('class', 'clothing-tabs');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  for (const [index, d] of paths[assetId].entries()) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', index === 0 ? '#fff8e9' : 'none');
+    path.setAttribute('stroke', '#a58a65');
+    path.setAttribute('stroke-width', index === 0 ? '1.3' : '1');
+    path.setAttribute('stroke-linejoin', 'round');
+    if (index === 1) path.setAttribute('stroke-dasharray', '2 2');
+    svg.append(path);
+  }
+  return svg;
+}
+
 export async function renderDollInto(container, draft, options = {}) {
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
   const getAsset = options.getAsset ?? getBuiltinAsset;
@@ -198,6 +225,7 @@ export async function renderDollInto(container, draft, options = {}) {
             : '';
     layer.className = `doll-layer${isHead ? ' doll-layer-head' : ''}${limbClass}`;
     layer.dataset.slot = slot;
+    if (slot === 'skin' && draft.baseDollId === 'doll_classic_a') layer.dataset.paperDoll = 'classic-a';
     layer.style.zIndex = String(order);
     layer.style.setProperty('--skin-color', paletteValue(draft.skinTone, 'peach'));
     layer.style.setProperty('--hair-color', paletteValue(color, 'brown'));
@@ -246,6 +274,10 @@ export async function renderDollInto(container, draft, options = {}) {
         if (expression && expression !== 'neutral') {
           applyMouthExpression(svg, expression, expressionIntensity);
         }
+      }
+      if (draft.baseDollId === 'doll_classic_a') {
+        const tabs = createClothingTabs(id);
+        if (tabs) layer.append(tabs);
       }
       layer.append(svg);
     } catch {
@@ -333,7 +365,7 @@ export function patchDollColors(container, previousDraft, nextDraft) {
 export function createDesignerView({
   store,
   $,
-  $$,
+  $$: _$$ = undefined,
   askConfirm,
   askPrompt = async (_title, message, initialValue) => window.prompt(message, initialValue),
   miniButton,
@@ -693,6 +725,10 @@ export function createDesignerView({
     const focusedAction = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#dollbox-list [data-preset-action]'));
     const focusedPresetId = focusedAction?.dataset.presetId;
     const focusedActionName = focusedAction?.dataset.presetAction;
+    const clearBtn = $('#clear-all-presets-btn');
+    if (clearBtn) {
+      clearBtn.hidden = !state.presets.length;
+    }
     if (!state.presets.length) {
       list.replaceChildren(Object.assign(document.createElement('p'), { className: 'empty-note', textContent: t('designer.emptyDollbox') }));
       return;
@@ -715,7 +751,11 @@ export function createDesignerView({
       const actions = document.createElement('div');
       actions.className = 'mini-actions';
       actions.append(
-        tagAction(miniButton('✎', t('designer.openInDesigner', { name: preset.name }), () => store.dispatch({ type: 'preset/load', presetId: preset.presetId })), preset.presetId, 'load'),
+        tagAction(miniButton('✎', t('designer.openInDesigner', { name: preset.name }), () => {
+          store.dispatch({ type: 'preset/load', presetId: preset.presetId });
+          // Show the opened doll on the stage instead of leaving it behind the Dollbox dialog.
+          $('#dollbox-dialog')?.close();
+        }), preset.presetId, 'load'),
         tagAction(miniButton('Aa', t('designer.renameTitle', { name: preset.name }), async () => {
           const nextName = await askPrompt(t('designer.renameTitle', { name: preset.name }), t('designer.renamePrompt'), preset.name);
           if (nextName != null && nextName.trim()) {

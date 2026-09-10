@@ -47,8 +47,10 @@
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.brand:hover .brand-mark {
-  transform: rotate(8deg) scale(1.05);
+@media (hover: hover) {
+  .brand:hover .brand-mark {
+    transform: rotate(8deg) scale(1.05);
+  }
 }
 
 .brand-titles {
@@ -136,12 +138,10 @@
   gap: 0.5rem;
 }
 
-.project-btn,
 .lang-toggle-btn {
   font-size: 0.8rem;
   font-weight: 750;
 }
-
 
 .history-controls {
   display: inline-flex;

@@ -2,7 +2,6 @@ const LOGICAL_WIDTH = 300;
 const LOGICAL_HEIGHT = 450;
 
 import { t } from '../../core/i18n.js';
-import { REFERENCE_DOLL_IDS } from '../../domain/vocabulary.js';
 
 const GUIDE_LABEL_KEYS = Object.freeze({
   'Head contour': 'headContour',

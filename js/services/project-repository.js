@@ -25,7 +25,7 @@ export function loadEnvelope(storage, getAsset = (_id) => undefined) {
     };
   }
 
-  let raw = null;
+  let raw;
   try {
     raw = storage.getItem(STORAGE_KEY);
   } catch (error) {

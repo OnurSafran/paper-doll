@@ -98,6 +98,7 @@ export function createStagePointerController(context) {
       },
       onCommit(instanceId, element, event) {
         element?.classList?.remove('is-dragging');
+        void event;
         context.stopEdgePan();
         for (const [id] of grabOffsets) {
           const el = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(id)}"]`);

@@ -86,6 +86,19 @@ export function presetReducer(state, action, context) {
       };
     }
 
+    case 'preset/clearAll': {
+      if (state.presets.length === 0) return null;
+      return {
+        state: localizedMessage('toasts.allDollsCleared', {}, {
+          ...state,
+          presets: [],
+          designer: { ...state.designer, editingPresetId: null }
+        }),
+        persist: true,
+        result: { ok: true }
+      };
+    }
+
     default:
       return null;
   }

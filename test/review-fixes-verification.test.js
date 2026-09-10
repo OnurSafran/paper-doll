@@ -223,11 +223,15 @@ test('Item 5: index.html has valid aria-labelledby id, tabpanel roles, and aria-
   assert.ok(html.includes('id="inspector-section-bubble" class="inspector-section" role="tabpanel" aria-labelledby="inspector-tab-bubble"'));
 });
 
-test('Item 6 & 7: Rhythm controls reflect sync/alternate/wave and motion pref shows on multi-select', () => {
+test('Item 6 & 7: Rhythm controls reflect sync/alternate/wave and motion pref lives in Settings', () => {
   const playJs = readControllerBundle(new URL('../js/features/play/play-view.js', import.meta.url));
   assert.ok(playJs.includes('is-selected-rhythm'), 'Rhythm buttons apply is-selected-rhythm class');
   assert.ok(playJs.includes("btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false')"));
-  assert.ok(playJs.includes('motionPrefGroup.hidden = !hasCharactersSelected'));
+  // The app-wide motion mode is reachable without a selected doll.
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.ok(!playJs.includes('motionPrefGroup'));
+  assert.ok(!html.includes('id="character-motion-preference-controls"'));
+  assert.match(html, /<dialog id="settings-dialog"[\s\S]*id="settings-motion-group"[\s\S]*data-motion-mode="system"[\s\S]*data-motion-mode="reduce"[\s\S]*data-motion-mode="full"/);
 });
 
 test('Item 8: SceneAnimationService caches DOM lookups and supports cache invalidation', () => {

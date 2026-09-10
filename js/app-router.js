@@ -11,6 +11,17 @@ export function createAppRouter(context) {
 
   function renderApp() {
     const state = context.store.getState();
+    for (const setting of ['clothingTabs', 'cardboardFinish']) {
+      const input = context.$(`[data-papercraft-setting="${setting}"]`);
+      if (input) input.checked = state.settings[setting] === true;
+      document.body.classList.toggle(setting === 'clothingTabs' ? 'show-clothing-tabs' : 'show-cardboard-finish', state.settings[setting] === true);
+    }
+    const motionMode = state.settings.reducedMotion || 'system';
+    for (const button of context.$$('#settings-motion-group [data-motion-mode]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.motionMode === motionMode));
+    }
+    const soundToggle = context.$('#settings-sound-toggle');
+    if (soundToggle) soundToggle.checked = state.settings.soundEnabled === true;
     const designerActive = state.ui.mode === 'designer';
     const paintActive = state.ui.mode === 'paint';
     const playActive = state.ui.mode === 'play';
@@ -41,6 +52,8 @@ export function createAppRouter(context) {
     const count = context.$('#dollbox-count');
     count.textContent = String(state.presets.length);
     count.setAttribute('aria-label', t('nav.dollboxCountAria', { count: state.presets.length }));
+    const dollboxButtonCount = context.$('#dollbox-btn-count');
+    if (dollboxButtonCount) dollboxButtonCount.textContent = String(state.presets.length);
     const sceneLibCount = context.$('#scene-library-count');
     if (sceneLibCount) sceneLibCount.textContent = String(state.scenes?.length ?? 0);
     const voiceBtn = context.$('#voice-puppetry-btn');
@@ -66,6 +79,11 @@ export function createAppRouter(context) {
   }
 
   function wireStaticEvents() {
+    for (const input of context.$$('[data-papercraft-setting]')) {
+      input.addEventListener('change', () => {
+        context.store.dispatch({ type: 'settings/setPapercraft', setting: input.dataset.papercraftSetting, enabled: input.checked });
+      });
+    }
     window.addEventListener('hashchange', () => {
       context.cancelPointerController();
       if (context.store.getState().ui.voicePuppetryActive) {
@@ -86,7 +104,10 @@ export function createAppRouter(context) {
           void context.paintView.editCopyOfArtwork?.(options.editAssetId);
         }
       }
-      context.$('#main-content').focus({ preventScroll: true });
+      const main = context.$('#main-content');
+      // Stacked tablet/phone layouts scroll <main>; start each screen at its top.
+      main.scrollTop = 0;
+      main.focus({ preventScroll: true });
     });
 
     context.wireDesignerEvents();

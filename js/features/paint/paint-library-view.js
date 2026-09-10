@@ -31,6 +31,7 @@ export function createPaintLibraryView({
   const myArtTabs = /** @type {NodeListOf<HTMLButtonElement>} */ (rootElement.querySelectorAll('#paint-myart-dialog .myart-tab-btn'));
   const myArtTrashActions = /** @type {HTMLElement} */ (rootElement.querySelector('#myart-trash-actions'));
   const myArtEmptyTrashBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#myart-empty-trash-btn'));
+  const myArtClearAllBtn = /** @type {HTMLButtonElement} */ (rootElement.querySelector('#myart-clear-all-btn'));
   const impactDialog = /** @type {HTMLDialogElement} */ (rootElement.querySelector('#paint-impact-dialog'));
   const impactThumb = /** @type {HTMLElement} */ (rootElement.querySelector('#impact-art-thumb'));
   const impactName = /** @type {HTMLElement} */ (rootElement.querySelector('#impact-art-name'));
@@ -59,7 +60,11 @@ export function createPaintLibraryView({
     const state = store?.getState?.() || {};
     const allCustoms = state.customAssets || [];
 
-    let filtered = [];
+    if (myArtClearAllBtn) {
+      myArtClearAllBtn.hidden = allCustoms.length === 0;
+    }
+
+    let filtered;
     if (currentMyArtTab === 'trash') {
       filtered = allCustoms.filter((a) => a.status === 'trashed' || a.libraryVisible === false);
     } else if (currentMyArtTab === 'wearable') {
@@ -460,6 +465,33 @@ export function createPaintLibraryView({
     }
   }
 
+  async function handleClearAllArtwork() {
+    const currentState = store?.getState?.() || {};
+    const totalCount = (currentState.customAssets || []).length;
+    if (totalCount === 0) return;
+    const confirmed = await (askConfirm?.(
+      t('paintMyArtDialog.clearAllTitle'),
+      t('paintMyArtDialog.clearAllMessage', { count: totalCount }),
+      {
+        okText: t('common.delete'),
+        cancelText: t('common.cancel'),
+        danger: true
+      }
+    ) ?? true);
+    if (!confirmed) return;
+    try {
+      const binaryResult = await customArtRepo?.clearArtworkLibrary?.();
+      if (!binaryResult?.ok) throw new Error(binaryResult?.error || 'Artwork pixels could not be deleted.');
+      const cleared = store.dispatch({ type: 'customAsset/clearAll' });
+      if (!cleared?.ok) throw new Error('Artwork metadata could not be deleted.');
+      renderMyArtCards();
+      announceStatus(t('toasts.allArtworkCleared'));
+    } catch (err) {
+      console.error('Clear all artwork failed:', err);
+      await showAlert?.(t('paintMyArtDialog.clearAllFailed'));
+    }
+  }
+
   async function handleEmptyTrash() {
     const currentState = store?.getState?.() || {};
     const referencedTrashCount = (currentState.customAssets || []).filter((asset) =>
@@ -508,6 +540,7 @@ export function createPaintLibraryView({
     closeMyArtBtn?.addEventListener('click', () => myArtDialog?.close());
     myArtTabs?.forEach((tabBtn) => tabBtn.addEventListener('click', () => openMyArtDialog(tabBtn.dataset.tab)));
     myArtEmptyTrashBtn?.addEventListener('click', handleEmptyTrash);
+    myArtClearAllBtn?.addEventListener('click', handleClearAllArtwork);
     impactCancelBtn?.addEventListener('click', () => impactDialog?.close());
     impactRemoveBtn?.addEventListener('click', () => {
       if (activeImpactAsset) handleRemoveFromMyArt(activeImpactAsset.assetId);

@@ -1,0 +1,29 @@
+/* Screen-only pilot (switches live in the Settings dialog): decorative layers never become pointer targets. */
+.clothing-tabs { display: none; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+/* Full-sized dolls only; tiny library thumbnails and the map stay legible. */
+.show-clothing-tabs :is(#doll-stage, .scene-character-canvas) .clothing-tabs { display: block; }
+.doll-layer:has(> .clothing-tabs) > .asset-svg { position: relative; }
+
+.show-cardboard-finish :is(#doll-stage, .scene-character-canvas):has(> [data-paper-doll="classic-a"]),
+.show-cardboard-finish .scene-entity-visual[data-paper-prop] {
+  filter: drop-shadow(2px 0 0 #fff8e9) drop-shadow(-2px 0 0 #fff8e9)
+    drop-shadow(0 -2px 0 #fff8e9) drop-shadow(1px 3px 0 #ba9471)
+    drop-shadow(2px 5px 3px #57402c33);
+}
+.show-cardboard-finish :is(#doll-stage, .scene-character-canvas):has(> [data-paper-doll="classic-a"])::before,
+.show-cardboard-finish .scene-entity-visual[data-paper-prop]::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  left: 28%;
+  width: 44%;
+  top: 89%;
+  height: 5%;
+  background: linear-gradient(165deg, #e6cfad 0 48%, #aa815b 49% 53%, #ceb08a 54%);
+  clip-path: polygon(12% 0, 87% 0, 100% 85%, 84% 100%, 0 85%);
+}
+.show-cardboard-finish .scene-entity-visual[data-paper-prop]::before { top: 91%; height: 7%; left: 12%; width: 76%; }
+.show-cardboard-finish .scene-entity-visual[data-paper-prop] > svg { position: relative; }
+@media (forced-colors: active) {
+  .clothing-tabs { visibility: hidden; }
+}

@@ -10,8 +10,7 @@ import {
   persistedProjection,
   sanitizeCustomAsset,
   sanitizeEnvelope,
-  SCHEMA_VERSION,
-  STORAGE_KEY
+  SCHEMA_VERSION
 } from '../core/state-schema.js';
 import {
   base64ToUint8Array,

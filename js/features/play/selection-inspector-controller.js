@@ -127,19 +127,6 @@ export function createSelectionInspectorController(context) {
       }
     }
 
-    const motionPrefGroup = context.$('#character-motion-preference-controls');
-    if (motionPrefGroup) {
-      motionPrefGroup.hidden = !hasCharactersSelected;
-      if (hasCharactersSelected) {
-        const currentMotionPref = state.settings?.reducedMotion || 'system';
-        for (const btn of context.$$('button[data-motion-mode]', motionPrefGroup)) {
-          const isSelected = btn.dataset.motionMode === currentMotionPref;
-          btn.classList.toggle('is-selected-motion-mode', isSelected);
-          btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-        }
-      }
-    }
-
     const bubbleGroup = context.$('#bubble-controls');
     if (bubbleGroup) {
       bubbleGroup.hidden = !isBubble;
@@ -201,7 +188,6 @@ export function createSelectionInspectorController(context) {
       }
     }
 
-    const inspectorPanel = context.$('#play-inspector-panel');
     const hasAnyInspectorControls = hasCharactersSelected || isBubble || (isAttached && attachJointGroup && !attachJointGroup.hidden);
 
     if (hasSelection && !prevHasSelection && hasAnyInspectorControls) {
@@ -312,11 +298,11 @@ export function createSelectionInspectorController(context) {
   }
 
   function handleDropdownOutsideClick(event) {
-    if (!event.target.closest('#play-scene-dropdown')) {
+    if (!event.target?.closest?.('#play-scene-dropdown')) {
       const el = /** @type {HTMLDetailsElement} */ (document.getElementById('play-scene-dropdown'));
       if (el && el.open) el.open = false;
     }
-    if (!event.target.closest('#play-export-dropdown')) {
+    if (!event.target?.closest?.('#play-export-dropdown')) {
       const el = /** @type {HTMLDetailsElement} */ (document.getElementById('play-export-dropdown'));
       if (el && el.open) el.open = false;
     }

@@ -30,6 +30,23 @@ export function createAppSceneControls(context) {
 
     context.$('#scene-library-btn')?.addEventListener('click', () => context.sceneBookView.openSceneLibraryDialog());
     context.$('#close-scene-library')?.addEventListener('click', () => context.$('#scene-library-dialog')?.close());
+    context.$('#clear-all-scenes-btn')?.addEventListener('click', async () => {
+      const scenes = context.store.getState().scenes || [];
+      if (scenes.length === 0) return;
+      const confirmed = await context.askConfirm(
+        t('sceneBook.clearAllScenesTitle'),
+        t('sceneBook.clearAllScenesMessage', { count: scenes.length }),
+        {
+          okText: t('common.delete'),
+          cancelText: t('common.cancel'),
+          danger: true
+        }
+      );
+      if (confirmed) {
+        context.store.dispatch({ type: 'scene/clearLibraryScenes' });
+        void context.sceneBookView.renderSceneLibrary();
+      }
+    });
     context.$('#save-scene-btn')?.addEventListener('click', () => context.sceneBookView.openSaveSceneDialog());
     context.$('#cancel-save-scene')?.addEventListener('click', () => context.$('#save-scene-dialog')?.close());
     context.$('#save-scene-form')?.addEventListener('submit', (event) => {
@@ -114,8 +131,8 @@ export function createAppSceneControls(context) {
       }
     });
 
-    // Motion Preference (Reduced Motion mode) buttons wiring
-    context.$('#character-motion-preference-controls')?.addEventListener('click', (event) => {
+    // Motion Preference (Reduced Motion mode) buttons in the Settings dialog
+    context.$('#settings-motion-group')?.addEventListener('click', (event) => {
       const mode = event.target.closest('button')?.dataset.motionMode;
       if (mode) {
         context.store.dispatch({ type: 'settings/setReducedMotion', mode });

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { enableDialogFocusRestoration, enableDialogLightDismiss } from '../js/core/dialog-dismiss.js';
+import { createAppDialogs } from '../js/app-dialogs.js';
 
 test('focus restoration preserves the opener on repeated opens and uses a connected fallback', (t) => {
   const original = globalThis.document;
@@ -28,7 +29,7 @@ test('focus restoration preserves the opener on repeated opens and uses a connec
 });
 
 test('enableDialogLightDismiss handles light-dismiss backdrop clicks and protects internal interactions', () => {
-  let closed = false;
+  let closed;
   const listeners = {};
 
   const mockDialog = {
@@ -147,4 +148,11 @@ test('enableDialogFocusRestoration records active element on open and restores i
     mockDialog.showModal();
     listeners.close();
     assert.equal(focused, true, 'Active trigger element must regain focus on dialog close');
+});
+
+test('createAppDialogs functions resolve safely without throwing when dialog elements are absent', async () => {
+  const dialogs = createAppDialogs({ $: () => null });
+  assert.equal(await dialogs.askConfirm('title', 'msg'), true);
+  assert.equal(await dialogs.showAlert('msg'), undefined);
+  assert.equal(await dialogs.askPrompt('title', 'msg'), null);
 });

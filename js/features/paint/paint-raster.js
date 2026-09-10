@@ -4,8 +4,6 @@
  * shapes, eyedropper, rectangular selection, mirror drawing, and PNG encoding.
  */
 
-import { CUSTOM_WEARABLE_DIMENSIONS, CUSTOM_PROP_DIMENSIONS } from '../../domain/vocabulary.js';
-
 export const BRUSH_SIZES = Object.freeze([4, 10, 20, 40]);
 
 /**
@@ -97,10 +95,12 @@ export function drawBrushStamp(ctx, x, y, size, colorHex, isEraser = false) {
 export function applyStroke(ctx, points, { size = 10, color = '#2d261e', isEraser = false, mirror = false, axisX = 150 }) {
   if (!ctx || !points || points.length === 0) return;
   for (const pt of points) {
-    drawBrushStamp(ctx, pt.x, pt.y, size, color, isEraser);
+    // A point may carry its own size (Apple Pencil pressure).
+    const stampSize = pt.size ?? size;
+    drawBrushStamp(ctx, pt.x, pt.y, stampSize, color, isEraser);
     if (mirror) {
       const mirroredX = 2 * axisX - pt.x;
-      drawBrushStamp(ctx, mirroredX, pt.y, size, color, isEraser);
+      drawBrushStamp(ctx, mirroredX, pt.y, stampSize, color, isEraser);
     }
   }
 }

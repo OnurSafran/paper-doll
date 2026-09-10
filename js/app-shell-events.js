@@ -31,12 +31,53 @@ export function createAppShellEvents(context) {
         context.store.dispatch({ type: 'designer/reset' });
       }
     });
+    const dollboxDialog = context.$('#dollbox-dialog');
+    context.$('#open-dollbox-btn')?.addEventListener('click', () => dollboxDialog?.showModal());
+    context.$('#save-doll-btn')?.addEventListener('click', () => {
+      dollboxDialog?.showModal();
+      const nameInput = context.$('#doll-name');
+      nameInput?.focus();
+      nameInput?.select();
+    });
+    context.$('#close-dollbox-dialog')?.addEventListener('click', () => dollboxDialog?.close());
+    context.$('#clear-all-presets-btn')?.addEventListener('click', async () => {
+      const presets = context.store.getState().presets || [];
+      if (presets.length === 0) return;
+      const confirmed = await context.askConfirm(
+        t('designer.clearAllDollsTitle'),
+        t('designer.clearAllDollsMessage', { count: presets.length }),
+        {
+          okText: t('common.delete'),
+          cancelText: t('common.cancel'),
+          danger: true
+        }
+      );
+      if (confirmed) {
+        context.store.dispatch({ type: 'preset/clearAll' });
+      }
+    });
   }
 
   function wireShellEvents() {
+    // One-tap header toggle; the Settings dialog offers the same choice explicitly.
     context.$('#lang-toggle-btn')?.addEventListener('click', () => {
-      const nextLang = getCurrentLanguage() === 'tr' ? 'en' : 'tr';
-      setLanguage(nextLang);
+      setLanguage(getCurrentLanguage() === 'tr' ? 'en' : 'tr');
+    });
+
+    // Settings dialog: language, sound, and the entry point to Project & Backups.
+    // Papercraft and motion switches are wired by the router and scene controls.
+    context.$('#settings-menu-btn')?.addEventListener('click', () => context.$('#settings-dialog')?.showModal());
+    context.$('#close-settings-dialog')?.addEventListener('click', () => context.$('#settings-dialog')?.close());
+    context.$('#settings-language-group')?.addEventListener('click', (event) => {
+      const lang = event.target.closest('button[data-lang]')?.dataset.lang;
+      if (lang && lang !== getCurrentLanguage()) setLanguage(lang);
+    });
+    context.$('#settings-sound-toggle')?.addEventListener('change', (event) => {
+      context.store.dispatch({ type: 'settings/setSound', enabled: event.target.checked });
+    });
+    context.$('#settings-open-project-btn')?.addEventListener('click', () => {
+      context.$('#settings-dialog')?.close();
+      context.openProjectDialog();
     });
 
     // Guide Dialog & Tabs wiring
@@ -67,23 +108,39 @@ export function createAppShellEvents(context) {
       context.$('#guide-dialog')?.showModal();
     });
     context.$('#close-guide-dialog')?.addEventListener('click', () => context.$('#guide-dialog')?.close());
-    context.$('#project-menu-btn')?.addEventListener('click', () => context.openProjectDialog());
     context.$('#close-project-dialog')?.addEventListener('click', () => context.$('#project-dialog')?.close());
     context.$('#export-project-btn')?.addEventListener('click', () => context.exportProjectJsonFile());
 
     async function handleHardResetAction() {
+      if (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine) {
+        if (context.showAlert) {
+          await context.showAlert(
+            t('projectDialog.offlineWarningMessage'),
+            t('projectDialog.offlineWarningTitle')
+          );
+        } else {
+          context.showToast(t('projectDialog.offlineWarningMessage'));
+        }
+        return;
+      }
       const confirmed = await context.askConfirm(
         t('projectDialog.forceReloadBtn'),
-        t('projectDialog.updateCopy')
+        t('projectDialog.updateCopy'),
+        {
+          okText: t('projectDialog.reloadConfirmBtn'),
+          cancelText: t('common.cancel'),
+          danger: false
+        }
       );
       if (confirmed) {
         context.showToast(t('toasts.clearingReloading'));
+        await new Promise((resolve) => window.setTimeout(resolve, 200));
         await window.hardRefresh();
       }
     }
 
-    context.$('#project-hard-reset-btn')?.addEventListener('click', () => void handleHardResetAction());
-    context.$('#footer-hard-reset-btn')?.addEventListener('click', () => void handleHardResetAction());
+    context.$('#settings-hard-reset-btn')?.addEventListener('click', () => void handleHardResetAction());
+    context.$('#project-factory-reset-btn')?.addEventListener('click', () => void context.executeFactoryReset());
     context.$('#browse-project-file-btn')?.addEventListener('click', () => context.$('#project-file-input')?.click());
     context.$('#project-file-input')?.addEventListener('change', (event) => {
       const file = event.target.files?.[0];
@@ -157,7 +214,7 @@ export function createAppShellEvents(context) {
       event.preventDefault();
       designerStage.classList.remove('is-drop-target');
       const payload = event.dataTransfer.getData('text/plain');
-      const match = payload.match(/^paper-doll-wearable:([a-z0-9_-]+)$/);
+      const match = payload.match(/^paper-doll-wearable:([a-zA-Z0-9_-]+)$/);
       if (match) context.store.dispatch({ type: 'designer/equip', assetId: match[1] });
     });
 
@@ -182,9 +239,21 @@ export function createAppShellEvents(context) {
       const hostElement = event.target.closest?.('.scene-entity-positioner');
       const targetEntityId = hostElement?.dataset?.instanceId;
 
-      if (match[1] === 'character') context.store.dispatch({ type: 'scene/spawnCharacter', presetId: match[2], ...point });
-      else if (match[1] === 'bubble') context.store.dispatch({ type: 'scene/spawnBubble', bubbleStyle: match[2], text: match[3] ? decodeURIComponent(match[3]) : 'Hello!', targetEntityId, ...point });
-      else context.store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, ...point });
+      if (match[1] === 'character') {
+        context.store.dispatch({ type: 'scene/spawnCharacter', presetId: match[2], ...point });
+      } else if (match[1] === 'bubble') {
+        let text = t('play.bubblePresetSpeechText');
+        if (match[3]) {
+          try {
+            text = decodeURIComponent(match[3]);
+          } catch {
+            text = t('play.bubblePresetSpeechText');
+          }
+        }
+        context.store.dispatch({ type: 'scene/spawnBubble', bubbleStyle: match[2], text, targetEntityId, ...point });
+      } else {
+        context.store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, ...point });
+      }
     });
 
   }

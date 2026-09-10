@@ -1,5 +1,5 @@
-import { cloneCustomAsset, clonePreset, cloneScene } from '../state-schema.js';
-import { createEmptyScene } from '../../domain/scene-rules.js';
+import { cloneCustomAsset, clonePreset, cloneScene, createDefaultEnvelope } from '../state-schema.js';
+import { createEmptyScene, createSampleScene } from '../../domain/scene-rules.js';
 import { createStarterDraft } from '../../domain/outfit-rules.js';
 import { evaluateUnlockableBackgrounds } from '../../domain/world-map-catalog.js';
 import { localizedMessage, nextUniqueId } from './reducer-helpers.js';
@@ -8,6 +8,25 @@ import { localizedMessage, nextUniqueId } from './reducer-helpers.js';
  * @param {import('../../types.js').StoreAction} action */
 export function settingsReducer(state, action, context) {
   switch (action.type) {
+    case 'project/factoryReset': {
+      const defaultEnv = createDefaultEnvelope();
+      return {
+        state: localizedMessage('toasts.factoryResetCompleted', {}, {
+          ...state,
+          settings: { ...defaultEnv.settings },
+          customAssets: [],
+          presets: [],
+          scenes: [],
+          // Same welcome stage createRuntimeState gives a first launch.
+          currentScene: /** @type {import('../../types.js').SceneRecord} */ (createSampleScene(createStarterDraft(), context.now)),
+          designer: { draft: createStarterDraft(), selectedSlot: 'top', editingPresetId: null, dirty: false },
+          ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null }
+        }),
+        persist: true,
+        clearHistory: true,
+        result: { ok: true }
+      };
+    }
     case 'project/importReplace': {
       if (!action.envelope || !Array.isArray(action.envelope.presets)) return null;
       const env = action.envelope;
@@ -67,6 +86,23 @@ export function settingsReducer(state, action, context) {
         }),
         persist: true,
         result: { ok: true }
+      };
+    }
+
+    case 'settings/setPapercraft': {
+      if (!['clothingTabs', 'cardboardFinish'].includes(action.setting) || typeof action.enabled !== 'boolean') return null;
+      if (state.settings[action.setting] === action.enabled) return null;
+      return {
+        state: { ...state, settings: { ...state.settings, [action.setting]: action.enabled } },
+        persist: true
+      };
+    }
+
+    case 'settings/setSound': {
+      if (typeof action.enabled !== 'boolean' || state.settings.soundEnabled === action.enabled) return null;
+      return {
+        state: { ...state, settings: { ...state.settings, soundEnabled: action.enabled } },
+        persist: true
       };
     }
 

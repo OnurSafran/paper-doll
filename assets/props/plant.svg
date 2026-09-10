@@ -1,12 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_plant">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-    <!-- Terracotta Pot -->
-    <polygon points="340,650 660,650 620,930 380,930" fill="#e76f51"/>
+    <!-- Stems connect the leaves to the soil behind the pot rim. -->
+    <path d="M500 660 V210 M500 620 Q400 410 300 340 M500 620 Q600 410 700 340 M500 650 L260 510 M500 650 L740 510" fill="none" stroke="#1d685e" stroke-width="18"/>
+    <g fill="#2a9d8f">
+      <path d="M490 310 C370 230 435 100 500 80 C575 170 605 255 490 310 Z"/>
+      <path d="M470 475 C325 480 205 380 230 265 C355 225 485 300 470 475 Z"/>
+      <path d="M530 475 C675 480 795 380 770 265 C645 225 515 300 530 475 Z"/>
+      <path d="M425 580 C300 640 180 575 195 475 C300 415 395 455 425 580 Z" fill="#238276"/>
+      <path d="M575 580 C700 640 820 575 805 475 C700 415 605 455 575 580 Z" fill="#238276"/>
+    </g>
+    <g fill="none" stroke="#1d685e" stroke-width="10">
+      <path d="M490 290 L500 140 M445 450 L265 295 M555 450 L735 295 M400 565 L235 500 M600 565 L765 500"/>
+      <path d="M350 370 L345 295 M390 410 L300 400 M650 370 L655 295 M610 410 L700 400"/>
+    </g>
+    <g fill="#a7d7a0" stroke="none">
+      <ellipse cx="390" cy="335" rx="12" ry="23" transform="rotate(-35 390 335)"/>
+      <ellipse cx="610" cy="335" rx="12" ry="23" transform="rotate(35 610 335)"/>
+    </g>
+    <path d="M340 650 H660 L620 930 H380 Z" fill="#e76f51"/>
+    <path d="M395 715 L420 880" fill="none" stroke="#f4a261" stroke-width="18"/>
     <rect x="310" y="600" width="380" height="80" rx="20" fill="#d65d3f"/>
-    <!-- Monstera Leaves -->
-    <path d="M500 620 Q390 390 250 320 Q350 190 500 350 Q650 190 750 320 Q610 390 500 620" fill="#2a9d8f"/>
-    <path d="M500 620 Q330 490 200 550 Q220 420 360 450" fill="#238276"/>
-    <path d="M500 620 Q670 490 800 550 Q780 420 640 450" fill="#238276"/>
-    <path d="M500 390 Q500 160 500 80 Q430 130 500 260" stroke="#1d685e" stroke-width="12"/>
   </g>
 </svg>

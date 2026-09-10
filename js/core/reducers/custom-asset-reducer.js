@@ -113,6 +113,9 @@ export function customAssetReducer(state, action, context) {
           ...next
         }),
         persist: true,
+        // The backing binary is already moved/deleted by the caller, so undoing
+        // this metadata change would recreate references to missing artwork.
+        clearHistory: true,
         result: { ok: true }
       };
     }
@@ -131,7 +134,25 @@ export function customAssetReducer(state, action, context) {
           ...next
         }),
         persist: true,
+        // Purged trash binaries cannot be restored by the app undo stack.
+        clearHistory: true,
         result: { ok: true, assetIds: targetIds }
+      };
+    }
+
+    case 'customAsset/clearAll': {
+      if (state.customAssets.length === 0) return null;
+      const allIds = state.customAssets.map((asset) => asset.assetId);
+      const next = removeCustomAssetReferences(state, allIds);
+      return {
+        state: localizedMessage('toasts.allArtworkCleared', {}, {
+          ...state,
+          ...next,
+          customAssets: []
+        }),
+        persist: true,
+        clearHistory: true,
+        result: { ok: true, count: allIds.length }
       };
     }
 

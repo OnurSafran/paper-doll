@@ -88,8 +88,8 @@ export function createPaintControlsController(context) {
 
     if (itemChipText) {
       itemChipText.textContent = state.itemType === 'wearable'
-        ? `👗 ${t('paint.wearableTypeBtn') || 'Kıyafet'} · ${t('wardrobeSlots.' + state.slot) || state.slot}`
-        : `🧸 ${t('paint.propTypeBtn') || 'Eşya'}`;
+        ? `${t('paint.wearableTypeBtn') || 'Kıyafet'} · ${t('wardrobeSlots.' + state.slot) || state.slot}`
+        : `${t('paint.propTypeBtn') || 'Eşya'}`;
     }
 
     typeWearableBtn?.classList.toggle('active', state.itemType === 'wearable');

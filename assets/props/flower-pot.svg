@@ -1,12 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_flower_pot">
-  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M400 500 Q430 250 350 130 M500 500 Q500 220 500 100 M600 500 Q570 250 650 130" fill="none" stroke="#2a9d8f"/>
-    <circle cx="350" cy="120" r="55" fill="#709f5e"/>
-    <circle cx="500" cy="90" r="62" fill="#8fb27d"/>
-    <circle cx="650" cy="120" r="55" fill="#709f5e"/>
-    <path d="M300 500 L700 500 L635 850 L365 850 Z" fill="#e76f51"/>
-    <path d="M280 500 L720 500 L700 570 L300 570 Z" fill="#f2aa35"/>
-    <path d="M390 600 L410 820 M500 590 L500 830 M610 600 L590 820" fill="none" stroke="#f4a261" stroke-width="12" opacity="0.7"/>
-    <path d="M470 300 Q500 270 530 300" fill="none" stroke="#8fb27d" stroke-width="10"/>
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Leafy stems with three open flowers. -->
+    <path d="M400 510 Q430 280 350 180 M500 510 V155 M600 510 Q570 280 650 180" fill="none" stroke="#238276"/>
+    <g fill="#81b29a" stroke="#238276" stroke-width="10">
+      <path d="M413 370 Q300 360 295 280 Q395 285 413 370 Z"/>
+      <path d="M500 330 Q510 240 575 240 Q580 310 500 330 Z"/>
+      <path d="M591 410 Q690 400 710 320 Q615 325 591 410 Z"/>
+    </g>
+    <g fill="#ef7f72" stroke-width="10" transform="translate(350 170)">
+      <path d="M0 -35 C-75 -115 -115 -25 -50 0 C-120 60 -40 115 0 50 C40 115 120 60 50 0 C115 -25 75 -115 0 -35 Z"/>
+      <circle r="30" fill="#ffd166"/>
+    </g>
+    <g fill="#a78bc4" stroke-width="10" transform="translate(500 120)">
+      <path d="M0 -35 C-75 -115 -115 -25 -50 0 C-120 60 -40 115 0 50 C40 115 120 60 50 0 C115 -25 75 -115 0 -35 Z"/>
+      <circle r="30" fill="#ffd166"/>
+    </g>
+    <g fill="#ef7f72" stroke-width="10" transform="translate(650 170)">
+      <path d="M0 -35 C-75 -115 -115 -25 -50 0 C-120 60 -40 115 0 50 C40 115 120 60 50 0 C115 -25 75 -115 0 -35 Z"/>
+      <circle r="30" fill="#ffd166"/>
+    </g>
+    <path d="M300 500 H700 L635 850 H365 Z" fill="#e76f51"/>
+    <path d="M280 500 H720 L700 570 H300 Z" fill="#f2aa35"/>
+    <path d="M390 610 L410 810 M500 610 V810 M610 610 L590 810" fill="none" stroke="#f4a261" stroke-width="12"/>
   </g>
 </svg>

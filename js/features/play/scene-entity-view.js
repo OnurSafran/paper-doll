@@ -37,6 +37,9 @@ export function createSceneEntityView(context) {
 
     const visual = document.createElement('span');
     visual.className = 'scene-entity-visual';
+    if (entity.kind === 'prop' && ['prop_chair', 'prop_table'].includes(entity.sourceId)) {
+      visual.dataset.paperProp = entity.sourceId;
+    }
     visual.style.setProperty('--flip', entity.flipped ? '-1' : '1');
 
     if (entity.kind === 'character') {

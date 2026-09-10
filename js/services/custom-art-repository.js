@@ -4,7 +4,7 @@
  * PNG blob validation, staging, drafts, backups, trash, and tracked object URLs.
  */
 
-import { CUSTOM_ID_PREFIX, isCustomAssetId, LIMITS } from '../domain/vocabulary.js';
+import { isCustomAssetId, LIMITS } from '../domain/vocabulary.js';
 
 export const DB_NAME = 'paperDollStudio';
 export const DB_VERSION = 1;
@@ -82,8 +82,9 @@ export function uint8ArrayToBase64(u8) {
   }
   let binary = '';
   const len = u8.byteLength;
-  for (let i = 0; i < len; i += 1) {
-    binary += String.fromCharCode(u8[i]);
+  const chunkSize = 0x8000;
+  for (let i = 0; i < len; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i + chunkSize, len)));
   }
   return btoa(binary);
 }
@@ -124,13 +125,14 @@ export async function blobToUint8Array(blobOrBytes) {
 export function createCustomArtRepository(options = {}) {
   const indexedDB = options.indexedDB ?? globalThis.indexedDB;
   const cryptoInstance = options.crypto ?? globalThis.crypto;
-  const createObjectURL = options.createObjectURL ?? (globalThis.URL?.createObjectURL?.bind(globalThis.URL) || ((b) => `blob:mock-${Math.random()}`));
+  const createObjectURL = options.createObjectURL ?? (globalThis.URL?.createObjectURL?.bind(globalThis.URL) || ((_b) => `blob:mock-${Math.random()}`));
   const revokeObjectURL = options.revokeObjectURL ?? (globalThis.URL?.revokeObjectURL?.bind(globalThis.URL) || (() => {}));
   const now = options.now ?? (() => new Date());
 
   let dbPromise = null;
   const objectUrlCache = new Map(); // assetId -> { url, blob }
   const objectUrlPromises = new Map(); // assetId -> Promise<string|null>
+  let storageGeneration = 0;
 
   function isAvailable() {
     return Boolean(indexedDB && typeof indexedDB.open === 'function');
@@ -159,7 +161,7 @@ export function createCustomArtRepository(options = {}) {
         reject(new Error('Database open blocked by another tab.'));
       };
 
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = (_event) => {
         const db = request.result;
         if (!db.objectStoreNames.contains(STORES.ARTWORK)) {
           db.createObjectStore(STORES.ARTWORK, { keyPath: 'assetId' });
@@ -392,7 +394,7 @@ export function createCustomArtRepository(options = {}) {
         return { ok: false, error: 'Trash record not found.' };
       }
 
-      const { trashedAt, reason, ...artRecord } = trashRecord;
+      const { trashedAt: _trashedAt, reason: _reason, ...artRecord } = trashRecord;
       artRecord.updatedAt = now().toISOString();
 
       await reqToPromise(artStore.put(artRecord));
@@ -734,11 +736,17 @@ export function createCustomArtRepository(options = {}) {
       return objectUrlCache.get(assetId).url;
     }
     if (objectUrlPromises.has(assetId)) return objectUrlPromises.get(assetId);
+    const generation = storageGeneration;
     const pending = (async () => {
       const item = await getArtwork(assetId) || await getTrashArtwork(assetId);
       if (!item || !item.blob) return null;
+      if (generation !== storageGeneration) return null;
       try {
         const url = createObjectURL(item.blob);
+        if (generation !== storageGeneration) {
+          revokeObjectURL(url);
+          return null;
+        }
         objectUrlCache.set(assetId, { url, blob: item.blob });
         return url;
       } catch {
@@ -819,9 +827,45 @@ export function createCustomArtRepository(options = {}) {
     }
   }
 
+  async function clearStores(storeNames, fallbackError) {
+    // Prevent in-flight readers from publishing URLs for records that this
+    // operation is about to remove.
+    storageGeneration += 1;
+    try {
+      const db = await getDb();
+      const tx = db.transaction(storeNames, 'readwrite');
+      const txDone = transactionToPromise(tx);
+      try {
+        await Promise.all(storeNames.map((name) => reqToPromise(tx.objectStore(name).clear())));
+      } finally {
+        // A request failure aborts the transaction asynchronously. Always
+        // observe txDone so the rejection cannot become unhandled.
+        await txDone.catch(() => {});
+      }
+      await txDone;
+      revokeAllTrackedUrls();
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message || fallbackError };
+    }
+  }
+
+  // Factory reset: every store, including the paint draft and import backups.
+  function resetAll() {
+    return clearStores(Object.values(STORES), 'Database reset failed.');
+  }
+
+  // My Art "clear all": saved and trashed artwork only. The unsaved paint draft
+  // and the pre-import backup belong to other workflows and must survive.
+  function clearArtworkLibrary() {
+    return clearStores([STORES.ARTWORK, STORES.TRASH], 'Artwork library could not be cleared.');
+  }
+
   return {
     isAvailable,
     getDb,
+    resetAll,
+    clearArtworkLibrary,
     // Keep digest calculation behind the repository boundary so callers do
     // not need to know whether artwork is represented as a Blob or bytes.
     async computeSha256(blobOrBytes) {

@@ -7,9 +7,7 @@ import { canExportInWorker, exportInWorker } from './export-worker-client.js';
 import { getAsset } from '../core/asset-catalog.js';
 import { loadAssetSvg } from '../core/svg-loader.js';
 import { cloneScene } from '../core/state-schema.js';
-import { t } from '../core/i18n.js';
 import { getEntityBounds } from '../domain/scene-rules.js';
-import { applyMouthExpression } from '../core/mouth-expression.js';
 import { getBackgroundLayout } from '../core/background-layout.js';
 import { createExportDollSvg } from '../core/doll-svg.js';
 import { createBubbleSvg } from '../core/bubble-svg.js';
@@ -19,7 +17,6 @@ import {
   isCustomAssetId
 } from '../domain/vocabulary.js';
 import {
-  evaluateAttachedEntityTransform,
   evaluateCharacterPose,
   evaluateProceduralBlink,
   resolveEntityAttachmentTransform

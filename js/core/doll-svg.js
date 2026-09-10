@@ -3,7 +3,7 @@
  * Shares full styling and rigging parity with the stage renderer.
  */
 
-import { getAsset, getLimbBoundChannel, isHeadBoundLayer, isLimbBoundLayer } from './asset-catalog.js';
+import { getAsset, getLimbBoundChannel, isHeadBoundLayer } from './asset-catalog.js';
 import { loadAssetSvg } from './svg-loader.js';
 import { paletteValue, customColorOutline } from './palette.js';
 import { t } from './i18n.js';
@@ -113,7 +113,7 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
     layers.push([80, accessory.assetId, accessory.color, null, 'accessory']);
   }
 
-  for (const [order, id, color, group, slot, extra] of layers.sort((a, b) => a[0] - b[0])) {
+  for (const [_order, id, color, group, slot, extra] of layers.sort((a, b) => a[0] - b[0])) {
     try {
       if (isCustomAssetId(id)) {
         const url = await customArtRepo?.getTrackedObjectUrl?.(id) || await options.getCustomArtUrl?.(id);

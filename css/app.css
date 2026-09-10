@@ -6,18 +6,19 @@
 @import './base/base.css?v=ca3e518c';
 
 /* Shared UI Components */
-@import './components/buttons.css?v=2192815b';
+@import './components/buttons.css?v=422a84cb';
 @import './components/cards.css?v=f90fb1b6';
-@import './components/dialogs.css?v=952c2cff';
+@import './components/dialogs.css?v=de782876';
 @import './components/toasts.css?v=f236a6dc';
-@import './components/footer.css?v=c08c6b14';
 
 /* Feature Screens & Layouts */
-@import './features/header.css?v=d8b179f1';
-@import './features/designer.css?v=dc56ed78';
-@import './features/play.css?v=097aa40e';
-@import './features/paint.css?v=6477e867';
-@import './features/world-map.css?v=70b0fc9a';
+@import './features/header.css?v=c0a66f14';
+@import './features/designer.css?v=374651fd';
+@import './features/play.css?v=ad32cec9';
+@import './features/paint.css?v=72fe71aa';
+@import './features/world-map.css?v=bc8392e3';
+
+@import './features/papercraft.css?v=fda10ee8';
 
 /* Global Responsive & Accessibility Queries */
-@import './responsive/responsive.css?v=049f926f';
+@import './responsive/responsive.css?v=7b6f96ad';

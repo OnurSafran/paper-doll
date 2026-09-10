@@ -764,7 +764,7 @@ export function createWorldMapView({
       };
 
       el.onkeydown = (event) => {
-        let nextIndex = index;
+        let nextIndex;
         if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
           event.preventDefault();
           nextIndex = (index + 1) % WORLD_MAP_LANDMARKS.length;

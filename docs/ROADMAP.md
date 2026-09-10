@@ -134,7 +134,7 @@ Every extraction is independently reviewable and behavior-preserving. Do not com
 1. [x] New backgrounds, dolls, clothing, and props
 2. [x] Expand core wearables and props with catalog/provenance metadata
 3. Fabric patterns after SVG ID scoping
-4. Paper-tab visual toggle
+4. Papercraft appearance — retain the current screen-only pilot unchanged. Clothing tabs are deprioritized; do not expand their garment coverage. Cardboard finish is the preferred direction for broader artwork coverage, deferred for now. The pilot keeps independent, persisted controls for Teen (Classic A), three garments, armchair and cafe table; image exports remain unaffected. Cardboard finish starts on for new studios (D-047). See [D-045: Papercraft pilot direction](DECISIONS.md#d-045--papercraft-pilot-direction).
 5. Interactive props and optional sound effects
 6. [x] Panoramic stages and camera navigation (`1600`, `3200`, `4800` widths with persisted cameraX, minimap, steppers, trackpad/wheel, edge auto-pan)
 7. World map and scene transitions — see [PRD: The Papercraft World Map](PRD-WORLD-MAP.md) and [PRD: Papercraft Scene Transitions](PRD-STORYBOOK-SCENE-TRANSITIONS.md)

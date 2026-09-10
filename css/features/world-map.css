@@ -22,10 +22,12 @@
   cursor: pointer;
 }
 
-.world-map-pill:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent, #e07a5f);
-  box-shadow: 0 4px 8px rgba(74, 55, 40, 0.14);
+@media (hover: hover) {
+  .world-map-pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent, #e07a5f);
+    box-shadow: 0 4px 8px rgba(74, 55, 40, 0.14);
+  }
 }
 
 .world-map-pill:focus-visible {

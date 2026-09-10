@@ -21,10 +21,8 @@ import {
   isMotionClipId,
   isMotionIntensity,
   isPhaseOffset,
-  isStageWidth,
   isStaticPose,
-  LIMITS,
-  STAGE_WIDTHS
+  LIMITS
 } from './vocabulary.js';
 
 export const STAGE_WIDTH = LIMITS.STAGE_WIDTH;
@@ -281,7 +279,7 @@ export function getAttachedDescendants(scene, parentInstanceId) {
   return descendants;
 }
 
-export function attachEntity(scene, childInstanceId, parentInstanceId, getAsset = (_id) => undefined) {
+export function attachEntity(scene, childInstanceId, parentInstanceId, _getAsset = (_id) => undefined) {
   const child = scene.entities.find((e) => e.instanceId === childInstanceId);
   const parent = scene.entities.find((e) => e.instanceId === parentInstanceId);
   if (!child || !parent || child.pinned || childInstanceId === parentInstanceId) return scene;

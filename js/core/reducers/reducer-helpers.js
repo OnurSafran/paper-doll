@@ -1,5 +1,4 @@
 import { translateMessage } from '../i18n.js';
-import { cloneCustomAsset, cloneScene } from '../state-schema.js';
 import { cloneDraft } from '../../domain/outfit-rules.js';
 import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS } from '../palette.js';
 import {
@@ -127,7 +126,7 @@ export function shuffleDraft(current, assets, random) {
   const availableTops = bySlot('top');
   const availableBottoms = bySlot('bottom');
 
-  if (availableDresses.length && (!availableTops.length || random() < 0.42)) {
+  if (availableDresses.length && (!availableTops.length || !availableBottoms.length || random() < 0.42)) {
     equip('dress');
   } else {
     equip('top');

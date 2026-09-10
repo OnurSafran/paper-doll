@@ -9,12 +9,12 @@ import { loadAssetSvg } from '../../core/svg-loader.js';
 import { createBubbleSvg } from '../../core/bubble-svg.js';
 import { createExportDollSvg } from '../../core/doll-svg.js';
 import { getEntityBounds } from '../../domain/scene-rules.js';
-import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION, defaultMakeId, isCustomAssetId } from '../../domain/vocabulary.js';
+import { CHARACTER_DIMENSIONS, defaultMakeId, isCustomAssetId } from '../../domain/vocabulary.js';
 import { createStarterDraft } from '../../domain/outfit-rules.js';
 import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../../domain/scene-templates.js';
 import { assetName, t } from '../../core/i18n.js';
 import { getBackgroundLayout } from '../../core/background-layout.js';
-import { evaluateCharacterPose, evaluateAttachedEntityTransform, resolveEntityAttachmentTransform } from '../../domain/motion-evaluator.js';
+import { evaluateCharacterPose, resolveEntityAttachmentTransform } from '../../domain/motion-evaluator.js';
 
 /**
  * Creates a high-fidelity composite vector SVG representing a full scene (background + entities).
@@ -226,7 +226,7 @@ export async function renderSceneThumbnail(container, scene, options = {}) {
 export function createSceneBookView({
   store,
   $,
-  $$,
+  $$: _$$ = undefined,
   askConfirm,
   askPrompt = async (_title, message, initialValue) => window.prompt(message, initialValue),
   miniButton,
@@ -239,6 +239,11 @@ export function createSceneBookView({
     const token = ++libraryRenderToken;
     const grid = $('#scene-library-grid');
     if (!grid) return;
+
+    const clearBtn = $('#clear-all-scenes-btn');
+    if (clearBtn) {
+      clearBtn.hidden = !state.scenes?.length;
+    }
 
     if (!state.scenes?.length) {
       grid.innerHTML = `
@@ -287,7 +292,7 @@ export function createSceneBookView({
       loadBtn.textContent = t('sceneBook.openBtn');
       loadBtn.title = t('sceneBook.openTitle', { title: scene.title });
       loadBtn.addEventListener('click', async () => {
-        const hasEntities = store.getState().currentScene.entities.length > 0;
+        const hasEntities = (store.getState().currentScene?.entities?.length ?? 0) > 0;
         if (!hasEntities || await askConfirm(t('sceneBook.openConfirmTitle', { title: scene.title }), t('sceneBook.openConfirmMessage'))) {
           store.dispatch({ type: 'scene/loadFromLibrary', sceneId: scene.sceneId });
           $('#scene-library-dialog')?.close();
@@ -364,7 +369,7 @@ export function createSceneBookView({
       loadBtn.textContent = t('templates.loadBtn');
       loadBtn.title = t('templates.loadTitle', { title: template.title });
       loadBtn.addEventListener('click', async () => {
-        const hasEntities = store.getState().currentScene.entities.length > 0;
+        const hasEntities = (store.getState().currentScene?.entities?.length ?? 0) > 0;
         if (!hasEntities || await askConfirm(t('templates.loadConfirmTitle', { title: template.title }), t('templates.loadConfirmMessage'))) {
           store.dispatch({ type: 'scene/loadTemplate', templateId: template.id });
           $('#scene-templates-dialog')?.close();
@@ -382,7 +387,7 @@ export function createSceneBookView({
     const activeLib = state.scenes?.find((s) => s.sceneId === state.ui.activeSceneLibraryId);
     const titleInput = $('#scene-title-input');
     if (titleInput) {
-      titleInput.value = activeLib ? activeLib.title : (state.currentScene.title !== 'Current Scene' ? state.currentScene.title : '');
+      titleInput.value = activeLib ? activeLib.title : (state.currentScene?.title && state.currentScene.title !== 'Current Scene' ? state.currentScene.title : '');
     }
     const updateBtn = $('#update-existing-scene');
     if (updateBtn) updateBtn.disabled = !activeLib;

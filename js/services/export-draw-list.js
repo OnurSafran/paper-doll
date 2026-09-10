@@ -47,7 +47,7 @@ export async function renderExportDrawList({ width, height, commands, images }, 
     if (!ctx) throw new Error('Worker canvas is unavailable');
     for (const [operation, ...args] of commands) {
       if (operation === 'set') ctx[args[0]] = args[1];
-      else if (operation === 'drawImage') ctx.drawImage(images[args[0]], args[1], args[2], args[3], args[4]);
+      else if (operation === 'drawImage') /** @type {any} */ (ctx.drawImage)(images[args[0]], ...args.slice(1));
       else ctx[operation](...args);
     }
     return await canvas.convertToBlob({ type: 'image/png' });

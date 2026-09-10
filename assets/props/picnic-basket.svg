@@ -18,8 +18,8 @@
 
     <!-- Checkered Gingham Red & White Napkin Draped Over Rim -->
     <path d="M320 500 L300 680 L420 620 L480 660 L450 500 Z" fill="#ef476f"/>
-    <polygon points="300,560 420,560 420,620 300,620" fill="#ffffff" opacity="0.4"/>
-    <polygon points="340,500 340,660 400,660 400,500" fill="#ffffff" opacity="0.4"/>
+    <path d="M313 560 H461 L472 620 H420 L307 676 Z" fill="#ffffff" stroke="none" opacity="0.4"/>
+    <path d="M340 500 H380 V640 L340 660 Z" fill="#ffffff" stroke="none" opacity="0.4"/>
 
     <!-- Split Woven Lids -->
     <polygon points="180,500 500,480 480,540 190,540" fill="#c68b59"/>
