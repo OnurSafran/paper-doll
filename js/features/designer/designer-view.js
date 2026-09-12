@@ -371,13 +371,21 @@ export function createDesignerView({
   miniButton,
   customArtRepo,
   openPaintStudio,
-  getAsset = getBuiltinAsset
+  getAsset = getBuiltinAsset,
+  assetRegistry = undefined
 }) {
   let designerRenderToken = 0;
   let dollboxSignature = null;
   let dollboxRenderToken = 0;
   let lastRenderedDraft = null;
   let lastRenderedLanguage = null;
+  const getCatalogAssetsByKind = (kind, options = {}) =>
+    assetRegistry?.assetsByKind?.(kind, options) ?? assetsByKind(kind, options);
+  const getCatalogOfferedWearables = (slot, baseDollId, styleFilter = 'all', packId = 'all') =>
+    assetRegistry?.getOfferedWearables?.(slot, baseDollId, styleFilter, packId) ??
+    getOfferedWearables(slot, baseDollId, styleFilter, packId);
+  const getCatalogFacesByGroup = (group, fitFamily, packId = 'all') =>
+    assetRegistry?.facesByGroup?.(group, fitFamily, packId) ?? facesByGroup(group, fitFamily, packId);
 
   function renderSwatches(container, tokens, selected, onSelect) {
     if (!container) return;
@@ -468,12 +476,12 @@ export function createDesignerView({
     }
 
     const activeStyle = state.designer.selectedStyleFilter || 'all';
-    const builtins = getOfferedWearables(state.designer.selectedSlot, state.designer.draft.baseDollId, activeStyle);
+    const builtins = getCatalogOfferedWearables(state.designer.selectedSlot, state.designer.draft.baseDollId, activeStyle, state.ui.packFilter || 'all');
     const targetFit = getAsset(state.designer.draft.baseDollId)?.fitFamily;
     const customs = (state.customAssets || [])
       .filter((a) => a.kind === 'wearable' && a.slot === state.designer.selectedSlot && a.status === 'available' && a.libraryVisible !== false)
       .map(customAssetToDescriptor)
-      .filter((asset) => matchesDiscoveryFilters(asset, targetFit || 'teen', activeStyle));
+      .filter((asset) => matchesDiscoveryFilters(asset, targetFit || 'teen', activeStyle, state.ui.packFilter || 'all'));
     const allWearables = [...builtins, ...customs];
 
     const focusedAssetId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#wardrobe-items [data-asset-id]'))?.dataset.assetId;
@@ -613,7 +621,7 @@ export function createDesignerView({
     }
 
     const focusedAssetId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#face-items [data-asset-id]'))?.dataset.assetId;
-    const faceAssets = facesByGroup(selectedGroup, getAsset(draft.baseDollId)?.fitFamily || 'teen');
+    const faceAssets = getCatalogFacesByGroup(selectedGroup, getAsset(draft.baseDollId)?.fitFamily || 'teen');
     const cards = faceAssets.map((asset) => {
       const isSelected = face?.[selectedGroup]?.assetId === asset.id;
       const button = document.createElement('button');
@@ -647,8 +655,8 @@ export function createDesignerView({
   function renderDollModels(container, selectedDollId) {
     if (!container) return;
     const focusedDollId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('.model-picker-btn'))?.dataset.assetId;
-    const dollAssets = dollsForLifeStagePicker();
-    const selectedDoll = getBuiltinAsset(selectedDollId);
+    const dollAssets = dollsForLifeStagePicker(getCatalogAssetsByKind('doll'));
+    const selectedDoll = getAsset(selectedDollId);
     const selectedLifeStage = selectedDoll?.lifeStages?.[0];
     container.replaceChildren(...dollAssets.map((asset) => {
       const lifeStage = asset.lifeStages?.[0];

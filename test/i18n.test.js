@@ -79,6 +79,15 @@ test('Designer status messages can be retranslated after switching language', ()
   }
 });
 
+test('storage status messages and My Art collection label are localized', () => {
+  setLanguage('tr');
+  assert.equal(t('sync.storageSaved'), 'Bu cihaza kaydedildi.');
+  assert.equal(t('play.propCollectionMyArt'), 'Çizimlerim');
+  setLanguage('en');
+  assert.equal(t('sync.storageSaved'), 'Saved on this device.');
+  assert.equal(t('play.propCollectionMyArt'), 'My Art');
+});
+
 test('palette color localization helper works in tr and en', () => {
   setLanguage('tr');
   assert.equal(getPaletteColorName('coral'), 'Mercan pembesi');
@@ -322,6 +331,5 @@ test('Custom asset and project status messages adapt to active language and retr
     setLanguage(originalLanguage);
   }
 });
-
 
 

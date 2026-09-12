@@ -1,3 +1,4 @@
+import { PACK_MANIFESTS, PACK_REGISTRY } from '../packs/index.js';
 /**
  * Centralized Internationalization (i18n) Engine for Paper Doll Studio
  * Default language: Turkish ('tr')
@@ -13,8 +14,8 @@ export const STORAGE_KEY = 'paper_doll_language';
 export const LANGUAGE_STORAGE_KEY = STORAGE_KEY;
 
 export const TRANSLATIONS = Object.freeze({
-  tr,
-  en
+  tr: Object.assign({}, tr, ...PACK_MANIFESTS.map((pack) => ('locales' in pack ? pack.locales.tr : {}))),
+  en: Object.assign({}, en, ...PACK_MANIFESTS.map((pack) => ('locales' in pack ? pack.locales.en : {})))
 });
 
 let currentLanguage = DEFAULT_LANGUAGE;
@@ -88,7 +89,7 @@ export function assetName(asset, fallback = '') {
   const id = typeof asset === 'string' ? asset : asset?.id;
   const defaultName = typeof asset === 'string' ? fallback : (asset?.name || fallback);
   if (!id) return defaultName;
-  const translated = t(`assets.${id}`);
+  const translated = t((typeof asset === 'string' ? PACK_REGISTRY.getAsset(id)?.nameKey : asset?.nameKey) || `assets.${id}`);
   return !translated || translated === `assets.${id}` ? defaultName : translated;
 }
 

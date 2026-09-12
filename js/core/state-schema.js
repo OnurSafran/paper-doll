@@ -9,6 +9,7 @@ import {
 import { clampCameraX } from './coordinate-space.js';
 import { hasValidDisplayName, normalizeDisplayName } from './text.js';
 import { t } from './i18n.js';
+import { collectReferencedPackRequirements, isPackId, isPackVersion } from '../packs/pack-registry.js';
 import {
   CAMERA_CONSTANTS,
   DEFAULT_ATTACH_JOINT,
@@ -62,8 +63,10 @@ export function createDefaultEnvelope() {
       clothingTabs: false,
       cardboardFinish: true,
       stamps: [],
-      unlockedBackgrounds: []
+      unlockedBackgrounds: [],
+      hiddenPacks: []
     },
+    packRequirements: [],
     customAssets: [],
     presets: [],
     scenes: [],
@@ -78,8 +81,10 @@ export function createRuntimeState(envelope = createDefaultEnvelope()) {
     settings: {
       ...envelope.settings,
       stamps: Array.isArray(envelope?.settings?.stamps) ? [...envelope.settings.stamps] : [],
-      unlockedBackgrounds: Array.isArray(envelope?.settings?.unlockedBackgrounds) ? [...envelope.settings.unlockedBackgrounds] : []
+      unlockedBackgrounds: Array.isArray(envelope?.settings?.unlockedBackgrounds) ? [...envelope.settings.unlockedBackgrounds] : [],
+      hiddenPacks: Array.isArray(envelope?.settings?.hiddenPacks) ? [...envelope.settings.hiddenPacks] : []
     },
+    packRequirements: clonePackRequirements(envelope.packRequirements),
     customAssets: (envelope.customAssets || []).map(cloneCustomAsset),
     presets: (envelope.presets || []).map(clonePreset),
     scenes: (envelope.scenes || []).map(cloneScene),
@@ -112,8 +117,10 @@ export function persistedProjection(state, now = () => new Date(), revision = st
     settings: {
       ...state.settings,
       stamps: Array.isArray(state.settings?.stamps) ? [...state.settings.stamps] : [],
-      unlockedBackgrounds: Array.isArray(state.settings?.unlockedBackgrounds) ? [...state.settings.unlockedBackgrounds] : []
+      unlockedBackgrounds: Array.isArray(state.settings?.unlockedBackgrounds) ? [...state.settings.unlockedBackgrounds] : [],
+      hiddenPacks: Array.isArray(state.settings?.hiddenPacks) ? [...state.settings.hiddenPacks] : []
     },
+    packRequirements: clonePackRequirements(state.packRequirements),
     customAssets: (state.customAssets || []).map(cloneCustomAsset),
     presets: state.presets.map(clonePreset),
     scenes: (state.scenes || []).map(cloneScene),
@@ -309,6 +316,10 @@ export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
   }
 
   const currentScene = sanitizeScene(value.currentScene, effectiveGetAsset, warnings);
+  const packRequirements = mergePackRequirements(
+    sanitizePackRequirements(value.packRequirements),
+    collectReferencedPackRequirements({ presets, scenes, currentScene }, effectiveGetAsset)
+  );
   const revision = Number.isInteger(value?.revision) && value.revision >= 1 ? value.revision : 1;
   return {
     envelope: {
@@ -324,8 +335,10 @@ export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
         // On unless the player switched it off (D-047).
         cardboardFinish: typeof value.settings?.cardboardFinish === 'boolean' ? value.settings.cardboardFinish : true,
         stamps: sanitizeStringList(value.settings?.stamps),
-        unlockedBackgrounds: sanitizeStringList(value.settings?.unlockedBackgrounds)
+        unlockedBackgrounds: sanitizeStringList(value.settings?.unlockedBackgrounds),
+        hiddenPacks: sanitizePackIdList(value.settings?.hiddenPacks)
       },
+      packRequirements,
       customAssets,
       presets,
       scenes,
@@ -771,4 +784,36 @@ function sanitizeStringList(list) {
     }
   }
   return [...new Set(sanitized)];
+}
+
+export function sanitizePackRequirements(list) {
+  if (!Array.isArray(list)) return [];
+  const requirements = [];
+  const ids = new Set();
+  for (const item of list) {
+    if (!item || typeof item !== 'object' || !isPackId(item.id) || ids.has(item.id)) continue;
+    ids.add(item.id);
+    requirements.push({
+      id: item.id,
+      ...(isPackVersion(item.version) ? { version: item.version } : {})
+    });
+  }
+  return requirements;
+}
+
+function clonePackRequirements(list) {
+  return sanitizePackRequirements(list).map((item) => ({ ...item }));
+}
+
+function mergePackRequirements(current = [], incoming = []) {
+  const merged = new Map();
+  for (const item of [...current, ...incoming]) {
+    if (item?.id && !merged.has(item.id)) merged.set(item.id, { ...item });
+  }
+  return [...merged.values()];
+}
+
+function sanitizePackIdList(list) {
+  if (!Array.isArray(list)) return [];
+  return [...new Set(list.filter((id) => isPackId(id)))];
 }

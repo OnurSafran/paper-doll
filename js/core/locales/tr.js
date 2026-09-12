@@ -568,7 +568,7 @@ export const tr = Object.freeze({
       propCollectionOutdoors: 'Dışarı',
       propCollectionCreative: 'Yaratıcı',
       propCollectionFun: 'Eğlence',
-      propCollectionMyArt: 'My Art',
+      propCollectionMyArt: 'Çizimlerim',
       savedDoll: 'Kayıtlı bebek',
       sceneProp: 'Sahne eşyası',
       customPropBadge: '🎨 Özel eşya',
@@ -1006,7 +1006,14 @@ export const tr = Object.freeze({
       crossTabTitle: 'Kayıtlı veriler başka bir sekmede değişti',
       crossTabMessage: 'Başka bir sekme bu projeyi güncelledi. En son kayıtlı değişiklikleri görmek için sayfayı yeniden yüklemek ister misiniz, yoksa bu sekmede çalışmaya devam mı edeceksiniz?',
       tabLocalState: 'Sekmeye özel yerel durumla çalışılıyor. Gelecekteki kayıtlar, daha yeni disk değişikliklerinin üzerine yazmak için açık onay gerektirir.',
-      errorMessage: 'Bir hata oluştu. Kayıtlı proje verileriniz korundu.'
+      errorMessage: 'Bir hata oluştu. Kayıtlı proje verileriniz korundu.',
+      storageUnavailable: 'Depolama kullanılamıyor; değişiklikler yenilemeden sonra korunmayacak.',
+      storageConflict: 'Kayıtlı veriler başka bir sekmede güncellendi. Yenileme veya üzerine yazma onayı gerekiyor.',
+      storageWriteFailed: 'Kayıt yapılamadı. Geçerli oturumunuz açık tutuluyor.',
+      storageSaving: 'Kaydediliyor…',
+      storageWriteRace: 'Kayıt sırasında başka bir sekme verileri değiştirdi. Geçerli oturumunuz açık tutuluyor.',
+      storageCleanupWarning: 'Bu cihaza kaydedildi. Geçici kurtarma verileri temizlenemedi.',
+      storageSaved: 'Bu cihaza kaydedildi.'
     },
     common: {
       delete: 'Sil',

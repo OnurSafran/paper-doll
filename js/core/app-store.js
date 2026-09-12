@@ -2,6 +2,7 @@ import { clampCameraX } from './coordinate-space.js';
 import { cloneCustomAsset, createRuntimeState } from './state-schema.js';
 import { cloneDraft } from '../domain/outfit-rules.js';
 import { createAssetRegistry } from './asset-registry.js';
+import { collectReferencedPackRequirements } from '../packs/index.js';
 import { t } from './i18n.js';
 import {
   DEFAULT_STAGE_WIDTH,
@@ -82,7 +83,8 @@ export function createAppStore(envelope, options = {}) {
       const willPersist = prevSnapshot.presets !== state.presets ||
         prevSnapshot.scenes !== state.scenes ||
         prevSnapshot.currentScene !== state.currentScene ||
-        prevSnapshot.customAssets !== state.customAssets;
+        prevSnapshot.customAssets !== state.customAssets ||
+        prevSnapshot.packRequirements !== state.packRequirements;
       const remainingSelectedIds = (state.ui.selectedEntityIds || []).filter((id) =>
         prevSnapshot.currentScene?.entities?.some((e) => e.instanceId === id)
       );
@@ -96,6 +98,7 @@ export function createAppStore(envelope, options = {}) {
           editingPresetId: prevSnapshot.designer.editingPresetId,
           dirty: prevSnapshot.designer.dirty
         },
+        packRequirements: (prevSnapshot.packRequirements || []).map((item) => ({ ...item })),
         customAssets: (prevSnapshot.customAssets || []).map(cloneCustomAsset),
         presets: prevSnapshot.presets,
         scenes: prevSnapshot.scenes,
@@ -122,7 +125,8 @@ export function createAppStore(envelope, options = {}) {
       const willPersist = nextSnapshot.presets !== state.presets ||
         nextSnapshot.scenes !== state.scenes ||
         nextSnapshot.currentScene !== state.currentScene ||
-        nextSnapshot.customAssets !== state.customAssets;
+        nextSnapshot.customAssets !== state.customAssets ||
+        nextSnapshot.packRequirements !== state.packRequirements;
       const remainingSelectedIds = (state.ui.selectedEntityIds || []).filter((id) =>
         nextSnapshot.currentScene?.entities?.some((e) => e.instanceId === id)
       );
@@ -136,6 +140,7 @@ export function createAppStore(envelope, options = {}) {
           editingPresetId: nextSnapshot.designer.editingPresetId,
           dirty: nextSnapshot.designer.dirty
         },
+        packRequirements: (nextSnapshot.packRequirements || []).map((item) => ({ ...item })),
         customAssets: (nextSnapshot.customAssets || []).map(cloneCustomAsset),
         presets: nextSnapshot.presets,
         scenes: nextSnapshot.scenes,
@@ -155,14 +160,18 @@ export function createAppStore(envelope, options = {}) {
       return { ok: true, redone: true };
     }
 
-    const result = reduce(state, action, { getAsset: getEffectiveAsset, makeId, now, assets, random });
+    const reduced = reduce(state, action, { getAsset: getEffectiveAsset, makeId, now, assets, random });
+    const result = reduced?.state
+      ? { ...reduced, state: trackPackRequirements(reduced.state, getEffectiveAsset) }
+      : reduced;
     if (!result || result.state === state) return result?.result ?? { ok: false, code: 'NO_CHANGE' };
 
     const domainChanged = previousState.designer.draft !== result.state.designer.draft ||
       previousState.presets !== result.state.presets ||
       previousState.scenes !== result.state.scenes ||
       previousState.currentScene !== result.state.currentScene ||
-      previousState.customAssets !== result.state.customAssets;
+      previousState.customAssets !== result.state.customAssets ||
+      previousState.packRequirements !== result.state.packRequirements;
     const nonUndoAction = action.type === 'scene/setCameraX' || action.type === 'scene/panCamera' || action.type === 'scene/playbackFinished';
 
     if (result.clearHistory) {
@@ -202,11 +211,21 @@ function snapshotDomain(state) {
       selectedSlot: state.designer.selectedSlot,
       dirty: state.designer.dirty
     },
+    packRequirements: (state.packRequirements || []).map((item) => ({ ...item })),
     customAssets: (state.customAssets || []).map(cloneCustomAsset),
     presets: state.presets,
     scenes: state.scenes,
     currentScene: state.currentScene
   };
+}
+
+function trackPackRequirements(state, getAsset) {
+  const requirements = new Map((state.packRequirements || []).map((item) => [item.id, { ...item }]));
+  for (const item of collectReferencedPackRequirements(state, getAsset)) {
+    if (!requirements.has(item.id)) requirements.set(item.id, item);
+  }
+  if (requirements.size === (state.packRequirements || []).length) return state;
+  return { ...state, packRequirements: [...requirements.values()] };
 }
 
 function restoreSceneForHistory(snapshotScene, currentScene) {

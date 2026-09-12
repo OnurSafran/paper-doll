@@ -332,6 +332,8 @@ export function createSceneBookView({
 
     const cards = [];
     for (const template of SCENE_TEMPLATES) {
+      if (template.packId && (state.settings?.hiddenPacks?.includes(template.packId) || !getAsset(template.backgroundId))) continue;
+      if (state.ui.packFilter && state.ui.packFilter !== 'all' && (template.packId || 'core') !== state.ui.packFilter) continue;
       const card = document.createElement('article');
       card.className = 'scene-card template-card';
 
@@ -348,15 +350,15 @@ export function createSceneBookView({
 
       const catBadge = document.createElement('span');
       catBadge.className = 'template-badge';
-      catBadge.textContent = template.category;
+      catBadge.textContent = (template.categoryKey && t(template.categoryKey)) || template.category;
 
       const title = document.createElement('div');
       title.className = 'scene-card-title';
-      title.textContent = template.title;
+      title.textContent = (template.titleKey && t(template.titleKey)) || template.title;
 
       const desc = document.createElement('p');
       desc.className = 'panel-copy template-desc';
-      desc.textContent = template.description;
+      desc.textContent = (template.descriptionKey && t(template.descriptionKey)) || template.description;
 
       info.append(catBadge, title, desc);
 
@@ -367,10 +369,10 @@ export function createSceneBookView({
       loadBtn.type = 'button';
       loadBtn.className = 'button primary';
       loadBtn.textContent = t('templates.loadBtn');
-      loadBtn.title = t('templates.loadTitle', { title: template.title });
+      loadBtn.title = t('templates.loadTitle', { title: title.textContent });
       loadBtn.addEventListener('click', async () => {
         const hasEntities = (store.getState().currentScene?.entities?.length ?? 0) > 0;
-        if (!hasEntities || await askConfirm(t('templates.loadConfirmTitle', { title: template.title }), t('templates.loadConfirmMessage'))) {
+        if (!hasEntities || await askConfirm(t('templates.loadConfirmTitle', { title: title.textContent }), t('templates.loadConfirmMessage'))) {
           store.dispatch({ type: 'scene/loadTemplate', templateId: template.id });
           $('#scene-templates-dialog')?.close();
         }

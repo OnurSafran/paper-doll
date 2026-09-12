@@ -82,6 +82,12 @@
               </div>
             </section>
 
+            <section class="paper-panel pack-controls">
+              <label for="wardrobe-pack-picker" data-i18n="pack_family_home.libraryPack">İçerik paketi</label>
+              <select id="wardrobe-pack-picker" data-pack-picker></select>
+              <label for="family-outfit-picker" data-i18n="pack_family_home.outfitsLabel">Aile kombinleri</label>
+              <select id="family-outfit-picker"></select>
+            </section>
             <div id="designer-mode-nav" class="tab-list designer-mode-tabs" role="tablist" data-i18n-aria-label="designer.modeTabsAria" aria-label="Tasarımcı panelleri">
               <button id="designer-mode-wardrobe" type="button" role="tab" class="mode-tab is-active" aria-selected="true" aria-controls="wardrobe-panel-section" data-i18n="designer.tabWardrobe">👗 Gardırop</button>
               <button id="designer-mode-face" type="button" role="tab" class="mode-tab" aria-selected="false" aria-controls="face-panel-section" data-i18n="designer.tabFace">😊 Yüz</button>
@@ -227,6 +233,8 @@
             <section id="spawn-panel-section" class="paper-panel spawn-panel" aria-labelledby="tray-title">
               <div class="panel-heading"><div><span class="eyebrow" data-i18n="play.trayEyebrow">Sahne Tepsisi</span><h2 id="tray-title" data-i18n="play.trayTitle">Sahneye ekleyici</h2><p class="panel-copy" data-i18n="play.trayCopy">Öğeleri sahneye tıklayın veya sürükleyin.</p></div><span class="panel-sticker" aria-hidden="true">✦</span></div>
               <div id="spawn-tabs" class="tab-list" role="tablist" data-i18n-aria-label="play.trayCategoriesAria" aria-label="Sahne tepsisi kategorileri"></div>
+              <label for="play-pack-picker" data-i18n="pack_family_home.libraryPack">İçerik paketi</label>
+              <select id="play-pack-picker" data-pack-picker></select>
               <div id="spawn-collection-tabs" class="tab-list prop-collection-tabs" role="tablist" data-i18n-aria-label="play.propCollectionsAria" aria-label="Eşya koleksiyonları" hidden></div>
               <div id="spawn-items" class="spawn-list"></div>
             </section>

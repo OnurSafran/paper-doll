@@ -717,3 +717,6 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--ink);
   box-shadow: 0 2px 5px rgba(46, 38, 31, 0.2);
 }
+
+.pack-controls { display: grid; gap: 0.5rem; padding: 1rem; }
+.pack-controls select { width: 100%; min-width: 0; }

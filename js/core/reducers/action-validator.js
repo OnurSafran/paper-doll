@@ -13,6 +13,8 @@ import {
 import { isColorValue, isIrisColor, isPaletteToken } from '../palette.js';
 
 export const ACTION_PAYLOAD_VALIDATORS = {
+  'ui/setPackFilter': (action) => typeof action.packId === 'string',
+  'designer/loadOutfit': (action) => typeof action.outfitId === 'string',
   'ui/setMode': (action) => ['designer', 'paint', 'play'].includes(action.mode),
   'ui/selectEntity': (action) => action.instanceId === null || action.instanceId === undefined || typeof action.instanceId === 'string',
   'ui/selectEntities': (action) => action.instanceIds == null || (Array.isArray(action.instanceIds) && action.instanceIds.every((id) => typeof id === 'string')),

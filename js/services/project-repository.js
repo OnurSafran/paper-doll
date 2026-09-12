@@ -133,7 +133,11 @@ export function createProjectRepository({
 
   function save(envelope, { force = false } = {}) {
     if (!storage) {
-      onStatus({ status: 'unsaved', message: 'Storage is unavailable; changes will not survive refresh.' });
+      onStatus({
+        status: 'unsaved',
+        message: 'Storage is unavailable; changes will not survive refresh.',
+        messageKey: 'sync.storageUnavailable'
+      });
       return { ok: false, code: 'STORAGE_UNAVAILABLE' };
     }
 
@@ -141,7 +145,8 @@ export function createProjectRepository({
     if (!force && currentStorageRevision != null && currentStorageRevision > baseRevision) {
       onStatus({
         status: 'unsaved',
-        message: 'Saved data was updated in another tab. Reload or overwrite confirmation required.'
+        message: 'Saved data was updated in another tab. Reload or overwrite confirmation required.',
+        messageKey: 'sync.storageConflict'
       });
       return {
         ok: false,
@@ -162,11 +167,15 @@ export function createProjectRepository({
       serialized = JSON.stringify(toSave);
       JSON.parse(serialized);
     } catch (error) {
-      onStatus({ status: 'unsaved', message: 'Could not save. Your current session is still open.' });
+      onStatus({
+        status: 'unsaved',
+        message: 'Could not save. Your current session is still open.',
+        messageKey: 'sync.storageWriteFailed'
+      });
       return { ok: false, code: 'STORAGE_SERIALIZE', error };
     }
 
-    onStatus({ status: 'saving', message: 'Saving…' });
+    onStatus({ status: 'saving', message: 'Saving…', messageKey: 'sync.storageSaving' });
     try {
       storage.setItem(`${STORAGE_KEY}.tmp`, serialized);
       storage.setItem(STORAGE_KEY, serialized);
@@ -176,7 +185,11 @@ export function createProjectRepository({
       } catch {
         /* best effort cleanup */
       }
-      onStatus({ status: 'unsaved', message: 'Could not save. Your current session is still open.' });
+      onStatus({
+        status: 'unsaved',
+        message: 'Could not save. Your current session is still open.',
+        messageKey: 'sync.storageWriteFailed'
+      });
       return {
         ok: false,
         code: error?.name === 'QuotaExceededError' ? 'STORAGE_QUOTA' : 'STORAGE_FAILED',
@@ -197,7 +210,11 @@ export function createProjectRepository({
       } catch {
         /* best effort cleanup */
       }
-      onStatus({ status: 'unsaved', message: 'Another tab changed saved data during the write. Your current session is still open.' });
+      onStatus({
+        status: 'unsaved',
+        message: 'Another tab changed saved data during the write. Your current session is still open.',
+        messageKey: 'sync.storageWriteRace'
+      });
       return {
         ok: false,
         code: 'STORAGE_WRITE_RACE',
@@ -213,12 +230,13 @@ export function createProjectRepository({
     } catch (warning) {
       onStatus({
         status: 'saved',
-        message: 'Saved on this device. Temporary recovery data could not be cleared.'
+        message: 'Saved on this device. Temporary recovery data could not be cleared.',
+        messageKey: 'sync.storageCleanupWarning'
       });
       return { ok: true, code: 'TEMP_CLEANUP_FAILED', revision: nextRevision, warning };
     }
 
-    onStatus({ status: 'saved', message: 'Saved on this device.' });
+    onStatus({ status: 'saved', message: 'Saved on this device.', messageKey: 'sync.storageSaved' });
     return { ok: true, revision: nextRevision };
   }
 

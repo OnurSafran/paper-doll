@@ -47,6 +47,7 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-045 | Retain the papercraft pilot unchanged; deprioritize clothing tabs and favor broader cardboard finish coverage later. | Accepted; expansion deferred | Clothing tabs add little value to the intended experience; cardboard finish can carry the papercraft style across more artwork. |
 | D-046 | Consolidate app-wide preferences into a header Settings dialog and move the Dollbox into a dialog opened from the Designer topbar. | Implemented | The papercraft bar, footer, and header Project button competed with the workspace; the Dollbox pushed the Wardrobe below the fold. Language stays a one-tap header toggle. |
 | D-047 | Cardboard finish is on by default for new studios and for projects that lack the setting; clothing tabs stay off. Refines D-045. | Implemented | Cardboard finish is the preferred papercraft direction, so new players should see it without finding the switch. An explicit off is preserved. |
+| D-048 | Lock Family & Home Stories (`pack_family_home`) as the first content expansion at a fixed 92-asset scope. | Accepted; production pending | A fixed first package gives content production a measurable target while keeping the exact asset ledger, representative scene, and pack implementation as explicit gates. |
 
 ## Decision details
 
@@ -242,3 +243,11 @@ The header carried separate 🌐 language and 📦 Project buttons, a papercraft
 A ⚙️ Settings button in the header now opens `#settings-dialog`, which holds language, motion mode, sound effects, the papercraft pilot switches (behavior unchanged per D-045), a link to Project & Backups, and the app version with Update & Reload. The papercraft bar, footer, and the Project dialog's update section were removed. The 🌐 header toggle stays so switching language remains one tap; on phones (≤600px) the brand wordmark hides and the section nav takes a second header row so every header action stays on-screen.
 
 In the Designer, the Dollbox card sat at the top of the rail and pushed the Wardrobe below the fold on a 720px-tall window. It now lives in `#dollbox-dialog`, opened from 🧺 Dollbox and 💾 Save Doll in the stage topbar — the same heading pattern as Paint (My Art / Save Art) and Play (Save Scene / Scenes). The rail order is style & colors, then the Wardrobe/Face mode tabs directly above the panels they switch. The mode tabs also get `flex: 0 0 auto`: as a horizontal scroll container in the column rail they previously shrank to their padding and were effectively invisible.
+
+### D-048 — Family & Home Stories first-expansion lock
+
+**Date:** 2026-09-12. **Status:** Accepted; production pending.
+
+Family & Home Stories (`pack_family_home`) is the first committed content expansion. Its scope is fixed at 48 wearables, 40 props, 4 backgrounds, 6 starter scenes, 12 bilingual story prompts, and 8 compatible outfit recipes. It must cover all five life stages, work with core content alone, and remain within static scene-based pretend play.
+
+The exact asset-ID ledger, fit assignments, art brief, and authored files are not yet complete. Production starts with that ledger and a representative family living-room scene; the scene must pass fit, tint, thumbnail, Play, PNG export, save/reload, and target-iPad performance checks before the full package is authored.

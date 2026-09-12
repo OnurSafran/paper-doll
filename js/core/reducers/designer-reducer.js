@@ -1,3 +1,4 @@
+import { PACK_REGISTRY } from '../../packs/index.js';
 import {
   clearFaceDetail,
   clearOutfit,
@@ -31,6 +32,12 @@ import { localizedMessage, shuffleDraft } from './reducer-helpers.js';
  * @param {import('../../types.js').StoreAction} action */
 export function designerReducer(state, action, context) {
   switch (action.type) {
+    case 'designer/loadOutfit': {
+      const pack = PACK_REGISTRY.getPacks().find((item) => item.outfits?.some((outfit) => outfit.id === action.outfitId));
+      const outfit = pack?.outfits.find((item) => item.id === action.outfitId);
+      if (!outfit || state.settings.hiddenPacks?.includes(pack.id)) return null;
+      return { state: { ...state, designer: { ...state.designer, draft: cloneDraft(outfit), editingPresetId: null, dirty: true } }, persist: true, undoable: true, result: { ok: true } };
+    }
     case 'designer/selectSlot':
       if (!isOutfitSlot(action.slot) || action.slot === state.designer.selectedSlot) return null;
       return { state: { ...state, designer: { ...state.designer, selectedSlot: action.slot } } };
@@ -85,7 +92,7 @@ export function designerReducer(state, action, context) {
       };
 
     case 'designer/shuffle': {
-      const draft = shuffleDraft(state.designer.draft, context.assets, context.random);
+      const draft = shuffleDraft(state.designer.draft, context.assets.filter((asset) => !state.settings.hiddenPacks?.includes(asset.packId || asset.metadata?.dlc)), context.random);
       return {
         state: localizedMessage('designer.outfitShuffled', {}, {
           ...state,

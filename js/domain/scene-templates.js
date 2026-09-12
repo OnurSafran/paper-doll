@@ -1,3 +1,5 @@
+import { PACK_MANIFESTS } from '../packs/index.js';
+import { t } from '../core/i18n.js';
 /**
  * Scene Templates Domain Module
  * Single authority for curated storytelling scene templates and template instantiation.
@@ -22,6 +24,23 @@ import {
 import { createStarterDraft } from './outfit-rules.js';
 import { resolveMotionProfile, resolveSafeClipId, resolveSafePoseId } from './animation-clips.js';
 
+/**
+ * @typedef {Object} SceneTemplate
+ * @property {string} id
+ * @property {string} title
+ * @property {string} category
+ * @property {string} description
+ * @property {string} backgroundId
+ * @property {Object[]} entities
+ * @property {string} [packId]
+ * @property {string} [titleKey]
+ * @property {string} [categoryKey]
+ * @property {string} [descriptionKey]
+ * @property {string[]} [promptKeys]
+ * @property {number} [stageWidth]
+ * @property {{enabled?: boolean, loop?: boolean, playbackRate?: number}} [animationSettings]
+ */
+/** @type {ReadonlyArray<SceneTemplate>} */
 export const SCENE_TEMPLATES = Object.freeze([
   {
     id: 'template_tea_party',
@@ -327,7 +346,8 @@ export const SCENE_TEMPLATES = Object.freeze([
         attachOffset: { dx: 0, dy: -400 }
       }
     ]
-  }
+  },
+  ...PACK_MANIFESTS.flatMap((pack) => 'templates' in pack ? pack.templates : [])
 ]);
 
 /**
@@ -380,9 +400,10 @@ export function instantiateSceneTemplate(templateId, makeId = defaultMakeId, def
     };
 
     if (def.kind === 'character') {
+      const characterSnapshot = def.characterSnapshot || charSnapshot;
       const motionProfile = resolveMotionProfile({
         ...base,
-        characterSnapshot: charSnapshot,
+        characterSnapshot,
         isCustomArt: Boolean(def.isCustomArt)
       });
       return {
@@ -396,7 +417,7 @@ export function instantiateSceneTemplate(templateId, makeId = defaultMakeId, def
           intensity: def.animation?.intensity ?? DEFAULT_MOTION_INTENSITY,
           phaseOffset: def.animation?.phaseOffset ?? DEFAULT_PHASE_OFFSET
         },
-        characterSnapshot: JSON.parse(JSON.stringify(charSnapshot))
+        characterSnapshot: JSON.parse(JSON.stringify(characterSnapshot))
       };
     }
 
@@ -414,7 +435,7 @@ export function instantiateSceneTemplate(templateId, makeId = defaultMakeId, def
 
   return {
     sceneId,
-    title: template.title,
+    title: (template.titleKey && t(template.titleKey)) || template.title,
     backgroundId: template.backgroundId,
     createdAt: now().toISOString(),
     updatedAt: now().toISOString(),

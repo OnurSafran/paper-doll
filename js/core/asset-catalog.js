@@ -362,9 +362,9 @@ export function getAsset(id) {
   return byId.get(id);
 }
 
-export function assetsByKind(kind, { collectionId = null } = {}) {
-  if (collectionId) return assetsByCollection(kind, collectionId);
-  return ASSETS.filter((asset) => asset.kind === kind);
+export function assetsByKind(kind, { collectionId = null, packId = 'all' } = {}) {
+  if (collectionId) return assetsByCollection(kind, collectionId, { packId });
+  return ASSETS.filter((asset) => asset.kind === kind && matchesPackFilter(asset, packId));
 }
 
 /** @type {ReadonlyArray<Readonly<{id: string, labelKey: string, customOnly?: boolean}>>} */
@@ -376,41 +376,52 @@ export const PROP_COLLECTIONS = Object.freeze([
   Object.freeze({ id: 'my-art', labelKey: 'play.propCollectionMyArt', customOnly: true })
 ]);
 
-export function assetsByCollection(kind, collectionId) {
+export function assetsByCollection(kind, collectionId, { packId = 'all' } = {}) {
   if (kind !== 'prop') return [];
   if (collectionId === 'my-art') return [];
   if (!isPropCollection(collectionId)) return [];
-  return ASSETS.filter((asset) => asset.kind === kind && asset.collections?.includes(collectionId));
+  return ASSETS.filter((asset) => asset.kind === kind &&
+    asset.collections?.includes(collectionId) && matchesPackFilter(asset, packId));
 }
 
-export function dolls() {
-  return ASSETS.filter((asset) => asset.kind === 'doll');
+export function dolls({ packId = 'all' } = {}) {
+  return ASSETS.filter((asset) => asset.kind === 'doll' && matchesPackFilter(asset, packId));
 }
 
-export function dollsByLifeStage(stage) {
-  return ASSETS.filter((asset) => asset.kind === 'doll' && asset.lifeStages?.includes(stage));
+export function dollsByLifeStage(stage, packId = 'all') {
+  return ASSETS.filter((asset) => asset.kind === 'doll' && asset.lifeStages?.includes(stage) && matchesPackFilter(asset, packId));
 }
 
-export function wearablesBySlot(slot) {
-  return ASSETS.filter((asset) => asset.kind === 'wearable' && asset.slot === slot);
+export function wearablesBySlot(slot, { packId = 'all' } = {}) {
+  return ASSETS.filter((asset) => asset.kind === 'wearable' && asset.slot === slot && matchesPackFilter(asset, packId));
 }
 
-export function getOfferedWearables(slot, baseDollId, styleFilter = 'all') {
+export function getOfferedWearables(slot, baseDollId, styleFilter = 'all', packId = 'all') {
   const doll = getAsset(baseDollId);
   const fitFamily = doll?.fitFamily || 'teen';
-  return wearablesBySlot(slot).filter((wearable) => matchesDiscoveryFilters(wearable, fitFamily, styleFilter));
+  return wearablesBySlot(slot, { packId }).filter((wearable) => matchesDiscoveryFilters(wearable, fitFamily, styleFilter, packId));
 }
 
-export function matchesDiscoveryFilters(asset, fitFamily = 'teen', styleFilter = 'all') {
+export function matchesDiscoveryFilters(asset, fitFamily = 'teen', styleFilter = 'all', packId = 'all') {
   if (asset?.supportedFitFamilies && !asset.supportedFitFamilies.includes(fitFamily)) return false;
+  if (!matchesPackFilter(asset, packId)) return false;
   if (styleFilter === 'all') return true;
   return asset?.presentationStyles?.includes(styleFilter) ||
     (styleFilter === 'unsorted' && (!asset?.presentationStyles || asset.presentationStyles.length === 0));
 }
 
-export function facesByGroup(group, fitFamily) {
+export function facesByGroup(group, fitFamily, packId = 'all') {
   return ASSETS.filter((asset) => asset.kind === 'face' && asset.faceGroup === group &&
-    (!fitFamily || !asset.supportedFitFamilies || asset.supportedFitFamilies.includes(fitFamily)));
+    (!fitFamily || !asset.supportedFitFamilies || asset.supportedFitFamilies.includes(fitFamily)) &&
+    matchesPackFilter(asset, packId));
+}
+
+export function getAssetPackId(asset) {
+  return asset?.packId || asset?.metadata?.dlc || null;
+}
+
+function matchesPackFilter(asset, packId) {
+  return packId === 'all' || getAssetPackId(asset) === packId;
 }
 
 function face(id, faceGroup, name, path, requiredGroups = ['face-feature']) {

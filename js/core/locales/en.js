@@ -1005,7 +1005,14 @@ export const en = Object.freeze({
       crossTabTitle: 'Saved data changed in another tab',
       crossTabMessage: 'Another tab updated this project. Would you like to reload this page to view the latest saved changes, or keep working in this tab?',
       tabLocalState: 'Working with tab-local state. Future saves require explicit confirmation to overwrite newer disk changes.',
-      errorMessage: 'An error occurred. Saved project data was preserved.'
+      errorMessage: 'An error occurred. Saved project data was preserved.',
+      storageUnavailable: 'Storage is unavailable; changes will not survive refresh.',
+      storageConflict: 'Saved data was updated in another tab. Reload or overwrite confirmation required.',
+      storageWriteFailed: 'Could not save. Your current session is still open.',
+      storageSaving: 'Saving…',
+      storageWriteRace: 'Another tab changed saved data during the write. Your current session is still open.',
+      storageCleanupWarning: 'Saved on this device. Temporary recovery data could not be cleared.',
+      storageSaved: 'Saved on this device.'
     },
     common: {
       delete: 'Delete',

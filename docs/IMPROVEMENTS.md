@@ -11,7 +11,7 @@
 
 Paper Doll Studio is a high-performance, zero-runtime-dependency web application engineered around pure functional state (`AppStore`), deterministic SVG vector rendering, strict input validation, and an installable offline Progressive Web App (PWA) shell.
 
-A thorough inspection of the current codebase (`v1.20.0`, 461 passing tests) reveals a mature, reliable foundation, but also clear opportunities where technical debt and modular bloat have accumulated as major features (Panoramic Stages, Custom Paint Studio, Modular Faces, Looping Animations, and the World Map) were introduced.
+A thorough inspection of the current codebase (`v1.20.0`, 519 passing tests) reveals a mature, reliable foundation, but also clear opportunities where technical debt and modular bloat have accumulated as major features (Panoramic Stages, Custom Paint Studio, Modular Faces, Looping Animations, and the World Map) were introduced.
 
 This document compiles, validates, and prioritizes architectural, performance, accessibility, and developer-experience improvements, complete with quantitative evaluation metrics and a phased execution roadmap.
 

@@ -10,9 +10,10 @@ import { createAppDialogs } from './app-dialogs.js';
  * Paper Doll Studio - Application Bootstrap & Orchestrator
  */
 
-import { ASSETS, getAsset } from './core/asset-catalog.js';
+import { ASSETS } from './core/asset-catalog.js';
 import { createAppStore } from './core/app-store.js';
 import { createAssetRegistry } from './core/asset-registry.js';
+import { getVisiblePackManifests, PACK_REGISTRY } from './packs/index.js';
 
 import { loadAssetSvg } from './core/svg-loader.js';
 import { createProjectRepository, loadProject } from './services/project-repository.js';
@@ -39,16 +40,28 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
 let storageRef = null;
 try { storageRef = window.localStorage; } catch { /* handled as unavailable */ }
-const loaded = loadProject(storageRef, getAsset);
+const loaded = loadProject(storageRef, PACK_REGISTRY.getAsset);
+const visiblePackIds = PACK_REGISTRY.getPackIds().filter((id) => !loaded.envelope.settings?.hiddenPacks?.includes(id));
+const builtInAssetRegistry = createAssetRegistry([], { packRegistry: PACK_REGISTRY, visiblePackIds });
 const customArtRepo = createCustomArtRepository();
-const store = createAppStore(loaded.envelope, { getAsset, assets: ASSETS });
-const getEffectiveAsset = (id) => createAssetRegistry(store ? store.getState().customAssets : loaded.envelope.customAssets).getAsset(id);
-const getEffectiveAssetsByKind = (kind, options) => createAssetRegistry(store ? store.getState().customAssets : loaded.envelope.customAssets).assetsByKind(kind, options);
+const store = createAppStore(loaded.envelope, {
+  getAsset: builtInAssetRegistry.getAsset,
+  assets: PACK_REGISTRY.getPacks().flatMap((manifest) => manifest.assets)
+});
+const getEffectiveAssetRegistry = () => createAssetRegistry(
+  store ? store.getState().customAssets : loaded.envelope.customAssets,
+  {
+    packRegistry: PACK_REGISTRY,
+    visiblePackIds: PACK_REGISTRY.getPackIds().filter((id) => !store?.getState()?.settings?.hiddenPacks?.includes(id))
+  }
+);
+const getEffectiveAsset = (id) => getEffectiveAssetRegistry().getAsset(id);
+const getEffectiveAssetsByKind = (kind, options = {}) => getEffectiveAssetRegistry().assetsByKind(kind, { packId: ['prop', 'background', 'wearable'].includes(kind) ? store.getState().ui.packFilter || 'all' : 'all', ...options });
 const storage = createProjectRepository({
   storage: storageRef,
   initialRevision: loaded.envelope?.revision ?? 1,
-  onStatus({ status, message }) {
-    store.dispatch({ type: 'ui/storageStatus', status, message });
+  onStatus({ status, message, messageKey, messageParams }) {
+    store.dispatch({ type: 'ui/storageStatus', status, message, messageKey, messageParams });
   }
 });
 const exportService = createExportService({ getAsset: getEffectiveAsset, loadAssetSvg, customArtRepo });
@@ -163,7 +176,12 @@ const designerView = createDesignerView({
   miniButton,
   customArtRepo,
   openPaintStudio,
-  getAsset: getEffectiveAsset
+  getAsset: getEffectiveAsset,
+  assetRegistry: {
+    assetsByKind: (kind, options) => getEffectiveAssetsByKind(kind, options),
+    getOfferedWearables: (...args) => getEffectiveAssetRegistry().getOfferedWearables(...args).filter((asset) => !asset.custom),
+    facesByGroup: (...args) => getEffectiveAssetRegistry().facesByGroup(...args)
+  }
 });
 
 const sceneOutlineView = createSceneOutlineView({
@@ -222,9 +240,12 @@ const paintView = createPaintView({
       if (category !== 'wardrobe') return [];
       // Starting cutouts are catalog SVGs. Custom PNGs are already artwork,
       // and do not have an SVG loader path suitable for rasterization here.
-      return ASSETS.filter((asset) => asset.kind === 'wearable' && asset.slot === slot);
+      return getEffectiveAssetsByKind('wearable').filter((asset) => asset.slot === slot);
     },
-    wearablesBySlot: (slot) => ASSETS.filter((asset) => asset.kind === 'wearable' && asset.slot === slot),
+    wearablesBySlot: (slot) => ASSETS.filter((asset) => asset.kind === 'wearable' && asset.slot === slot).concat(
+      getEffectiveAssetRegistry().assetsByKind('wearable')
+        .filter((asset) => asset.packId !== 'core' && !asset.custom && asset.slot === slot)
+    ),
     getAllCustomAssets: () => store.getState().customAssets || []
   },
   svgLoader: { load: async (assetId) => loadAssetSvg(assetId) },
@@ -303,9 +324,29 @@ function cancelPointerController() {
 
 store.subscribe(handleStoreChange);
 
+function renderPackControls() {
+  const visiblePacks = getVisiblePackManifests(PACK_REGISTRY.getPacks(), store.getState().settings.hiddenPacks);
+  for (const select of document.querySelectorAll('select[data-pack-picker]')) {
+    const value = store.getState().ui.packFilter || 'all';
+    select.replaceChildren(new Option(t('pack_family_home.allPacks'), 'all'), ...visiblePacks.map((pack) => new Option(t(pack.nameKey) || 'Core', pack.id)));
+    /** @type {HTMLSelectElement} */ (select).value = visiblePacks.some((pack) => pack.id === value) ? value : 'all';
+  }
+  const outfits = $('#family-outfit-picker');
+  if (outfits) outfits.replaceChildren(new Option(t('pack_family_home.chooseOutfit'), ''), ...visiblePacks.flatMap((pack) => (pack.outfits || []).map((outfit) => new Option(t(outfit.nameKey), outfit.id))));
+}
+for (const select of document.querySelectorAll('select[data-pack-picker]')) select.addEventListener('change', () => store.dispatch({ type: 'ui/setPackFilter', packId: /** @type {HTMLSelectElement} */ (select).value }));
+$('#family-outfit-picker')?.addEventListener('change', (event) => {
+  if (event.target.value) store.dispatch({ type: 'designer/loadOutfit', outfitId: event.target.value });
+  event.target.value = '';
+});
+store.subscribe(renderPackControls);
+window.addEventListener('languagechange', renderPackControls);
+
+
 // Initialize language on startup (defaults to Turkish 'tr')
 initLanguage();
 updateDomTranslations();
+renderPackControls();
 
 function updateLangButtonUI() {
   const current = getCurrentLanguage();

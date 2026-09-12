@@ -3,6 +3,7 @@
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { ASSETS } from '../js/core/asset-catalog.js';
+import { PACK_REGISTRY } from '../js/packs/index.js';
 import { isColorValue } from '../js/core/palette.js';
 
 const root = resolve(import.meta.dirname, '..');
@@ -20,7 +21,8 @@ try {
   failures.push('sw.js: service worker is missing or unreadable');
 }
 
-for (const asset of ASSETS) {
+const registeredAssets = PACK_REGISTRY.getPacks().flatMap((manifest) => manifest.assets);
+for (const asset of registeredAssets) {
   if (catalogIds.has(asset.id)) failures.push(`catalog: duplicate asset id ${asset.id}`);
   catalogIds.add(asset.id);
   if (asset.kind === 'wearable' && !isColorValue(asset.defaultColors?.primary)) {

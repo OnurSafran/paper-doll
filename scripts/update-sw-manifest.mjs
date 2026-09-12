@@ -107,6 +107,15 @@ const assetEntries = existingEntries.filter((entry) => {
   const clean = cleanRef(entry);
   return clean.startsWith('./assets/');
 });
+const assetsRoot = resolve(root, 'assets');
+let discoveredAssetEntries = [];
+try {
+  discoveredAssetEntries = (await collectFiles(assetsRoot, '.svg'))
+    .map((path) => './' + relative(root, path))
+    .sort();
+} catch {
+  // Asset-free fixture projects may still use this manifest updater.
+}
 
 const updatedCssEntries = cssFiles
   .map((path) => `./${relative(root, path)}?v=${cssVersions.get(path)}`)
@@ -118,7 +127,8 @@ const newShell = [
     ...baseEntries,
     ...updatedCssEntries,
     ...jsEntries,
-    ...assetEntries
+    ...assetEntries,
+    ...discoveredAssetEntries
   ])
 ];
 

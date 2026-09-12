@@ -61,6 +61,7 @@ The individual validation and tooling commands are:
 ```bash
 node scripts/validate-docs.mjs         # Check documentation and relative links
 node scripts/validate-assets.mjs       # Check SVG assets against security and layout rules
+node scripts/validate-packs.mjs        # Check pack manifests and bundled resource coverage
 node scripts/validate-cache-busting.mjs # Verify CSS hashes and service-worker cache version
 npm run update:sw                      # Auto-sync ES modules and regenerate sw.js manifest
 node --test                            # Run all unit and integration tests
@@ -69,3 +70,7 @@ node --test                            # Run all unit and integration tests
 ## Definition of done
 
 Release requires the correctness blockers in [ROADMAP.md](docs/ROADMAP.md) to be closed and the dated evidence in [QUALITY.md](docs/QUALITY.md) to pass. Automated source-contract checks alone do not close browser, accessibility, or performance gates.
+
+### Family & Home Stories
+
+The bundled development build adds 48 wearables, 40 props, four settings, six starter scenes, 12 bilingual prompts and eight outfit recipes. Choose the pack in Designer or Play, load a family outfit, or open Templates for a story. See [implementation and ledger](docs/FAMILY-HOME-IMPLEMENTATION.md) and the [independent QA prompt](docs/FAMILY-HOME-QA-PROMPT.md). Physical iPad/offline and complete export/pose checks remain release gates.

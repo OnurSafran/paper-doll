@@ -4,7 +4,7 @@ import { SCENE_TEMPLATES, instantiateSceneTemplate } from '../js/domain/scene-te
 import { createAppStore } from '../js/core/app-store.js';
 
 test('SCENE_TEMPLATES defines 5 rich storytelling templates across varied categories', () => {
-  assert.equal(SCENE_TEMPLATES.length, 5);
+  assert.equal(SCENE_TEMPLATES.filter((template) => !template.packId).length, 5);
   const categories = new Set(SCENE_TEMPLATES.map((t) => t.category));
   assert.ok(categories.size >= 4, 'Should cover diverse categories');
 

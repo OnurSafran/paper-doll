@@ -576,6 +576,7 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
         ...(Array.isArray(incomingEnvelope.settings?.unlockedBackgrounds) ? incomingEnvelope.settings.unlockedBackgrounds : [])
       ])]
     },
+    packRequirements: mergePackRequirements(currentEnvelope.packRequirements, incomingEnvelope.packRequirements),
     customAssets: mergedCustomAssets,
     presets: mergedPresets,
     scenes: mergedScenes,
@@ -593,6 +594,14 @@ export function mergeProjectEnvelopes(currentEnvelope, incomingEnvelope, incomin
       rewrittenIdsCount: presetIdRewrites.size + customIdRewrites.size
     }
   };
+}
+
+function mergePackRequirements(current = [], incoming = []) {
+  const merged = new Map();
+  for (const item of [...(current || []), ...(incoming || [])]) {
+    if (item?.id && !merged.has(item.id)) merged.set(item.id, { ...item });
+  }
+  return [...merged.values()];
 }
 
 /**

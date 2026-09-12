@@ -4,6 +4,10 @@ import { createStarterDraft } from '../../domain/outfit-rules.js';
 import { evaluateUnlockableBackgrounds } from '../../domain/world-map-catalog.js';
 import { localizedMessage, nextUniqueId } from './reducer-helpers.js';
 
+function resetHiddenPackFilter(ui, settings) {
+  return settings?.hiddenPacks?.includes(ui.packFilter) ? { ...ui, packFilter: 'all' } : ui;
+}
+
 /** @param {import('../../types.js').AppState} state
  * @param {import('../../types.js').StoreAction} action */
 export function settingsReducer(state, action, context) {
@@ -14,6 +18,7 @@ export function settingsReducer(state, action, context) {
         state: localizedMessage('toasts.factoryResetCompleted', {}, {
           ...state,
           settings: { ...defaultEnv.settings },
+          packRequirements: [...defaultEnv.packRequirements],
           customAssets: [],
           presets: [],
           scenes: [],
@@ -37,12 +42,13 @@ export function settingsReducer(state, action, context) {
         state: localizedMessage(action.messageKey || defaultKey, action.messageParams || {}, {
           ...state,
           settings: { ...state.settings, ...env.settings },
+          packRequirements: Array.isArray(env.packRequirements) ? env.packRequirements.map((item) => ({ ...item })) : [],
           customAssets: (env.customAssets || []).map(cloneCustomAsset),
           presets: env.presets.map(clonePreset),
           scenes: (env.scenes || []).map(cloneScene),
           currentScene: env.currentScene ? cloneScene(env.currentScene) : createEmptyScene(fallbackSceneId, context.now),
           designer: { draft: createStarterDraft(), selectedSlot: 'top', editingPresetId: null, dirty: false },
-          ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null }
+          ui: { ...resetHiddenPackFilter(state.ui, env.settings), selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null }
         }),
         persist: true,
         result: { ok: true }
@@ -57,6 +63,7 @@ export function settingsReducer(state, action, context) {
         state: localizedMessage(action.messageKey || defaultKey, action.messageParams || {}, {
           ...state,
           settings: { ...state.settings, ...env.settings },
+          packRequirements: mergePackRequirements(state.packRequirements, env.packRequirements),
           customAssets: (env.customAssets || []).map(cloneCustomAsset),
           presets: env.presets.map(clonePreset),
           scenes: (env.scenes || []).map(cloneScene),
@@ -77,12 +84,13 @@ export function settingsReducer(state, action, context) {
         state: localizedMessage(action.messageKey || defaultKey, action.messageParams || {}, {
           ...state,
           settings: { ...state.settings, ...env.settings },
+          packRequirements: Array.isArray(env.packRequirements) ? env.packRequirements.map((item) => ({ ...item })) : [],
           customAssets: (env.customAssets || []).map(cloneCustomAsset),
           presets: env.presets.map(clonePreset),
           scenes: (env.scenes || []).map(cloneScene),
           currentScene: env.currentScene ? cloneScene(env.currentScene) : createEmptyScene(fallbackSceneId, context.now),
           designer: { draft: createStarterDraft(), selectedSlot: 'top', editingPresetId: null, dirty: false },
-          ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null }
+          ui: { ...resetHiddenPackFilter(state.ui, env.settings), selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null }
         }),
         persist: true,
         result: { ok: true }
@@ -165,4 +173,12 @@ export function settingsReducer(state, action, context) {
     default:
       return null;
   }
+}
+
+function mergePackRequirements(current = [], incoming = []) {
+  const merged = new Map();
+  for (const item of [...(current || []), ...(incoming || [])]) {
+    if (item?.id && !merged.has(item.id)) merged.set(item.id, { ...item });
+  }
+  return [...merged.values()];
 }

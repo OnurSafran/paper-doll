@@ -77,6 +77,7 @@ test('project repository tracks monotonic revisions and detects cross-tab confli
   const save1 = repo.save(createDefaultEnvelope());
   assert.equal(save1.ok, true);
   assert.equal(save1.revision, 6);
+  assert.equal(statusLogs.at(-1)?.messageKey, 'sync.storageSaved');
   assert.equal(repo.getBaseRevision(), 6);
   assert.equal(repo.hasConflict(), false);
 

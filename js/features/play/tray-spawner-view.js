@@ -18,7 +18,10 @@ export function createTraySpawnerView(context) {
     const currentBgId = state.currentScene.backgroundId;
     const select = context.$('#background-select');
     if (select) {
-      select.replaceChildren(...context.getAssetsByKind('background').map((asset) =>
+      const offered = context.getAssetsByKind('background');
+      const current = context.getAsset(currentBgId);
+      const backgrounds = current && !offered.some((asset) => asset.id === currentBgId) ? [current, ...offered] : offered;
+      select.replaceChildren(...backgrounds.map((asset) =>
         new Option(assetName(asset, asset.name), asset.id, false, asset.id === currentBgId)
       ));
     }
@@ -61,6 +64,8 @@ export function createTraySpawnerView(context) {
     if (!tabs || !list) return;
 
     const traySignature = JSON.stringify({
+      packFilter: state.ui.packFilter,
+      hiddenPacks: state.settings?.hiddenPacks,
       language: getCurrentLanguage(),
       tab: spawnTab,
       propCollection,

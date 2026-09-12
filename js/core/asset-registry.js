@@ -1,9 +1,16 @@
 /**
  * Unified Asset Registry
- * Single authority for resolving catalog assets (SVG) and custom assets (PNG metadata).
+ * Single authority for resolving catalog assets (SVG), official pack assets,
+ * and custom assets (PNG metadata).
  */
 
-import { ASSETS, getAsset as getBuiltinAsset } from './asset-catalog.js';
+import {
+  ASSETS,
+  getAsset as getBuiltinAsset,
+  getAssetPackId as getCatalogAssetPackId,
+  matchesDiscoveryFilters
+} from './asset-catalog.js';
+import { ALL_PACKS_FILTER, CORE_PACK_ID, PACK_MANIFESTS, createPackRegistry } from '../packs/index.js';
 import { isCustomAssetId } from '../domain/vocabulary.js';
 
 export function customAssetToDescriptor(asset) {
@@ -61,16 +68,36 @@ export function customAssetToDescriptor(asset) {
   return null;
 }
 
-export function createAssetRegistry(customAssets = []) {
+export function createAssetRegistry(customAssets = [], options = {}) {
   const customMap = new Map();
   for (const item of customAssets) {
     const desc = customAssetToDescriptor(item);
     if (desc) customMap.set(desc.id, desc);
   }
 
+  const packRegistry = options.packRegistry && options.availablePackIds === undefined
+    ? options.packRegistry
+    : createPackRegistry(options.packRegistry?.getPacks?.() || options.packManifests || PACK_MANIFESTS, {
+      availablePackIds: options.availablePackIds
+    });
+  const configuredVisiblePackIds = Array.isArray(options.visiblePackIds)
+    ? new Set([CORE_PACK_ID, ...options.visiblePackIds])
+    : null;
+
+  function officialAssetsByKind(kind, options = {}) {
+    const assets = packRegistry.assetsByKind(kind, {
+      ...options,
+      includeHidden: Boolean(options.includeHidden || configuredVisiblePackIds)
+    });
+    if (options.includeHidden || !configuredVisiblePackIds) return assets;
+    return assets.filter((asset) => configuredVisiblePackIds.has(asset.packId));
+  }
+
   function getAsset(id) {
     if (!id) return undefined;
     if (customMap.has(id)) return customMap.get(id);
+    const official = packRegistry.getAsset(id);
+    if (official) return official;
     const builtin = getBuiltinAsset(id);
     if (builtin) return builtin;
     if (isCustomAssetId(id)) {
@@ -90,47 +117,83 @@ export function createAssetRegistry(customAssets = []) {
     return undefined;
   }
 
-  function assetsByKind(kind, { includeHidden = false, collectionId = null } = {}) {
-    const builtins = ASSETS.filter((a) => a.kind === kind);
-    const customs = [...customMap.values()].filter((a) =>
-      a.kind === kind && (includeHidden || (a.libraryVisible !== false && a.status === 'available'))
+  function assetsByKind(kind, {
+    includeHidden = false,
+    collectionId = null,
+    packId = ALL_PACKS_FILTER,
+    includeUnavailable = false
+  } = {}) {
+    const builtins = officialAssetsByKind(kind, { includeHidden, packId, includeUnavailable })
+      .filter((asset) => !collectionId || asset.collections?.includes(collectionId));
+    const customs = [...customMap.values()].filter((asset) =>
+      asset.kind === kind && (includeHidden || (asset.libraryVisible !== false && asset.status === 'available'))
     );
-    const sources = [...builtins, ...customs];
-    if (!collectionId) return sources;
-    if (collectionId === 'my-art') return customs;
-    return sources.filter((asset) => asset.collections?.includes(collectionId));
+    if (collectionId === 'my-art') return packId === ALL_PACKS_FILTER ? customs : [];
+    const filteredCustoms = collectionId
+      ? customs.filter((asset) => asset.collections?.includes(collectionId))
+      : customs;
+    return [...builtins, ...(packId === ALL_PACKS_FILTER ? filteredCustoms : [])];
   }
 
-  function wearablesBySlot(slot, { includeHidden = false } = {}) {
-    const builtins = ASSETS.filter((a) => a.kind === 'wearable' && a.slot === slot);
-    const customs = [...customMap.values()].filter((a) =>
-      a.kind === 'wearable' && a.slot === slot && (includeHidden || (a.libraryVisible !== false && a.status === 'available'))
+  function wearablesBySlot(slot, {
+    includeHidden = false,
+    packId = ALL_PACKS_FILTER,
+    includeUnavailable = false
+  } = {}) {
+    const builtins = officialAssetsByKind('wearable', { includeHidden, packId, includeUnavailable })
+      .filter((asset) => asset.slot === slot);
+    const customs = [...customMap.values()].filter((asset) =>
+      asset.kind === 'wearable' && asset.slot === slot &&
+      (includeHidden || (asset.libraryVisible !== false && asset.status === 'available'))
     );
-    return [...builtins, ...customs];
+    return [...builtins, ...(packId === ALL_PACKS_FILTER ? customs : [])];
+  }
+
+  function getOfferedWearables(slot, baseDollId, styleFilter = 'all', packId = ALL_PACKS_FILTER) {
+    const fitFamily = getAsset(baseDollId)?.fitFamily || 'teen';
+    return wearablesBySlot(slot, { packId }).filter((asset) =>
+      matchesDiscoveryFilters(asset, fitFamily, styleFilter, packId)
+    );
+  }
+
+  function facesByGroup(group, fitFamily, packId = ALL_PACKS_FILTER) {
+    return assetsByKind('face', { packId }).filter((asset) =>
+      asset.faceGroup === group &&
+      (!fitFamily || !asset.supportedFitFamilies || asset.supportedFitFamilies.includes(fitFamily))
+    );
   }
 
   function customWearablesBySlot(slot, { includeHidden = false } = {}) {
-    return [...customMap.values()].filter((a) =>
-      a.kind === 'wearable' && a.slot === slot && (includeHidden || (a.libraryVisible !== false && a.status === 'available'))
+    return [...customMap.values()].filter((asset) =>
+      asset.kind === 'wearable' && asset.slot === slot &&
+      (includeHidden || (asset.libraryVisible !== false && asset.status === 'available'))
     );
   }
 
   function customProps({ includeHidden = false } = {}) {
-    return [...customMap.values()].filter((a) =>
-      a.kind === 'prop' && (includeHidden || (a.libraryVisible !== false && a.status === 'available'))
+    return [...customMap.values()].filter((asset) =>
+      asset.kind === 'prop' && (includeHidden || (asset.libraryVisible !== false && asset.status === 'available'))
     );
-  }
-
-  function isCustom(id) {
-    return isCustomAssetId(id) || customMap.has(id);
   }
 
   return {
     getAsset,
     assetsByKind,
     wearablesBySlot,
+    getOfferedWearables,
+    facesByGroup,
     customWearablesBySlot,
     customProps,
-    isCustom
+    getPack: packRegistry.getPack,
+    getPackIds: packRegistry.getPackIds,
+    getResourceFiles: packRegistry.getResourceFiles,
+    getAssetPack: (id) => customMap.has(id) ? null : packRegistry.getAssetPack(id) || getCatalogAssetPackId(getBuiltinAsset(id)),
+    isPackAvailable: packRegistry.isPackAvailable,
+    isPackVisible: (id) => configuredVisiblePackIds ? configuredVisiblePackIds.has(id) : packRegistry.isPackVisible(id),
+    isCustom(id) {
+      return isCustomAssetId(id) || customMap.has(id);
+    }
   };
 }
+
+export { ASSETS };

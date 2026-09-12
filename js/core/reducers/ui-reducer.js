@@ -1,9 +1,13 @@
+import { PACK_REGISTRY } from '../../packs/index.js';
 import { message } from './reducer-helpers.js';
 
 /** @param {import('../../types.js').AppState} state
  * @param {import('../../types.js').StoreAction} action */
 export function uiReducer(state, action) {
   switch (action.type) {
+    case 'ui/setPackFilter':
+      if (action.packId !== 'all' && !PACK_REGISTRY.getPack(action.packId)) return null;
+      return { state: { ...state, ui: { ...state.ui, packFilter: action.packId } } };
     case 'ui/setMode':
       if (!['designer', 'paint', 'play'].includes(action.mode)) return null;
       return { state: { ...state, ui: { ...state.ui, mode: action.mode, selectedEntityId: null, selectedEntityIds: [] } } };

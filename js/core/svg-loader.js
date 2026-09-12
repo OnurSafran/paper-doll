@@ -1,4 +1,4 @@
-import { getAsset } from './asset-catalog.js';
+import { PACK_REGISTRY } from '../packs/index.js';
 import { escapeCss } from './css-escape.js';
 
 const templateCache = new Map();
@@ -8,7 +8,7 @@ const prohibitedSelector = [
 ].join(', ');
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
-export async function loadAssetSvg(assetId) {
+export async function loadAssetSvg(assetId, getAsset = PACK_REGISTRY.getAsset) {
   const asset = getAsset(assetId);
   if (!asset) throw assetError('ASSET_UNKNOWN', `Unknown asset: ${assetId}`);
   if (!asset.path.startsWith('assets/') || /(?:^|\/)\.\.(?:\/|$)/.test(asset.path)) {

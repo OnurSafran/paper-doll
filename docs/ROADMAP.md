@@ -1,6 +1,6 @@
 # Implementation Status and Roadmap
 
-Updated: 2026-09-07
+Updated: 2026-09-12
 
 This is the single authority for implementation status, open work, and delivery order. Product behavior belongs in [PROJECT.md](PROJECT.md); release evidence belongs in [QUALITY.md](QUALITY.md); foundation roadmap belongs in [IMPROVEMENTS.md](IMPROVEMENTS.md).
 
@@ -27,7 +27,7 @@ This is the single authority for implementation status, open work, and delivery 
   - Segmented rail tabs (`➕ Ekle` / `⚙️ Seçili`) for spawn tray and inspector
   - Dedicated play-status and paint-status pill rows above stages
 - 100% store status message localization across Designer, Play, Custom Art, and Project operations with `messageKey` and `translateMessage`
-- 461 automated tests passing
+- 519 automated tests passing
 - 145 cataloged SVG files passing asset validation
 - Catalog assets carry `added_date`, `creator`, `concept`, `dlc`, and `source` provenance metadata; current content pack is `core`
 - Props are grouped in Play by `Home`, `Outdoors`, `Creative`, `Fun`, and derived `My Art`; custom prop collection membership is persisted and editable from My Art
@@ -36,6 +36,7 @@ This is the single authority for implementation status, open work, and delivery 
 - Designer, Paint, and Play source hardening passes complete; hosted iPad smoke test remains before family release
 - Phase 1 Foundation Improvements complete: automated service worker manifest sync (`npm run update:sw`), modularized isolated locale dictionaries (`tr.js`, `en.js`), RAF-throttled live previews in Paint Studio, scoped dropdown lifecycle in play-view, context-aware focus restoration on dialog dismissal, and accessible screen reader live announcements for batch studio operations.
 - Phase 2 Foundation Improvements complete: domain slice reducers (`js/core/reducers/`), action payload validation, generalized teardown disposable registry (`js/core/error-boundary.js`), JSDoc static type checking (`tsc --noEmit`), keyboard panoramic navigation shortcuts (`PageUp`/`PageDown`/`Home`/`End`/`Shift+Arrow`), and ESLint flat config code quality guardrails (`eslint.config.js`). See [IMPROVEMENTS.md](IMPROVEMENTS.md) and [DECISIONS.md](DECISIONS.md) (D-041 through D-044).
+- Phase 3 Foundation Improvements complete: sub-controller decomposition, worker/OffscreenCanvas export paths, SVG prop symbology, bounding-box memoization, and dynamic outline contrast. See [IMPROVEMENTS.md](IMPROVEMENTS.md).
 
 ## Status by capability
 
@@ -137,7 +138,7 @@ Every extraction is independently reviewable and behavior-preserving. Do not com
 4. Papercraft appearance — retain the current screen-only pilot unchanged. Clothing tabs are deprioritized; do not expand their garment coverage. Cardboard finish is the preferred direction for broader artwork coverage, deferred for now. The pilot keeps independent, persisted controls for Teen (Classic A), three garments, armchair and cafe table; image exports remain unaffected. Cardboard finish starts on for new studios (D-047). See [D-045: Papercraft pilot direction](DECISIONS.md#d-045--papercraft-pilot-direction).
 5. Interactive props and optional sound effects
 6. [x] Panoramic stages and camera navigation (`1600`, `3200`, `4800` widths with persisted cameraX, minimap, steppers, trackpad/wheel, edge auto-pan)
-7. World map and scene transitions — see [PRD: The Papercraft World Map](PRD-WORLD-MAP.md) and [PRD: Papercraft Scene Transitions](PRD-STORYBOOK-SCENE-TRANSITIONS.md)
+7. [x] World map; scene transitions remain open — see [PRD: The Papercraft World Map](PRD-WORLD-MAP.md) and [PRD: Papercraft Scene Transitions](PRD-STORYBOOK-SCENE-TRANSITIONS.md)
 8. [x] Custom paint studio (implementation complete; hosted-device and cross-browser evidence in progress)
 9. [x] Pose/gesture animation and looping scene animation (complete with 90+ tests, multi-channel evaluator, transport HUD, and frame export)
 
@@ -157,13 +158,21 @@ Ordered by player impact. Sourced from the 2026-08-18 Play review; full detail i
 
 Gate F is closed. The hosted iPad smoke test is the last item before family release.
 
+### First expansion commitment
+
+**Family & Home Stories** (`pack_family_home`) is the locked first content expansion. Its product scope is fixed at 48 wearables, 40 props, 4 backgrounds, 6 starter scenes, 12 bilingual story prompts, and 8 compatible outfit recipes. It must work with core content alone, cover all five life stages, and stay within the static scene-based scope defined in [DLC-AND-STUFF-PACKS.md](DLC-AND-STUFF-PACKS.md).
+
+The full 92-asset development build, exact ledger, eight outfit recipes and six bilingual starter scenes are implemented. See [FAMILY-HOME-IMPLEMENTATION.md](FAMILY-HOME-IMPLEMENTATION.md) for evidence and [FAMILY-HOME-QA-PROMPT.md](FAMILY-HOME-QA-PROMPT.md) for the remaining independent fit/export/device checks. Hosted release remains gated on those checks.
+
+Pack infrastructure baseline is implemented: trusted manifests, pack-aware registry filtering, missing-pack descriptors, pack reference persistence, and service-worker resource validation. The full package manifest, pack browsing controls, recipe loading, localization and template registration are now implemented.
+
 ### Gate G — Foundation & Architecture Improvements
 
 Structured foundation improvements tracked with quantitative metrics in [IMPROVEMENTS.md](IMPROVEMENTS.md).
 
 1. [x] **Phase 1 — Guardrails & DX**: Automated service worker manifest sync (`npm run update:sw`), isolated locale dictionaries (`locales/tr.js`, `en.js`), Paint Studio RAF live preview throttling, scoped dropdown lifecycle in `play-view.js`, context-aware dialog focus restoration, screen reader live announcements (`#sr-announcements`).
 2. [x] **Phase 2 — Core Architectural Modularization**: Domain slice reducers in `app-store.js`, disposable teardown registry in `error-boundary.js`, JSDoc/TypeScript static type verification (`checkJs`), keyboard panoramic viewport shortcuts, and lightweight linter.
-3. [ ] **Phase 3 — Sub-Controller Decomposition & Performance**: View sub-controllers, OffscreenCanvas in export service, SVG symbology `<use>` reuse, bounding box memoization, and dynamic outline contrast.
+3. [x] **Phase 3 — Sub-Controller Decomposition & Performance**: View sub-controllers, OffscreenCanvas in export service, SVG symbology `<use>` reuse, bounding box memoization, and dynamic outline contrast. Completed 2026-09-08; see [IMPROVEMENTS.md](IMPROVEMENTS.md).
 4. [ ] **Phase 4 — Real Browser E2E Suite**: Headless browser automation for multi-browser rendering and PWA installation verification.
 
 ## Acceptance summaries for planned features

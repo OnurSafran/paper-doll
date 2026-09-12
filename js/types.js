@@ -89,6 +89,8 @@
  * @property {number} [byteLength]
  * @property {string} sha256
  * @property {string[]} collections
+ * @property {string} [packId]
+ * @property {string} [packVersion]
  * @property {'available'|'trashed'|'missing'} status
  * @property {boolean} libraryVisible
  * @property {string} createdAt
@@ -103,6 +105,8 @@
 /**
  * @typedef {Object} StoreAction
  * @property {string} type
+ * @property {string} [outfitId]
+ * @property {string} [packId]
  * @property {*} [payload]
  * @property {string} [bubbleStyle]
  * @property {string} [baseDollId]
@@ -161,13 +165,14 @@
  * @typedef {Object} AppState
  * @property {number} [schemaVersion]
  * @property {number} [revision]
- * @property {{ reducedMotion: string, soundEnabled: boolean, clothingTabs?: boolean, cardboardFinish?: boolean, stamps: string[], unlockedBackgrounds: string[] }} settings
+ * @property {{ reducedMotion: string, soundEnabled: boolean, clothingTabs?: boolean, cardboardFinish?: boolean, stamps: string[], unlockedBackgrounds: string[], hiddenPacks?: string[] }} settings
+ * @property {{ id: string, version?: string }[]} packRequirements
  * @property {CustomAsset[]} customAssets
  * @property {{ draft: CharacterSnapshot, selectedSlot: string, editingPresetId: string|null, dirty: boolean, activeTab?: string, selectedFaceGroup?: string, selectedStyleFilter?: string }} designer
  * @property {Object[]} presets
  * @property {SceneRecord[]} scenes
  * @property {SceneRecord} currentScene
- * @property {{ mode: string, selectedEntityId: string|null, selectedEntityIds: string[], activeSceneLibraryId: string|null, storageStatus: string, message?: string, messageKey?: string|null, messageParams?: Object|null, voicePuppetryActive?: boolean }} ui
+ * @property {{ mode: string, selectedEntityId: string|null, selectedEntityIds: string[], activeSceneLibraryId: string|null, storageStatus: string, message?: string, messageKey?: string|null, messageParams?: Object|null, packFilter?: string, voicePuppetryActive?: boolean }} ui
  */
 
 /**
@@ -203,6 +208,8 @@
  * @property {string} [renderMode]
  * @property {boolean} [custom]
  * @property {Object} [metadata]
+ * @property {string} [packId]
+ * @property {string} [packVersion]
  */
 
 export {};
