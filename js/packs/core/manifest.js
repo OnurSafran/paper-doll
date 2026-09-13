@@ -6,9 +6,9 @@ import { ASSETS } from '../../core/asset-catalog.js';
  */
 export const CORE_PACK_MANIFEST = Object.freeze({
   id: 'core',
-  version: '1.20.0',
+  version: '1.21.0',
   schemaVersion: 1,
-  minAppVersion: '1.20.0',
+  minAppVersion: '1.21.0',
   nameKey: 'packs.core.name',
   descriptionKey: 'packs.core.description',
   coverPath: 'assets/app-icon.svg',

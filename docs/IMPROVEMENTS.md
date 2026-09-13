@@ -1,7 +1,7 @@
 # Architecture & Feature Foundation Improvement Roadmap
 
 **Project**: Paper Doll Studio  
-**Current Version**: v1.20.0  
+**Current Version**: v1.21.0  
 **Status**: Active Architecture Review & Improvement Roadmap  
 **Related Documents**: [ARCHITECTURE.md](ARCHITECTURE.md) · [DECISIONS.md](DECISIONS.md) · [ROADMAP.md](ROADMAP.md) · [QUALITY.md](QUALITY.md)
 

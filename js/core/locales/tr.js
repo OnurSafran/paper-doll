@@ -34,7 +34,7 @@ export const tr = Object.freeze({
       brand: 'Paper Doll',
       subtitle: 'Stüdyo',
       skipLink: 'Stüdyoya geç',
-      version: 'Paper Doll Studio v1.20.0',
+      version: 'Paper Doll Studio v1.21.0',
       hardReset: '🔄 Yenile ve Önbelleği Temizle',
       clearingCache: 'Önbellek temizleniyor ve yeniden yükleniyor…',
       noscript: 'Paper Doll Studio bebek tasarlamak ve kaydetmek için JavaScript gerektirir.',

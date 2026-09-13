@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import { appendAsset } from '../js/features/designer/designer-view.js';
 import { getAsset } from '../js/core/asset-catalog.js';
 import { paletteValue } from '../js/core/palette.js';
+import { PACK_REGISTRY } from '../js/packs/index.js';
 
 async function preview(id, color) {
   const attrs = new Map();
   const properties = new Map();
   const svg = { setAttribute: (key, value) => attrs.set(key, value) };
   const container = { style: { setProperty: (key, value) => properties.set(key, value) }, append: () => {} };
-  await appendAsset(container, id, { isPreview: true, color, loadAssetSvg: async () => svg });
+  await appendAsset(container, id, { isPreview: true, color, getAsset: PACK_REGISTRY.getAsset, loadAssetSvg: async () => svg });
   return { attrs, properties };
 }
 
@@ -43,4 +44,16 @@ test('hair previews use the hair color channel for default and custom colors', a
   assert.equal(normal.properties.get('--hair-color'), paletteValue(getAsset('hair_long').defaultColors.primary));
   const custom = await preview('hair_long', '#1265ab');
   assert.equal(custom.properties.get('--hair-color'), '#1265ab');
+});
+
+test('Family baby previews contain the bib and complete booties, including bunny ears', async () => {
+  for (const [id, bounds] of [
+    ['fh_duck_bib_baby', [118, 117, 182, 189]],
+    ['fh_bunny_baby', [105, 329, 195, 372]],
+    ['fh_bear_baby', [105, 335, 195, 372]]
+  ]) {
+    const { attrs } = await preview(id);
+    const [x, y, width, height] = attrs.get('viewBox').split(' ').map(Number);
+    assert.ok(x <= bounds[0] && y <= bounds[1] && x + width >= bounds[2] && y + height >= bounds[3], `${id} must not be clipped`);
+  }
 });

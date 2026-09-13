@@ -34,7 +34,7 @@ export const en = Object.freeze({
       brand: 'Paper Doll',
       subtitle: 'Studio',
       skipLink: 'Skip to studio',
-      version: 'Paper Doll Studio v1.20.0',
+      version: 'Paper Doll Studio v1.21.0',
       hardReset: '🔄 Reload & Clear Cache',
       clearingCache: 'Clearing cache and reloading…',
       noscript: 'Paper Doll Studio requires JavaScript to design and save dolls.',

@@ -21,7 +21,10 @@ const ASSET_PREVIEW_VIEWBOX = Object.freeze({
   accessory_shawl_elder: '95 100 110 130',
   accessory_backpack_child: '110 105 80 90',
   accessory_bonnet_baby: '100 0 100 120',
-  accessory_rattle_baby: '178 138 48 68'
+  accessory_rattle_baby: '178 138 48 68',
+  fh_duck_bib_baby: '105 105 90 90',
+  fh_bunny_baby: '100 325 100 55',
+  fh_bear_baby: '100 325 100 55'
 });
 
 export function wearablePreviewViewBox(asset) {

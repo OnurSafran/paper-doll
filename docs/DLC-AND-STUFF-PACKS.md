@@ -1,7 +1,7 @@
 # DLC Expansions: Packages, Content, and Roadmap
 
 **Feature Area**: Content Packs, DLC Architecture & Expansion Packs  
-**Current Version**: v1.20.0  
+**Current Version**: v1.21.0  
 **Status**: Family & Home Stories development build implemented; independent release QA pending — 2026-09-12  
 **Related Documents**: [ARCHITECTURE.md](ARCHITECTURE.md) · [ASSETS.md](ASSETS.md) · [ROADMAP.md](ROADMAP.md) · [PRD-WORLD-MAP.md](PRD-WORLD-MAP.md) · [DECISIONS.md](DECISIONS.md)
 

@@ -324,7 +324,12 @@ function cancelPointerController() {
 
 store.subscribe(handleStoreChange);
 
+let packControlsSignature = null;
 function renderPackControls() {
+  const state = store.getState();
+  const signature = JSON.stringify([getCurrentLanguage(), state.ui.packFilter || 'all', state.settings.hiddenPacks]);
+  if (signature === packControlsSignature) return;
+  packControlsSignature = signature;
   const visiblePacks = getVisiblePackManifests(PACK_REGISTRY.getPacks(), store.getState().settings.hiddenPacks);
   for (const select of document.querySelectorAll('select[data-pack-picker]')) {
     const value = store.getState().ui.packFilter || 'all';

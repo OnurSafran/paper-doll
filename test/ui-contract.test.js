@@ -232,7 +232,7 @@ test('project and paint copy do not duplicate localized labels on narrow layouts
   assert.doesNotMatch(paintJs, /`👗 \$\{t\('paint\.wearableTypeBtn'\)/);
   assert.doesNotMatch(paintJs, /`🧸 \$\{t\('paint\.propTypeBtn'\)/);
   assert.match(css, /@media \(max-width: 920px\)[\s\S]*\.paint-heading-primary\s*\{[^}]*flex-wrap:\s*wrap/s);
-  assert.match(html, /app-version-badge[^>]*>Paper Doll Studio <strong>v1\.20\.0/);
+  assert.match(html, new RegExp(`app-version-badge[^>]*>Paper Doll Studio <strong>v${JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version.replace(/\./g, '\\.')}`));
   assert.doesNotMatch(js, /registration\.unregister\(\)/);
   assert.match(js, /registration\.update\(\)/);
   assert.match(readFileSync(new URL('../sw.js', import.meta.url), 'utf8'), /fetch\(event\.request, \{ cache: 'no-store' \}\)/);
