@@ -5,6 +5,8 @@ import { getWheelPanDelta, nextSpawnPoint } from '../js/features/play/play-view.
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { LIMITS } from '../js/domain/vocabulary.js';
 
+import { createSelectionInspectorController } from '../js/features/play/selection-inspector-controller.js';
+
 import { setLanguage } from '../js/core/i18n.js';
 
 test('describeOutfit generates accessible text for empty and equipped drafts', () => {
@@ -47,4 +49,40 @@ test('wheel panning claims horizontal gestures but preserves vertical scrolling'
   assert.equal(getWheelPanDelta({ deltaX: 120, deltaY: 20, shiftKey: false }), 120);
   assert.equal(getWheelPanDelta({ deltaX: 20, deltaY: 120, shiftKey: false }), 0);
   assert.equal(getWheelPanDelta({ deltaX: 0, deltaY: 120, shiftKey: true }), 120);
+});
+
+
+test('Play panels follow the current selection, including direct prop-to-character changes', () => {
+  const panels = {
+    '#spawn-panel-section': { hidden: false },
+    '#play-inspector-panel': { hidden: true },
+    '#attach-joint-controls': { hidden: false }
+  };
+  const controller = createSelectionInspectorController({
+    $: (selector) => panels[selector] || null,
+    $$: () => []
+  });
+  const entities = [
+    { instanceId: 'prop', kind: 'prop' },
+    { instanceId: 'character', kind: 'character' },
+    { instanceId: 'bubble', kind: 'bubble' }
+  ];
+  function select(id) {
+    controller.renderSelectedActions({
+      ui: { selectedEntityId: id, selectedEntityIds: id ? [id] : [] },
+      currentScene: { entities }
+    });
+  }
+  select('prop');
+  assert.equal(panels['#spawn-panel-section'].hidden, false);
+  select('character');
+  assert.equal(panels['#play-inspector-panel'].hidden, false);
+  assert.equal(panels['#spawn-panel-section'].hidden, true);
+  select('prop');
+  assert.equal(panels['#play-inspector-panel'].hidden, true);
+  select('bubble');
+  assert.equal(panels['#play-inspector-panel'].hidden, false);
+  select(null);
+  assert.equal(panels['#spawn-panel-section'].hidden, false);
+  assert.equal(panels['#play-inspector-panel'].hidden, true);
 });

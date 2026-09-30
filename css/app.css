@@ -14,11 +14,11 @@
 /* Feature Screens & Layouts */
 @import './features/header.css?v=8a4c13b8';
 @import './features/designer.css?v=0bf9716a';
-@import './features/play.css?v=04c7e891';
+@import './features/play.css?v=66b7b966';
 @import './features/paint.css?v=a7f6e23a';
 @import './features/world-map.css?v=bc8392e3';
 
-@import './features/papercraft.css?v=33d06888';
+@import './features/papercraft.css?v=04aeb653';
 
 /* Global Responsive & Accessibility Queries */
-@import './responsive/responsive.css?v=7b6f96ad';
+@import './responsive/responsive.css?v=8cd49d56';

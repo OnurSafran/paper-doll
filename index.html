@@ -137,26 +137,15 @@
 
       <section id="play-screen" class="screen" aria-labelledby="play-title" hidden>
         <div class="screen-heading play-heading">
-          <div class="play-title-group">
-            <h1 id="play-title" data-i18n="play.title" class="visually-hidden">Oyun Alanı</h1>
-            <div class="scene-picker-group">
-              <button id="open-world-map-btn" class="button secondary compact-action world-map-pill" type="button" aria-haspopup="dialog" aria-expanded="false" data-i18n-title="worldMap.openTitle" title="Diyar Haritasını Aç (M)">🗺️ <span data-i18n="worldMap.btnLabel">Harita:</span> <span id="current-location-name" class="world-map-pill-name">Sıcak Yatak Odası</span> ▾</button>
-              <label for="background-select" data-i18n="play.backgroundLabel" class="visually-hidden">🎨 Arka Plan:</label>
-              <select id="background-select" class="visually-hidden" tabindex="-1"></select>
-            </div>
-            <div class="scene-picker-group stage-width-group">
-              <label for="stage-width-select" data-i18n="play.stageLabel">📐 Sahne:</label>
-              <select id="stage-width-select" data-i18n-aria-label="play.stageWidthAria" aria-label="Sahne genişliği">
-                <option value="1600" data-i18n="play.stageStandard">Standart (1600×900)</option>
-                <option value="3200" data-i18n="play.stageWide">Geniş (3200×900)</option>
-                <option value="4800" data-i18n="play.stagePanoramic">Panoramik (4800×900)</option>
-              </select>
-            </div>
+          <h1 id="play-title" data-i18n="play.title" class="visually-hidden">Oyun Alanı</h1>
+          <div class="scene-picker-group">
+            <button id="open-world-map-btn" class="button secondary compact-action world-map-pill" type="button" aria-haspopup="dialog" aria-expanded="false" data-i18n-title="worldMap.openTitle" title="Diyar Haritasını Aç (M)">🗺️ <span data-i18n="worldMap.btnLabel">Harita:</span> <span id="current-location-name" class="world-map-pill-name">Sıcak Yatak Odası</span> ▾</button>
+            <label for="background-select" data-i18n="play.backgroundLabel" class="visually-hidden">🎨 Arka Plan:</label>
+            <select id="background-select" class="visually-hidden" tabindex="-1"></select>
           </div>
+          <div id="play-status" class="play-status-pill" role="status" aria-live="polite"></div>
           <div class="scene-meta-actions">
-            <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir" data-i18n="play.voiceBtn">🎙️ Seslendir</button>
             <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
-            <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)" data-i18n="play.outlineBtn">📋 Katmanlar</button>
             <button id="save-scene-btn" class="button primary compact-action" type="button" data-i18n-title="play.saveSceneTitle" title="Bu sahneyi Sahne Kitabına kaydet" data-i18n="play.saveSceneBtn">💾 Sahneyi Kaydet</button>
             <details id="play-scene-dropdown" class="menu-dropdown">
               <summary class="button secondary compact-action dropdown-summary" data-i18n-title="play.scenesTitle" title="Sahne Kitabı ve Sahne İşlemleri">📚 <span data-i18n="play.sceneMenuBtn">Sahne</span> ▾</summary>
@@ -176,10 +165,6 @@
           </div>
         </div>
 
-        <div class="play-status-row">
-          <div id="play-status" class="play-status-pill" role="status" aria-live="polite"></div>
-        </div>
-
         <div class="play-grid">
           <div class="play-stage-column">
             <div id="play-stage-viewport" class="play-stage-viewport">
@@ -197,18 +182,6 @@
                 <div class="scene-help" aria-hidden="true" data-i18n="play.sceneHelp">Düzenlemek için sürükleyin · hızlı araçlar için dokunun · yön tuşlarıyla kaydırın · kenardan kaydır</div>
               </div>
 
-              <div id="scene-animation-transport" class="play-floating-transport" role="toolbar" data-i18n-aria-label="play.transportControls" aria-label="Animasyon oynatma kontrolleri">
-                <button id="play-animation-btn" class="button primary compact-action animation-transport-btn" type="button" data-action="togglePlayback" data-i18n-title="play.playAnimationTitle" title="Animasyonu başlat veya duraklat" data-i18n-aria-label="play.playAnimationTitle" aria-label="Animasyonu başlat veya duraklat" aria-pressed="false">▶ <span data-i18n="play.playBtn">Oynat</span></button>
-                <button id="loop-animation-btn" class="button secondary compact-action animation-transport-btn is-looping" type="button" data-action="toggleLoop" data-i18n-title="play.loopAnimationTitle" title="Döngüsel animasyonu aç/kapat" data-i18n-aria-label="play.loopAnimationTitle" aria-label="Döngüsel animasyon" aria-pressed="true">🔁</button>
-                <button id="reset-animation-btn" class="button secondary compact-action animation-transport-btn" type="button" data-action="resetAnimation" data-i18n-title="play.resetAnimationTitle" title="Animasyonu başa sar" data-i18n-aria-label="play.resetAnimationTitle" aria-label="Başa sar">⏮</button>
-                <div id="scene-playback-rate-controls" class="segmented-control speed-buttons" role="group" data-i18n-aria-label="play.speedGroup" aria-label="Oynatma hızı">
-                  <button data-playback-rate="0.5" type="button" data-i18n-title="play.speedSlow" title="0.5x Hız" data-i18n-aria-label="play.speedSlow" aria-label="0.5x Hız">0.5x</button>
-                  <button data-playback-rate="1.0" type="button" class="is-selected-rate" data-i18n-title="play.speedNormal" title="1.0x Normal" data-i18n-aria-label="play.speedNormal" aria-label="1.0x Normal" aria-pressed="true">1x</button>
-                  <button data-playback-rate="1.5" type="button" data-i18n-title="play.speedFast" title="1.5x Hızlı" data-i18n-aria-label="play.speedFast" aria-label="1.5x Hızlı">1.5x</button>
-                  <button data-playback-rate="2.0" type="button" data-i18n-title="play.speedTurbo" title="2.0x Çok Hızlı" data-i18n-aria-label="play.speedTurbo" aria-label="2.0x Çok Hızlı">2x</button>
-                </div>
-              </div>
-
               <div id="camera-hud" class="camera-hud" role="region" data-i18n-aria-label="play.cameraControls" aria-label="Panoramik kamera kontrolleri" hidden>
                 <button id="camera-pan-left" class="camera-pan-btn" type="button" data-i18n-title="play.cameraPanLeft" title="Kamerayı sola kaydır (Shift+Sol, PageUp)" data-i18n-aria-label="play.cameraPanLeft" aria-label="Kamerayı sola kaydır">◀</button>
                 <div class="camera-slider-track">
@@ -222,14 +195,31 @@
                 </div>
               </div>
             </div>
+            <div class="play-stage-controls">
+              <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)" data-i18n="play.outlineBtn">📋 Katmanlar</button>
+              <div id="scene-animation-transport" class="play-animation-transport" role="toolbar" data-i18n-aria-label="play.transportControls" aria-label="Animasyon oynatma kontrolleri">
+                <button id="play-animation-btn" class="button primary compact-action animation-transport-btn" type="button" data-action="togglePlayback" data-i18n-title="play.playAnimationTitle" title="Animasyonu başlat veya duraklat" data-i18n-aria-label="play.playAnimationTitle" aria-label="Animasyonu başlat veya duraklat" aria-pressed="false">▶ <span data-i18n="play.playBtn">Oynat</span></button>
+                <button id="loop-animation-btn" class="button secondary compact-action animation-transport-btn is-looping" type="button" data-action="toggleLoop" data-i18n-title="play.loopAnimationTitle" title="Döngüsel animasyonu aç/kapat" data-i18n-aria-label="play.loopAnimationTitle" aria-label="Döngüsel animasyon" aria-pressed="true">🔁</button>
+                <button id="reset-animation-btn" class="button secondary compact-action animation-transport-btn" type="button" data-action="resetAnimation" data-i18n-title="play.resetAnimationTitle" title="Animasyonu başa sar" data-i18n-aria-label="play.resetAnimationTitle" aria-label="Başa sar">⏮</button>
+                <div id="scene-playback-rate-controls" class="segmented-control speed-buttons" role="group" data-i18n-aria-label="play.speedGroup" aria-label="Oynatma hızı">
+                  <button data-playback-rate="0.5" type="button" data-i18n-title="play.speedSlow" title="0.5x Hız" data-i18n-aria-label="play.speedSlow" aria-label="0.5x Hız">0.5x</button>
+                  <button data-playback-rate="1.0" type="button" class="is-selected-rate" data-i18n-title="play.speedNormal" title="1.0x Normal" data-i18n-aria-label="play.speedNormal" aria-label="1.0x Normal" aria-pressed="true">1x</button>
+                  <button data-playback-rate="1.5" type="button" data-i18n-title="play.speedFast" title="1.5x Hızlı" data-i18n-aria-label="play.speedFast" aria-label="1.5x Hızlı">1.5x</button>
+                  <button data-playback-rate="2.0" type="button" data-i18n-title="play.speedTurbo" title="2.0x Çok Hızlı" data-i18n-aria-label="play.speedTurbo" aria-label="2.0x Çok Hızlı">2x</button>
+                </div>
+                <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" aria-pressed="false" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir" data-i18n="play.voiceBtn">🎙️ Seslendir</button>
+              </div>
+              <div class="scene-picker-group stage-width-group">
+                <select id="stage-width-select" data-i18n-aria-label="play.stageWidthAria" aria-label="Sahne genişliği">
+                  <option value="1600" data-i18n="play.stageStandard">Standart (1600×900)</option>
+                  <option value="3200" data-i18n="play.stageWide">Geniş (3200×900)</option>
+                  <option value="4800" data-i18n="play.stagePanoramic">Panoramik (4800×900)</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <aside class="play-rail" data-i18n-aria-label="play.railAria" aria-label="Sahne araçları">
-            <div id="play-rail-tabs" class="tab-list rail-mode-tabs" role="tablist" data-i18n-aria-label="play.railTabsAria" aria-label="Sahne paneli">
-              <button id="rail-tab-spawn" class="mode-tab is-active" role="tab" aria-selected="true" aria-controls="spawn-panel-section" data-rail-tab="spawn" type="button" data-i18n="play.tabSpawn">➕ Ekle</button>
-              <button id="rail-tab-inspector" class="mode-tab" role="tab" aria-selected="false" aria-controls="play-inspector-panel" data-rail-tab="inspector" type="button" data-i18n="play.tabInspector">⚙️ Seçili</button>
-            </div>
-
             <section id="spawn-panel-section" class="paper-panel spawn-panel" aria-labelledby="tray-title">
               <div class="panel-heading"><div><span class="eyebrow" data-i18n="play.trayEyebrow">Sahne Tepsisi</span><h2 id="tray-title" data-i18n="play.trayTitle">Sahneye ekleyici</h2><p class="panel-copy" data-i18n="play.trayCopy">Öğeleri sahneye tıklayın veya sürükleyin.</p></div><span class="panel-sticker" aria-hidden="true">✦</span></div>
               <div id="spawn-tabs" class="tab-list" role="tablist" data-i18n-aria-label="play.trayCategoriesAria" aria-label="Sahne tepsisi kategorileri"></div>

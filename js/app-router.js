@@ -57,10 +57,15 @@ export function createAppRouter(context) {
     const sceneLibCount = context.$('#scene-library-count');
     if (sceneLibCount) sceneLibCount.textContent = String(state.scenes?.length ?? 0);
     const voiceBtn = context.$('#voice-puppetry-btn');
-    if (voiceBtn) voiceBtn.classList.toggle('voice-puppetry-active', Boolean(state.ui.voicePuppetryActive));
+    if (voiceBtn) {
+      voiceBtn.classList.toggle('voice-puppetry-active', Boolean(state.ui.voicePuppetryActive));
+      voiceBtn.setAttribute('aria-pressed', String(Boolean(state.ui.voicePuppetryActive)));
+    }
     const uiMessage = state.ui.messageKey ? translateMessage(state.ui.messageKey, state.ui.messageParams || {}) : state.ui.message;
-    context.$('#designer-status').textContent = uiMessage;
-    context.$('#play-status').textContent = uiMessage;
+    // The header already shows save status; keep workspace feedback for actions and warnings.
+    const workspaceMessage = state.ui.messageKey === 'sync.storageSaved' ? '' : uiMessage;
+    context.$('#designer-status').textContent = workspaceMessage;
+    context.$('#play-status').textContent = workspaceMessage;
     if (paintActive) {
       context.designerView.bumpToken();
       context.playView.bumpToken();

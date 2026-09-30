@@ -105,9 +105,7 @@
     min-height: auto;
   }
   /*
-   * Stacked on a phone the viewport takes whatever height is left over, which
-   * on a panoramic stage is the scene minus the camera HUD minus the transport
-   * bar — a sliver. Reserve a 16:9 stage plus the strips that sit under it.
+   * Reserve a 16:9 stage plus the panoramic camera strip on stacked layouts.
    */
   .play-stage-viewport {
     min-height: calc((100vw - 2.5rem) * 0.5625 + var(--hud-space, 0px) + 1.5rem);
@@ -188,7 +186,7 @@
 /*
  * Both stacked Play layouts above. Left at the desktop height:100%, the stage
  * column and rail split the screen 50/50, the column shrinks below the
- * viewport's reserved 16:9 height, and the stage spills over the rail tabs.
+ * viewport's reserved 16:9 height, and the stage spills over the rail.
  * Size them to their content and let <main> scroll instead.
  */
 @media (max-width: 920px), (orientation: portrait) and (min-width: 921px) and (max-width: 1100px) {
@@ -274,7 +272,6 @@
   .scene-picker-group select,
   .scene-picker-group .world-map-pill,
   .menu-dropdown-panel .dropdown-item,
-  .rail-mode-tabs .mode-tab,
   .inspector-tabs .tab-btn,
   .custom-color input[type="color"],
   .paint-item-chip-container .paint-item-chip-btn,
@@ -294,15 +291,6 @@
   .paint-swatch {
     width: 44px;
     height: 44px;
-    min-height: 44px;
-  }
-}
-
-/* The larger transport bar only fits stages wider than a phone's. */
-@media (pointer: coarse) and (min-width: 601px) {
-  .play-floating-transport button,
-  .play-floating-transport .speed-buttons button {
-    min-width: 44px;
     min-height: 44px;
   }
 }

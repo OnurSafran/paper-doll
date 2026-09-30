@@ -127,8 +127,12 @@ test('Face mode tab has a full-width, touch-friendly hit area', () => {
 });
 
 test('scene rail groups tray tools and play heading houses scene actions', () => {
-  assert.match(html, /class="play-rail"[\s\S]*id="play-rail-tabs"[\s\S]*id="spawn-tabs"/);
-  assert.match(html, /class="[^"]*scene-meta-actions[^"]*"[\s\S]*id="voice-puppetry-btn"[\s\S]*id="scene-templates-btn"[\s\S]*id="scene-outline-btn"/);
+  assert.match(html, /class="play-rail"[\s\S]*id="spawn-tabs"/);
+  assert.doesNotMatch(html, /id="rail-tab-(?:spawn|inspector)"/);
+  const heading = html.slice(html.indexOf('class="screen-heading play-heading"'), html.indexOf('class="play-grid"'));
+  assert.match(heading, /id="open-world-map-btn"[\s\S]*class="scene-meta-actions"[\s\S]*id="scene-templates-btn"/);
+  assert.doesNotMatch(heading, /id="scene-outline-btn"/);
+  assert.match(html, /class="play-stage-controls"[\s\S]*id="scene-outline-btn"[\s\S]*id="scene-animation-transport"/);
   assert.match(css, /\.play-grid\s*{[^}]*grid-template-areas:\s*"scene rail"/s);
   assert.match(css, /\.play-rail\s*{[^}]*grid-area:\s*rail/s);
 });
@@ -490,4 +494,3 @@ test('global tab and shortcut handlers guard non-element event targets with opti
   assert.match(shortcutsJs, /event\.target\?\.closest\?\.?\(['"]\[role="tab"\]['"]\)/);
   assert.match(shortcutsJs, /event\.target\?\.matches\?\.?\(/);
 });
-

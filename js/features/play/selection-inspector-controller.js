@@ -1,4 +1,4 @@
-/** Selected entity inspector, rail tabs, and dropdown lifecycle. */
+/** Selected entity inspector, contextual panels, and dropdown lifecycle. */
 import { DEFAULT_ATTACH_JOINT, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_MOTION_INTENSITY, DEFAULT_PHASE_OFFSET, DEFAULT_PLAYBACK_RATE } from '../../domain/vocabulary.js';
 import { MOTION_PROFILES_CONFIG, resolveMotionProfile } from '../../domain/animation-clips.js';
 import { resolveEffectiveMotion } from '../../domain/motion-evaluator.js';
@@ -6,10 +6,6 @@ import { t } from '../../core/i18n.js';
 
 export function createSelectionInspectorController(context) {
   let activeInspectorTab = 'expressions';
-
-  let activeRailTab = 'spawn';
-
-  let prevHasSelection = false;
 
   function renderSelectedActions(state = context.store.getState()) {
     initInspectorTabs();
@@ -190,13 +186,7 @@ export function createSelectionInspectorController(context) {
 
     const hasAnyInspectorControls = hasCharactersSelected || isBubble || (isAttached && attachJointGroup && !attachJointGroup.hidden);
 
-    if (hasSelection && !prevHasSelection && hasAnyInspectorControls) {
-      activeRailTab = 'inspector';
-    } else if (!hasSelection) {
-      activeRailTab = 'spawn';
-    }
-    prevHasSelection = hasSelection;
-    renderRailTabs();
+    renderRailPanels(hasSelection && Boolean(hasAnyInspectorControls));
 
     const tabExpressions = context.$('#inspector-tab-expressions');
     const tabMotion = context.$('#inspector-tab-motion');
@@ -278,23 +268,12 @@ export function createSelectionInspectorController(context) {
     }
   }
 
-  function renderRailTabs() {
-    initRailTabs();
-    const tabSpawn = context.$('#rail-tab-spawn');
-    const tabInspector = context.$('#rail-tab-inspector');
+  function renderRailPanels(showInspector) {
+    initDropdowns();
     const spawnSection = context.$('#spawn-panel-section');
     const inspectorPanel = context.$('#play-inspector-panel');
-
-    if (tabSpawn) {
-      tabSpawn.classList.toggle('is-active', activeRailTab === 'spawn');
-      tabSpawn.setAttribute('aria-selected', activeRailTab === 'spawn' ? 'true' : 'false');
-    }
-    if (tabInspector) {
-      tabInspector.classList.toggle('is-active', activeRailTab === 'inspector');
-      tabInspector.setAttribute('aria-selected', activeRailTab === 'inspector' ? 'true' : 'false');
-    }
-    if (spawnSection) spawnSection.hidden = activeRailTab !== 'spawn';
-    if (inspectorPanel) inspectorPanel.hidden = activeRailTab !== 'inspector';
+    if (spawnSection) spawnSection.hidden = showInspector;
+    if (inspectorPanel) inspectorPanel.hidden = !showInspector;
   }
 
   function handleDropdownOutsideClick(event) {
@@ -308,19 +287,7 @@ export function createSelectionInspectorController(context) {
     }
   }
 
-  function initRailTabs() {
-    const railTabs = context.$('#play-rail-tabs');
-    if (railTabs && !railTabs.dataset.bound) {
-      railTabs.dataset.bound = 'true';
-      railTabs.addEventListener('click', (event) => {
-        const btn = event.target.closest('button[data-rail-tab]');
-        if (btn && btn.dataset.railTab) {
-          activeRailTab = btn.dataset.railTab;
-          renderRailTabs();
-        }
-      });
-    }
-
+  function initDropdowns() {
     if (!context.dropdownsBound && typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
       context.dropdownsBound = true;
       document.addEventListener('click', handleDropdownOutsideClick);
@@ -341,5 +308,5 @@ export function createSelectionInspectorController(context) {
     }
   }
 
-  return { renderSelectedActions, renderRailTabs, handleDropdownOutsideClick, initRailTabs, initInspectorTabs };
+  return { renderSelectedActions, handleDropdownOutsideClick };
 }

@@ -7,17 +7,10 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 0.5rem 1rem;
   margin-bottom: 0.25rem;
   min-height: 44px;
-}
-
-.play-title-group {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  flex-wrap: wrap;
 }
 
 .scene-picker-group {
@@ -300,18 +293,9 @@
   height: 100%;
   max-height: 100%;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 4px;
   overflow: hidden;
-}
-
-/* Dedicated Play Status Row */
-.play-status-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 22px;
-  padding: 0 4px;
 }
 
 .play-status-pill {
@@ -326,6 +310,7 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   max-width: 600px;
+  margin-right: auto;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -354,11 +339,13 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  container-type: inline-size;
 }
 
 .play-stage-viewport {
   position: relative;
-  height: 100%;
+  flex: 1;
   min-height: 0;
   display: grid;
   /*
@@ -370,6 +357,7 @@
    * space keeps the percentage height meaningful in both states.
    */
   grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   align-items: center;
   padding: 8px;
@@ -382,46 +370,133 @@
   container-type: inline-size;
 }
 
-/* Floating Animation Transport Bar */
-/* Lifted clear of the camera HUD strip while a panoramic stage is selected. */
+/* Stage controls stay outside the scene and wrap with the stage column. */
 .play-stage-viewport:has(> #camera-hud:not([hidden])) {
   --hud-space: 74px;
 }
 
-.play-floating-transport {
-  position: absolute;
-  bottom: calc(12px + var(--hud-space, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 25;
-  display: flex;
+.play-stage-controls {
+  order: 2;
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas: "outline playback size";
   align-items: center;
-  gap: 0.35rem;
-  padding: 4px 8px;
-  border: 1.5px solid var(--line-strong);
-  border-radius: var(--radius-pill);
-  background: rgba(255, 253, 249, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-float);
+  gap: 0.5rem;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper-grain), var(--paper-card);
 }
 
-.play-floating-transport button {
-  min-height: 36px;
-  padding: 0.25rem 0.6rem;
+.play-stage-controls > #scene-outline-btn {
+  grid-area: outline;
+  justify-self: start;
+}
+
+.play-heading > .scene-picker-group {
+  min-width: 0;
+  max-width: 100%;
+  margin-right: auto;
+}
+
+.play-heading .world-map-pill {
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.play-heading .world-map-pill-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.play-stage-controls > .stage-width-group {
+  grid-area: size;
+  min-width: 0;
+  justify-self: end;
+  max-width: 100%;
+}
+
+.stage-width-group select {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 100%;
+}
+
+.play-animation-transport {
+  grid-area: playback;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.play-stage-controls button,
+.play-stage-controls select {
+  min-height: 44px;
+}
+
+.play-animation-transport button {
+  min-width: 44px;
+  padding: 0.25rem 0.55rem;
   font-size: 0.8rem;
   font-weight: 750;
-  border-radius: var(--radius-pill);
 }
 
-.play-floating-transport .speed-buttons button {
-  min-width: 38px;
-  min-height: 34px;
+.play-animation-transport .speed-buttons button {
   padding: 0.2rem 0.4rem;
   font-size: 0.76rem;
 }
 
-/* Play Rail & Segmented Mode Switcher */
+@container (max-width: 1020px) {
+  .play-stage-controls {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    grid-template-areas: "outline size" "playback playback";
+  }
+}
+
+@container (max-width: 600px) {
+  .play-stage-controls {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "outline" "playback" "size";
+  }
+  .play-stage-controls > #scene-outline-btn {
+    justify-self: stretch;
+  }
+  .play-stage-controls > .stage-width-group {
+    justify-self: stretch;
+    flex-wrap: wrap;
+  }
+  .stage-width-group select {
+    flex-grow: 1;
+  }
+}
+
+@container (max-width: 520px) {
+  .play-animation-transport .speed-buttons {
+    order: 1;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+  .play-stage-viewport:has(> #camera-hud:not([hidden])) {
+    --hud-space: 126px;
+  }
+  .play-stage-viewport .camera-hud {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
+  .camera-hud .stage-minimap {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 44px;
+  }
+}
+
+/* Play Rail */
+
 .play-rail {
   grid-area: rail;
   min-width: 0;
@@ -431,40 +506,6 @@
   flex-direction: column;
   gap: 0.65rem;
   overflow: hidden;
-}
-
-.rail-mode-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: 100%;
-  background: rgba(46, 38, 31, 0.06);
-  padding: 3px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--line);
-}
-
-.rail-mode-tabs .mode-tab {
-  min-height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-pill);
-  font-size: 0.84rem;
-  font-weight: 800;
-  color: var(--muted);
-  background: transparent;
-  transition: all 0.15s ease;
-}
-
-.rail-mode-tabs .mode-tab:hover:not(.is-active) {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.rail-mode-tabs .mode-tab.is-active {
-  background: var(--paper-card);
-  color: var(--coral-dark);
-  box-shadow: var(--shadow-sm);
 }
 
 .play-rail .spawn-panel,
@@ -490,6 +531,11 @@
 
 .play-inspector-panel[hidden] {
   display: none !important;
+}
+
+.play-inspector-panel .segmented-control {
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .inspector-header {
@@ -710,6 +756,7 @@
 
 .camera-slider-track {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   padding: 0 4px;
@@ -1045,7 +1092,7 @@
   color: var(--muted);
 }
 
-/* Top-right, so the centred transport bar never lands on top of the hint. */
+/* Keep scene hints clear of the scene name. */
 .scene-help {
   position: absolute;
   z-index: 5;
