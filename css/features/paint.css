@@ -152,8 +152,8 @@
   padding: 1.5rem;
   border: 2.5px solid var(--line-strong);
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #fbf7f0 0%, #f4ede2 100%);
-  box-shadow: 0 4px 16px rgba(46, 38, 31, 0.1), inset 0 2px 6px rgba(46, 38, 31, 0.06);
+  background: var(--paper-grain), var(--cardboard);
+  box-shadow: inset 0 0 0 5px #ddc6a6, inset 0 0 0 6px var(--cardboard-edge), var(--shadow-md);
   overflow: auto;
 }
 
@@ -438,7 +438,7 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: #f8f5ef;
+  background: var(--paper-grain), var(--paper-card);
   border: 1.5px solid var(--line);
   border-radius: var(--radius-md);
 }

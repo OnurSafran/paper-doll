@@ -15,9 +15,9 @@
   font-size: 0.82rem;
   font-weight: 800;
   text-decoration: none;
-  background: var(--paper-card);
+  background: var(--paper-grain), var(--paper-card);
   color: var(--ink);
-  box-shadow: 0 2px 4px rgba(46, 38, 31, 0.06), 0 1px 1px rgba(46, 38, 31, 0.04);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, border-color 0.12s ease;
   user-select: none;
 }
@@ -44,35 +44,35 @@
 }
 
 .button.primary {
-  background: var(--coral-dark);
+  background: var(--paper-grain), var(--coral-dark);
   color: white;
   border-color: var(--coral-dark);
-  box-shadow: 0 2px 6px rgba(184, 67, 59, 0.3);
+  box-shadow: 0 2px 0 #71341f, 0 3px 5px #49382114;
 }
 
 @media (hover: hover) {
   .button.primary:hover:not(:disabled) {
-    background: #a83a33;
-    border-color: #a83a33;
-    box-shadow: 0 4px 12px rgba(184, 67, 59, 0.4);
+    background: var(--paper-grain), #843d28;
+    border-color: #843d28;
+    box-shadow: 0 3px 0 #71341f, 0 5px 8px #4938211a;
   }
 }
 
 .button.secondary {
-  background: var(--paper-card);
+  background: var(--paper-grain), var(--paper-card);
   color: var(--ink);
 }
 
 .button.playful {
-  background: linear-gradient(135deg, #f7be52, var(--gold));
+  background: var(--paper-grain), var(--gold-soft);
   color: var(--ink);
-  border-color: rgba(46, 38, 31, 0.18);
-  box-shadow: 0 2px 6px rgba(242, 170, 53, 0.25);
+  border-color: var(--gold);
+  box-shadow: 0 2px 0 #b99a61;
 }
 
 @media (hover: hover) {
   .button.playful:hover:not(:disabled) {
-    background: linear-gradient(135deg, #f9c768, #f0a324);
+    background: var(--paper-grain), #ebd9ad;
   }
 }
 

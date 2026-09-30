@@ -1,4 +1,98 @@
-/* Screen-only pilot (switches live in the Settings dialog): decorative layers never become pointer targets. */
+/* Studio materials. Textures and tape stay decorative and never capture input. */
+.designer-topbar h1 { font-size: clamp(1.3rem, 1.8vw, 1.8rem); }
+.paper-stand { display: none; }
+.stage-style-bar { border-top: 3px solid var(--sage); }
+.wardrobe-panel { border-top: 3px solid var(--gold); }
+.face-panel { border-top: 3px solid var(--coral); }
+.pack-controls { background: var(--paper-grain), #f3e8d0; }
+
+.panel-heading {
+  padding-bottom: 0.55rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.tab-list button,
+.designer-mode-tabs .mode-tab,
+.rail-mode-tabs .mode-tab {
+  border-radius: 7px 7px 2px 2px;
+}
+
+.designer-mode-tabs { margin-bottom: 0; gap: 0.4rem; }
+.designer-mode-tabs .mode-tab { border-bottom-width: 3px; }
+.outfit-count { background: var(--paper-grain), var(--paper); border-style: dashed; }
+
+.asset-card-preview .asset-svg,
+.spawn-preview .asset-svg {
+  filter: drop-shadow(1px 2px 0 #b7a18466) drop-shadow(0 3px 2px #49382112);
+}
+
+.asset-card span:last-child {
+  border-top: 1px dashed var(--line);
+  padding-top: 0.35rem;
+  border-radius: 0;
+  background: transparent;
+}
+
+.asset-card[aria-pressed="true"] {
+  background: var(--paper-grain), var(--sage-soft);
+  box-shadow: 0 2px 0 var(--sage), inset 0 0 0 1px var(--sage);
+}
+
+.swatch { box-shadow: 1px 2px 0 #a18b6c88, inset 0 0 0 3px #fff9ec66; }
+.style-pill { border-style: dashed; }
+
+.play-floating-transport,
+.paint-canvas-floating-actions,
+.paint-floating-preview,
+.context-ring {
+  background: var(--paper-grain), var(--paper-card);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.play-floating-transport { border-radius: var(--radius-md); }
+.rail-mode-tabs { background: var(--paper-grain), var(--paper-deep); }
+.rail-mode-tabs .mode-tab.is-active {
+  background: var(--paper-grain), var(--paper-card);
+  color: var(--sage);
+  box-shadow: 0 2px 0 var(--cardboard-edge);
+}
+
+.spawn-item,
+.myart-card,
+.world-map-preview-dock,
+.souvenir-stamp-slot,
+.cutout-card {
+  background: var(--paper-grain), var(--paper-card);
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
+}
+
+.world-map-pill { background: var(--paper-grain), var(--paper-card); border-color: var(--line-strong); }
+.world-map-container { background: var(--paper-grain), var(--paper-warm); }
+.world-map-header,
+.world-map-passport-bar { background: var(--paper-grain), var(--paper); border-color: var(--line); }
+.world-map-preview-dock { border-top: 3px solid var(--sage); }
+.world-map-title-group h2,
+.dock-title { font-family: var(--font-display); }
+.dock-biome-badge { border-radius: var(--radius-xs); border: 1px dashed currentColor; }
+
+.paint-section-card + .paint-section-card { border-top: 1px dashed var(--line); padding-top: 0.75rem; }
+.paint-canvas-stage { box-shadow: 2px 3px 0 #a18b6c66, 0 5px 12px #4938211a; }
+
+@media (max-width: 600px) {
+  .paper-stage::before { inset: 16px; }
+  .paper-stage::after { inset: 5px; background-size: 60px 40px; }
+  .designer-title-row { flex-wrap: wrap; }
+  .designer-inline-status { flex: 1 0 100%; text-align: left; }
+  .designer-top-actions { width: 100%; display: grid; grid-template-columns: auto 1fr; }
+  #save-doll-btn { grid-column: 1 / -1; }
+}
+
+/* Optional artwork finishes (switches live in Settings). */
 .clothing-tabs { display: none; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 /* Full-sized dolls only; tiny library thumbnails and the map stay legible. */
 .show-clothing-tabs :is(#doll-stage, .scene-character-canvas) .clothing-tabs { display: block; }

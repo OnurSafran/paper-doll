@@ -6,15 +6,13 @@ dialog {
   padding: 0;
   border: 1.5px solid var(--line-strong);
   border-radius: var(--radius-md);
-  background: var(--paper);
+  background: var(--paper-grain), var(--paper);
   color: var(--ink);
   box-shadow: var(--shadow-lg);
 }
 
 dialog::backdrop {
   background: rgba(46, 38, 31, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 
 .confirm-dialog {

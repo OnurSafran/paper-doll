@@ -375,8 +375,8 @@
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: linear-gradient(145deg, #d8c5aa, #eadbc6);
-  box-shadow: inset 0 0 0 6px rgba(255, 253, 249, 0.45), inset 0 0 45px rgba(46, 38, 31, 0.14), var(--shadow-md);
+  background: var(--paper-grain), var(--cardboard);
+  box-shadow: inset 0 0 0 5px #ddc6a6, inset 0 0 0 6px var(--cardboard-edge), var(--shadow-md);
   overflow: hidden;
   /* Lets .play-stage cap its height from this box's width (cqw). */
   container-type: inline-size;
@@ -575,7 +575,7 @@
    */
   max-height: min(100%, 100cqw * 9 / 16);
   aspect-ratio: 16 / 9;
-  border-radius: 18px;
+  border-radius: var(--radius-xs);
   background: var(--paper-card);
   box-shadow: 0 8px 24px rgba(46, 38, 31, 0.14);
   overflow: hidden;
