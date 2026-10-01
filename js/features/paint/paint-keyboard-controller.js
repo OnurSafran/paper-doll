@@ -25,6 +25,7 @@ export function createPaintKeyboardController(context) {
     if (e.key === ' ' && e.target?.closest?.('button, [role="button"]')) return;
 
     const state = context.session.getState();
+    if (state.placementMode === 'placement' && !((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z')) return;
     const step = e.shiftKey ? 1 : 10;
 
     if (state.tool === 'select' && context.selectionRect && /^Arrow/.test(e.key)) {

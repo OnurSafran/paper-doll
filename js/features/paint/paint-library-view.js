@@ -252,6 +252,7 @@ export function createPaintLibraryView({
           slot: asset.slot || 'top',
           propSize: asset.displayWidth > 240 ? 'large' : (asset.displayWidth < 180 ? 'small' : 'medium'),
           propPlacement: asset.groundAnchor?.y === 0.5 ? 'hang' : 'surface',
+          placementMetadata: asset.placementRules ? { groundAnchor: asset.groundAnchor, placementRules: asset.placementRules, supportSurfaces: asset.supportSurfaces || [], anchorAuthored: true, footprintAuthored: true } : null,
           name: t('paint.copyName', { name: asset.name }),
           baseDollId: sessionState.baseDollId,
           originContext: sessionState.originContext

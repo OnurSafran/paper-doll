@@ -1183,3 +1183,22 @@
   line-height: 1.4;
   margin-bottom: 1rem;
 }
+
+.paint-placement-panel { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem; background: var(--paper-card); }
+.paint-placement-panel[hidden] { display: none; }
+.paint-placement-panel label { display: flex; flex-direction: column; font-size: .8rem; }
+.paint-placement-panel input[type="number"] { width: 7rem; }
+.paint-placement-panel button, .paint-placement-panel select, .paint-placement-panel input { min-height: 44px; }
+.paint-placement-panel p { width: 100%; margin: .25rem 0; }
+.paint-placement-overlay { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 12; overflow: visible; touch-action: none; }
+.paint-placement-overlay polygon { fill: #2a9d8f44; stroke: #237d71; stroke-width: 2; stroke-dasharray: 5 3; cursor: move; }
+.paint-placement-overlay polygon:focus { stroke: #e76f51; outline: none; }
+.paint-placement-overlay circle { fill: #e76f5180; stroke: #873820; stroke-width: 2; cursor: move; }
+.paint-placement-overlay .surface-resize-handle { fill: #ffffff30; stroke: #237d71; stroke-width: 1; cursor: nwse-resize; }
+.paint-placement-overlay .contact-footprint { fill: #e76f5130; stroke: #e76f51; pointer-events: none; }
+.is-placement-mode #paint-tools-toolbar, .is-placement-mode #paint-cursor { opacity: .3; pointer-events: none; }
+.placement-test-preview { width: 100%; max-width: 300px; }
+.placement-test-preview svg { width: 100%; }
+.placement-surface-detail { width: 100%; min-height: 100px; border: 1px solid var(--line); background: #fff; }
+.placement-surface-detail svg { display: block; width: 100%; min-height: 100px; max-height: 240px; }
+.placement-test-preview svg { touch-action: none; }

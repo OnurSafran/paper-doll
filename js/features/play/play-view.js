@@ -1,3 +1,5 @@
+import { createPlacementControls } from './placement-controls.js';
+import { orderedSceneEntities } from '../../domain/scene-placement.js';
 import { createPropSymbolRegistry } from '../../core/svg-symbols.js';
 import { createSceneEntityView } from './scene-entity-view.js';
 import { createSelectionHudController } from './selection-hud-controller.js';
@@ -84,6 +86,7 @@ export function createPlayView({
   getAssetsByKind = (kind, options = {}) => assetsByKind(kind, options),
   invalidateAnimationDomCache
 }) {
+  const placementControls = createPlacementControls({ store, $, getAsset });
   const propSymbols = createPropSymbolRegistry({ getHost: () => $('#play-stage') });
   let playRenderToken = 0;
 
@@ -93,6 +96,7 @@ export function createPlayView({
   let dropdownsBound = false;
 
   async function render(state = store.getState()) {
+    placementControls.render(state);
     const token = ++playRenderToken;
     const focusedEntityId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('.scene-entity-positioner'))?.dataset.instanceId;
     const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
@@ -139,7 +143,7 @@ export function createPlayView({
     }
     const existingEntities = new Map([...entityRoot.children].map((element) => [element.dataset.instanceId, element]));
     const nextElements = [];
-    const ordered = [...state.currentScene.entities].sort((a, b) => a.order - b.order);
+    const ordered = orderedSceneEntities(state.currentScene, getAsset);
     const selectedSet = new Set(state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []));
 
     for (const entity of ordered) {
@@ -153,6 +157,7 @@ export function createPlayView({
         : await createSceneEntity(entity, isPrimary, isMulti);
       if (token !== playRenderToken) return;
       if (element === existing) patchSceneEntity(element, entity, isPrimary, isMulti);
+      element.style.zIndex = String(nextElements.length + 1);
       nextElements.push(element);
     }
     const orderUnchanged = nextElements.length === entityRoot.children.length
@@ -191,6 +196,8 @@ export function createPlayView({
 
   const { stopEdgePan, startEdgePan, initCameraControls, renderCameraHud, syncCamera } = createCameraController({
     get getWheelPanDelta() { return getWheelPanDelta; },
+    askConfirm,
+    get cancelPointerController() { return cancelPointerController; },
     store,
     $,
     getAsset,
@@ -226,6 +233,7 @@ export function createPlayView({
   });
 
   const { renderSelectedActions, handleDropdownOutsideClick } = createSelectionInspectorController({
+    placementControls,
     store,
     $,
     $$,

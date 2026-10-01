@@ -18,7 +18,7 @@ test('project repository load handles null and unavailable storage', () => {
   const nullResult = loadProject(null, getAsset);
   assert.equal(nullResult.available, false);
   assert.equal(nullResult.recovered, false);
-  assert.equal(nullResult.envelope.schemaVersion, 6);
+  assert.equal(nullResult.envelope.schemaVersion, 8);
 
   const throwingStorage = {
     getItem: () => { throw new Error('SecurityError: access denied'); }
@@ -29,7 +29,7 @@ test('project repository load handles null and unavailable storage', () => {
   assert.match(deniedResult.warnings[0], /could not be read/);
 });
 
-test('project repository load cleans up leftover .tmp writes and quarantines corrupted bytes', () => {
+test('project repository requests a complete reset for unreadable saves', () => {
   const corruptedRaw = '{"broken": json...';
   const storage = memoryStorage({
     [STORAGE_KEY]: corruptedRaw,
@@ -37,23 +37,24 @@ test('project repository load cleans up leftover .tmp writes and quarantines cor
   });
 
   const result = loadProject(storage, getAsset);
-  assert.equal(result.available, false);
-  assert.equal(result.recovered, false);
+  assert.equal(result.available, true);
+  assert.equal(result.recovered, true);
+  assert.equal(result.resetRequired, true);
   assert.equal(storage.data.has(`${STORAGE_KEY}.tmp`), false);
 
   const quarantineKeys = [...storage.data.keys()].filter((k) => k.startsWith('paperDollStudio.quarantine.'));
-  assert.equal(quarantineKeys.length, 1);
-  assert.equal(storage.data.get(quarantineKeys[0]), corruptedRaw);
+  assert.equal(quarantineKeys.length, 0);
 });
 
-test('project repository treats a valid v3 to v4 migration as recovered', () => {
+test('project repository requests a complete reset for legacy saves', () => {
   const legacy = { ...createDefaultEnvelope(), schemaVersion: 3 };
   const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
 
   const result = loadProject(storage, getAsset);
   assert.equal(result.available, true);
   assert.equal(result.recovered, true);
-  assert.equal(result.envelope.schemaVersion, 6);
+  assert.equal(result.envelope.schemaVersion, 8);
+  assert.equal(result.resetRequired, true);
   assert.equal([...storage.data.keys()].some((key) => key.startsWith('paperDollStudio.quarantine.')), false);
 });
 

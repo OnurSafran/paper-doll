@@ -8,6 +8,7 @@ export function createSelectionInspectorController(context) {
   let activeInspectorTab = 'expressions';
 
   function renderSelectedActions(state = context.store.getState()) {
+    context.placementControls?.render(state);
     initInspectorTabs();
     const selectedIds = state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []);
     const isMulti = selectedIds.length >= 2;
@@ -20,7 +21,7 @@ export function createSelectionInspectorController(context) {
       ? state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId) && e.kind === 'character')
       : (isCharacter && selected ? [selected] : []);
     const hasCharactersSelected = targetCharacters.length > 0;
-    const isAttached = !isMulti && Boolean(selected?.attachedTo);
+    const isAttached = !isMulti && Boolean(selected?.attachedTo) && selected?.placement?.kind !== 'surface';
 
     const expressionGroup = context.$('#character-expression-controls');
     if (expressionGroup) {

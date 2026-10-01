@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper Rooms — a little stage experiment</title>
+<style>
+  :root { color-scheme: light; --ink:#3e463b; --muted:#797e70; --paper:#f8f5ed; --green:#536d52; --line:#dedfd2; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:14px/1.5 ui-sans-serif,system-ui,sans-serif; }
+  button,select { font:inherit; color:inherit; }
+  button { cursor:pointer; min-height:42px; padding:9px 15px; border:1px solid var(--line); border-radius:9px; background:#fffdf7; }
+  button:hover { background:#efeee3; border-color:#a6b29a; }
+  button:disabled { opacity:.4; cursor:default; }
+  button:focus-visible,select:focus-visible { outline:3px solid #658979; outline-offset:4px; }
+  .primary { background:var(--green); color:white; border-color:var(--green); }
+  .primary:hover { background:#425d42; }
+  header { max-width:1440px; margin:auto; padding:25px 38px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); }
+  .brand { font:italic 26px Georgia,serif; letter-spacing:-1px; }
+  .brand span { font:11px ui-sans-serif,system-ui; letter-spacing:2px; margin-left:15px; color:var(--muted); }
+  .badge { border:1px solid var(--line); border-radius:20px; padding:5px 12px; color:var(--muted); font-size:11px; }
+  main { max-width:1440px; margin:auto; padding:27px 38px 30px; }
+  .intro { display:flex; align-items:end; justify-content:space-between; gap:20px; margin-bottom:25px; }
+  .eyebrow { color:var(--green); font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+  h1 { font:normal clamp(30px,3.2vw,44px)/1.15 Georgia,serif; letter-spacing:-1.5px; margin:9px 0 10px; }
+  .intro p { margin:0; color:var(--muted); }
+  .tools { display:flex; gap:7px; flex-wrap:wrap; }
+  .workspace { display:grid; grid-template-columns:minmax(0,1fr) 235px; gap:20px; align-items:start; }
+  .stage-card { padding:10px; border:1px solid #d5d6c9; border-radius:16px; background:#fffdf8; box-shadow:0 8px 30px #454f3a08; overflow:hidden; }
+  .stage { position:relative; aspect-ratio:1100/680; overflow:hidden; border-radius:9px; background:#f2e9d9; isolation:isolate; }
+  .room,.guides { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .guides { z-index:9000; opacity:0; transition:opacity .15s; }
+  .stage.show-guides .guides,.stage.dragging .guides { opacity:1; }
+  #surface-guide { position:absolute; border:2px dashed #718764; border-radius:50%; height:5%; background:#a4bd8620; pointer-events:none; opacity:0; z-index:9001; }
+  #surface-guide.visible { opacity:1; }
+  #surface-guide.active { border-style:solid; background:#b4cd9255; box-shadow:0 0 0 5px #fff8; }
+  .entity { position:absolute; padding:0; margin:0; border:0; border-radius:8px; background:none; min-height:0; transform:translate(-50%,-100%); touch-action:none; cursor:grab; overflow:visible; }
+  .entity:hover { background:none; border:none; }
+  .entity svg { display:block; width:100%; height:100%; overflow:visible; pointer-events:none; filter:drop-shadow(3px 4px 0 #78674525); }
+  .entity::before { content:""; position:absolute; width:70%; height:8%; left:15%; bottom:-2%; border-radius:50%; background:#624e3330; filter:blur(5px); z-index:-1; pointer-events:none; }
+  .entity[data-kind="picture"]::before { display:none; }
+  .entity.selected::after { content:""; position:absolute; inset:0; border:1.5px dashed #6a8163; border-radius:10px; pointer-events:none; }
+  .entity.grabbed { cursor:grabbing; }
+  .entity.grabbed svg { filter:drop-shadow(5px 8px 2px #78674535); }
+  .stage-note { position:absolute; left:3%; top:4%; font-size:10px; letter-spacing:1.5px; color:#7d816e; pointer-events:none; }
+  .caption { display:flex; justify-content:space-between; gap:12px; padding:11px 5px 2px; font-size:11px; color:var(--muted); }
+  .caption b { color:var(--green); font-weight:500; }
+  aside { border:1px solid var(--line); border-radius:13px; padding:20px; background:#f0f0e5; }
+  .mini-preview { height:95px; display:flex; justify-content:center; padding:6px; margin:15px 0 13px; }
+  .mini-preview svg { height:100%; width:100%; }
+  h2 { font:normal 25px Georgia,serif; margin:0 0 5px; }
+  .support { display:inline-flex; align-items:center; gap:7px; border-radius:20px; padding:5px 10px; background:#e1e8d5; color:#4a6342; font-size:11px; }
+  .support::before { content:""; width:5px; height:5px; background:#6a8857; border-radius:50%; }
+  .label { font-size:10px; letter-spacing:1.3px; text-transform:uppercase; color:var(--muted); margin:20px 0 7px; }
+  .chips { display:flex; gap:5px; }
+  .chip { font-size:11px; background:#fffaf0; border:1px solid #dcdccb; padding:3px 8px; border-radius:5px; }
+  .description { font-size:12px; color:#6c7363; min-height:55px; }
+  select { width:100%; background:#fffdf8; border:1px solid #d1d7c7; padding:10px; border-radius:7px; min-height:42px; }
+  .nudge { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin-top:9px; }
+  .nudge button { padding:5px; }
+  .nudge button:first-child { grid-column:2; }
+  .nudge button:nth-child(2) { grid-column:1; }
+  .small-note { font-size:10px; color:var(--muted); margin-top:12px; }
+  .status { margin-top:15px; min-height:27px; color:var(--green); font-size:12px; }
+  .ideas { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; padding-top:21px; }
+  .idea { display:flex; gap:12px; align-items:start; }
+  .number { color:#a4ad95; font:italic 25px Georgia,serif; }
+  .idea strong { font-size:12px; font-weight:600; }
+  .idea p { font-size:11px; color:var(--muted); margin:3px 0 0; }
+  footer { color:#929586; font-size:10px; margin-top:26px; letter-spacing:.3px; }
+  @media(max-width:1000px) { header { padding:18px 20px; } main { padding:20px; } .intro { align-items:start; flex-direction:column; } .workspace { grid-template-columns:minmax(0,1fr) 205px; gap:12px; } aside { padding:14px; } }
+  @media(max-width:700px) { .workspace { grid-template-columns:1fr; } aside { display:grid; grid-template-columns:90px 1fr; column-gap:15px; } .mini-preview { grid-column:1; grid-row:1/6; margin:0; height:115px; } aside .eyebrow { display:none; } h2,.support,.chips,.description { grid-column:2; } .support { justify-self:start; } aside .label { grid-column:1/-1; margin-top:10px; } select,.nudge,.small-note { grid-column:1/-1; } .description { min-height:0; margin:8px 0; } .ideas { gap:10px; } .brand span { display:none; } .caption { font-size:10px; } }
+  @media(prefers-reduced-motion:reduce) { * { transition:none!important; } }
+</style>
+</head>
+<body>
+<header><div class="brand">Paper rooms<span>A STAGE EXPERIMENT</span></div><span class="badge">standalone concept · 01</span></header>
+<main>
+  <section class="intro">
+    <div><div class="eyebrow">Make yourself at home</div><h1>A little room for your stories.</h1><p>Drag the paper pieces. Find a spot. See what happens.</p></div>
+    <div class="tools"><button id="add-lamp" class="primary">+ Lamp</button><button id="add-avatar">+ Doll</button><button id="undo" disabled>Undo</button><button id="reset">Reset room</button></div>
+  </section>
+  <div class="workspace">
+    <div>
+      <div class="stage-card">
+        <div id="stage" class="stage" role="group" aria-label="Paper room. Select objects and use arrow keys to move them.">
+          <svg class="room" viewBox="0 0 1100 680" aria-hidden="true">
+            <defs>
+              <pattern id="wall-grain" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#f1eddd"/><circle cx="2" cy="3" r=".5" fill="#d0cbb5" opacity=".4"/></pattern>
+              <pattern id="floor-grain" width="125" height="64" patternUnits="userSpaceOnUse" patternTransform="skewX(-12)"><rect width="125" height="64" fill="#d7ba94"/><path d="M0 0H125M0 64V0M18 20h59m-46 8h65" fill="none" stroke="#ad8c69" stroke-width="1" opacity=".25"/></pattern>
+              <linearGradient id="sun" x2="1" y2="1"><stop stop-color="#fffdf0" stop-opacity=".5"/><stop offset="1" stop-color="#fffdf0" stop-opacity="0"/></linearGradient>
+            </defs>
+            <rect width="1100" height="680" fill="url(#wall-grain)"/>
+            <path d="M0 280H1100V378H0Z" fill="#a9b69a"/><path d="M0 282H1100M0 360H1100" stroke="#809574" stroke-width="4"/>
+            <path d="M0 310H1100M65 286v73m125-73v73m125-73v73m125-73v73m125-73v73m125-73v73m125-73v73m125-73v73m125-73v73" stroke="#8c9f7c" stroke-width="2" opacity=".45"/>
+            <path d="M0 375H1100V680H0Z" fill="url(#floor-grain)"/>
+            <path d="M0 375H1100" stroke="#718666" stroke-width="7"/><path d="M0 382H1100" stroke="#eee6cd" stroke-width="3"/>
+            <path d="M100 383L0 680m250-297L205 680m245-297L465 680m135-297L730 680m20-297L1000 680m-900-235h1100M0 525h1100M0 625h1100" stroke="#ab8a66" stroke-width="1.5" opacity=".32"/>
+            <g transform="translate(90 83)"><rect x="-7" y="-7" width="184" height="195" rx="5" fill="#b4a28a" opacity=".2"/><rect width="170" height="182" rx="3" fill="#faf7e7" stroke="#c8b998" stroke-width="8"/><rect x="12" y="12" width="146" height="158" fill="#c7d9d2"/><path d="M12 124Q40 68 70 130Q108 83 158 123V170H12Z" fill="#a5b5a0"/><path d="M85 8v166M8 88h155" stroke="#faf7e7" stroke-width="8"/><path d="M0 181h175" stroke="#d6c7a8" stroke-width="10"/></g>
+            <path d="M104 262L349 382L701 662H187L107 375Z" fill="url(#sun)"/>
+            <g transform="translate(831 95) rotate(3)"><rect width="141" height="149" rx="2" fill="#c5aa80"/><rect x="8" y="8" width="125" height="133" fill="#f9f2db"/><path d="M25 117Q40 70 70 96Q92 48 117 117" fill="#a3b78e"/><circle cx="93" cy="40" r="15" fill="#d9ad69"/><path d="M25 118h91" stroke="#6c856b" stroke-width="2"/></g>
+            <ellipse cx="623" cy="557" rx="271" ry="81" fill="#b99576" opacity=".22"/>
+            <ellipse cx="623" cy="550" rx="270" ry="80" fill="#e2c1a3" stroke="#c29c7d" stroke-width="2"/><ellipse cx="623" cy="550" rx="248" ry="65" fill="none" stroke="#bd9678" stroke-width="2" stroke-dasharray="5 5"/>
+          </svg>
+          <svg class="guides" viewBox="0 0 1100 680" aria-hidden="true"><rect x="15" y="390" width="1070" height="275" rx="12" fill="#bad5a518" stroke="#657f61" stroke-width="2" stroke-dasharray="8 8"/><text x="30" y="650" font-family="system-ui" font-size="14" fill="#526d4c">FLOOR · feet and furniture bases stay here</text><rect x="300" y="70" width="420" height="220" rx="8" fill="#c4daaf15" stroke="#657f61" stroke-width="2" stroke-dasharray="8 8"/><text x="317" y="95" font-family="system-ui" font-size="13" fill="#526d4c">WALL</text></svg>
+          <div id="surface-guide" aria-hidden="true"></div><span class="stage-note">THE SUNLIT ROOM</span>
+        </div>
+        <div class="caption"><span><b>↕</b> Move a doll behind or in front of the table.</span><button id="guides" aria-pressed="false" style="min-height:24px;padding:0 7px;border:0;background:none;font-size:11px">Show placement guides</button></div>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite">Try moving the table — the lamp comes along.</div>
+    </div>
+    <aside aria-label="Selected object">
+      <div class="eyebrow">The paper piece</div><div class="mini-preview" id="preview" aria-hidden="true"></div><h2 id="name"></h2><div id="support" class="support"></div>
+      <div class="label">Can be placed on</div><div id="allowed" class="chips"></div><p id="description" class="description"></p>
+      <label class="label" for="destination">Place on…</label><select id="destination"></select>
+      <div class="label">Move a little</div><div class="nudge"><button data-dx="0" data-dy="-12" aria-label="Move selected object up">↑</button><button data-dx="-12" data-dy="0" aria-label="Move selected object left">←</button><button data-dx="0" data-dy="12" aria-label="Move selected object down">↓</button><button data-dx="12" data-dy="0" aria-label="Move selected object right">→</button></div>
+      <div class="small-note">Or use arrow keys on a selected piece.<br>Escape cancels a drag.</div>
+    </aside>
+  </div>
+  <section class="ideas" aria-label="Things to try"><div class="idea"><span class="number">01</span><div><strong>A floor you can feel.</strong><p>Furniture stays grounded. Dolls change depth as you move them.</p></div></div><div class="idea"><span class="number">02</span><div><strong>A table that holds things.</strong><p>Drag a lamp or vase onto the tabletop, then move the whole table.</p></div></div><div class="idea"><span class="number">03</span><div><strong>A wall for little treasures.</strong><p>The small flower picture stays on the wall. Try dragging it down.</p></div></div></section>
+  <footer>Concept sandbox · original prototype artwork · session-only changes · no connection to your saved studio</footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const W=1100,H=680;
+  const $=id=>document.getElementById(id);
+  const stage=$('stage');
+  const svg=(box,body)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${box}" aria-hidden="true">${body}</svg>`;
+  const art={
+    table:svg('0 0 280 230',`<g stroke="#755d43" stroke-width="3" stroke-linejoin="round"><path d="M36 77l-7 145h19L65 78m149 0 17 144h20L241 77" fill="#bb8e60"/><path d="M18 71v30q125 22 244 0V71" fill="#c59b70"/><path d="M35 38h210l30 39Q140 106 5 77Z" fill="#e4bd8b"/><path d="M15 76q130 27 250 0" fill="none" stroke="#f6dbb5"/><path d="M56 52h162m-148 10h168" stroke="#b78c64" stroke-width="1.5" opacity=".6"/></g>`),
+    lamp:svg('0 0 95 150',`<path d="M20 144q27-12 55 0" fill="#6d8467" stroke="#51624c" stroke-width="4"/><path d="M47 139V68" stroke="#8b724e" stroke-width="7"/><path d="M23 13h48l18 57Q47 82 6 70Z" fill="#e3b363" stroke="#94753e" stroke-width="2.5"/><path d="M34 15L26 72m28-57 8 59" stroke="#f5d394" stroke-width="3"/><path d="M70 76v16" stroke="#94753e" stroke-width="2"/><circle cx="70" cy="94" r="3" fill="#94753e"/>`),
+    vase:svg('0 0 80 130',`<g stroke="#697d54" stroke-width="3" fill="none"><path d="M39 91V19m0 41 21-23M39 75 20 51"/><path d="M39 42Q13 36 27 16Q43 23 39 42M48 53q20-31 27-13-5 20-27 13" fill="#99ad7b"/></g><g fill="#dca593" stroke="#b88070" stroke-width="2"><circle cx="39" cy="16" r="12"/><circle cx="22" cy="49" r="9"/></g><path d="M26 81h28l-3 12q25 32 2 34H27Q5 124 30 93Z" fill="#c2785c" stroke="#95573e" stroke-width="2.5"/><path d="M28 96h25" stroke="#e3ad87" stroke-width="3"/>`),
+    plant:svg('0 0 150 245',`<g stroke="#607a52" stroke-width="4"><path d="M73 182V56m0 109L35 86m40 58 42-54" fill="none"/><path d="M72 100Q18 72 29 32q57 0 43 68M74 143q4-70 61-75 18 40-61 75M71 163q-64-3-61-53 42-9 61 53M77 79q-4-57 41-72 33 48-41 72" fill="#8caa73"/></g><path d="M35 177h83l-14 61H50Z" fill="#c78969" stroke="#986947" stroke-width="3"/><ellipse cx="76" cy="178" rx="42" ry="8" fill="#b27557" stroke="#986947" stroke-width="3"/><path d="M53 190h49" stroke="#e2ac87" stroke-width="3"/>`),
+    chair:svg('0 0 200 220',`<g stroke="#637456" stroke-width="3" stroke-linejoin="round"><path d="M45 171l-6 41h17l10-41m73 0 7 41h17l-3-41" fill="#ad8c63" stroke="#856644"/><path d="M35 127V43Q35 12 100 14q65-2 65 29v84" fill="#95a882"/><path d="M51 120V49q45-16 98 0v71" fill="#b1bf9d"/><path d="M26 118q70-15 150 0v55H26Z" fill="#93a27a"/><path d="M42 123q56-14 116 0v24H42Z" fill="#c2cbaa"/><path d="M20 96h22v76H20m138-76h22v76h-22" fill="#b3c29a"/></g>`),
+    avatar:svg('0 0 145 310',`<g stroke="#6d5945" stroke-width="2.5" stroke-linejoin="round"><path d="M31 92q-13-51 12-74Q75-8 105 22q20 21 12 80" fill="#715344"/><path d="M63 186l-4 108h18l6-103m4-5 5 108h18l-4-108" fill="#e7b997"/><path d="M57 289h22v15H45q0-10 12-15m35 0h19l15 15H92Z" fill="#826d55"/><path d="M49 99l-22 74q-5 13-12 7-4-7 0-14l20-73m65 3 27 75q7 15-3 17-8-1-9-10L91 111" fill="#e7b997"/><path d="M49 89q23 13 49 0l15 100q-38 21-77 0Z" fill="#b2bd99"/><path d="M48 126h53l8 61q-31 13-66 0Z" fill="#d5dcc0"/><path d="M44 187q33 13 66 0" fill="none"/><path d="M65 71v25q12 10 21 0V71" fill="#e7b997"/><ellipse cx="74" cy="53" rx="29" ry="35" fill="#efc6a5"/><path d="M44 46Q36 5 73 11q42 0 35 35Q75 36 67 22q-4 22-23 24" fill="#715344"/><path d="M74 58v6" stroke="#c99376"/><path d="M67 71q8 6 16 0" fill="none" stroke-width="1.5"/><circle cx="61" cy="52" r="2" fill="#514636"/><circle cx="88" cy="52" r="2" fill="#514636"/><ellipse cx="55" cy="65" rx="6" ry="3" fill="#da9c87" stroke="none"/><ellipse cx="94" cy="65" rx="6" ry="3" fill="#da9c87" stroke="none"/><path d="M57 104v75m38-75v75" stroke="#869770" stroke-width="1.5"/></g>`),
+    picture:svg('0 0 105 120',`<rect x="4" y="4" width="97" height="112" rx="2" fill="#c99e70" stroke="#98734d" stroke-width="2"/><rect x="12" y="12" width="81" height="96" fill="#f8edcf"/><path d="M53 88V49m0 28-16-13m16 1 16-13" fill="none" stroke="#849767" stroke-width="3"/><path d="M35 92h35" stroke="#d3b88f" stroke-width="3"/><g fill="#d9a28a"><circle cx="53" cy="37" r="15"/><circle cx="37" cy="62" r="9"/><circle cx="69" cy="50" r="8"/></g><circle cx="53" cy="37" r="5" fill="#e8c770"/>`)
+  };
+  const definitions={
+    table:{name:'Oak table',w:280,h:230,allowed:['floor'],description:'A floor piece with a usable tabletop. Anything resting on it travels with it.'},
+    lamp:{name:'Little lamp',w:75,h:119,allowed:['floor','surface'],description:'A small paper prop. It can rest on the floor or snap onto the tabletop.'},
+    vase:{name:'Flower vase',w:64,h:104,allowed:['floor','surface'],description:'A little bunch of flowers. Try giving it a home on the table.'},
+    avatar:{name:'Paper doll',w:132,h:282,allowed:['floor'],description:'An upright paper character. Its feet determine whether it is in front or behind.'},
+    plant:{name:'Leafy plant',w:125,h:204,allowed:['floor'],description:'A floor-standing plant. Its base stays grounded while its leaves reach up.'},
+    chair:{name:'Sage armchair',w:190,h:209,allowed:['floor'],description:'A cardboard chair. Seating is a separate future interaction; this piece stays on the floor.'},
+    picture:{name:'Flower picture',w:98,h:112,allowed:['wall'],description:'A wall-mounted piece. It moves around the wall, never onto the floor.'}
+  };
+  const initial=[{id:'table',kind:'table',x:625,y:562},{id:'lamp',kind:'lamp',x:657,y:407,host:'table',dx:32,dy:-155},{id:'doll',kind:'avatar',x:349,y:550},{id:'plant',kind:'plant',x:175,y:510},{id:'chair',kind:'chair',x:910,y:548},{id:'vase',kind:'vase',x:820,y:620},{id:'picture',kind:'picture',x:495,y:240}];
+  let items=structuredClone(initial),selected='table',history=[],serial=0,drag=null,ignoreClickUntil=0;
+  const nodes=new Map();
+  const find=id=>items.find(item=>item.id===id);
+  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+  const snapshot=()=>structuredClone(items);
+  const changed=before=>JSON.stringify(before)!==JSON.stringify(items);
+  const say=message=>$('status').textContent=message;
+  function remember(before) { if(changed(before)) { history.push(before); if(history.length>30) history.shift(); } $('undo').disabled=!history.length; }
+  function syncChildren(host) { for(const child of items.filter(item=>item.host===host.id)) { child.x=host.x+child.dx; child.y=host.y+child.dy; } }
+  function floorPoint(item,x,y) {
+    const def=definitions[item.kind],children=items.filter(child=>child.host===item.id);
+    let minX=def.w/2+15,maxX=W-def.w/2-15,minY=Math.max(399,def.h+12),maxY=H-18;
+    for(const child of children) { const d=definitions[child.kind]; minX=Math.max(minX,15+d.w/2-child.dx); maxX=Math.min(maxX,W-15-d.w/2-child.dx); minY=Math.max(minY,d.h+12-child.dy); maxY=Math.min(maxY,H-18-child.dy); }
+    return {x:clamp(x,minX,maxX),y:clamp(y,minY,maxY)};
+  }
+  function onSurface(item,host,x,y) { item.host=host.id; item.dx=clamp(x-host.x,-100,100); item.dy=clamp(y-host.y,-164,-146); item.x=host.x+item.dx; item.y=host.y+item.dy; }
+  function place(item,x,y,transfer=false) {
+    const def=definitions[item.kind];
+    if(def.allowed.includes('wall')) { item.x=clamp(x,300+def.w/2,720-def.w/2); item.y=clamp(y,100+def.h,280); return; }
+    const current=item.host&&find(item.host);
+    const radius=24*W/stage.getBoundingClientRect().width;
+    const candidate=transfer&&def.allowed.includes('surface')&&items.find(host=>host.kind==='table'&&Math.abs(x-host.x)<=120+radius&&Math.abs(y-(host.y-155))<=12+radius);
+    if(candidate) { onSurface(item,candidate,x,y); return; }
+    if(current&&!transfer) { onSurface(item,current,x,y); return; }
+    delete item.host; delete item.dx; delete item.dy;
+    Object.assign(item,floorPoint(item,x,y)); syncChildren(item);
+  }
+  function surfaceGuide() {
+    const host=items.find(item=>item.kind==='table'),item=find(selected),guide=$('surface-guide');
+    if(!host||!item) return;
+    guide.style.left=(host.x-120)/W*100+'%'; guide.style.top=(host.y-173)/H*100+'%'; guide.style.width=240/W*100+'%';
+    guide.classList.toggle('visible',stage.classList.contains('show-guides')||!!drag&&definitions[item.kind].allowed.includes('surface'));
+    guide.classList.toggle('active',!!drag&&item.host===host.id);
+  }
+  function render() {
+    for(const [id,node] of nodes) if(!find(id)) { node.remove(); nodes.delete(id); }
+    for(const item of items) {
+      const def=definitions[item.kind]; let node=nodes.get(item.id);
+      if(!node) { node=document.createElement('button'); node.type='button'; node.className='entity'; node.dataset.id=item.id; node.dataset.kind=item.kind; node.innerHTML=art[item.kind]; stage.append(node); nodes.set(item.id,node); }
+      const host=item.host&&find(item.host),depth=host?host.y:item.y;
+      node.style.width=def.w/W*100+'%'; node.style.height=def.h/H*100+'%'; node.style.left=item.x/W*100+'%'; node.style.top=item.y/H*100+'%';
+      node.style.zIndex=item.kind==='picture'?20:Math.round(depth*10)+(host?2:0);
+      node.classList.toggle('selected',item.id===selected); node.classList.toggle('grabbed',drag?.id===item.id);
+      node.dataset.x=item.x; node.dataset.y=item.y; node.dataset.host=item.host||''; node.dataset.depth=depth;
+      node.dataset.placement=item.kind==='picture'?'wall':host?'surface':'floor';
+      node.setAttribute('aria-label',`${def.name}, ${host?'on oak table':item.kind==='picture'?'on wall':'on floor'}`); node.setAttribute('aria-pressed',String(item.id===selected));
+    }
+    surfaceGuide();
+  }
+  function inspector() {
+    const item=find(selected); if(!item) return; const def=definitions[item.kind];
+    $('preview').innerHTML=art[item.kind]; $('name').textContent=def.name;
+    $('support').textContent=item.host?'On oak table':item.kind==='picture'?'On wall':'On floor';
+    $('allowed').replaceChildren(...def.allowed.map(kind=>{const span=document.createElement('span');span.className='chip';span.textContent=kind==='surface'?'Furniture top':kind[0].toUpperCase()+kind.slice(1);return span;}));
+    $('description').textContent=def.description;
+    const choices=def.allowed.filter(kind=>kind!=='surface').map(kind=>[kind,kind==='floor'?'Room floor':'Room wall']);
+    if(def.allowed.includes('surface')) for(const host of items.filter(entry=>entry.kind==='table')) choices.push([host.id,'Oak table · tabletop']);
+    $('destination').replaceChildren(...choices.map(([value,name])=>new Option(name,value)));
+    $('destination').value=item.host||(item.kind==='picture'?'wall':'floor');
+  }
+  function select(id) { selected=id; render(); inspector(); }
+  function move(dx,dy) { const before=snapshot(),item=find(selected); place(item,item.x+dx,item.y+dy); remember(before); render(); inspector(); say(`${definitions[item.kind].name} moved${item.host?' on the tabletop':''}.`); }
+  function point(event) { const rect=stage.getBoundingClientRect(); return {x:(event.clientX-rect.left)*W/rect.width,y:(event.clientY-rect.top)*H/rect.height}; }
+  stage.addEventListener('pointerdown',event=>{
+    const node=event.target.closest('.entity'); if(!node||event.button!==0||drag) return;
+    select(node.dataset.id); const p=point(event),item=find(selected);
+    drag={id:item.id,pointerId:event.pointerId,before:snapshot(),offsetX:p.x-item.x,offsetY:p.y-item.y,startX:event.clientX,startY:event.clientY,moved:false};
+    node.setPointerCapture(event.pointerId); node.focus({preventScroll:true});
+  });
+  stage.addEventListener('pointermove',event=>{
+    if(!drag||event.pointerId!==drag.pointerId) return;
+    if(!drag.moved&&Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)<5) return;
+    drag.moved=true; const p=point(event),item=find(drag.id);
+    place(item,p.x-drag.offsetX,p.y-drag.offsetY,true); stage.classList.add('dragging'); render();
+  });
+  function finish(cancel=false) {
+    if(!drag) return; const session=drag; drag=null;
+    if(session.moved) ignoreClickUntil=performance.now()+250;
+    if(cancel) items=session.before; else remember(session.before);
+    stage.classList.remove('dragging'); render(); inspector();
+    const item=find(session.id); if(cancel) say('Move canceled. The room is back where you left it.'); else if(session.moved) say(item.host?'Placed on the oak table. Move the table to take it along.':item.kind==='table'?'Table moved. Its tabletop pieces came along.':item.kind==='picture'?'The picture stays on the wall.':'Placed on the floor. Depth follows the contact point.');
+    const node=nodes.get(session.id); if(node.hasPointerCapture(session.pointerId)) node.releasePointerCapture(session.pointerId);
+  }
+  stage.addEventListener('pointerup',event=>{if(event.pointerId===drag?.pointerId) finish();});
+  stage.addEventListener('pointercancel',event=>{if(event.pointerId===drag?.pointerId)finish(true);}); stage.addEventListener('lostpointercapture',event=>{if(event.pointerId===drag?.pointerId)finish(true);});
+  stage.addEventListener('click',event=>{const node=event.target.closest('.entity');if(node&&!drag&&performance.now()>ignoreClickUntil) select(node.dataset.id);});
+  stage.addEventListener('keydown',event=>{
+    if(event.key==='Escape') { finish(true); return; }
+    const direction={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
+    if(direction&&event.target.closest('.entity')) { event.preventDefault(); if(drag) return; selected=event.target.closest('.entity').dataset.id; move(direction[0]*(event.shiftKey?2:12),direction[1]*(event.shiftKey?2:12)); }
+  });
+  for(const button of document.querySelectorAll('.nudge button')) button.addEventListener('click',()=>{if(!drag) move(Number(button.dataset.dx),Number(button.dataset.dy));});
+  $('destination').addEventListener('change',()=>{
+    if(drag) finish(true); const before=snapshot(),item=find(selected),target=$('destination').value,host=find(target);
+    if(host) onSurface(item,host,host.x+35,host.y-155); else { delete item.host; delete item.dx; delete item.dy; place(item,item.x,target==='floor'?Math.max(560,item.y):item.y); }
+    remember(before); render(); inspector(); say(host?'Placed on the oak table.':'Placement updated.');
+  });
+  $('guides').addEventListener('click',()=>{ const visible=stage.classList.toggle('show-guides'); $('guides').setAttribute('aria-pressed',String(visible)); $('guides').textContent=visible?'Hide placement guides':'Show placement guides'; surfaceGuide(); });
+  $('undo').addEventListener('click',()=>{finish(true); if(!history.length)return; items=history.pop(); if(!find(selected))selected=items[0].id; $('undo').disabled=!history.length; render(); inspector(); say('Undone. Your previous arrangement is restored.');});
+  $('reset').addEventListener('click',()=>{finish(true); const before=snapshot(); items=structuredClone(initial); selected='table'; remember(before); render(); inspector(); say('A fresh little room. Try placing the vase on the table.');});
+  function add(kind) { finish(true); if(items.length>=16) {say('This little demo has room for 16 pieces. Reset to start again.');return;} const before=snapshot(),item={id:kind+'-'+(++serial),kind,x:460+(serial%4)*60,y:610}; items.push(item); selected=item.id; remember(before); render(); inspector(); say(`${definitions[kind].name} added. Drag it to find a home.`); }
+  $('add-lamp').addEventListener('click',()=>add('lamp')); $('add-avatar').addEventListener('click',()=>add('avatar'));
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)finish(true);}); window.addEventListener('blur',()=>finish(true)); window.addEventListener('resize',()=>{finish(true);surfaceGuide();});
+  render(); inspector();
+})();
+</script>
+</body>
+</html>

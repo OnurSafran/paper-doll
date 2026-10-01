@@ -77,7 +77,7 @@ All small project records live under `paperDollStudio.state`.
 
 ```json
 {
-  "schemaVersion": 6,
+  "schemaVersion": 8,
   "revision": 1,
   "savedAt": "2026-08-16T00:00:00.000Z",
   "settings": {
@@ -242,3 +242,45 @@ Derived thumbnails, DOM, SVG source, object URLs, pointer events, UI selection, 
 - Complex raster-to-vector auto-tracing
 - Persisted microphone/audio data
 - Automatic destructive cleanup of missing custom assets
+
+## Depth-aware room placement
+
+Room mode is available for Cozy bedroom, Creative atelier, and Cozy cafe. It
+constrains authored floor furniture, avatars, and wall art to valid destinations;
+items without placement metadata remain explicit free exceptions. New scenes
+start with room constraints on the supported default background. Background
+selection enables constraints automatically; there is no Room/Free toggle. A
+background change previews relocation before committing; unsupported backgrounds
+allow free placement.
+
+Select an item and use **Place on…** to choose the floor, wall, or a named compatible
+furniture surface. Dragging previews a legal contact area. Arrow nudges stay on
+the current support. The core cafe table provides a tabletop; the tea set, flower
+pot, cake, camera, and Family & Home reading lamp accept tabletop placement.
+Floor lamps and avatars cannot be placed on tables. Automatic depth applies in
+Room mode; Free collage retains manual layer ordering. Furnished hosts move,
+scale, and flip with supported props, through one scene command. Duplicate copies
+the host alone; **Duplicate with contents** copies its attached assembly.
+Duplicating a supported item keeps its support. Deleting its host moves unpinned
+contents to a valid floor contact when possible, or preserves them for recovery.
+
+In Paint, select Prop and **Placement**. Choose the destination, set the contact
+marker/base footprint, add a rectangle/oval/trapezoid, move or resize it, and test
+with a lamp. Surface names and numeric controls provide a keyboard alternative.
+Surfaces stay out of pixels and exports. Save validates their alignment with the
+final crop. Drawings with surfaces must remain floor-standing furniture. Paint
+undo/redo and draft recovery include placement metadata. Edit Copy carries it into
+the new drawing without changing existing furniture.
+
+Schema 8 projects and portable artwork include the new geometry and placements.
+The first startup clears all saves below version 8 or without a version, including
+artwork, drafts, backups, trash, and preferences. Old imports are rejected.
+Shrinking the panorama previews cut-off items, including attached contents, and
+asks how many will be removed with **Yes / Cancel**. Cancel leaves the scene
+unchanged; Yes commits one undoable change. Expanding or a safe shrink needs no
+prompt. Pinning does not preserve items outside a confirmed smaller stage.
+Unavailable or invalid support preserves the item at its last position and labels
+it for recovery. The first release retains flat cutout art, fixed scale, and
+static furniture: seated poses, nested supports, and partial furniture occlusion
+remain deferred. Moderated child-user and physical iPad testing are release checks
+and have not been performed by automated tests.

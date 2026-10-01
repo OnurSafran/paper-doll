@@ -37,7 +37,7 @@ js/domain/scene-templates.js         curated storytelling starters
 js/domain/world-map-catalog.js       biomes, landmarks, and souvenir stamp catalog
 js/core/app-store.js                 commands, subscriptions, history, prefix routing
 js/core/reducers/                    pure domain slice reducers and payload validation
-js/core/state-schema.js              validation and migration
+js/core/state-schema.js              validation and version-boundary reset
 js/core/asset-catalog.js             catalog lookup and discovery filtering
 js/core/asset-registry.js            unified built-in and custom descriptors
 js/core/preview-viewboxes.js         shared slot preview viewBoxes
@@ -74,7 +74,7 @@ js/types.js                          JSDoc type definitions for AppState, SceneR
 
 ```javascript
 {
-  schemaVersion: 6,
+  schemaVersion: 8,
   revision: 1,
   settings: { reducedMotion: 'system', soundEnabled: false, stamps: [], unlockedBackgrounds: [] },
   customAssets: [],
@@ -290,3 +290,51 @@ Subsequent work follows the dependency rules above rather than this sequence. Th
 Play, Paint, and application entry modules compose focused controllers below 500 lines each. State used by one controller stays local; explicitly injected callbacks and live getter/setter ports preserve shared render tokens and replaceable Paint sessions. Existing public view APIs remain stable.
 
 PNG export uses one scene renderer for both paths: normal canvas operations or a recorded draw list. When Worker, OffscreenCanvas, and ImageBitmap are available, the worker owns stage composition and PNG encoding. SVG DOM construction and image compatibility decoding still run on the main thread. Export keeps one immutable snapshot and one in-flight lock; worker failure falls back to the established canvas path, while cancellation terminates the worker and skips fallback. Bitmap copies close on every exit. Worker and direct SVG drawing can differ slightly at rasterized edges.
+
+## Room placement and custom support authoring
+
+Schema 8 is the Paper Stage clean-start boundary (D-050). Saves below version 8,
+unversioned saves, and unreadable JSON reset the full project, preferences, and
+all IndexedDB stores before views or draft recovery open. No legacy migrations
+remain. The new version is written only after reset succeeds; failures show a
+reload dialog and retry next startup. Incompatible imports/backups are rejected.
+`SceneRecord.placementMode` is internal state: background profiles enable room
+constraints automatically, with free placement on unprofiled backgrounds. There
+is no user mode toggle. Assets store `placementRules`/`supportSurfaces`; entities
+store `placement`. New scenes use the supported bedroom background. Bedroom, atelier, and cafe
+profiles describe their own visible wall/floor seam; background layout repeats
+and mirrors their region polygons across panoramic stages.
+
+`domain/placement-geometry.js` validates convex geometry, insets support polygons
+by contact footprints, intersects full-stage visual bounds, and resolves the
+nearest legal contact point. `domain/scene-placement.js` owns target selection,
+projection/inverse projection, support-relative updates, recovery, and derived
+render ordering. Surface children use the existing `attachedTo` relationship;
+`placement.localPoint` is authoritative and absolute coordinates/offsets are
+compatibility outputs. Invalid support is detached into a visible free exception
+at the last position, never silently reattached on asset restoration.
+
+Play pointer previews and the native Place on chooser share these rules. Nudges
+remain on the current support; pointer drags may transfer. Hosts carry children
+when moved, scaled, and flipped. Ordinary Duplicate copies a host alone;
+Duplicate with contents remaps the entire assembly. Supported-child duplicates
+stay on their original surface. Invalid transforms reject the whole
+operation. Surface-child pinning is relative to its host. Room ordering groups
+furniture and supported props by the host's floor contact, puts rugs below upright
+items, and keeps speech/caption overlays above the scene. Play, Scene Book, direct
+PNG export, and worker export share ordering and contact-shadow geometry.
+
+Paint's `paint-placement-controller.js` owns an SVG metadata overlay outside the
+raster. Rectangle, oval (16 vertices), and trapezoid presets use full-drawing
+normalized coordinates while editing. The save service transforms anchors,
+footprints, and surface vertices through the actual transparent-margin crop;
+invalid geometry prevents saving. Lightweight metadata entries interleave with
+raster snapshots in the same Paint undo sequence. Drafts preserve geometry;
+Edit Copy preserves saved support metadata. Existing unconfigured artwork stays
+free. Host drawings can provide up to four surfaces and must allow Floor only.
+
+`domain/stage-sizing.js` previews panorama shrink as removal of complete cut-off
+assemblies. The UI confirms the exact item count with Yes/Cancel; the reducer
+rejects unconfirmed removals. Confirmed size/removal/camera/selection changes are
+one undo step. Safe retained contacts are reassigned to the new background tile
+regions without moving them; stale dialog approvals cannot change a newer scene.

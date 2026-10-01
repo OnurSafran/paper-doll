@@ -253,9 +253,6 @@
   .doll-canvas {
     width: min(85%, 340px);
   }
-  .context-ring {
-    max-width: calc(100vw - 32px);
-  }
   .scene-help {
     display: none;
   }

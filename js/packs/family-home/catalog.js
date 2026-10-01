@@ -2249,6 +2249,7 @@ export const FAMILY_ASSETS = [
   },
   {
     "id": "fh_reading_lamp",
+    "placementRules": { "allowedTargets": ["floor", "surface"], "tags": ["small-prop"], "contactFootprint": { "width": 0.25, "depth": 0.02 }, "renderClass": "upright" },
     "kind": "prop",
     "name": "Reading lamp",
     "nameKey": "pack_family_home.assets.fh_reading_lamp",

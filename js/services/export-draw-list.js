@@ -17,7 +17,7 @@ export function createExportDrawList() {
       commands.push(['drawImage', indices.get(image), ...args]);
     }
   };
-  for (const name of ['save', 'restore', 'translate', 'rotate', 'scale', 'fillRect', 'strokeRect', 'setLineDash', 'fillText']) {
+  for (const name of ['beginPath', 'ellipse', 'fill', 'save', 'restore', 'translate', 'rotate', 'scale', 'fillRect', 'strokeRect', 'setLineDash', 'fillText']) {
     context[name] = (...args) => commands.push([name, ...args]);
   }
   for (const name of ['fillStyle', 'strokeStyle', 'lineWidth', 'font', 'textAlign', 'textBaseline']) {

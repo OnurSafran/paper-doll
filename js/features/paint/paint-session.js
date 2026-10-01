@@ -1,3 +1,4 @@
+import { defaultPaintPlacement, validatePaintPlacement } from './paint-placement-model.js';
 /**
  * Custom Paint Studio — Paint Session & History Management
  * Manages tool selection, colors, brush sizing, mirror toggles,
@@ -90,6 +91,8 @@ export function createPaintSession(initialState = {}) {
       : 50,
     guidesVisible: initialState.guidesVisible !== false,
     cutoutReferenceVisible: initialState.cutoutReferenceVisible !== false,
+    placementMode: 'draw',
+    placementMetadata: initialState.placementMetadata === null ? null : validatePaintPlacement(initialState.placementMetadata) ? { ...validatePaintPlacement(initialState.placementMetadata), anchorAuthored: Boolean(initialState.placementMetadata.anchorAuthored), footprintAuthored: Boolean(initialState.placementMetadata.footprintAuthored) } : defaultPaintPlacement(),
     propSize: ['small', 'medium', 'large'].includes(initialState.propSize) ? initialState.propSize : 'medium',
     propPlacement: ['surface', 'hang'].includes(initialState.propPlacement) ? initialState.propPlacement : 'surface',
     tool: ['brush', 'eraser', 'fill', 'shape', 'select', 'eyedropper'].includes(initialState.tool) ? initialState.tool : 'brush',
@@ -131,7 +134,20 @@ export function createPaintSession(initialState = {}) {
   }
 
   function getState() {
-    return { ...state };
+    return { ...state, placementMetadata: state.placementMetadata ? globalThis.structuredClone(state.placementMetadata) : null };
+  }
+
+  function setPlacementMode(mode) {
+    if (['draw', 'placement'].includes(mode)) state = { ...state, placementMode: mode };
+  }
+  function setPlacementMetadata(metadata) {
+    const validated = validatePaintPlacement(metadata);
+    if (!validated || state.itemType !== 'prop') return false;
+    const next = { ...validated, anchorAuthored: Boolean(metadata.anchorAuthored), footprintAuthored: Boolean(metadata.footprintAuthored) };
+    if (JSON.stringify(next) === JSON.stringify(state.placementMetadata)) return false;
+    pushHistory({ placementMetadata: state.placementMetadata ? globalThis.structuredClone(state.placementMetadata) : null });
+    state = { ...state, placementMetadata: next, dirty: true };
+    return true;
   }
 
   function setTool(tool) {
@@ -215,7 +231,7 @@ export function createPaintSession(initialState = {}) {
   function setPropSize(propSize) {
     if (['small', 'medium', 'large'].includes(propSize)) {
       if (state.propSize === propSize) return;
-      metadataDirty = true;
+      pushHistory({ propSize: state.propSize });
       state = { ...state, propSize, dirty: true };
     }
   }
@@ -276,6 +292,8 @@ export function createPaintSession(initialState = {}) {
       historyBytes += snapshotBytes(currentImageData);
     }
     const previous = undoStack.pop();
+    if (Object.hasOwn(previous, 'propSize')) state = { ...state, propSize: previous.propSize };
+    if (Object.hasOwn(previous, 'placementMetadata')) state = { ...state, placementMetadata: previous.placementMetadata ? globalThis.structuredClone(previous.placementMetadata) : null };
     historyBytes -= snapshotBytes(previous);
     trimHistory();
     state = { ...state, dirty: metadataDirty || undoStack.length > 0 || redoStack.length > 0 };
@@ -289,6 +307,8 @@ export function createPaintSession(initialState = {}) {
       historyBytes += snapshotBytes(currentImageData);
     }
     const next = redoStack.pop();
+    if (Object.hasOwn(next, 'propSize')) state = { ...state, propSize: next.propSize };
+    if (Object.hasOwn(next, 'placementMetadata')) state = { ...state, placementMetadata: next.placementMetadata ? globalThis.structuredClone(next.placementMetadata) : null };
     historyBytes -= snapshotBytes(next);
     trimHistory();
     state = { ...state, dirty: true };
@@ -322,6 +342,8 @@ export function createPaintSession(initialState = {}) {
     setColor,
     toggleMirror,
     setZoom,
+    setPlacementMode,
+    setPlacementMetadata,
     setPropSize,
     setPropPlacement,
     setName,

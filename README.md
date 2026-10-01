@@ -40,6 +40,8 @@ These are the canonical project documents:
 
 Dated audits are non-canonical history under [`review/`](review/). If a review conflicts with a canonical document, the canonical document wins.
 
+Proposed feature designs include [Paper Stage Depth & Furniture Surface Placement](docs/PRD-DEPTH-AND-SURFACE-PLACEMENT.md), covering room depth, floor/wall constraints, and objects placed on furniture.
+
 ## Run and validate
 
 Serve through HTTP rather than opening `index.html` directly:
@@ -74,3 +76,5 @@ Release requires the correctness blockers in [ROADMAP.md](docs/ROADMAP.md) to be
 ### Family & Home Stories
 
 The bundled development build adds 48 wearables, 40 props, four settings, six starter scenes, 12 bilingual prompts and eight outfit recipes. Choose the pack in Designer or Play, load a family outfit, or open Templates for a story. See [implementation and ledger](docs/FAMILY-HOME-IMPLEMENTATION.md) and the [independent QA prompt](docs/FAMILY-HOME-QA-PROMPT.md). Physical iPad/offline and complete export/pose checks remain release gates.
+
+Room placement is implemented for the core bedroom, atelier, and cafe: floor/wall constraints, tabletop support, automatic depth, and custom drawing surfaces. See [the implementation contract](docs/ARCHITECTURE.md#room-placement-and-custom-support-authoring) and [feature usage](docs/PROJECT.md#depth-aware-room-placement).

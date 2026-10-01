@@ -251,7 +251,7 @@ test('project portability packages and validates custom hair Base64 artwork and 
     formatVersion: 1,
     exportedAt: '2026-08-17T12:00:00.000Z',
     state: {
-      schemaVersion: 4,
+      schemaVersion: 8,
       presets: [{
         presetId: 'doll-with-custom-hair',
         name: 'Hairstyle Doll',

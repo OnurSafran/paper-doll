@@ -329,7 +329,7 @@ test('panoramic stages and camera navigation expose accessible HUD, slider, mini
   assert.match(css, /\.minimap-lens\s*{/);
 
   // JS wiring & Reducers
-  assert.match(playJs, /scene\/setStageWidth/);
+  assert.match(playJs, /confirmStageSize/);
   assert.match(playJs, /scene\/setCameraX/);
   assert.match(playJs, /scene\/panCamera/);
   assert.match(playJs, /CAMERA_CONSTANTS\.EDGE_ZONE/);

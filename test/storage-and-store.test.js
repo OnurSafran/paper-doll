@@ -25,21 +25,23 @@ test('invalid child presets are skipped without discarding valid sections', () =
   assert.equal(result.warnings.length, 1);
 });
 
-test('malformed JSON loads safe defaults', () => {
+test('malformed JSON requests a clean data reset', () => {
   const storage = memoryStorage({ [STORAGE_KEY]: '{broken' });
   const result = loadEnvelope(storage, getAsset);
-  assert.equal(result.envelope.schemaVersion, 6);
-  assert.equal(result.available, false);
-  assert.match(result.warnings[0], /could not be read/);
-  assert.equal([...storage.data.keys()].some((key) => key.startsWith('paperDollStudio.quarantine.')), true);
+  assert.equal(result.envelope.schemaVersion, 8);
+  assert.equal(result.available, true);
+  assert.equal(result.resetRequired, true);
+  assert.match(result.warnings[0], /clean start/);
+  assert.equal([...storage.data.keys()].some((key) => key.startsWith('paperDollStudio.quarantine.')), false);
 });
 
-test('version 1 data migrates to version 6 without losing presets', () => {
+test('version 1 data is discarded instead of migrated', () => {
   const legacy = createDefaultEnvelope();
   legacy.schemaVersion = 1;
   const result = sanitizeEnvelope(legacy, getAsset);
-  assert.equal(result.envelope.schemaVersion, 6);
-  assert.match(result.warnings[0], /upgraded/);
+  assert.equal(result.envelope.schemaVersion, 8);
+  assert.equal(result.resetRequired, true);
+  assert.deepEqual(result.envelope.presets, []);
 });
 
 test('only a pristine runtime receives the first-run sample scene', () => {
@@ -552,7 +554,7 @@ test('invalid or unknown expressions safely fallback to neutral', () => {
 
   // Invalid expression in raw envelope sanitizes to default 'neutral'
   const rawEnvelope = {
-    schemaVersion: 2,
+    schemaVersion: 8,
     savedAt: new Date(0).toISOString(),
     settings: { reducedMotion: 'system', soundEnabled: false },
     presets: [{
@@ -603,7 +605,7 @@ test('sanitizeScene preserves valid createdAt timestamps', () => {
     updatedAt: updatedStamp,
     entities: []
   };
-  const sanitized = sanitizeEnvelope({ schemaVersion: 2, scenes: [candidate], presets: [] }, getAsset);
+  const sanitized = sanitizeEnvelope({ schemaVersion: 8, scenes: [candidate], presets: [] }, getAsset);
   assert.equal(sanitized.envelope.scenes[0].createdAt, createdStamp);
   assert.equal(sanitized.envelope.scenes[0].updatedAt, updatedStamp);
 });

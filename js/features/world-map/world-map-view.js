@@ -1,3 +1,4 @@
+import { confirmBackgroundPlacement } from '../play/background-placement-confirm.js';
 /**
  * The Papercraft World Map (Diyar Haritası) View Controller
  * Manages the unfolding map modal, the pannable wide-canvas camera, interactive
@@ -45,7 +46,8 @@ export function createWorldMapView({
   $$,
   renderDollInto,
   customArtRepo,
-  getAsset
+  getAsset,
+  askConfirm
 }) {
   const paperAudio = createPaperAudio(() => Boolean(store?.getState()?.settings?.soundEnabled));
   let selectedLandmarkId = null;
@@ -724,19 +726,17 @@ export function createWorldMapView({
    * Travels to selected landmark: plays page turn sound and dispatches background change.
    * Note: play-view.js reactively observes background changes and runs the stage page-turn curl.
    */
-  function travelToLandmark(landmark) {
+  async function travelToLandmark(landmark) {
     if (!landmark || !landmark.backgroundId) return;
     // Defence in depth: the dock hides the button for locked realms, but never
     // let a stray call travel somewhere the player has not unlocked.
     if (!isLandmarkUnlocked(landmark, getSettings())) return;
 
+    if (askConfirm) {
+      if (!await confirmBackgroundPlacement({ store, getAsset, askConfirm }, landmark.backgroundId)) return;
+    } else store.dispatch({ type: 'scene/setBackground', backgroundId: landmark.backgroundId });
     paperAudio.playPageTurn();
     closeWorldMapDialog();
-
-    store.dispatch({
-      type: 'scene/setBackground',
-      backgroundId: landmark.backgroundId
-    });
   }
 
   /**

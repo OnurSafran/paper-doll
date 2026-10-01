@@ -94,6 +94,7 @@ export function createPaintCanvasController(context) {
   }
 
   function handlePointerDown(e) {
+    if (context.session.getState().placementMode === 'placement') return;
     if (e.button !== 0 && e.pointerType === 'mouse') return;
     if (e.pointerType === 'pen') lastPenAt = performance.now();
     if (e.pointerType === 'touch') {
@@ -341,10 +342,11 @@ export function createPaintCanvasController(context) {
 
   function handleUndo() {
     if (!context.session.canUndo()) return;
-    const current = captureHistorySnapshot(context.ctx, context.session.peekUndo());
+    const entry = context.session.peekUndo();
+    const current = Object.hasOwn(entry, 'propSize') ? { propSize: context.session.getState().propSize } : Object.hasOwn(entry, 'placementMetadata') ? { placementMetadata: context.session.getState().placementMetadata } : captureHistorySnapshot(context.ctx, entry);
     const prev = context.session.undo(current);
     if (prev) {
-      restoreHistorySnapshot(context.ctx, prev);
+      if (!Object.hasOwn(prev, 'placementMetadata') && !Object.hasOwn(prev, 'propSize')) restoreHistorySnapshot(context.ctx, prev);
       updateHistoryButtons();
       context.updateUIFromState();
       context.announceStatus(t('paint.undoAnnouncement'));
@@ -355,10 +357,11 @@ export function createPaintCanvasController(context) {
 
   function handleRedo() {
     if (!context.session.canRedo()) return;
-    const current = captureHistorySnapshot(context.ctx, context.session.peekRedo());
+    const entry = context.session.peekRedo();
+    const current = Object.hasOwn(entry, 'propSize') ? { propSize: context.session.getState().propSize } : Object.hasOwn(entry, 'placementMetadata') ? { placementMetadata: context.session.getState().placementMetadata } : captureHistorySnapshot(context.ctx, entry);
     const next = context.session.redo(current);
     if (next) {
-      restoreHistorySnapshot(context.ctx, next);
+      if (!Object.hasOwn(next, 'placementMetadata') && !Object.hasOwn(next, 'propSize')) restoreHistorySnapshot(context.ctx, next);
       updateHistoryButtons();
       context.updateUIFromState();
       context.announceStatus(t('paint.redoAnnouncement'));

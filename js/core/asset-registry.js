@@ -51,6 +51,7 @@ export function customAssetToDescriptor(asset) {
       format: 'image/png',
       displayWidth: asset.displayWidth || 240,
       displayHeight: asset.displayHeight || 240,
+      ...(asset.placementRules ? { placementRules: globalThis.structuredClone(asset.placementRules), supportSurfaces: globalThis.structuredClone(asset.supportSurfaces || []) } : {}),
       groundAnchor: Object.freeze(asset.groundAnchor ? { ...asset.groundAnchor } : { x: 0.5, y: 1.0 }),
       viewBox: [0, 0, 1000, 1000],
       defaultScale: 1,

@@ -1,3 +1,4 @@
+import { orderedSceneEntities } from '../../domain/scene-placement.js';
 /**
  * Scene Outline Feature Module
  * Provides an accessible keyboard-navigable list and inspector for active scene entities,
@@ -40,7 +41,7 @@ export function createSceneOutlineView({
     }
 
     // Sort descending by order so top layer appears first
-    const sorted = [...entities].sort((a, b) => b.order - a.order);
+    const sorted = orderedSceneEntities(state.currentScene, id => { const custom = state.customAssets?.find(a => a.assetId === id); return custom || getAsset(id); }).reverse();
     const selectedSet = new Set(state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []));
 
     const rows = sorted.map((entity) => {
@@ -90,7 +91,7 @@ export function createSceneOutlineView({
       const orderText = t('sceneOutlineDialog.layerOrder', { order: entity.order });
       const attachedText = entity.attachedTo ? ` · ${t('sceneOutlineDialog.attached')}` : '';
       const pinnedText = entity.pinned ? ` · ${t('sceneOutlineDialog.pinned')}` : '';
-      meta.textContent = `${orderText}${attachedText}${pinnedText}`;
+      meta.textContent = `${orderText}${attachedText}${pinnedText}${entity.placement ? ` · ${t(entity.placement.kind === 'surface' ? 'placement.onSurface' : entity.placement.kind === 'floor' ? 'placement.onFloor' : entity.placement.kind === 'wall' ? 'placement.onWall' : 'placement.free')}` : ''}`;
 
       info.append(title, meta);
 
@@ -106,6 +107,8 @@ export function createSceneOutlineView({
         store.dispatch({ type: 'scene/reorderEntity', instanceId: entity.instanceId, direction: -1 });
       });
 
+      upBtn.disabled = downBtn.disabled = state.currentScene.placementMode === 'room';
+      if (state.currentScene.placementMode === 'room') upBtn.title = downBtn.title = t('placement.depthAuto');
       const pinBtn = miniButton(entity.pinned ? '📌' : '📍', entity.pinned ? t('play.pinned') : t('play.pin'), () => {
         store.dispatch({ type: 'scene/togglePin', instanceId: entity.instanceId });
       });

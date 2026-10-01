@@ -1,10 +1,14 @@
+import { confirmBackgroundPlacement } from './features/play/background-placement-confirm.js';
 /** Scene dialogs, animation controls, and image export actions. */
 import { enableDialogFocusRestoration, enableDialogLightDismiss } from './core/dialog-dismiss.js';
 import { t } from './core/i18n.js';
 
 export function createAppSceneControls(context) {
   function wireSceneEvents() {
-    context.$('#background-select').addEventListener('change', (event) => context.store.dispatch({ type: 'scene/setBackground', backgroundId: event.target.value }));
+    context.$('#background-select').addEventListener('change', async (event) => {
+      const accepted = await confirmBackgroundPlacement(context, event.target.value);
+      if (!accepted) event.target.value = context.store.getState().currentScene.backgroundId;
+    });
     context.$('#new-scene').addEventListener('click', async () => {
       const hasItems = context.store.getState().currentScene.entities.length > 0;
       if (!hasItems || await context.askConfirm(t('play.newSceneTitle'), t('play.newSceneMessage'))) {

@@ -8,77 +8,19 @@ import {
   sanitizeEnvelope,
   SCHEMA_VERSION
 } from '../js/core/state-schema.js';
-import {
-  DEFAULT_EXPRESSION_INTENSITY,
-  DEFAULT_MOTION_CLIP_ID,
-  DEFAULT_MOTION_INTENSITY,
-  DEFAULT_PHASE_OFFSET,
-  DEFAULT_STATIC_POSE
-} from '../js/domain/vocabulary.js';
 
-test('state schema version is bumped to 6 and envelope defaults are valid', () => {
-  assert.equal(SCHEMA_VERSION, 6);
+test('state schema version is bumped to 8 and envelope defaults are valid', () => {
+  assert.equal(SCHEMA_VERSION, 8);
   const envelope = createDefaultEnvelope();
-  assert.equal(envelope.schemaVersion, 6);
+  assert.equal(envelope.schemaVersion, 8);
 });
 
-test('state schema migrates version 4 envelope to version 6 with safe animation defaults', () => {
-  const v4Envelope = {
-    schemaVersion: 4,
-    revision: 1,
-    savedAt: '2026-08-19T10:00:00.000Z',
-    settings: { reducedMotion: 'system', soundEnabled: false },
-    customAssets: [],
-    presets: [],
-    scenes: [
-      {
-        sceneId: 'scene_old_1',
-        title: 'Old Scene',
-        backgroundId: 'bg_bedroom',
-        stageWidth: 1600,
-        entities: [
-          {
-            instanceId: 'char_1',
-            kind: 'character',
-            sourceId: 'demo_emma',
-            characterSnapshot: {
-              baseDollId: 'doll_classic_a',
-              skinTone: 'peach',
-              face: { eyes: { assetId: 'face_eyes_classic_a', irisColor: 'cocoa' } },
-              slots: {}
-            },
-            x: 800,
-            y: 720,
-            scale: 1,
-            flipped: false,
-            pinned: false,
-            order: 1
-          }
-        ]
-      }
-    ],
-    currentScene: null
-  };
-
-  const { envelope, warnings, migrated } = sanitizeEnvelope(v4Envelope);
-  assert.equal(envelope.schemaVersion, 6);
-  assert.equal(migrated, true);
-  assert.ok(warnings.some((w) => w.includes('upgraded to character animation and pose schema')));
-
-  const scene = envelope.scenes[0];
-  assert.ok(scene.animationSettings);
-  assert.equal(scene.animationSettings.enabled, false);
-  assert.equal(scene.animationSettings.loop, true);
-
-  const char = scene.entities[0];
-  assert.equal(char.expressionIntensity, DEFAULT_EXPRESSION_INTENSITY);
-  assert.equal(char.pose, DEFAULT_STATIC_POSE);
-  assert.deepEqual(char.animation, {
-    clipId: DEFAULT_MOTION_CLIP_ID,
-    enabled: false,
-    intensity: DEFAULT_MOTION_INTENSITY,
-    phaseOffset: DEFAULT_PHASE_OFFSET
-  });
+test('older animation saves are discarded at the paper-stage boundary', () => {
+  const result = sanitizeEnvelope({ schemaVersion: 4, scenes: [{ sceneId: 'old', entities: [] }] });
+  assert.equal(result.envelope.schemaVersion, 8);
+  assert.equal(result.resetRequired, true);
+  assert.equal(result.migrated, false);
+  assert.deepEqual(result.envelope.scenes, []);
 });
 
 test('AppStore handles animation, pose, and expression intensity actions with undo and redo', () => {

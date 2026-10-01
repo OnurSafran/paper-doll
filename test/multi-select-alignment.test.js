@@ -322,7 +322,7 @@ test('duplicateCurrentToLibrary assigns fresh entity instance IDs to cloned libr
 
 test('Scene and project replacement actions clear both single and multi-selection state', () => {
   const store = createAppStore({
-    schemaVersion: 2,
+    schemaVersion: 8,
     presets: [{ presetId: 'doll_a', name: 'Doll A', slots: {} }],
     scenes: [{
       sceneId: 'lib-scene-1',
@@ -359,7 +359,7 @@ test('Scene and project replacement actions clear both single and multi-selectio
   store.dispatch({
     type: 'project/importReplace',
     envelope: {
-      schemaVersion: 2,
+      schemaVersion: 8,
       presets: [],
       scenes: [],
       currentScene: { sceneId: 'imported-scene', title: 'Imported', backgroundId: 'bg_park', entities: [] }
@@ -372,7 +372,7 @@ test('Scene and project replacement actions clear both single and multi-selectio
   store.dispatch({
     type: 'project/restoreBackup',
     envelope: {
-      schemaVersion: 2,
+      schemaVersion: 8,
       presets: [],
       scenes: [],
       currentScene: { sceneId: 'restored-scene', title: 'Restored', backgroundId: 'bg_park', entities: [] }

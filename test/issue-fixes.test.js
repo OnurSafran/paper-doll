@@ -177,9 +177,10 @@ test('Issue 1: Scene entity positioner and visual use dynamic anchor variables i
   assert.match(css, /\.scene-custom-prop-img/);
 });
 
-test('Issue 2: Selection cancel/delete and deselect buttons exist in HTML, JS, and i18n', () => {
+test('Issue 2: Selection tools retain paint actions and use a trash icon without a HUD deselect button', () => {
   // HTML / JS elements
-  assert.match(playJs, /'deselect'/);
+  assert.doesNotMatch(playJs, /deselect-btn/);
+  assert.match(playJs, /<svg viewBox="0 0 24 24"/);
   assert.match(html, /id="paint-selection-options"/);
   assert.match(html, /id="paint-selection-delete-btn"/);
   assert.match(html, /id="paint-selection-cancel-btn"/);
@@ -206,8 +207,8 @@ test('Issue 2: Selection cancel/delete and deselect buttons exist in HTML, JS, a
   assert.match(paintJs, /selectionFlipBtn/);
   assert.match(paintJs, /selectionDuplicateBtn/);
 
-  // Play view deselect handling
-  assert.match(playJs, /action === 'deselect'/);
+  // Clearing selection remains available by clicking the stage background.
+  assert.match(playJs, /onDeselect/);
 });
 
 test('Issue 3: Play inspector panel exists below stage and contains expression and bubble controls', () => {

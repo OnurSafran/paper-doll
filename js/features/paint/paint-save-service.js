@@ -1,3 +1,4 @@
+import { cropPaintPlacement } from './paint-placement-model.js';
 /**
  * Custom Paint Studio — save, draft checkpoint, and draft recovery flows.
  */
@@ -17,6 +18,7 @@ export function createPaintSaveService({
   getCanvasState = undefined,
   resetCanvas = undefined,
   updateLivePreview = undefined,
+  onStateChanged = undefined,
   announceStatus = undefined
 } = {}) {
   const doc = rootElement?.ownerDocument || (typeof document !== 'undefined' ? document : rootElement);
@@ -70,6 +72,7 @@ export function createPaintSaveService({
         cutoutAssetId: state.cutoutAssetId,
         propSize: state.propSize,
         propPlacement: state.propPlacement,
+        placementMetadata: state.placementMetadata,
         name: state.name
       });
     } catch (err) {
@@ -189,6 +192,8 @@ export function createPaintSaveService({
         customMetadata.supportedFitFamilies = [...FIT_FAMILIES];
         customMetadata.presentationStyles = ['neutral'];
       } else {
+        if (session.placementMetadata?.supportSurfaces?.length && propBounds?.empty) throw new Error(t('placement.emptyDrawing'));
+        const placement = cropPaintPlacement(session.placementMetadata, propBounds?.empty ? { x: 0, y: 0, width: canvas.width, height: canvas.height } : propBounds, canvas.width, canvas.height);
         const bounds = propBounds || { aspectRatio: 1, empty: true };
         const dims = calculatePropDisplayDimensions(bounds.aspectRatio, session.propSize);
         customMetadata.displayWidth = dims.displayWidth;
@@ -196,6 +201,7 @@ export function createPaintSaveService({
         customMetadata.groundAnchor = session.propPlacement === 'surface'
           ? { x: 0.5, y: 1.0 }
           : { x: 0.5, y: 0.5 };
+        if (placement) Object.assign(customMetadata, placement);
       }
 
       const binaryResult = await customArtRepo.saveArtwork(assetId, blobToSave, customMetadata);
@@ -208,6 +214,7 @@ export function createPaintSaveService({
       metadataCommitted = true;
       await customArtRepo.clearDraft('active');
       paintSession.markDirty(false);
+      onStateChanged?.();
       saveDialog?.close();
 
       if (andUse && session.originContext === 'designer' && session.itemType === 'wearable') {
@@ -228,7 +235,7 @@ export function createPaintSaveService({
         }
       }
       console.error('Save artwork failed:', err);
-      await showAlert?.(t('paint.saveError', { error: err.message || 'Storage failure' }));
+      await showAlert?.(t('paint.saveError', { error: err.message === 'PLACEMENT_OUTSIDE_CROP' ? t('placement.cropInvalid') : err.message || 'Storage failure' }));
     } finally {
       saveInFlight = false;
     }
@@ -273,11 +280,13 @@ export function createPaintSaveService({
         cutoutAssetId: metadata.cutoutAssetId,
         propSize: metadata.propSize || 'medium',
         propPlacement: metadata.propPlacement || 'surface',
+        placementMetadata: metadata.placementMetadata ?? null,
         name: metadata.name || t('paint.recoveredArt')
       });
       const { canvas, ctx } = getCanvasState();
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       getSession().markDirty(true);
+      onStateChanged?.();
       updateLivePreview();
     } catch (err) {
       console.warn('Could not restore draft:', err);

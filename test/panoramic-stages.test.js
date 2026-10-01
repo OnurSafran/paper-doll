@@ -261,7 +261,7 @@ test('reclampSceneEntities uses the new panoramic width when narrowing stages', 
   assert.equal(narrowed.entities[0].x, 3080);
 });
 
-test('AppStore handles scene/setStageWidth, reclamping, and undo/redo', () => {
+test('AppStore handles confirmed stage removal and undo/redo', () => {
   const store = createAppStore({
     presets: [{ presetId: 'preset-1', name: 'Doll 1', ...createStarterDraft() }],
     scenes: [],
@@ -290,12 +290,11 @@ test('AppStore handles scene/setStageWidth, reclamping, and undo/redo', () => {
   assert.equal(store.getState().currentScene.cameraX, 1200);
 
   // 4. Downsize back to 1600 -> entity must be safely reclamped inside 1600
-  store.dispatch({ type: 'scene/setStageWidth', stageWidth: 1600 });
+  store.dispatch({ type: 'scene/setStageWidth', stageWidth: 1600, allowRemoval: true });
   const downsizedScene = store.getState().currentScene;
   assert.equal(downsizedScene.stageWidth, 1600);
   assert.equal(downsizedScene.cameraX, 0); // camera reclamped to 0
-  const reclampedEntity = downsizedScene.entities[0];
-  assert.ok(reclampedEntity.x <= 1600, `Entity at ${reclampedEntity.x} should be <= 1600`);
+  assert.equal(downsizedScene.entities.length, 0);
 
   // 5. Undo restores 3200 stage and original entity position
   store.dispatch({ type: 'app/undo' });
@@ -303,7 +302,7 @@ test('AppStore handles scene/setStageWidth, reclamping, and undo/redo', () => {
   assert.equal(undoneScene.stageWidth, 3200);
 });
 
-test('downsizing also reclamps pinned entities without unpinning them', () => {
+test('downsizing removes pinned items only after confirmation', () => {
   const store = createAppStore({
     presets: [],
     scenes: [],
@@ -326,10 +325,11 @@ test('downsizing also reclamps pinned entities without unpinning them', () => {
     }
   }, { getAsset });
 
-  store.dispatch({ type: 'scene/setStageWidth', stageWidth: 1600 });
-  const entity = store.getState().currentScene.entities[0];
-  assert.equal(entity.pinned, true);
-  assert.equal(entity.x, 1480);
+  store.dispatch({ type: 'scene/setStageWidth', stageWidth: 1600, allowRemoval: true });
+  assert.equal(store.getState().currentScene.entities.length, 0);
+  store.dispatch({ type: 'app/undo' });
+  assert.equal(store.getState().currentScene.entities[0].pinned, true);
+  assert.equal(store.getState().currentScene.entities[0].x, 2800);
 });
 
 test('AppStore handles scene/panCamera with delta clamping', () => {

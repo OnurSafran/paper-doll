@@ -1,3 +1,5 @@
+import { previewStageSize } from '../../domain/stage-sizing.js';
+import { placeEntity, setPlacementMode, changePlacementBackground } from '../../domain/scene-placement.js';
 import {
   addEntity,
   alignEntities,
@@ -13,7 +15,6 @@ import {
   getEntityBounds,
   moveEntities,
   moveEntity,
-  reclampSceneEntities,
   reorderEntity,
   scaleEntities,
   scaleEntity,
@@ -58,13 +59,23 @@ import { localizedMessage, nextUniqueId } from './reducer-helpers.js';
  * @param {import('../../types.js').StoreAction} action */
 export function sceneReducer(state, action, context) {
   switch (action.type) {
+    case 'scene/setPlacementMode': {
+      const scene = setPlacementMode(state.currentScene, action.placementMode, context.getAsset);
+      return scene === state.currentScene ? null : { state: { ...state, currentScene: touchScene(scene, context.now) }, persist: true };
+    }
+    case 'scene/placeEntity': {
+      const entity = state.currentScene.entities.find(e => e.instanceId === action.instanceId);
+      if (!entity) return null;
+      const scene = placeEntity(state.currentScene, entity.instanceId, { x: action.x ?? entity.x, y: action.y ?? entity.y }, context.getAsset, { transfer: Boolean(action.transfer), target: action.target });
+      return scene === state.currentScene ? { state: localizedMessage('placement.invalid', {}, state), result: { ok: false, code: 'INVALID_PLACEMENT' } } : { state: localizedMessage('placement.placed', {}, { ...state, currentScene: touchScene(scene, context.now) }), persist: true };
+    }
     case 'scene/setBackground': {
       if (context.getAsset(action.backgroundId)?.kind !== 'background') return null;
       if (state.currentScene.backgroundId === action.backgroundId) return null;
       const landmark = getLandmarkByBackgroundId(action.backgroundId);
       if (landmark && !isLandmarkUnlocked(landmark, state.settings)) return null;
       return {
-        state: { ...state, currentScene: touchScene({ ...state.currentScene, backgroundId: action.backgroundId }, context.now) },
+        state: { ...state, currentScene: touchScene(changePlacementBackground(state.currentScene, action.backgroundId, context.getAsset), context.now) },
         persist: true
       };
     }
@@ -73,15 +84,15 @@ export function sceneReducer(state, action, context) {
       if (!isStageWidth(action.stageWidth)) return null;
       const currentWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
       if (currentWidth === action.stageWidth) return null;
-      let nextScene = { ...state.currentScene, stageWidth: action.stageWidth };
-      if (action.stageWidth < currentWidth) {
-        nextScene = reclampSceneEntities(nextScene, action.stageWidth, context.getAsset);
-      }
-      nextScene.cameraX = clampCameraX(nextScene.cameraX, action.stageWidth);
+      const preview = previewStageSize(state.currentScene, action.stageWidth, context.getAsset);
+      if (preview.removedIds.length && !action.allowRemoval) return { state, result: { ok: false, code: 'SHRINK_CONFIRMATION_REQUIRED', count: preview.removedIds.length } };
+      const nextScene = preview.scene;
+      const remainingSelection = state.ui.selectedEntityIds.filter(id => !preview.removedIds.includes(id));
       return {
         state: localizedMessage('play.statusStageWidth', { width: action.stageWidth }, {
           ...state,
-          currentScene: touchScene(nextScene, context.now)
+          currentScene: touchScene(nextScene, context.now),
+          ui: { ...state.ui, selectedEntityIds: remainingSelection, selectedEntityId: remainingSelection.includes(state.ui.selectedEntityId) ? state.ui.selectedEntityId : remainingSelection[0] || null }
         }),
         persist: true
       };
@@ -232,11 +243,16 @@ export function sceneReducer(state, action, context) {
 
     case 'scene/moveEntity': {
       const scene = moveEntity(state.currentScene, action.instanceId, action.x, action.y, context.getAsset);
-      return scene === state.currentScene ? null : { state: { ...state, currentScene: scene }, persist: true };
+      if (scene === state.currentScene) {
+        const entity = scene.entities.find(e => e.instanceId === action.instanceId);
+        if (entity?.placement && entity.placement.kind !== 'free' && !entity.pinned && (entity.x !== action.x || entity.y !== action.y)) return { state: localizedMessage('placement.boundary', {}, state), result: { ok: false, code: 'PLACEMENT_BOUNDARY' } };
+        return null;
+      }
+      return { state: { ...state, currentScene: touchScene(scene, context.now) }, persist: true };
     }
 
     case 'scene/flipEntity': {
-      const scene = flipEntity(state.currentScene, action.instanceId);
+      const scene = flipEntity(state.currentScene, action.instanceId, context.getAsset);
       return scene === state.currentScene ? null : { state: { ...state, currentScene: scene }, persist: true };
     }
 
@@ -251,7 +267,7 @@ export function sceneReducer(state, action, context) {
     }
 
     case 'scene/deleteEntity': {
-      const scene = deleteEntity(state.currentScene, action.instanceId);
+      const scene = deleteEntity(state.currentScene, action.instanceId, context.getAsset);
       if (scene === state.currentScene) return null;
       const remainingSelected = (state.ui.selectedEntityIds || []).filter((id) => id !== action.instanceId);
       return {
@@ -273,7 +289,7 @@ export function sceneReducer(state, action, context) {
         ? action.instanceIds
         : (state.ui.selectedEntityIds.length > 0 ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []));
       if (!targetIds.length) return null;
-      const scene = deleteEntities(state.currentScene, targetIds);
+      const scene = deleteEntities(state.currentScene, targetIds, context.getAsset);
       if (scene === state.currentScene) return null;
       const idSet = new Set(targetIds);
       const remainingSelected = (state.ui.selectedEntityIds || []).filter((id) => !idSet.has(id));
@@ -322,7 +338,7 @@ export function sceneReducer(state, action, context) {
         ? action.instanceIds
         : (state.ui.selectedEntityIds.length > 0 ? state.ui.selectedEntityIds : (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []));
       if (!targetIds.length) return null;
-      const scene = flipEntities(state.currentScene, targetIds);
+      const scene = flipEntities(state.currentScene, targetIds, context.getAsset);
       return scene === state.currentScene ? null : { state: { ...state, currentScene: scene }, persist: true };
     }
 
@@ -382,8 +398,9 @@ export function sceneReducer(state, action, context) {
       }
       const instanceId = nextUniqueId(context.makeId, state.currentScene.entities.map((entity) => entity.instanceId));
       if (!instanceId) return { state: localizedMessage('play.statusDuplicateId', {}, state), result: { ok: false, code: 'ID_FAILED' } };
-      const scene = duplicateEntity(state.currentScene, action.instanceId, instanceId, context.getAsset);
-      const duplicate = scene.entities.at(-1);
+      const scene = duplicateEntity(state.currentScene, action.instanceId, instanceId, context.getAsset, context.makeId, Boolean(action.withContents));
+      if (scene === state.currentScene) return { state: localizedMessage('play.statusDuplicateFailed', {}, state), result: { ok: false, code: 'LIMIT_OR_NOT_FOUND' } };
+      const duplicate = scene.entities.find(e => e.instanceId === instanceId);
       return {
         state: localizedMessage('play.statusItemDuplicated', {}, {
           ...state,
@@ -459,7 +476,7 @@ export function sceneReducer(state, action, context) {
       const sceneId = nextUniqueId(context.makeId, []);
       if (!sceneId) return { state: localizedMessage('play.statusSceneId', {}, state), result: { ok: false, code: 'ID_FAILED' } };
       return {
-        state: localizedMessage('play.statusNewScene', {}, { ...state, currentScene: createEmptyScene(sceneId, context.now), ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null } }),
+        state: localizedMessage('play.statusNewScene', {}, { ...state, currentScene: touchScene(setPlacementMode(createEmptyScene(sceneId, context.now), 'room', context.getAsset), context.now), ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null } }),
         persist: true
       };
     }
@@ -646,7 +663,7 @@ export function sceneReducer(state, action, context) {
       const attachJoint = action.attachJoint;
       if (!instanceId || !isAttachJoint(attachJoint)) return null;
       const entity = state.currentScene.entities.find((e) => e.instanceId === instanceId);
-      if (!entity || !entity.attachedTo) return null;
+      if (!entity || !entity.attachedTo || entity.placement?.kind === 'surface') return null;
       const parent = state.currentScene.entities.find((e) => e.instanceId === entity.attachedTo);
       const parentProfile = parent?.kind === 'character' ? resolveMotionProfile(parent) : 'root';
       const effectiveJoint = parentProfile === 'root' ? 'root' : attachJoint;

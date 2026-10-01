@@ -1,3 +1,4 @@
+import { changePlacementBackground } from '../../domain/scene-placement.js';
 import { cloneCustomAsset, clonePreset, cloneScene, createDefaultEnvelope } from '../state-schema.js';
 import { createEmptyScene, createSampleScene } from '../../domain/scene-rules.js';
 import { createStarterDraft } from '../../domain/outfit-rules.js';
@@ -23,7 +24,7 @@ export function settingsReducer(state, action, context) {
           presets: [],
           scenes: [],
           // Same welcome stage createRuntimeState gives a first launch.
-          currentScene: /** @type {import('../../types.js').SceneRecord} */ (createSampleScene(createStarterDraft(), context.now)),
+          currentScene: /** @type {import('../../types.js').SceneRecord} */ (changePlacementBackground(createSampleScene(createStarterDraft(), context.now), 'bg_bedroom', context.getAsset)),
           designer: { draft: createStarterDraft(), selectedSlot: 'top', editingPresetId: null, dirty: false },
           ui: { ...state.ui, selectedEntityId: null, selectedEntityIds: [], activeSceneLibraryId: null }
         }),

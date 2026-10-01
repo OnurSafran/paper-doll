@@ -347,6 +347,7 @@ export const ASSETS = Object.freeze([
   prop('prop_picnic_blanket', 'Picnic blanket', 'assets/props/picnic-blanket.svg', 360, 160, ['fun'])
 ].map((asset) => Object.freeze({
   ...asset,
+  ...corePlacementMetadata(asset.id),
   metadata: Object.freeze({
     added_date: PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? '2026-08-19' : NEW_CORE_ASSET_IDS.has(asset.id) ? '2026-08-16' : '2026-08-14',
     creator: PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? ASSET_CREATOR : NEW_CORE_ASSET_IDS.has(asset.id) ? NEW_ASSET_CREATOR : ASSET_CREATOR,
@@ -447,5 +448,22 @@ function prop(id, name, path, displayWidth, displayHeight, collections = []) {
     id, kind: 'prop', name, path, viewBox: [0, 0, 1000, 1000], requiredGroups: ['prop'],
     displayWidth, displayHeight, collections: Object.freeze([...collections]),
     groundAnchor: { x: 0.5, y: 1.0 }, defaultScale: 1
+  };
+}
+
+// Geometry is authored against the artwork, never inferred from category or pixels.
+function corePlacementMetadata(id) {
+  const seams = { bg_bedroom: 646, bg_atelier: 664, bg_cafe: 666 };
+  if (seams[id]) return { placementProfile: { regions: [
+    { id: 'floor', kind: 'floor', polygon: [[0, seams[id]], [1600, seams[id]], [1600, 900], [0, 900]] },
+    { id: 'wall', kind: 'wall', polygon: [[0, 0], [1600, 0], [1600, seams[id]], [0, seams[id]]] }
+  ] } };
+  const floor = ['prop_chair', 'prop_table', 'prop_plant', 'prop_lamp', 'prop_rug', 'prop_easel', 'prop_bookshelf', 'prop_bench', 'prop_picnic_blanket'];
+  const small = ['prop_tea_set', 'prop_flower_pot', 'prop_cake', 'prop_camera'];
+  if (!floor.includes(id) && !small.includes(id) && id !== 'prop_painting') return {};
+  return {
+    placementRules: { allowedTargets: id === 'prop_painting' ? ['wall'] : small.includes(id) ? ['floor', 'surface'] : ['floor'], tags: small.includes(id) ? ['small-prop'] : ['furniture'], contactFootprint: { width: small.includes(id) ? .25 : .55, depth: .02 }, renderClass: ['prop_rug', 'prop_picnic_blanket'].includes(id) ? 'ground' : 'upright' },
+    ...(id === 'prop_painting' ? { groundAnchor: { x: .5, y: .5 } } : {}),
+    ...(id === 'prop_table' ? { supportSurfaces: [{ id: 'tabletop', nameKey: 'placement.tabletop', polygon: [[.24,.32],[.76,.32],[.84,.39],[.76,.46],[.24,.46],[.16,.39]], acceptsTags: ['small-prop'] }] } : {})
   };
 }

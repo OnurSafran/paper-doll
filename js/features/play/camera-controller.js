@@ -1,3 +1,4 @@
+import { confirmStageSize } from './background-placement-confirm.js';
 /** Panoramic camera transforms, edge panning, and minimap controls. */
 import { CAMERA_CONSTANTS, DEFAULT_STAGE_WIDTH, VIEWPORT_HEIGHT, VIEWPORT_WIDTH } from '../../domain/vocabulary.js';
 import { getBackgroundLayout } from '../../core/background-layout.js';
@@ -54,8 +55,10 @@ export function createCameraController(context) {
 
     if (widthSelect && !widthSelect.dataset.bound) {
       widthSelect.dataset.bound = 'true';
-      widthSelect.addEventListener('change', (e) => {
-        context.store.dispatch({ type: 'scene/setStageWidth', stageWidth: Number(e.target.value) });
+      widthSelect.addEventListener('change', async (e) => {
+        context.cancelPointerController?.();
+        const accepted = await confirmStageSize(context, Number(e.target.value));
+        if (!accepted) e.target.value = String(context.store.getState().currentScene.stageWidth);
       });
     }
 

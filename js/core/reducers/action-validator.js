@@ -40,8 +40,11 @@ export const ACTION_PAYLOAD_VALIDATORS = {
   'preset/load': (action) => typeof action.presetId === 'string',
   'preset/clearAll': () => true,
 
+  'scene/setPlacementMode': action => ['room', 'free'].includes(action.placementMode),
+  'scene/placeEntity': action => typeof action.instanceId === 'string' && (action.x == null || Number.isFinite(action.x)) && (action.y == null || Number.isFinite(action.y)) && (action.target == null || ['floor', 'wall', 'surface'].includes(action.target.kind)),
   'scene/setBackground': (action) => typeof action.backgroundId === 'string',
-  'scene/setStageWidth': (action) => isStageWidth(action.stageWidth),
+  'scene/setStageWidth': (action) => isStageWidth(action.stageWidth) && (action.allowRemoval == null || typeof action.allowRemoval === 'boolean'),
+  'scene/duplicateEntity': (action) => action.withContents == null || typeof action.withContents === 'boolean',
   'scene/setCameraX': (action) => typeof action.cameraX === 'number' && Number.isFinite(action.cameraX),
   'scene/panCamera': (action) => typeof action.deltaX === 'number' && Number.isFinite(action.deltaX),
   'scene/spawnCharacter': (action) => typeof action.presetId === 'string',

@@ -1,3 +1,5 @@
+import { sanitizePlacementRules, sanitizeSurfaces, sanitizePlacement } from '../domain/placement-geometry.js';
+import { recoverSurfacePlacements } from '../domain/scene-placement.js';
 import { isColorValue, isIrisColor, isPaletteToken, normalizeColorValue } from './palette.js';
 import { cloneDraft, createDefaultFace, createStarterDraft, emptySlots, OUTFIT_SLOTS } from '../domain/outfit-rules.js';
 import { clamp, clampPoint, clampScale, createSampleScene, getEntityBounds, reclampSceneEntities } from '../domain/scene-rules.js';
@@ -27,7 +29,6 @@ import {
   DEFAULT_REDUCED_MOTION,
   DEFAULT_SCENE_ANIMATION_SETTINGS,
   DEFAULT_STAGE_WIDTH,
-  DEFAULT_STATIC_POSE,
   FIT_FAMILIES,
   isAttachJoint,
   isBubbleStyle,
@@ -36,7 +37,6 @@ import {
   isExpression,
   isExpressionIntensity,
   isFitFamily,
-  isMotionClipId,
   isMotionIntensity,
   isPhaseOffset,
   isPlaybackRate,
@@ -44,12 +44,16 @@ import {
   isPropCollection,
   isReducedMotionOption,
   isStageWidth,
-  isStaticPose,
   isValidId,
   LIMITS
 } from '../domain/vocabulary.js';
 
-export const SCHEMA_VERSION = 6;
+export const PAPER_STAGE_SCHEMA_VERSION = 8;
+export const SCHEMA_VERSION = PAPER_STAGE_SCHEMA_VERSION;
+
+export function requiresCleanStart(value) {
+  return !Number.isInteger(value?.schemaVersion) || value.schemaVersion < PAPER_STAGE_SCHEMA_VERSION;
+}
 export const STORAGE_KEY = 'paperDollStudio.state';
 
 export function createDefaultEnvelope() {
@@ -133,6 +137,7 @@ export function cloneCustomAsset(asset) {
   return {
     ...asset,
     ...(Array.isArray(asset.collections) ? { collections: [...asset.collections] } : {}),
+    ...(asset.placementRules ? { placementRules: globalThis.structuredClone(asset.placementRules), supportSurfaces: globalThis.structuredClone(asset.supportSurfaces || []) } : {}),
     ...(asset.groundAnchor ? { groundAnchor: { ...asset.groundAnchor } } : {})
   };
 }
@@ -140,6 +145,10 @@ export function cloneCustomAsset(asset) {
 export function sanitizeCustomAsset(candidate) {
   if (!candidate || typeof candidate !== 'object') return null;
   if (!isValidId(candidate.assetId)) return null;
+
+  const placementRules = candidate.kind === 'prop' && candidate.placementRules != null ? sanitizePlacementRules(candidate.placementRules) : null;
+  const supportSurfaces = candidate.kind === 'prop' ? sanitizeSurfaces(candidate.supportSurfaces) : [];
+  if ((candidate.placementRules != null && !placementRules) || !supportSurfaces || (supportSurfaces.length && (!placementRules || placementRules.allowedTargets.join(',') !== 'floor'))) return null;
 
   const rawName = candidate.name;
   if (!hasValidDisplayName(rawName, LIMITS.MAX_CUSTOM_ASSET_NAME_LENGTH)) return null;
@@ -243,19 +252,16 @@ export function sanitizeCustomAsset(candidate) {
     status,
     collections,
     ...(kind === 'wearable' ? { supportedFitFamilies, presentationStyles } : {}),
-    ...(kind === 'prop' ? { displayWidth, displayHeight, groundAnchor } : {})
+    ...(kind === 'prop' ? { displayWidth, displayHeight, groundAnchor, ...(placementRules ? { placementRules, supportSurfaces } : {}) } : {})
   };
 }
 
 export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
   const defaults = createDefaultEnvelope();
   const warnings = [];
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return { envelope: defaults, warnings: ['Saved data was not an object.'], recovered: false };
+  if (requiresCleanStart(value)) {
+    return { envelope: defaults, warnings: ['Older project data was cleared for the new paper stage.'], recovered: true, resetRequired: true, migrated: false };
   }
-  const migrationWarnings = [];
-  value = migrateEnvelope(value, migrationWarnings);
-  warnings.push(...migrationWarnings);
   if (value.schemaVersion !== SCHEMA_VERSION) {
     warnings.push(`Unsupported schema version ${String(value.schemaVersion)}; safe defaults loaded.`);
     return { envelope: defaults, warnings, recovered: false };
@@ -345,8 +351,8 @@ export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
       currentScene
     },
     warnings,
-    migrated: migrationWarnings.length > 0,
-    recovered: warnings.length === migrationWarnings.length
+    migrated: false,
+    recovered: warnings.length === 0
   };
 }
 
@@ -492,6 +498,7 @@ export function sanitizeScene(candidate, getAsset = (_id) => undefined, warnings
   const sanitizedScene = {
     sceneId: candidate.sceneId,
     title: validName(candidate.title) ? normalizeDisplayName(candidate.title, LIMITS.MAX_SCENE_TITLE_LENGTH) : 'Current Scene',
+    placementMode: candidate.placementMode === 'room' ? 'room' : 'free',
     backgroundId: getAsset(candidate.backgroundId)?.kind === 'background' ? candidate.backgroundId : DEFAULT_BACKGROUND_ID,
     stageWidth,
     cameraX,
@@ -501,7 +508,8 @@ export function sanitizeScene(candidate, getAsset = (_id) => undefined, warnings
     entities
   };
 
-  const reclamped = reclampSceneEntities(sanitizedScene, stageWidth, getAsset);
+  const recovered = recoverSurfacePlacements(sanitizedScene, getAsset, warnings);
+  const reclamped = sanitizedScene.placementMode === 'room' ? recovered : reclampSceneEntities(recovered, stageWidth, getAsset);
   return { ...reclamped, updatedAt: sanitizedScene.updatedAt };
 }
 
@@ -523,9 +531,10 @@ function sanitizeEntity(item, getAsset, stageWidth = DEFAULT_STAGE_WIDTH, warnin
 
   const scale = clampScale(item.scale == null ? 1 : Number(item.scale));
   const bounds = getEntityBounds({ ...item, scale, text, bubbleStyle, width }, getAsset);
-  const point = clampPoint(item.x, item.y, bounds, stageWidth);
+  const point = clampPoint(item.x, item.y, { ...bounds, anchorX: item.flipped ? 1 - bounds.anchorX : bounds.anchorX }, stageWidth);
+  const placement = sanitizePlacement(item.placement);
   const pinned = Boolean(item.pinned);
-  const attachedTo = !pinned && validId(item.attachedTo) ? item.attachedTo : null;
+  const attachedTo = (!pinned || placement?.kind === 'surface') && !(item.placement?.kind === 'surface' && placement?.kind !== 'surface') && validId(item.attachedTo) ? item.attachedTo : null;
   const attachOffset = attachedTo && item.attachOffset && Number.isFinite(item.attachOffset.dx) && Number.isFinite(item.attachOffset.dy)
     ? { dx: Math.round(item.attachOffset.dx), dy: Math.round(item.attachOffset.dy) }
     : null;
@@ -572,6 +581,7 @@ function sanitizeEntity(item, getAsset, stageWidth = DEFAULT_STAGE_WIDTH, warnin
     attachOffset,
     ...(attachedTo ? { attachJoint } : {}),
     ...(item.kind === 'character' ? { expression, expressionIntensity, pose, animation } : {}),
+    ...(placement ? { placement } : {}),
     order: Number.isInteger(item.order) ? item.order : 1
   };
 }
@@ -604,6 +614,7 @@ export function cloneScene(scene) {
       : { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
     entities: scene.entities.map((entity) => ({
       ...entity,
+      ...(entity.placement ? { placement: globalThis.structuredClone(entity.placement) } : {}),
       attachOffset: entity.attachOffset ? { ...entity.attachOffset } : null,
       ...(entity.attachJoint ? { attachJoint: entity.attachJoint } : {}),
       ...(entity.characterSnapshot ? { characterSnapshot: cloneDraft(entity.characterSnapshot) } : {}),
@@ -612,168 +623,6 @@ export function cloneScene(scene) {
   };
 }
 
-function migrateEnvelope(value, warnings) {
-  if (value.schemaVersion === 1) {
-    warnings.push('Saved data was upgraded to the custom-color schema.');
-    value = { ...value, schemaVersion: 2 };
-  }
-  if (value.schemaVersion === 2) {
-    warnings.push('Saved data was upgraded to custom-assets schema.');
-    value = {
-      ...value,
-      schemaVersion: 3,
-      customAssets: Array.isArray(value.customAssets) ? value.customAssets : []
-    };
-  }
-  if (value.schemaVersion === 3) {
-    warnings.push('Saved data was upgraded to modular character face schema.');
-    const presets = Array.isArray(value.presets)
-      ? value.presets.map((preset) => ({
-          ...preset,
-          face: preset.face ? { ...preset.face } : createDefaultFace(preset.baseDollId)
-        }))
-      : [];
-
-    const migrateSceneEntities = (entities) => {
-      if (!Array.isArray(entities)) return [];
-      return entities.map((entity) => {
-        if (entity.kind === 'character' && entity.characterSnapshot) {
-          return {
-            ...entity,
-            characterSnapshot: {
-              ...entity.characterSnapshot,
-              face: entity.characterSnapshot.face ? { ...entity.characterSnapshot.face } : createDefaultFace(entity.characterSnapshot.baseDollId)
-            }
-          };
-        }
-        return entity;
-      });
-    };
-
-    const scenes = Array.isArray(value.scenes)
-      ? value.scenes.map((scene) => ({
-          ...scene,
-          entities: migrateSceneEntities(scene.entities)
-        }))
-      : [];
-
-    const currentScene = value.currentScene
-      ? {
-          ...value.currentScene,
-          entities: migrateSceneEntities(value.currentScene.entities)
-        }
-      : null;
-
-    value = {
-      ...value,
-      schemaVersion: 4,
-      presets,
-      scenes,
-      currentScene
-    };
-  }
-  if (value.schemaVersion === 4) {
-    warnings.push('Saved data was upgraded to character animation and pose schema.');
-    const migrateSceneEntitiesV5 = (entities) => {
-      if (!Array.isArray(entities)) return [];
-      return entities.map((entity) => {
-        if (entity.kind === 'character') {
-          return {
-            ...entity,
-            expressionIntensity: isExpressionIntensity(entity.expressionIntensity) ? entity.expressionIntensity : DEFAULT_EXPRESSION_INTENSITY,
-            pose: isStaticPose(entity.pose) ? entity.pose : DEFAULT_STATIC_POSE,
-            animation: entity.animation && typeof entity.animation === 'object'
-              ? {
-                  clipId: isMotionClipId(entity.animation.clipId) ? entity.animation.clipId : DEFAULT_MOTION_CLIP_ID,
-                  enabled: Boolean(entity.animation.enabled),
-                  intensity: isMotionIntensity(entity.animation.intensity) ? entity.animation.intensity : DEFAULT_MOTION_INTENSITY,
-                  phaseOffset: isPhaseOffset(entity.animation.phaseOffset) ? entity.animation.phaseOffset : DEFAULT_PHASE_OFFSET
-                }
-              : {
-                  clipId: DEFAULT_MOTION_CLIP_ID,
-                  enabled: false,
-                  intensity: DEFAULT_MOTION_INTENSITY,
-                  phaseOffset: DEFAULT_PHASE_OFFSET
-                }
-          };
-        }
-        return entity;
-      });
-    };
-
-    const scenes = Array.isArray(value.scenes)
-      ? value.scenes.map((scene) => ({
-          ...scene,
-          animationSettings: scene.animationSettings ? { ...scene.animationSettings } : { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
-          entities: migrateSceneEntitiesV5(scene.entities)
-        }))
-      : [];
-
-    const currentScene = value.currentScene
-      ? {
-          ...value.currentScene,
-          animationSettings: value.currentScene.animationSettings ? { ...value.currentScene.animationSettings } : { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
-          entities: migrateSceneEntitiesV5(value.currentScene.entities)
-        }
-      : null;
-
-    value = {
-      ...value,
-      schemaVersion: 5,
-      presets: Array.isArray(value.presets) ? value.presets : [],
-      scenes,
-      currentScene
-    };
-  }
-  if (value.schemaVersion === 5) {
-    warnings.push('Saved data was upgraded to animation expansion and choreography schema.');
-    const migrateSceneEntitiesV6 = (entities) => {
-      if (!Array.isArray(entities)) return [];
-      return entities.map((entity) => {
-        if (entity.attachedTo) {
-          return {
-            ...entity,
-            attachJoint: isAttachJoint(entity.attachJoint) ? entity.attachJoint : DEFAULT_ATTACH_JOINT
-          };
-        }
-        return entity;
-      });
-    };
-
-    const scenes = Array.isArray(value.scenes)
-      ? value.scenes.map((scene) => ({
-          ...scene,
-          animationSettings: {
-            ...DEFAULT_SCENE_ANIMATION_SETTINGS,
-            ...(scene.animationSettings || {}),
-            playbackRate: isPlaybackRate(scene.animationSettings?.playbackRate) ? scene.animationSettings.playbackRate : DEFAULT_PLAYBACK_RATE
-          },
-          entities: migrateSceneEntitiesV6(scene.entities)
-        }))
-      : [];
-
-    const currentScene = value.currentScene
-      ? {
-          ...value.currentScene,
-          animationSettings: {
-            ...DEFAULT_SCENE_ANIMATION_SETTINGS,
-            ...(value.currentScene.animationSettings || {}),
-            playbackRate: isPlaybackRate(value.currentScene.animationSettings?.playbackRate) ? value.currentScene.animationSettings.playbackRate : DEFAULT_PLAYBACK_RATE
-          },
-          entities: migrateSceneEntitiesV6(value.currentScene.entities)
-        }
-      : null;
-
-    return {
-      ...value,
-      schemaVersion: 6,
-      presets: Array.isArray(value.presets) ? value.presets : [],
-      scenes,
-      currentScene
-    };
-  }
-  return value;
-}
 
 function sanitizeStringList(list) {
   if (!Array.isArray(list)) return [];

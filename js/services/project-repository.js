@@ -4,7 +4,7 @@
  * guarded writes, cross-tab conflict detection, and quarantine recovery.
  */
 
-import { createDefaultEnvelope, sanitizeEnvelope, STORAGE_KEY } from '../core/state-schema.js';
+import { createDefaultEnvelope, sanitizeEnvelope, requiresCleanStart, SCHEMA_VERSION, STORAGE_KEY } from '../core/state-schema.js';
 import { LIMITS } from '../domain/vocabulary.js';
 
 export { STORAGE_KEY };
@@ -54,6 +54,7 @@ export function loadEnvelope(storage, getAsset = (_id) => undefined) {
     return {
       envelope: defaults,
       warnings: cleanupWarnings,
+      resetRequired: true,
       available: true,
       recovered: true,
       baseRevision: defaults.revision
@@ -63,7 +64,7 @@ export function loadEnvelope(storage, getAsset = (_id) => undefined) {
   try {
     const parsed = JSON.parse(raw);
     const result = sanitizeEnvelope(parsed, getAsset);
-    if (result.recovered === false && raw) {
+    if (result.recovered === false && !result.resetRequired && raw) {
       try {
         storage.setItem(`paperDollStudio.quarantine.${Date.now()}`, raw);
       } catch {
@@ -78,23 +79,31 @@ export function loadEnvelope(storage, getAsset = (_id) => undefined) {
       baseRevision: result.envelope.revision ?? 1
     };
   } catch (error) {
-    if (raw) {
-      try {
-        storage.setItem(`paperDollStudio.quarantine.${Date.now()}`, raw);
-      } catch {
-        /* quarantine is best-effort */
-      }
-    }
     const defaults = createDefaultEnvelope();
     return {
       envelope: defaults,
-      warnings: [...cleanupWarnings, 'Saved data could not be read; safe defaults were loaded.'],
-      available: false,
-      recovered: false,
+      warnings: [...cleanupWarnings, 'Unreadable saved data will be cleared for a clean start.'],
+      available: true,
+      recovered: true,
+      resetRequired: true,
       error,
       baseRevision: defaults.revision
     };
   }
+}
+
+/** Finish the version-boundary reset before opening any views or restoring drafts. */
+export async function resetObsoleteProject(storage, customArtRepo) {
+  const result = await customArtRepo.resetAll();
+  if (!result.ok) throw new Error(result.error || 'Could not clear old artwork. Reload to retry.');
+  if (!storage) return;
+  const keys = [];
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (key?.startsWith('paperDollStudio.') || key === 'paper_doll_language') keys.push(key);
+  }
+  keys.forEach(key => storage.removeItem(key));
+  storage.setItem(STORAGE_KEY, JSON.stringify(createDefaultEnvelope()));
 }
 
 export const loadProject = loadEnvelope;
@@ -120,6 +129,7 @@ export function createProjectRepository({
       const raw = storage.getItem(STORAGE_KEY);
       if (!raw) return 0;
       const parsed = JSON.parse(raw);
+      if (requiresCleanStart(parsed)) return 0;
       return Number.isInteger(parsed?.revision) && parsed.revision >= 1 ? parsed.revision : 0;
     } catch {
       return null;
@@ -159,6 +169,7 @@ export function createProjectRepository({
     const nextRevision = Math.max(baseRevision, currentStorageRevision || 0) + 1;
     const toSave = {
       ...envelope,
+      schemaVersion: SCHEMA_VERSION,
       revision: nextRevision
     };
 

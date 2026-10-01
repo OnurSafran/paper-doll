@@ -1,3 +1,4 @@
+import { placementShadow } from '../../domain/placement-shadows.js';
 /** Stable scene entity DOM composition and patches. */
 import { getEntityBounds } from '../../domain/scene-rules.js';
 import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, bubbleStyleLabelKey, isCustomAssetId } from '../../domain/vocabulary.js';
@@ -7,6 +8,18 @@ import { createBubbleSvg } from '../../core/bubble-svg.js';
 import { assetName, t } from '../../core/i18n.js';
 
 export function createSceneEntityView(context) {
+  function updateShadow(element, entity) {
+    const scene = context.store.getState().currentScene;
+    const shadow = placementShadow(scene, entity, context.getAsset);
+    let node = element.querySelector('.placement-contact-shadow');
+    if (!shadow) { node?.remove(); return; }
+    if (!node) { node = document.createElement('span'); node.className = 'placement-contact-shadow'; node.setAttribute('aria-hidden', 'true'); element.prepend(node); }
+    const b = getEntityBounds(entity, context.getAsset);
+    node.style.width = `${shadow.width / b.width * 100}%`;
+    node.style.height = `${shadow.height / b.height * 100}%`;
+    node.style.left = `${b.anchorX * 100}%`; node.style.top = `${b.anchorY * 100}%`;
+  }
+
   async function createSceneEntity(entity, isPrimarySelected, isMultiSelected) {
     const button = document.createElement('button');
     button.type = 'button';
@@ -129,6 +142,7 @@ export function createSceneEntityView(context) {
       button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${assetName(asset, t('play.sceneProp'))}`);
     }
     button.append(visual);
+    updateShadow(button, entity);
     if (entity.pinned) {
       const badge = document.createElement('span');
       badge.className = 'pinned-badge';
@@ -158,6 +172,7 @@ export function createSceneEntityView(context) {
       : (entity.kind === 'bubble' ? `${bounds.width} / ${bounds.height}` : `${asset?.displayWidth ?? 200} / ${asset?.displayHeight ?? 200}`);
     element.querySelector('.scene-entity-visual')?.style.setProperty('--flip', entity.flipped ? '-1' : '1');
 
+    updateShadow(element, entity);
     const pinnedBadge = element.querySelector('.pinned-badge');
     if (entity.pinned && !pinnedBadge) {
       const badge = document.createElement('span');

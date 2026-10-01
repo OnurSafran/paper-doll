@@ -49,6 +49,9 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-047 | Cardboard finish is on by default for new studios and for projects that lack the setting; clothing tabs stay off. Refines D-045. | Implemented | Cardboard finish is the preferred papercraft direction, so new players should see it without finding the switch. An explicit off is preserved. |
 | D-048 | Lock Family & Home Stories (`pack_family_home`) as the first content expansion at a fixed 92-asset scope. | Accepted; production pending | A fixed first package gives content production a measurable target while keeping the exact asset ledger, representative scene, and pack implementation as explicit gates. |
 
+| D-049 | Depth-aware room placement and drawn furniture surfaces. | Implemented; amended by D-050 | Preserve 2D rendering with explicit contact/support geometry. |
+| D-050 | Reset all pre-Paper Stage data at schema 8; derive placement behavior from backgrounds and confirm destructive panorama shrink. | Implemented | User requested a clean start and simpler controls; removal previews keep size changes predictable and undoable. |
+
 ## Decision details
 
 ### D-017 — Panoramic camera
@@ -251,3 +254,59 @@ In the Designer, the Dollbox card sat at the top of the rail and pushed the Ward
 Family & Home Stories (`pack_family_home`) is the first committed content expansion. Its scope is fixed at 48 wearables, 40 props, 4 backgrounds, 6 starter scenes, 12 bilingual story prompts, and 8 compatible outfit recipes. It must cover all five life stages, work with core content alone, and remain within static scene-based pretend play.
 
 The exact asset-ID ledger, fit assignments, art brief, and authored files are not yet complete. Production starts with that ledger and a representative family living-room scene; the scene must pass fit, tint, thumbnail, Play, PNG export, save/reload, and target-iPad performance checks before the full package is authored.
+
+### D-049 — Depth-aware room placement and drawn furniture surfaces
+
+**Date:** 2026-10-01. **Status:** Implemented; moderated user/device validation pending.
+
+Keep the 2D renderer and use floor contact depth for ordering in Room mode. Assets
+separately declare allowed destinations and usable support surfaces. Surface
+children reuse `attachedTo`; normalized host-art `localPoint` governs their absolute
+compatibility coordinates. Share convex footprint containment, exact anchor-pivot
+projection, and assembly ordering across commands, Play, thumbnails, and PNGs.
+
+This amends D-021: custom artwork metadata includes placement rules and up to four
+convex support areas, with binary raster bytes remaining in IndexedDB. Paint
+metadata overlays do not enter artwork pixels. Crop conversion and metadata
+validation run before committing either artwork or its project record.
+
+This amends D-023: pinning a surface child locks it relative to its furniture;
+parent moves still carry it. Floor-standing hosts carry direct supported props
+through move/scale/flip/duplicate. Invalid transforms reject atomically. Deletion
+or missing/invalid support detaches children in place into visible free exceptions.
+Generic character-held and bubble attachments keep their established semantics.
+
+This amends D-026: Room alignment requires a shared support and a fully fitting
+result. Floor depth replaces manual layer commands in Room mode; Free collage
+preserves them. Schema 6 scenes retain Free collage and their existing arrangement,
+a deliberate compatibility exception to D-022 for this feature. Conversion and
+background relocation preview before a single undoable commit.
+
+
+### D-050 — Paper Stage clean start and simplified controls
+
+**Date:** 2026-10-01. **Status:** Implemented; device/user validation pending.
+
+Supersedes D-049's legacy migration exception and user Room/Free conversion.
+Version 8 is the first supported Paper Stage save. Versionless, older, or
+unreadable saves clear all studio localStorage data and all artwork/draft/staging/
+backup/trash stores before initialization. Write version 8 after reset succeeds;
+failed resets remain retryable. Current-version saves persist normally; older or
+future imports/backups are rejected. No backwards compatibility is maintained.
+
+Background profiles determine constraints automatically. Preserve unclassified
+items as free exceptions. Keep static 2D artwork and semantic wall/floor polygons;
+splitting raster/SVG wall and floor layers is unnecessary for contact constraints.
+Bedroom's floor starts at y=646, below the 26-unit baseboard.
+
+Shrinking a panorama removes entire cut-off assemblies only after showing the
+exact affected item count and Yes/Cancel. Cancellation leaves state untouched;
+confirmation commits size, camera, selection, and removals in one undo step.
+Ordinary furniture duplication copies only the host; a separate Duplicate with
+contents command copies the assembly. Host deletion attempts valid floor recovery
+for unpinned contents and otherwise keeps visible free exceptions.
+
+Defer selected-instance artwork replacement, occlusion-aware pointer targeting,
+extra ghost failure reasons, and a second authoring sample (vase). Keep Edit Copy
+and the lamp test preview. Physical iPad, moderated authoring, and crowded-scene
+performance validation remain release gates.

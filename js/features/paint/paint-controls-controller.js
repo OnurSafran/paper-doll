@@ -71,7 +71,9 @@ export function createPaintControlsController(context) {
   const dirtySaveBtn = /** @type {HTMLButtonElement} */ (context.rootElement.querySelector('#paint-dirty-save-btn'));
 
   function updateUIFromState() {
+    context.placementController?.render();
     const state = context.session.getState();
+    context.rootElement.querySelector('#paint-screen')?.classList.toggle('is-placement-mode', state.placementMode === 'placement');
 
     context.canvas?.setAttribute('aria-label', t('paint.canvasAria', {
       type: state.itemType === 'wearable' ? t('paint.wearableTypeBtn') : t('paint.propTypeLabel'),

@@ -1,3 +1,5 @@
+import { placementShadow } from '../../domain/placement-shadows.js';
+import { orderedSceneEntities } from '../../domain/scene-placement.js';
 /**
  * Scene Book (Scene Library) & Templates Feature Module
  * Owns saved scene collections, high-fidelity composite vector thumbnails,
@@ -82,8 +84,14 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
   }
 
   // 2. Ordered entity layers
-  const ordered = [...(scene.entities || [])].sort((a, b) => a.order - b.order);
+  const ordered = orderedSceneEntities(scene, getAssetFn);
   for (const entity of ordered) {
+    const shadow = placementShadow(scene, entity, getAssetFn);
+    if (shadow) {
+      const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      for (const [key, value] of Object.entries({ cx: shadow.x, cy: shadow.y, rx: shadow.width / 2, ry: shadow.height / 2, fill: shadow.fill })) ellipse.setAttribute(key, String(value));
+      rootSvg.append(ellipse);
+    }
     let attachedTransform = { tx: 0, ty: 0, rot: 0 };
     if (entity.attachedTo) {
       attachedTransform = resolveEntityAttachmentTransform(

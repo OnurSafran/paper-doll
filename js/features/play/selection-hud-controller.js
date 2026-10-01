@@ -99,19 +99,6 @@ export function createSelectionHudController(context) {
     pill.append(dot, labelSpan);
     ring.append(pill);
 
-    const deselectBtn = document.createElement('button');
-    deselectBtn.type = 'button';
-    deselectBtn.className = 'deselect-btn';
-    deselectBtn.dataset.action = 'deselect';
-    deselectBtn.textContent = '✕';
-    deselectBtn.title = t('play.deselectItem');
-    deselectBtn.setAttribute('aria-label', t('play.deselectItem'));
-    deselectBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      void handleEntityAction('deselect');
-    });
-    ring.append(deselectBtn);
-
     let controls;
     if (isMulti) {
       const allSelectedPinned = state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId)).every((e) => e.pinned);
@@ -128,7 +115,7 @@ export function createSelectionHudController(context) {
         ['smaller', '−', t('play.smaller')],
         ['larger', '+', t('play.larger')],
         ['togglePin', allSelectedPinned ? '📌' : '📍', allSelectedPinned ? t('play.unpin') : t('play.pin')],
-        ['delete', '×', t('play.deleteItem')]
+        ['delete', '', t('play.deleteItem')]
       ];
     } else {
       controls = [
@@ -141,7 +128,8 @@ export function createSelectionHudController(context) {
         ['togglePin', selected.pinned ? '📌' : '📍', selected.pinned ? t('play.unpin') : t('play.pin')],
         ...(selected.attachedTo ? [['detach', '⛓️', t('play.detach')]] : []),
         ['duplicate', '⧉', t('play.duplicate')],
-        ['delete', '×', t('play.deleteItem')]
+        ...(context.store.getState().currentScene.entities.some(e => e.attachedTo === selected.instanceId && e.placement?.kind === 'surface') ? [['duplicateWithContents','⧉+',t('placement.duplicateWithContents')]] : []),
+        ['delete', '', t('play.deleteItem')]
       ];
     }
 
@@ -151,8 +139,12 @@ export function createSelectionHudController(context) {
       button.dataset.action = action;
       button.textContent = symbol;
       button.title = labelText;
+      if (state.currentScene.placementMode === 'room' && ['back','front'].includes(action)) { button.disabled = true; button.title = t('placement.depthAuto'); }
       button.setAttribute('aria-label', labelText);
-      if (action === 'delete') button.className = 'danger';
+      if (action === 'delete') {
+        button.className = 'danger';
+        button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg>';
+      }
       button.addEventListener('click', (event) => {
         event.stopPropagation();
         void handleEntityAction(action);
@@ -174,11 +166,6 @@ export function createSelectionHudController(context) {
     const id = state.ui.selectedEntityId;
     const entity = state.currentScene.entities.find((item) => item.instanceId === id);
     if (!action || selectedIds.length === 0) return;
-
-    if (action === 'deselect') {
-      context.store.dispatch({ type: 'ui/clearSelection' });
-      return;
-    }
 
     if (action.startsWith('align') || action === 'distributeH' || action === 'distributeV') {
       const modeMap = {
@@ -221,7 +208,7 @@ export function createSelectionHudController(context) {
     else if (action === 'larger') context.store.dispatch({ type: 'scene/scaleEntity', instanceId: id, scale: entity.scale + .1 });
     else if (action === 'back') context.store.dispatch({ type: 'scene/reorderEntity', instanceId: id, direction: -1 });
     else if (action === 'front') context.store.dispatch({ type: 'scene/reorderEntity', instanceId: id, direction: 1 });
-    else if (action === 'duplicate') context.store.dispatch({ type: 'scene/duplicateEntity', instanceId: id });
+    else if (action === 'duplicate' || action === 'duplicateWithContents') context.store.dispatch({ type: 'scene/duplicateEntity', instanceId: id, withContents: action === 'duplicateWithContents' });
     else if (action === 'togglePin') context.store.dispatch({ type: 'scene/togglePin', instanceId: id });
     else if (action === 'detach') context.store.dispatch({ type: 'scene/detachEntity', instanceId: id });
     else if (action === 'delete' && await context.askConfirm(t('play.deleteOneTitle'), t('play.deleteOneMessage'))) {

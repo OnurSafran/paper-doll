@@ -6,6 +6,8 @@
  * validation boundary.
  */
 
+import { sanitizePlacementRules, sanitizeSurfaces, validPolygon } from '../domain/placement-geometry.js';
+
 export const PACK_MANIFEST_SCHEMA_VERSION = 1;
 export const ALL_PACKS_FILTER = 'all';
 export const CORE_PACK_ID = 'core';
@@ -96,6 +98,7 @@ export function validatePackManifest(manifest, { knownPackIds = [] } = {}) {
       if (!ASSET_KINDS.has(asset.kind)) errors.push('asset ' + asset.id + ' has an invalid kind');
       if (!isSafeAssetPath(asset.path)) errors.push('asset ' + asset.id + ' has an unsafe path');
       if (!validViewBox(asset.viewBox)) errors.push('asset ' + asset.id + ' must declare a four-number viewBox');
+      validatePlacementMetadata(asset, errors);
       if (asset.metadata?.dlc !== manifest.id) errors.push('asset ' + asset.id + ' must declare metadata.dlc=' + manifest.id);
     }
   }
@@ -217,6 +220,23 @@ export function createPackRegistry(manifests = [], {
     isPackAvailable: (id) => installed.has(id),
     isPackVisible: (id) => visible.has(id)
   });
+}
+
+function validatePlacementMetadata(asset, errors) {
+  const rules = asset.placementRules == null ? null : sanitizePlacementRules(asset.placementRules);
+  const surfaces = sanitizeSurfaces(asset.supportSurfaces);
+  if (asset.placementRules != null && (asset.kind !== 'prop' || !rules)) errors.push('asset ' + asset.id + ' has invalid placement rules');
+  if (!surfaces || (surfaces.length && (asset.kind !== 'prop' || rules?.allowedTargets.join(',') !== 'floor'))) errors.push('asset ' + asset.id + ' has invalid support surfaces');
+  if (asset.placementProfile != null) {
+    const regions = asset.placementProfile.regions;
+    const width = asset.backgroundWidth || 1600;
+    const ids = new Set();
+    if (asset.kind !== 'background' || !Array.isArray(regions) || !regions.length || regions.length > 8) errors.push('asset ' + asset.id + ' has an invalid placement profile');
+    else for (const region of regions) {
+      if (!region || !/^[a-zA-Z0-9_-]{1,80}$/.test(region.id) || ids.has(region.id) || !['floor', 'wall'].includes(region.kind) || !validPolygon(region.polygon, false) || !region.polygon.every(([x, y]) => x >= 0 && x <= width && y >= 0 && y <= 900)) errors.push('asset ' + asset.id + ' has an invalid placement region');
+      ids.add(region?.id);
+    }
+  }
 }
 
 function normalizePackManifest(manifest) {

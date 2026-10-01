@@ -39,7 +39,7 @@ test('serializeProjectExport formats valid versioned JSON containing full domain
   const parsed = JSON.parse(jsonStr);
   assert.equal(parsed.format, 'paper-doll-project');
   assert.equal(parsed.formatVersion, 1);
-  assert.equal(parsed.state.schemaVersion, 6);
+  assert.equal(parsed.state.schemaVersion, 8);
   assert.equal(parsed.state.presets.length, 1);
   assert.equal(parsed.state.presets[0].name, 'Export Doll');
   assert.equal(parsed.state.scenes.length, 1);
@@ -51,7 +51,7 @@ test('serializeProjectExport formats valid versioned JSON containing full domain
 test('validateImportPayload performs 5-stage validation and summarizes incoming payload', async () => {
   // 1. Valid JSON payload
   const validEnvelope = {
-    schemaVersion: 4,
+    schemaVersion: 8,
     savedAt: new Date().toISOString(),
     settings: { reducedMotion: 'reduce', soundEnabled: true },
     presets: [{
@@ -100,12 +100,9 @@ test('validateImportPayload performs 5-stage validation and summarizes incoming 
   assert.equal(arrayRes.ok, false);
   assert.match(arrayRes.error, /valid Paper Doll project object/);
 
-  // 4. Schema v1 migration
-  const v1Payload = { ...validEnvelope, schemaVersion: 1 };
-  const migratedRes = await validateImportPayload(JSON.stringify(v1Payload), getAsset);
-  assert.equal(migratedRes.ok, true);
-  assert.equal(migratedRes.envelope.schemaVersion, 6);
-  assert.ok(migratedRes.warnings.some((w) => w.includes('upgraded')));
+  // Historical packages cannot reintroduce data cleared by the version boundary.
+  const legacy = { ...validEnvelope, schemaVersion: 1 };
+  assert.equal((await validateImportPayload(JSON.stringify(legacy), getAsset)).ok, false);
 });
 
 test('mergeProjectEnvelopes rewrites colliding IDs and preserves entity references', () => {
@@ -259,7 +256,7 @@ test('AppStore handles project/importReplace, project/importMerge, and project/r
   assert.equal(store.getState().presets.length, 1);
 
   const incomingEnvelope = {
-    schemaVersion: 2,
+    schemaVersion: 8,
     revision: 2,
     savedAt: new Date().toISOString(),
     settings: { reducedMotion: 'system', soundEnabled: true },
@@ -326,7 +323,7 @@ test('AppStore handles project/importReplace, project/importMerge, and project/r
 test('validateImportPayload rejects malicious payloads and invalid ID structures', async () => {
   // Payload with malicious selector characters in instanceId and presetId
   const maliciousPayload = {
-    schemaVersion: 2,
+    schemaVersion: 8,
     presets: [{
       presetId: '"><script>alert(1)</script>',
       name: 'Hacked Doll',
@@ -378,11 +375,11 @@ test('saveProjectBackup handles storage failure and returns error result', () =>
   const throwingStorage = {
     setItem: () => { throw new Error('QuotaExceeded'); }
   };
-  const res = saveProjectBackup(throwingStorage, { schemaVersion: 2, presets: [] });
+  const res = saveProjectBackup(throwingStorage, { schemaVersion: 8, presets: [] });
   assert.equal(res.ok, false);
   assert.equal(res.error, 'QuotaExceeded');
 
-  const nullStorageRes = saveProjectBackup(null, { schemaVersion: 2, presets: [] });
+  const nullStorageRes = saveProjectBackup(null, { schemaVersion: 8, presets: [] });
   assert.equal(nullStorageRes.ok, false);
   assert.equal(nullStorageRes.error, 'Storage unavailable');
 });
@@ -463,7 +460,7 @@ test('saveProjectBackup prunes older historical backup keys', () => {
     'other.key': 'preserved'
   });
 
-  const res = saveProjectBackup(storage, { schemaVersion: 2, presets: [] });
+  const res = saveProjectBackup(storage, { schemaVersion: 8, presets: [] });
   assert.equal(res.ok, true);
   assert.ok(storage.data.has('paperDollStudio.backup.latest'));
   assert.ok(storage.data.has('other.key'));
@@ -523,7 +520,7 @@ test('validateImportPayload validates package format v1 and custom artwork integ
     formatVersion: 1,
     exportedAt: '2026-08-16T12:00:00.000Z',
     state: {
-      schemaVersion: 3,
+      schemaVersion: 8,
       presets: [],
       scenes: [],
       currentScene: null,

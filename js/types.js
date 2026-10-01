@@ -47,6 +47,7 @@
  * @property {number} [scale]
  * @property {boolean} [flipped]
  * @property {boolean} [pinned]
+ * @property {Placement} [placement]
  * @property {number} [order]
  * @property {string|null} [attachedTo]
  * @property {{ dx: number, dy: number }|null} [attachOffset]
@@ -68,6 +69,7 @@
  * @property {string} backgroundId
  * @property {number} stageWidth
  * @property {number} cameraX
+ * @property {string} [placementMode]
  * @property {SceneEntity[]} entities
  * @property {{ enabled: boolean, loop: boolean, playbackRate: number }} [animationSettings]
  * @property {string} [createdAt]
@@ -99,11 +101,19 @@
  * @property {string[]} [presentationStyles]
  * @property {number} [displayWidth]
  * @property {number} [displayHeight]
+ * @property {PlacementRules} [placementRules]
+ * @property {SupportSurface[]} [supportSurfaces]
+ * @property {any} [placementProfile]
  * @property {{x: number, y: number}} [groundAnchor]
  */
 
 /**
  * @typedef {Object} StoreAction
+ * @property {boolean} [allowRemoval]
+ * @property {boolean} [withContents]
+ * @property {string} [placementMode]
+ * @property {any} [target]
+ * @property {boolean} [transfer]
  * @property {string} type
  * @property {string} [outfitId]
  * @property {string} [packId]
@@ -198,6 +208,9 @@
  * @property {{x: number, y: number}} [shoulderRightPivot]
  * @property {{x: number, y: number}} [hipLeftPivot]
  * @property {{x: number, y: number}} [hipRightPivot]
+ * @property {PlacementRules} [placementRules]
+ * @property {SupportSurface[]} [supportSurfaces]
+ * @property {any} [placementProfile]
  * @property {{x: number, y: number}} [groundAnchor]
  * @property {number} [displayWidth]
  * @property {number} [displayHeight]
@@ -210,6 +223,12 @@
  * @property {Object} [metadata]
  * @property {string} [packId]
  * @property {string} [packVersion]
+ */
+
+/**
+ * @typedef {{kind: 'free', reason: string}|{kind: 'floor'|'wall', regionId: string}|{kind: 'surface', surfaceId: string, localPoint: {x: number, y: number}}} Placement
+ * @typedef {{allowedTargets: string[], tags: string[], contactFootprint: {width: number, depth: number}, renderClass: string}} PlacementRules
+ * @typedef {{id: string, name?: string, nameKey?: string, polygon: number[][], acceptsTags: string[], authoringPreset?: string}} SupportSurface
  */
 
 export {};

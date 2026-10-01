@@ -1,3 +1,4 @@
+import { createPaintPlacementController } from './paint-placement-controller.js';
 import { createPaintControlsController } from './paint-controls-controller.js';
 import { createPaintKeyboardController } from './paint-keyboard-controller.js';
 import { createPaintCanvasController } from './paint-canvas-controller.js';
@@ -211,6 +212,7 @@ export function createPaintView({
     }
     cancelAsyncOperations();
     saveService.destroy();
+    placementController.destroy();
   }
 
   const { renderPalette, updatePaletteActive, bindPaletteEvents } = createPaintPaletteController({
@@ -340,8 +342,11 @@ export function createPaintView({
     get saveService() { return saveService; }
   });
 
+  const placementController = createPaintPlacementController({ rootElement, canvasStage, getSession: () => session, getCanvas: () => canvas, updateHistoryButtons, scheduleCheckpoint: () => saveService.scheduleDraftCheckpoint(), cancelTransientOperation, announceStatus });
+
   const { updateUIFromState, bindEvents } = createPaintControlsController({
     rootElement,
+    placementController,
     customArtRepo,
     onNavigate,
     askConfirm,
@@ -403,6 +408,7 @@ export function createPaintView({
     getCanvasState: () => ({ canvas, ctx }),
     resetCanvas,
     updateLivePreview,
+    onStateChanged: updateUIFromState,
     announceStatus
   });
 

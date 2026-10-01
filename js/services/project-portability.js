@@ -197,6 +197,8 @@ export async function validateImportPayload(
     return { ok: false, error: 'The package does not contain a valid state envelope.', warnings: ['Missing state object.'] };
   }
 
+  if (rawState.schemaVersion !== SCHEMA_VERSION) return { ok: false, error: 'This project uses an incompatible save version.', warnings: ['Only current-version projects can be imported.'] };
+
   // Pre-extract custom assets to feed the getAsset resolver
   const incomingCustomMeta = new Map();
   if (Array.isArray(rawState.customAssets)) {
@@ -208,7 +210,7 @@ export async function validateImportPayload(
 
   const assetResolver = (id) => incomingCustomMeta.get(id) || getAsset(id);
   const result = sanitizeEnvelope(rawState, assetResolver);
-  if (!result.envelope) {
+  if (!result.envelope || result.resetRequired) {
     return { ok: false, error: 'The file content could not be read as a valid project.', warnings: result.warnings };
   }
 
@@ -251,6 +253,8 @@ export async function validateImportPayload(
     }
     const metadataMatches = meta.kind === expected.kind && meta.slot === expected.slot &&
       meta.name === expected.name &&
+      JSON.stringify(meta.placementRules || null) === JSON.stringify(expected.placementRules || null) &&
+      JSON.stringify(meta.supportSurfaces || []) === JSON.stringify(expected.supportSurfaces || []) &&
       meta.logicalWidth === expected.logicalWidth && meta.logicalHeight === expected.logicalHeight &&
       meta.pixelWidth === expected.pixelWidth && meta.pixelHeight === expected.pixelHeight &&
       meta.byteLength === expected.byteLength && meta.sha256 === expected.sha256 &&
@@ -633,8 +637,9 @@ export function getAvailableBackup(storage, getAsset = (_id) => undefined) {
     const raw = storage.getItem(BACKUP_KEY_LATEST);
     if (!raw) return { available: false };
     const parsed = JSON.parse(raw);
+    if (parsed?.schemaVersion !== SCHEMA_VERSION) return { available: false };
     const result = sanitizeEnvelope(parsed, getAsset);
-    if (!result.envelope) return { available: false };
+    if (!result.envelope || result.resetRequired) return { available: false };
     return {
       available: true,
       envelope: result.envelope,

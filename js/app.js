@@ -11,12 +11,15 @@ import { createAppDialogs } from './app-dialogs.js';
  */
 
 import { ASSETS } from './core/asset-catalog.js';
+import { createSampleScene } from './domain/scene-rules.js';
+import { createStarterDraft } from './domain/outfit-rules.js';
+import { changePlacementBackground } from './domain/scene-placement.js';
 import { createAppStore } from './core/app-store.js';
 import { createAssetRegistry } from './core/asset-registry.js';
 import { getVisiblePackManifests, PACK_REGISTRY } from './packs/index.js';
 
 import { loadAssetSvg } from './core/svg-loader.js';
-import { createProjectRepository, loadProject } from './services/project-repository.js';
+import { createProjectRepository, loadProject, resetObsoleteProject } from './services/project-repository.js';
 import { createCustomArtRepository } from './services/custom-art-repository.js';
 import { createExportService } from './services/export-service.js';
 import { applyMouthExpression } from './core/mouth-expression.js';
@@ -41,10 +44,25 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 let storageRef = null;
 try { storageRef = window.localStorage; } catch { /* handled as unavailable */ }
 const loaded = loadProject(storageRef, PACK_REGISTRY.getAsset);
+const customArtRepo = createCustomArtRepository();
+if (loaded.resetRequired) {
+  try { await resetObsoleteProject(storageRef, customArtRepo); }
+  catch (error) {
+    $('#error-boundary-message').textContent = t('placement.resetFailed');
+    $('#error-boundary-code').textContent = 'ERR_PROJECT_RESET';
+    $('#dismiss-error-btn').hidden = true;
+    $('#reload-error-btn').addEventListener('click', () => window.location.reload());
+    $('#error-boundary-dialog').showModal();
+    throw error;
+  }
+}
 const visiblePackIds = PACK_REGISTRY.getPackIds().filter((id) => !loaded.envelope.settings?.hiddenPacks?.includes(id));
 const builtInAssetRegistry = createAssetRegistry([], { packRegistry: PACK_REGISTRY, visiblePackIds });
-const customArtRepo = createCustomArtRepository();
-const store = createAppStore(loaded.envelope, {
+const initialEnvelope = loaded.envelope.currentScene ? loaded.envelope : {
+  ...loaded.envelope,
+  currentScene: changePlacementBackground(createSampleScene(createStarterDraft()), 'bg_bedroom', builtInAssetRegistry.getAsset)
+};
+const store = createAppStore(initialEnvelope, {
   getAsset: builtInAssetRegistry.getAsset,
   assets: PACK_REGISTRY.getPacks().flatMap((manifest) => manifest.assets)
 });
@@ -106,6 +124,7 @@ const { openProjectDialog, exportProjectJsonFile, handleProjectFile, executeImpo
 });
 
 const { wireSceneEvents, exportSceneAsPng, exportCurrentFrameAsPng } = createAppSceneControls({
+  getAsset: getEffectiveAsset,
   $,
   $$,
   store,
@@ -194,6 +213,7 @@ const sceneOutlineView = createSceneOutlineView({
 });
 
 const worldMapView = createWorldMapView({
+  askConfirm,
   store,
   $,
   $$,

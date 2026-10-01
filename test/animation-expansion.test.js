@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import { createAppStore } from '../js/core/app-store.js';
 import {
   createDefaultEnvelope,
-  sanitizeEnvelope,
-  SCHEMA_VERSION
+  sanitizeEnvelope
 } from '../js/core/state-schema.js';
 import {
   evaluateClipAtTime,
@@ -108,45 +107,10 @@ test('Motion Evaluator: Attached entity kinematics evaluates joints with scale a
   assert.equal(rootTransform.rot, 5);
 });
 
-test('State Schema: v5 to v6 migration upgrades animation settings and presets', () => {
-  const v5Envelope = {
-    schemaVersion: 5,
-    revision: 1,
-    savedAt: new Date().toISOString(),
-    settings: { reducedMotion: 'system', soundEnabled: false },
-    presets: [],
-    scenes: [
-      {
-        sceneId: 'scene_1',
-        title: 'Old Scene',
-        backgroundId: 'bg_park',
-        stageWidth: 1600,
-        cameraX: 0,
-        animationSettings: { enabled: true, loop: true },
-        entities: [
-          {
-            instanceId: 'ent_1',
-            kind: 'prop',
-            sourceId: 'prop_book',
-            x: 200,
-            y: 300,
-            scale: 1,
-            flipped: false,
-            pinned: false,
-            attachedTo: 'char_1',
-            attachOffset: { dx: 10, dy: 10 }
-          }
-        ]
-      }
-    ],
-    currentScene: null
-  };
-
-  const { envelope, warnings, migrated } = sanitizeEnvelope(v5Envelope);
-  assert.equal(envelope.schemaVersion, SCHEMA_VERSION);
-  assert.equal(migrated, true);
-  assert.equal(envelope.scenes[0].animationSettings.playbackRate, DEFAULT_PLAYBACK_RATE);
-  assert.equal(envelope.scenes[0].entities[0].attachJoint, DEFAULT_ATTACH_JOINT);
+test('State Schema: pre-paper-stage animation data starts clean', () => {
+  const result = sanitizeEnvelope({ schemaVersion: 5, scenes: [{ sceneId: 'old', entities: [] }] });
+  assert.equal(result.resetRequired, true);
+  assert.deepEqual(result.envelope.scenes, []);
 });
 
 test('AppStore: scene/setPlaybackRate updates playback rate and persists', () => {

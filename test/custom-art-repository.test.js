@@ -351,7 +351,7 @@ test('CustomArtRepository lists artwork and restores validated backup bytes', as
   const mockIDB = createMockIndexedDB();
   const repo = createCustomArtRepository({ indexedDB: mockIDB });
   const saved = await repo.saveArtwork('custom_backup_restore', MINIMAL_PNG_BYTES);
-  const backup = await repo.saveBackup('latest', { schemaVersion: 3 }, [
+  const backup = await repo.saveBackup('latest', { schemaVersion: 8 }, [
     { assetId: 'custom_backup_restore', blob: new Blob([MINIMAL_PNG_BYTES]), byteLength: MINIMAL_PNG_BYTES.byteLength, sha256: saved.record.sha256 }
   ]);
   assert.equal(backup.ok, true);
@@ -395,7 +395,7 @@ test('CustomArtRepository clearArtworkLibrary keeps the paint draft and import b
   await repo.saveArtwork('custom_art_2', MINIMAL_PNG_BYTES);
   await repo.moveToTrash('custom_art_2');
   await repo.saveDraft(MINIMAL_PNG_BYTES);
-  await repo.saveBackup('latest', { schemaVersion: 3 }, []);
+  await repo.saveBackup('latest', { schemaVersion: 8 }, []);
   const url = await repo.getTrackedObjectUrl('custom_art_1');
 
   const cleared = await repo.clearArtworkLibrary();

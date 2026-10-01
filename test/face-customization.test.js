@@ -280,57 +280,11 @@ test('renderDollInto filters face layers by the active doll fit family', async (
   }
 });
 
-test('state schema v4 sanitization and v3 migration', () => {
-  assert.equal(SCHEMA_VERSION, 6);
-
-  // v3 envelope migrates to v4 and injects default face into presets and scene character entities
-  const legacyV3 = {
-    schemaVersion: 3,
-    savedAt: '2026-08-16T12:00:00Z',
-    settings: { reducedMotion: 'system', soundEnabled: true },
-    presets: [{
-      presetId: 'p-1',
-      name: 'Legacy Doll',
-      baseDollId: 'doll_classic_a',
-      skinTone: 'peach',
-      slots: { hair: null, top: null, bottom: null, dress: null, shoes: null, accessory: null }
-    }],
-    scenes: [],
-    currentScene: {
-      sceneId: 'sc-1',
-      title: 'Stage',
-      backgroundId: 'bg_bedroom',
-      entities: [{
-        instanceId: 'char-1',
-        kind: 'character',
-        sourceId: 'doll_classic_b',
-        x: 400,
-        y: 600,
-        scale: 1,
-        order: 1,
-        characterSnapshot: {
-          baseDollId: 'doll_classic_b',
-          skinTone: 'honey',
-          slots: { hair: null, top: null, bottom: null, dress: null, shoes: null, accessory: null }
-        }
-      }]
-    }
-  };
-
-  const sanitized = sanitizeEnvelope(legacyV3, getAsset);
-  assert.equal(sanitized.envelope.schemaVersion, 6);
-  assert.equal(sanitized.migrated, true);
-  assert.equal(sanitized.recovered, true);
-
-  // Preset uses doll_classic_a → default face: eyes_classic, detail null
-  assert.ok(sanitized.envelope.presets[0].face);
-  assert.equal(sanitized.envelope.presets[0].face.eyes.assetId, 'eyes_classic');
-  assert.equal(sanitized.envelope.presets[0].face.detail, null);
-
-  // Scene entity uses doll_classic_b → default face: eyes_sparkle, detail_blush
-  assert.ok(sanitized.envelope.currentScene.entities[0].characterSnapshot.face);
-  assert.equal(sanitized.envelope.currentScene.entities[0].characterSnapshot.face.eyes.assetId, 'eyes_sparkle');
-  assert.equal(sanitized.envelope.currentScene.entities[0].characterSnapshot.face.detail.assetId, 'detail_blush');
+test('old face saves reset and current drafts sanitize invalid face parts', () => {
+  assert.equal(SCHEMA_VERSION, 8);
+  const reset = sanitizeEnvelope({ schemaVersion: 3, presets: [{ presetId:'old-doll' }] }, getAsset);
+  assert.equal(reset.resetRequired, true);
+  assert.deepEqual(reset.envelope.presets, []);
 
   // Draft with corrupted face safely repairs
   const brokenDraft = {
@@ -356,7 +310,7 @@ test('state schema v4 sanitization and v3 migration', () => {
 
 test('invalid face groups produce group-level recovery warnings', () => {
   const result = sanitizeEnvelope({
-    schemaVersion: 4,
+    schemaVersion: 8,
     presets: [{
       presetId: 'p-face-warning',
       name: 'Face warning',
