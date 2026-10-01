@@ -150,10 +150,10 @@ export function createExportService(options = {}) {
       const ordered = orderedSceneEntities(snapshot, getAssetFn);
       for (const entity of ordered) {
         if (effectiveSignal?.aborted) throw new Error('Export cancelled');
-        const shadow = placementShadow(snapshot, entity, getAssetFn);
+        const shadow = placementShadow(snapshot, entity, getAssetFn, effectiveOptions.shadowsEnabled === true);
         if (shadow) {
           ctx.save(); ctx.fillStyle = shadow.fill;
-          if (typeof ctx.ellipse === 'function') { ctx.beginPath(); ctx.ellipse(shadow.x, shadow.y, shadow.width / 2, shadow.height / 2, 0, 0, Math.PI * 2); ctx.fill(); }
+          if (shadow.shape !== 'rect' && typeof ctx.ellipse === 'function') { ctx.beginPath(); ctx.ellipse(shadow.x, shadow.y, shadow.width / 2, shadow.height / 2, 0, 0, Math.PI * 2); ctx.fill(); }
           else ctx.fillRect(shadow.x - shadow.width / 2, shadow.y - shadow.height / 2, shadow.width, shadow.height);
           ctx.restore();
         }

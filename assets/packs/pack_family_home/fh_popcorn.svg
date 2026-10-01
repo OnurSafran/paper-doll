@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_popcorn"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M250 460 L750 460 L675 900 L325 900 Z" fill="#dd9c89"/><path d="M290 480 L315 885 L365 885 L355 480 Z" fill="#fff8eb"/><path d="M430 480 L455 885 L505 885 L495 480 Z" fill="#fff8eb"/><path d="M570 480 L595 885 L645 885 L635 480 Z" fill="#fff8eb"/><ellipse cx="300" cy="425" rx="65" ry="60" fill="#d7b86c"/><ellipse cx="430" cy="380" rx="65" ry="60" fill="#d7b86c"/><ellipse cx="570" cy="390" rx="65" ry="60" fill="#d7b86c"/><ellipse cx="690" cy="425" rx="65" ry="60" fill="#d7b86c"/><ellipse cx="390" cy="460" rx="65" ry="60" fill="#d7b86c"/><ellipse cx="530" cy="455" rx="65" ry="60" fill="#d7b86c"/><ellipse cx="625" cy="470" rx="65" ry="60" fill="#d7b86c"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_popcorn">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<path d="M250 460 H750 L675 900 H325 Z" fill="#e07a5f"/>
+    <g fill="#fff8eb" stroke="none"><path d="M295 475 H350 L380 885 H330 Z"/><path d="M460 475 H520 L515 885 H465 Z"/><path d="M640 475 H695 L670 885 H620 Z"/></g>
+    <path d="M250 460 H750 L675 900 H325 Z" fill="none"/>
+    <g fill="#fff0be" stroke-width="12">
+      <path d="M280 455 C205 440 225 380 265 375 C220 320 300 275 330 330 C385 300 415 375 360 405 C390 465 320 485 280 455 Z"/>
+      <path d="M435 405 C360 390 380 325 425 325 C390 265 465 235 490 290 C550 255 580 330 530 360 C555 415 485 440 435 405 Z"/>
+      <path d="M590 415 C530 395 540 340 575 335 C550 285 620 260 645 305 C705 280 735 350 685 375 C710 430 640 460 590 415 Z"/>
+      <path d="M690 490 C630 465 655 425 685 425 C660 370 730 345 755 395 C805 380 825 445 780 460 C775 510 720 525 690 490 Z"/>
+      <path d="M380 520 C320 505 320 455 355 440 C325 380 405 360 425 410 C480 390 510 450 465 475 C470 535 410 550 380 520 Z"/>
+      <path d="M535 520 C475 490 490 450 530 440 C495 390 565 365 590 410 C650 385 675 450 630 475 C650 525 580 555 535 520 Z"/>
+    </g>
+    <path d="M275 555 L725 555" fill="none" stroke="#f4b39c" stroke-width="12"/>
+    <ellipse cx="500" cy="725" rx="110" ry="90" fill="#e9c46a"/>
+    <path d="M500 655 L521 698 L568 704 L534 738 L542 785 L500 763 L458 785 L466 738 L432 704 L479 698 Z" fill="#fff8eb" stroke-width="9"/>
+  </g>
+</svg>

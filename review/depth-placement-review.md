@@ -1,5 +1,225 @@
 # Depth and surface placement review
 
+## Map guides and shadow preference — 2026-10-02
+
+Floor guides follow the background's authored full-width or multiple separate areas.
+Dragging a small prop shows every fitting furniture surface alongside room floor
+guides; the current target is emphasized. Unsupported/too-small surfaces are excluded,
+and cancel/release clears the overlays. Scene shadows now default off and can be
+enabled in Settings; the saved preference applies to Play, thumbnails and PNG export.
+Verification: `npm run check` passes 603 tests, types and validators, with 91 existing
+ESLint warnings and no errors. Browser checks confirmed default-off shadows, opt-in
+and opt-out updates, and both preferences surviving reload; no browser warnings or
+errors were recorded. Pointer tests verify simultaneous floor/tabletop overlays and
+cancellation cleanup. [Shadow setting screenshot](scene-shadows-setting.jpg).
+Older verification counts below describe their respective historical states.
+
+## Final fixes — 2026-10-02
+
+The follow-up review defects are fixed: furnished transforms validate all affected
+artwork against stage bounds even on free backgrounds; asymmetric standalone and
+batch flips use the same validation. Supported siblings sort by local contact
+depth with stable ties, retaining generic attachment slots and Free collage manual
+ordering. Place on actions restore focus to the rebuilt Outline row or Play action.
+Surface contact shadows now work on free backgrounds. Wall mounting shadows share
+geometry across Play, Scene Book and PNG export; existing cosmetic CSS shadows remain.
+Regression coverage is in `test/placement-final-fixes.test.js`. Verification:
+`npm run check` passes 599 tests with no failures, types and all validators;
+ESLint retains 91 warnings and no errors. Browser placement returns focus to the
+updated Tea set row action inside Outline. Reload preserves the supported tea,
+and the authored wall shadow is fitted to the picture frame's transparent margins.
+Browser warnings/errors were empty. [Final screenshot](placement-final-fixes.jpg).
+The earlier findings and verification counts below are historical.
+
+## Current recheck — 2026-10-01
+
+**Follow-up implemented:** C1–C3 are fixed. Full-width floor/wall planes span the
+panorama continuously, including arrow/group movement; current-save tile IDs
+remain valid aliases. Existing-prop drags acquire/release surfaces on free
+backgrounds. Tray drops use validated surface placement while character-held
+props retain generic attachment. A browser-discovered sparse-event grab-offset
+bug is also fixed. The persistent dropdown is removed; secondary Place on
+actions open buttons in the toolbar and Outline. C4 now has five built-in support
+hosts, seven additional Family small props, six floor-classified Family furniture
+pieces, and three Family indoor room profiles. Loading a room template now
+initializes its placement rules. Paint was not redesigned or edited.
+
+Verification: `npm run check` passed with **592 tests, 0 failures**, types and all
+validators; ESLint retained 91 warnings. New coverage is in
+`test/placement-interactions.test.js`, with pointer-start coverage in the existing
+pointer tests. Real browser checks confirmed dropdown removal, destination
+buttons, free-background drag release/acquisition, current-save reload, and
+keyboard movement to exactly x=1600 with tabletop contents following the host.
+[Updated Play screenshot](placement-fixed-play.png) shows the former seam and
+the new furniture/prop badges.
+The findings below describe the state before this follow-up.
+
+The placement engine and drawn support areas are still implemented. The current
+experience is incomplete because content coverage is small, drag entry points do
+not all use surface placement, and panorama tiles introduce artificial floor
+boundaries. The older R1–R12 findings below are historical; the remediation summary
+does not close these newly identified gaps.
+
+This recheck changed review documentation and captured browser evidence only;
+it did not change application behavior.
+
+### Where implementation stands
+
+| Area | Current evidence |
+| --- | --- |
+| Core placement | Floor/wall constraints, tabletop support, host-relative coordinates, transforms, pinning, undo, depth ordering, and recovery are connected. |
+| Built-in furniture surfaces | Of 62 bundled props, only `prop_table` declares `supportSurfaces`. Bookshelf, bench, sofa, storage cubbies, and high-chair artwork do not provide support areas. |
+| Placeable content | 15 of 62 props declare placement rules: 14 core props and `fh_reading_lamp`. The remaining 47 have no authored placement classification. |
+| Rooms | Only bedroom, atelier, and cafe have floor/wall profiles. All four Family & Home backgrounds, the library, and other settings use free placement. |
+| Custom surface authoring | Still available through Play → Props → Draw → Placement. With Floor selected, Add rectangle/oval/trapezoid creates a movable, resizable support area. Surface names, taper, steppers, duplicate/remove, and lamp preview remain present. |
+| Release completeness | Selected-instance artwork replacement, occlusion-aware targeting, expanded failure feedback, and device/user/performance evidence remain deferred under D-050. |
+
+The initial welcome room contains a doll, chair, and plant, with no table or
+supported small prop. It therefore does not demonstrate the surface feature.
+Tray cards all say “SCENE PROP”; there is no visible distinction between a piece
+that holds objects, a small prop that can rest on furniture, and unclassified art.
+Furniture painted into background SVGs is scenery: it is not an entity with a
+support area. For example, the atelier's painted shelf cannot hold new props.
+Wall-mounted support hosts also remain outside the first-release scope.
+
+### C1 — P2: the extended floor is divided at artwork tile seams
+
+Locations: `js/domain/scene-placement.js:18–25`, `:47–55`, `:67–79`, and
+`js/domain/scene-rules.js:708–734`.
+
+`getBackgroundLayout` repeats/mirrors artwork correctly, but placement creates
+separate `floor:0`, `floor:1`, and `floor:2` polygons. Each polygon is independently
+inset by the item's footprint, treating interior tile joins as room boundaries.
+
+Executed reproduction: a scale-1 core table is 250 units wide, with a .55 base
+width. In a 3200-wide bedroom its legal floor contact ranges are
+`[125, 1531.25]` and `[1668.75, 3075]`. This leaves a **137.5-unit forbidden band**
+inside the visually continuous floor. Drag requests at x=1580 or x=1600 resolve
+to x=1531.25; x=1620 resolves to x=1668.75. The table sticks, then jumps across.
+The same boundary treatment affects continuous tiled walls using whole-art fit.
+
+`moveEntity` preserves the current region when transfer is false, so arrow
+movement cannot cross into the added floor tile. `moveEntities` uses that path
+and rejects a move when its requested position cannot be reached, so group
+movement is also blocked across tiles. Preventing arrows from silently moving a
+prop between floor and tabletop is sensible; moving across two parts of the same
+floor should not be a support change.
+
+Recommended repair: keep visual tiles separate, but represent an authored
+continuous room floor/wall as one logical support across the stage. Inset only
+real exterior boundaries. Preserve deliberately disconnected authored regions.
+Verify seam contacts, drag/arrows/groups, supported assemblies, scale/flip,
+width changes, and current-save reload. Existing panorama tests check tile
+coordinates, not footprint continuity at joins.
+
+Bedroom's floor edge remains correctly set to y=646; atelier is 664 and cafe is
+666. This reproduction concerns placement geometry. The exact background and
+appearance of the user's visual-extension symptom were not supplied, so a
+specific rendering defect is not established by this result. Visually, extending
+the stage currently mirrors the entire room artwork, including rugs and fixed
+decor; it does not independently extend a floor layer or generate new room art.
+
+### C2 — P2: dragging does not acquire support on unprofiled backgrounds
+
+Location: `js/features/play/stage-pointer-controller.js:181–200`.
+
+`stateForPlacement` enables placement dragging only for non-free room items or
+items already on a surface. A newly added tea set in the park or Family living
+room has no surface placement, so its drag follows ordinary collage movement.
+It cannot acquire a compatible tabletop through that path.
+
+Executed probes confirmed that the shared domain resolver can place the same tea
+set on the same table on those backgrounds, while the pointer gate excludes it.
+The explicit chooser remains a way to establish that first surface relationship.
+Removing the chooser before fixing this would remove working access to the
+feature in those settings.
+
+Recommended repair: allow compatible small props to acquire a furniture surface
+independently of background room constraints, retaining free movement when no
+surface is acquired. Cover preview, release, cancellation, and leaving support.
+
+### C3 — P2: dropping from the tray bypasses surface placement
+
+Locations: `js/app-shell-events.js:231–254` and
+`js/core/reducers/scene-reducer.js:147–164`.
+
+Dropping a tray prop over an entity sends `targetEntityId`; `scene/spawnProp`
+creates a generic attachment directly. It does not resolve a support polygon,
+validate tabletop compatibility, or store a surface `localPoint`.
+
+Executed store reproduction: dropping the tea set at the table's projected
+tabletop center produces `attachedTo: 'table'` and offset `{dx: 0, dy: -140}`,
+but **no placement field**. This relationship is not a supported tabletop child.
+The result can look attached while bypassing surface containment and the
+surface-specific pin/transform/duplicate behavior. With no entity under the
+drop, ordinary room spawning instead chooses a floor/wall target.
+
+Recommended repair: resolve a tray drop through the same support rules as moving
+an existing prop; retain character-held generic attachment where that existing
+interaction is intended. Verify both successful and incompatible tray drops.
+
+### C4 — P2: furniture content does not demonstrate the engine
+
+Locations: `js/core/asset-catalog.js:455–469` and
+`js/packs/family-home/catalog.js`.
+
+The authored table surface was not removed. More furniture surfaces have not
+been authored. Of the 40 Family & Home props, only the reading lamp has placement
+rules and none provide support. Small-looking props such as books, mugs, trays,
+and bottles cannot use tabletop rules without explicit classification. The core
+floor lamp is floor-only; it is not the small sample lamp used by the Paint test.
+
+Recommended next content batch: a visibly useful floor-standing table/cabinet
+host and a few fitting small props, with authored polygons and anchors checked
+against their artwork. Add room profiles for the relevant Family & Home indoor
+settings. Choose shelf/seat/front-back furniture behavior separately; a support
+polygon alone does not implement seating or partial furniture occlusion.
+
+### Does Play need the destination dropdown?
+
+Dragging should be the normal placement interaction. The chooser exists as an
+explicit non-drag alternative, for keyboard/tap users, hidden/overlapping targets,
+and recovery from unavailable support. It is required by the current PRD's
+section 8.2, but that does not require a permanently visible native dropdown.
+
+The current UI adds noise: it appears for every selected item, including disabled
+unclassified/pinned pieces and items with only a single destination. On a wide
+room it lists “Floor (Current)” and “Floor”; on a panorama another identical
+“Floor” appears because the underlying regions are tiles. Its selected value
+remains “Choose a destination,” with current support indicated only in option
+text. The real browser reproduced the two-floor menu.
+
+Recommendation: show a compact support status such as “On floor” or “On table,”
+and put **Place on…** in selected-item actions/Outline as an accessible secondary
+action when a meaningful alternative or recovery destination exists. A button
+opening named destination actions can replace the select. Keep Paint's **Where
+this piece goes** and **Support areas** controls: those author what a drawing
+means, rather than choose where a scene instance sits. Fix C1–C3 before reducing
+the Play placement UI.
+
+### Current verification and next order
+
+- `npm run check`: **580 tests passed, 0 failures**, TypeScript and all validators
+  passed; ESLint has **91 warnings, 0 errors**.
+- Executed registry inventory, floor-seam movement, free-background resolver, and
+  tray-spawn probes against the actual domain/store code.
+- Fresh local browser: wide bedroom shows repeated floor options; Paint →
+  Placement → Add trapezoid shows the surface overlay, rear width, and move/resize
+  controls. Captured browser warnings/errors were empty.
+- No new complete drawn-furniture save/export round trip or physical-device
+  validation was performed. Passing tests currently miss the gaps above.
+
+Recommended order: continuous panorama support → consistent existing-prop and
+tray drag placement → useful furniture/room content → smaller secondary placement
+UI → save/reload/export and device acceptance checks.
+
+[Current Play controls](placement-current-controls.png) ·
+[Current surface authoring](placement-current-authoring.png)
+
+---
+
+## Initial review and remediation record
+
 Date: 2026-10-01. Reviewed the current working tree against `docs/PRD-DEPTH-AND-SURFACE-PLACEMENT.md`, D-049, and the referenced “Design depth-aware scene placement” chat. The findings below record the initial review before remediation.
 
 **Remediation:** R1 and R3–R12 are addressed in the working tree, with regression tests. R2 is retired by the authorized schema-8 clean start: old artwork arrangements are discarded rather than migrated. The user mode toggle and migrations are removed. Shrink confirmation, same-surface duplicates, explicit furnished copies, floor recovery on deletion, content validators, trapezoid taper, and authoring steppers are implemented.

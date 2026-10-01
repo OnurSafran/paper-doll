@@ -172,8 +172,8 @@ test('Play view + Paint Prop button invokes openPaintStudio without ReferenceErr
   const propsTab = tabs.find((t) => t.id === 'spawn-tab-props' || t.textContent === 'Props' || t.textContent === 'Eşyalar');
   propsTab?._listeners?.click?.[0]?.({});
 
-  const spawnItems = elements['#spawn-items']?.children || [];
-  const paintPropCard = spawnItems.find((c) => c.className?.includes('paint-prop-action-card'));
+  const trayActions = elements['#play-pack-filter']?.children || [];
+  const paintPropCard = trayActions.find((c) => c.className?.includes('paint-prop-action-card'));
   assert.ok(paintPropCard, 'Paint Prop card exists in spawn tray');
 
 

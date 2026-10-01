@@ -4,7 +4,7 @@
  * guarded writes, cross-tab conflict detection, and quarantine recovery.
  */
 
-import { createDefaultEnvelope, sanitizeEnvelope, requiresCleanStart, SCHEMA_VERSION, STORAGE_KEY } from '../core/state-schema.js';
+import { createDefaultEnvelope, sanitizeEnvelope, requiresCleanStart, SCHEMA_VERSION, APP_VERSION, STORAGE_KEY } from '../core/state-schema.js';
 import { LIMITS } from '../domain/vocabulary.js';
 
 export { STORAGE_KEY };
@@ -170,6 +170,7 @@ export function createProjectRepository({
     const toSave = {
       ...envelope,
       schemaVersion: SCHEMA_VERSION,
+      appVersion: APP_VERSION,
       revision: nextRevision
     };
 

@@ -7,7 +7,7 @@
     grid-template-columns: minmax(360px, 1fr) minmax(320px, 380px);
   }
   .play-grid {
-    grid-template-columns: minmax(460px, 1fr) minmax(260px, 320px);
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
   }
   .scene-meta-actions {
     justify-content: flex-start;
@@ -62,10 +62,17 @@
     display: flex;
     flex-direction: column;
   }
+  .play-stage-column,
+  .play-rail {
+    width: 100%;
+    height: auto;
+  }
   .play-rail {
     order: 2;
   }
   .paint-grid {
+    height: auto;
+    overflow: visible;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -88,6 +95,8 @@
   }
   .paint-stage-column,
   .paint-sidebar {
+    height: auto;
+    flex: 0 0 auto;
     width: 100%;
     max-width: 760px;
   }
@@ -105,13 +114,17 @@
     min-height: auto;
   }
   /*
-   * Reserve a 16:9 stage plus the panoramic camera strip on stacked layouts.
+   * Keep the scene panel at 16:9 on stacked layouts.
    */
   .play-stage-viewport {
-    min-height: calc((100vw - 2.5rem) * 0.5625 + var(--hud-space, 0px) + 1.5rem);
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    flex: none;
+    container-type: inline-size;
   }
   /* A swipe that starts on the stage scrolls the page; entities keep touch-action:none for dragging. */
   .play-stage {
+    width: 100%;
     touch-action: pan-y;
   }
   .designer-sidebar,
@@ -142,58 +155,9 @@
   }
 }
 
-/*
- * iPad Pro 12.9"/13" in portrait (1024–1032px) still fits the two-column Play
- * grid, but its tall, narrow scene column can only hold a 16:9 stage with huge
- * letterbox gaps. Stack Play the same way the smaller iPads do.
- */
-@media (orientation: portrait) and (min-width: 921px) and (max-width: 1100px) {
-  main {
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-  }
-  .play-grid {
-    display: flex;
-    flex-direction: column;
-  }
-  .play-rail {
-    order: 2;
-  }
-  #play-screen {
-    height: auto;
-    min-height: 100%;
-    max-height: none;
-    overflow: visible;
-  }
-  .play-stage-viewport {
-    order: 1;
-    min-height: calc((100vw - 2.5rem) * 0.5625 + var(--hud-space, 0px) + 1.5rem);
-  }
-  .play-stage {
-    touch-action: pan-y;
-  }
-  .spawn-panel {
-    order: 2;
-    width: 100%;
-    max-height: none;
-    overflow: visible;
-  }
+@media (max-width: 920px) {
   .spawn-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-/*
- * Both stacked Play layouts above. Left at the desktop height:100%, the stage
- * column and rail split the screen 50/50, the column shrinks below the
- * viewport's reserved 16:9 height, and the stage spills over the rail.
- * Size them to their content and let <main> scroll instead.
- */
-@media (max-width: 920px), (orientation: portrait) and (min-width: 921px) and (max-width: 1100px) {
-  .play-grid,
-  .play-stage-column,
-  .play-rail {
-    height: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -253,8 +217,381 @@
   .doll-canvas {
     width: min(85%, 340px);
   }
-  .scene-help {
+}
+
+/* Phone portrait fallback keeps scene actions and their menus within the page. */
+@media (max-width: 600px) {
+  .play-heading .scene-meta-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .play-heading .scene-meta-actions > .button,
+  .play-heading .dropdown-summary {
+    width: 100%;
+    padding-inline: 0.4rem;
+    font-size: 0.76rem;
+  }
+  #play-scene-dropdown .menu-dropdown-panel {
+    left: 0;
+    right: auto;
+  }
+}
+
+/* Wide screens use a side panel; smaller screens stack it below the stage. */
+main:has(> #play-screen:not([hidden])) {
+  max-width: none;
+}
+
+@media (min-width: 921px) {
+  main:has(> #play-screen:not([hidden])) {
+    overflow: hidden;
+  }
+  #play-screen {
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .play-grid {
+    height: 100%;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+    overflow: hidden;
+  }
+  .play-stage-column {
+    height: 100%;
+  }
+  .play-stage-viewport {
+    flex: 1 1 0;
+    aspect-ratio: auto;
+    container-type: size;
+    place-items: center;
+  }
+  .play-stage {
+    width: min(100cqw, calc(100cqh * 16 / 9));
+    height: auto;
+  }
+  .play-rail {
+    height: 100%;
+    overflow: hidden;
+  }
+  .play-rail:has(> .play-rail-content[hidden]) .play-panel-title {
     display: none;
+  }
+  .play-rail-content {
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .play-rail .spawn-panel,
+  .play-rail .play-inspector-panel {
+    flex: 0 0 auto;
+  }
+  .spawn-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 920px) {
+  .play-stage-viewport {
+    max-height: max(120px, calc(100dvh - 180px));
+    container-type: size;
+  }
+  .play-stage {
+    width: min(100cqw, calc(100cqh * 16 / 9));
+    height: auto;
+  }
+  .play-rail,
+  .play-rail:has(> .play-rail-content[hidden]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .scene-tray-toggle {
+    justify-self: end;
+    margin-left: auto;
+  }
+  .scene-panel-chevron {
+    transform: rotate(-90deg);
+  }
+  .scene-tray-toggle[aria-expanded="true"] .scene-panel-chevron {
+    transform: rotate(90deg);
+  }
+  .play-rail:has(> .play-rail-content[hidden]) {
+    grid-template-rows: auto;
+    gap: 0;
+  }
+  .play-stage-controls .outline-btn-text,
+  .play-stage-controls .play-btn-text,
+  .play-stage-controls .voice-btn-text {
+    display: none;
+  }
+  .play-stage-controls > #scene-outline-btn {
+    padding-inline: 0.5rem;
+    min-width: var(--stage-control-height);
+  }
+  .play-stage-controls .stage-width-group select {
+    width: var(--stage-control-height);
+    min-width: var(--stage-control-height);
+    max-width: var(--stage-control-height);
+    padding: 0;
+    font-size: 0;
+    color: transparent;
+    background-position: center center;
+  }
+  .play-stage-controls .stage-width-group select option {
+    font-size: 0.85rem;
+    color: var(--ink);
+  }
+}
+
+/* Landscape phones keep the stage fixed while the tools scroll beside it. */
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 1100px) {
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .app-header {
+    height: 54px;
+    min-height: 54px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "brand nav actions";
+    gap: 6px;
+    padding: 0 8px;
+  }
+  .brand-titles {
+    display: none;
+  }
+  .header-actions {
+    gap: 4px;
+  }
+  .mode-nav a {
+    padding-inline: 0.5rem;
+  }
+  main,
+  main:has(> #play-screen:not([hidden])) {
+    overflow: hidden;
+  }
+  #designer-screen,
+  #play-screen,
+  #paint-screen {
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    padding: 6px 8px;
+    overflow: hidden;
+  }
+  #play-screen {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .play-heading {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+  .play-heading > .scene-picker-group {
+    flex: 1 1 0;
+  }
+  .play-heading .scene-meta-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    width: auto;
+    gap: 4px;
+  }
+  .play-heading .scene-meta-actions .button {
+    width: auto;
+    padding-inline: 0.5rem;
+    font-size: 0.74rem;
+  }
+  .play-grid {
+    --scene-panel-padding: 5px;
+  }
+  .play-stage-controls {
+    /* Scroll playback controls independently on short phones. */
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    grid-template-areas: "outline playback size";
+    gap: 5px;
+    padding: 5px;
+    overflow: hidden;
+    --stage-control-height: 44px;
+  }
+  .play-stage-controls .button {
+    min-width: 0;
+    padding-inline: 0.35rem;
+    font-size: 0.74rem;
+  }
+  .play-stage-controls .stage-width-group select {
+    padding-inline: 0.35rem 1.25rem;
+    background-position: right 0.35rem center;
+    font-size: 0.74rem;
+  }
+  .play-animation-transport {
+    min-width: 0;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 5px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .play-rail .spawn-panel,
+  .play-rail .play-inspector-panel {
+    flex: 0 0 auto;
+    overflow: visible;
+    padding: 0;
+  }
+  .spawn-panel .panel-heading {
+    margin-bottom: 0.4rem;
+  }
+  .spawn-panel .panel-copy,
+  .spawn-panel .eyebrow {
+    display: none;
+  }
+  .spawn-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .scene-hud {
+    inset: 6px 6px auto;
+    gap: 3px;
+  }
+  .scene-hud span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .scene-hud span:not(:first-child) {
+    flex-shrink: 0;
+  }
+  .designer-grid,
+  .paint-grid {
+    display: grid;
+    height: 100%;
+    grid-template-columns: minmax(0, 1fr) clamp(220px, 30vw, 280px);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 8px;
+    overflow: hidden;
+  }
+  .designer-grid {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .designer-stage-wrap {
+    display: contents;
+  }
+  .designer-topbar {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 4px;
+  }
+  .designer-sidebar {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .designer-title-row {
+    gap: 4px;
+  }
+  .designer-title-row h1 {
+    font-size: 1rem;
+  }
+  .designer-top-actions {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .designer-top-actions .button,
+  .paint-heading-primary .button {
+    font-size: 0.74rem;
+    padding-inline: 0.4rem;
+  }
+  .designer-sidebar,
+  .paint-sidebar {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .paper-stage {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    min-height: 0;
+  }
+  .doll-canvas {
+    width: auto;
+    height: 90%;
+    max-height: 90%;
+  }
+  .asset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .designer-tools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .paint-heading {
+    margin-bottom: 0;
+  }
+  .paint-heading-primary {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .paint-title-group {
+    /* The item chip beside the canvas already identifies the active artwork. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .paint-heading-primary {
+    justify-content: space-between;
+  }
+  .paint-status-row {
+    min-height: 0;
+  }
+  .paint-canvas-viewport {
+    min-height: 0;
+    container-type: size;
+    padding: 8px;
+  }
+  .paint-canvas-stage {
+    /* Preserve logical coordinates for the cursor, selection and paint guides. */
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 22px);
+    --paint-stage-scale: min(1, calc((100cqh - 60px) / 450px), calc((100cqw - 24px) / 300px));
+    transform: translate(-50%, -50%) scale(calc(var(--paint-zoom, 1) * var(--paint-stage-scale)));
+  }
+  .paint-canvas-stage.is-prop-stage {
+    --paint-stage-scale: min(1, calc((100cqh - 60px) / 400px), calc((100cqw - 24px) / 400px));
+    transform: translate(-50%, -50%) scale(calc(var(--paint-zoom, 1) * var(--paint-stage-scale)));
+  }
+  .paint-floating-preview {
+    width: 64px;
+    height: 96px;
+    right: 6px;
+    bottom: 6px;
+    padding: 4px;
+  }
+  .paint-canvas-floating-actions {
+    top: 4px;
+    right: 4px;
+    gap: 3px;
+    padding: 3px;
+  }
+}
+
+/* Stacked Play screens scroll in short landscape windows. */
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 920px) {
+  main:has(> #play-screen:not([hidden])) {
+    overflow-y: auto;
+  }
+  #play-screen {
+    height: auto;
+    min-height: 100%;
+    max-height: none;
+    grid-template-rows: auto auto;
+    overflow: visible;
   }
 }
 

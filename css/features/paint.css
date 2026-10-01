@@ -155,6 +155,7 @@
   background: var(--paper-grain), var(--cardboard);
   box-shadow: inset 0 0 0 5px #ddc6a6, inset 0 0 0 6px var(--cardboard-edge), var(--shadow-md);
   overflow: auto;
+  container-type: size;
 }
 
 .paint-canvas-floating-actions {
@@ -175,7 +176,10 @@
 }
 
 .paint-canvas-stage {
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 22px);
+  --paint-stage-scale: min(1.15, calc((100cqh - 80px) / 450px), calc((100cqw - 24px) / 300px));
   width: 300px;
   height: 450px;
   border: 2px solid var(--ink);
@@ -188,7 +192,7 @@
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
   box-shadow: 0 8px 24px rgba(46, 38, 31, 0.18);
-  transform: scale(calc(var(--paint-zoom, 1) * var(--paint-stage-scale, 1.15)));
+  transform: translate(-50%, -50%) scale(calc(var(--paint-zoom, 1) * var(--paint-stage-scale)));
   transform-origin: center center;
   transition: transform 0.15s ease;
 }
@@ -196,24 +200,22 @@
 .paint-canvas-stage.is-prop-stage {
   width: 400px;
   height: 400px;
-  transform: scale(calc(var(--paint-zoom, 1) * var(--paint-stage-scale, 1.1)));
+  --paint-stage-scale: min(1.1, calc((100cqh - 80px) / 400px), calc((100cqw - 24px) / 400px));
+  transform: translate(-50%, -50%) scale(calc(var(--paint-zoom, 1) * var(--paint-stage-scale)));
 }
 
 @media (min-width: 1400px) and (min-height: 850px) {
   .paint-canvas-stage {
-    --paint-stage-scale: 1.25;
+    --paint-stage-scale: min(1.25, calc((100cqh - 80px) / 450px), calc((100cqw - 24px) / 300px));
   }
   .paint-canvas-stage.is-prop-stage {
-    --paint-stage-scale: 1.18;
+    --paint-stage-scale: min(1.18, calc((100cqh - 80px) / 400px), calc((100cqw - 24px) / 400px));
   }
 }
 
 @media (max-width: 920px) {
-  .paint-canvas-stage {
-    --paint-stage-scale: 1;
-  }
   .paint-canvas-viewport {
-    min-height: 480px;
+    min-height: 520px;
     padding: 1rem;
   }
 }

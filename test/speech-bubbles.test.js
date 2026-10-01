@@ -10,7 +10,7 @@ import {
   isEntityKind,
   LIMITS
 } from '../js/domain/vocabulary.js';
-import { sanitizeEnvelope, createDefaultEnvelope } from '../js/core/state-schema.js';
+import { sanitizeEnvelope, createDefaultEnvelope, APP_VERSION, SCHEMA_VERSION } from '../js/core/state-schema.js';
 import {
   addEntity,
   attachEntity,
@@ -117,7 +117,8 @@ test('State schema sanitizes bubble entities and truncates oversized text to 120
   const dummyAsset = (id) => id === 'bg_classic' ? { id, kind: 'background' } : undefined;
   const long150Chars = 'A'.repeat(150);
   const envelope = {
-    schemaVersion: 8,
+    schemaVersion: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
     revision: 1,
     savedAt: new Date().toISOString(),
     settings: { reducedMotion: 'system', soundEnabled: false },

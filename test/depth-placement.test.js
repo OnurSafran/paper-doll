@@ -40,8 +40,8 @@ test('Projection round trips with asymmetric anchor and mirrored artwork',()=>{
  const lookup=()=>({displayWidth:200,displayHeight:300,groundAnchor:{x:.2,y:.8}});
  for(const flipped of [false,true]) {const host={kind:'prop',instanceId:'host',x:100,y:500,scale:1.5,flipped}; const p={x:.7,y:.3};const round=unprojectLocal(host,projectLocal(host,p,lookup),lookup); assert(Math.abs(round.x-p.x)<1e-9&&Math.abs(round.y-p.y)<1e-9);}
 });
-test('Background regions follow mirrored native tiles in panoramas',()=>{
- const s={...furnished(),stageWidth:4800};const r=getPlacementRegions(s,getAsset);assert.equal(r.length,6);assert.equal(r[2].regionId,'floor:1');assert.equal(Math.min(...r[2].polygon.map(p=>p[0])),1600);
+test('Continuous room planes span mirrored native tiles in panoramas',()=>{
+ const s={...furnished(),stageWidth:4800};const r=getPlacementRegions(s,getAsset);assert.equal(r.length,2);assert.equal(r[0].regionId,'floor:0');assert.equal(Math.max(...r[0].polygon.map(p=>p[0])),4800);
 });
 test('Depth keeps assemblies together and ground decorations below furniture',()=>{
  let s=furnished();s=placeEntity(s,'tea',{x:800,y:640},getAsset,{transfer:true});s=addEntity(s,{instanceId:'rug',kind:'prop',sourceId:'prop_rug',x:800,y:850},getAsset);

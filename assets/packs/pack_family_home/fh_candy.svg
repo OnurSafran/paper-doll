@@ -1,1 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_candy"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="500" cy="550" rx="340" ry="90" fill="#fff8eb"/><ellipse cx="300" cy="505" rx="60" ry="35" fill="#dd9c89"/><path d="M250 505 l-40 -40 v80 Z" fill="#dd9c89"/><ellipse cx="450" cy="450" rx="60" ry="35" fill="#92b6a0"/><path d="M400 450 l-40 -40 v80 Z" fill="#92b6a0"/><ellipse cx="590" cy="460" rx="60" ry="35" fill="#d7b86c"/><path d="M540 460 l-40 -40 v80 Z" fill="#d7b86c"/><ellipse cx="710" cy="525" rx="60" ry="35" fill="#a9a1c5"/><path d="M660 525 l-40 -40 v80 Z" fill="#a9a1c5"/><path d="M170 550 Q210 870 500 885 Q790 870 830 550 Z" fill="#a9a1c5"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_candy">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<path d="M170 550 Q210 870 500 885 Q790 870 830 550 Z" fill="#a78bc4"/>
+    <path d="M265 670 Q320 805 500 815" fill="none" stroke="#cdb9df" stroke-width="15"/>
+    <ellipse cx="500" cy="550" rx="340" ry="90" fill="#fff8eb"/>
+    <ellipse cx="500" cy="555" rx="285" ry="55" fill="#e9d7c1" stroke-width="9"/>
+    <g stroke-width="11">
+      <g transform="translate(300 510) rotate(-12)" fill="#e07a5f"><path d="M-50 0 L-95 -35 V35 Z M50 0 L95 -35 V35 Z"/><ellipse rx="55" ry="35"/><path d="M-15 -30 L10 30" fill="none" stroke="#f4b39c"/></g>
+      <g transform="translate(455 475) rotate(12)" fill="#81b29a"><path d="M-50 0 L-95 -35 V35 Z M50 0 L95 -35 V35 Z"/><ellipse rx="55" ry="35"/><path d="M-15 -30 L10 30" fill="none" stroke="#b9d6bb"/></g>
+      <g transform="translate(600 485) rotate(-8)" fill="#e9c46a"><path d="M-50 0 L-95 -35 V35 Z M50 0 L95 -35 V35 Z"/><ellipse rx="55" ry="35"/><path d="M-15 -30 L10 30" fill="none" stroke="#fff0be"/></g>
+      <g transform="translate(695 560) rotate(10)" fill="#a78bc4"><path d="M-50 0 L-95 -35 V35 Z M50 0 L95 -35 V35 Z"/><ellipse rx="55" ry="35"/><path d="M-15 -30 L10 30" fill="none" stroke="#cdb9df"/></g>
+    </g>
+    <path d="M210 590 Q500 695 790 590" fill="none" stroke-width="12"/>
+  </g>
+</svg>

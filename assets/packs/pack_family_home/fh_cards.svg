@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_cards"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M180 350 L520 280 L600 850 L210 910 Z" fill="#dd9c89"/><path d="M510 280 L840 360 L820 890 L600 850 Z" fill="#fff8eb"/><ellipse cx="370" cy="560" rx="80" ry="90" fill="#d7b86c"/><path d="M625 495 L760 515 M640 565 L760 585 M650 635 L750 650" fill="none"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_cards">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<path d="M180 350 L520 280 L600 850 L210 910 Z" fill="#e07a5f"/>
+    <path d="M510 280 L840 360 L820 890 L600 850 Z" fill="#fff8eb"/>
+    <ellipse cx="370" cy="560" rx="80" ry="90" fill="#e9c46a"/>
+    <path d="M625 495 L760 515 M640 565 L760 585 M650 635 L750 650" fill="none"/>
+    <path d="M220 380 L480 328 L545 810 L248 859 Z" fill="none" stroke="#f4b39c" stroke-width="10"/>
+<path d="M370 590 C295 540 320 490 370 535 C420 490 445 540 370 590 Z" fill="#e07a5f" stroke-width="9"/>
+<path d="M330 710 L455 686" fill="none" stroke="#fff8eb" stroke-width="10"/>
+  </g>
+</svg>

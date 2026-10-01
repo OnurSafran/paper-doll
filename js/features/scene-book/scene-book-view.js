@@ -86,11 +86,14 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
   // 2. Ordered entity layers
   const ordered = orderedSceneEntities(scene, getAssetFn);
   for (const entity of ordered) {
-    const shadow = placementShadow(scene, entity, getAssetFn);
+    const shadow = placementShadow(scene, entity, getAssetFn, options.shadowsEnabled === true);
     if (shadow) {
-      const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-      for (const [key, value] of Object.entries({ cx: shadow.x, cy: shadow.y, rx: shadow.width / 2, ry: shadow.height / 2, fill: shadow.fill })) ellipse.setAttribute(key, String(value));
-      rootSvg.append(ellipse);
+      const node = document.createElementNS('http://www.w3.org/2000/svg', shadow.shape === 'rect' ? 'rect' : 'ellipse');
+      const geometry = shadow.shape === 'rect'
+        ? { x: shadow.x - shadow.width / 2, y: shadow.y - shadow.height / 2, width: shadow.width, height: shadow.height, fill: shadow.fill }
+        : { cx: shadow.x, cy: shadow.y, rx: shadow.width / 2, ry: shadow.height / 2, fill: shadow.fill };
+      for (const [key, value] of Object.entries(geometry)) node.setAttribute(key, String(value));
+      rootSvg.append(node);
     }
     let attachedTransform = { tx: 0, ty: 0, rot: 0 };
     if (entity.attachedTo) {
@@ -271,7 +274,7 @@ export function createSceneBookView({
       const thumb = document.createElement('div');
       thumb.className = 'scene-card-thumb';
       thumb.setAttribute('aria-hidden', 'true');
-      void renderSceneThumbnail(thumb, scene, { customArtRepo, getAsset }).then(() => {
+      void renderSceneThumbnail(thumb, scene, { customArtRepo, getAsset, shadowsEnabled: state.settings.shadowsEnabled }).then(() => {
         if (token !== libraryRenderToken) thumb.replaceChildren();
       });
 
@@ -351,7 +354,7 @@ export function createSceneBookView({
 
       const starterDraft = state.designer?.draft || state.presets?.[0] || createStarterDraft();
       const previewScene = instantiateSceneTemplate(template.id, defaultMakeId, starterDraft);
-      if (previewScene) void renderSceneThumbnail(thumb, previewScene);
+      if (previewScene) void renderSceneThumbnail(thumb, previewScene, { getAsset, customArtRepo, shadowsEnabled: state.settings.shadowsEnabled });
 
       const info = document.createElement('div');
       info.className = 'scene-card-info';

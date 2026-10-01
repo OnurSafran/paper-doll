@@ -48,22 +48,55 @@ import {
   LIMITS
 } from '../domain/vocabulary.js';
 
-export const PAPER_STAGE_SCHEMA_VERSION = 8;
-export const SCHEMA_VERSION = PAPER_STAGE_SCHEMA_VERSION;
+export const APP_VERSION = '2.0.0';
+export const MIN_COMPATIBLE_VERSION = '2.0.0';
+export const PAPER_STAGE_SCHEMA_VERSION = APP_VERSION;
+export const SCHEMA_VERSION = APP_VERSION;
+
+export function parseSemVer(versionStr) {
+  if (typeof versionStr !== 'string') return null;
+  const match = versionStr.trim().match(/^(\d+)\.(\d+)\.(\d+)/);
+  if (!match) return null;
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3])
+  };
+}
+
+export function isVersionOlderThan(candidate, target = MIN_COMPATIBLE_VERSION) {
+  const c = parseSemVer(candidate);
+  const t = parseSemVer(target);
+  if (!c || !t) return true;
+  if (c.major !== t.major) return c.major < t.major;
+  if (c.minor !== t.minor) return c.minor < t.minor;
+  return c.patch < t.patch;
+}
 
 export function requiresCleanStart(value) {
-  return !Number.isInteger(value?.schemaVersion) || value.schemaVersion < PAPER_STAGE_SCHEMA_VERSION;
+  if (!value || typeof value !== 'object') return true;
+  if (Number.isInteger(value.schemaVersion) && value.schemaVersion > 8) {
+    return false;
+  }
+  if (Number.isInteger(value.schemaVersion) && value.schemaVersion <= 8) {
+    return true;
+  }
+  const candidate = value.appVersion || (typeof value.schemaVersion === 'string' ? value.schemaVersion : null);
+  if (!candidate) return true;
+  return isVersionOlderThan(candidate, MIN_COMPATIBLE_VERSION);
 }
 export const STORAGE_KEY = 'paperDollStudio.state';
 
 export function createDefaultEnvelope() {
   return {
     schemaVersion: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
     revision: 1,
     savedAt: new Date(0).toISOString(),
     settings: {
       reducedMotion: DEFAULT_REDUCED_MOTION,
       soundEnabled: false,
+      shadowsEnabled: false,
       clothingTabs: false,
       cardboardFinish: true,
       stamps: [],
@@ -81,6 +114,7 @@ export function createDefaultEnvelope() {
 export function createRuntimeState(envelope = createDefaultEnvelope()) {
   return {
     schemaVersion: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
     revision: Number.isInteger(envelope?.revision) && envelope.revision >= 1 ? envelope.revision : 1,
     settings: {
       ...envelope.settings,
@@ -116,6 +150,7 @@ export function createRuntimeState(envelope = createDefaultEnvelope()) {
 export function persistedProjection(state, now = () => new Date(), revision = state.revision ?? 1) {
   return {
     schemaVersion: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
     revision: Number.isInteger(revision) && revision >= 1 ? revision : 1,
     savedAt: now().toISOString(),
     settings: {
@@ -262,8 +297,11 @@ export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
   if (requiresCleanStart(value)) {
     return { envelope: defaults, warnings: ['Older project data was cleared for the new paper stage.'], recovered: true, resetRequired: true, migrated: false };
   }
-  if (value.schemaVersion !== SCHEMA_VERSION) {
-    warnings.push(`Unsupported schema version ${String(value.schemaVersion)}; safe defaults loaded.`);
+  const candidateVersion = value.appVersion || (typeof value.schemaVersion === 'string' ? value.schemaVersion : null);
+  const candidateSemver = parseSemVer(candidateVersion);
+  const currentSemver = parseSemVer(APP_VERSION);
+  if (!candidateSemver || (currentSemver && candidateSemver.major !== currentSemver.major) || (value.schemaVersion !== undefined && value.schemaVersion !== SCHEMA_VERSION && value.schemaVersion !== APP_VERSION)) {
+    warnings.push(`Unsupported schema version ${String(value.schemaVersion ?? value.appVersion)}; safe defaults loaded.`);
     return { envelope: defaults, warnings, recovered: false };
   }
 
@@ -330,6 +368,7 @@ export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
   return {
     envelope: {
       schemaVersion: SCHEMA_VERSION,
+      appVersion: APP_VERSION,
       revision,
       savedAt: validDateString(value.savedAt) ? value.savedAt : defaults.savedAt,
       settings: {
@@ -337,6 +376,7 @@ export function sanitizeEnvelope(value, getAsset = (_id) => undefined) {
           ? value.settings.reducedMotion
           : DEFAULT_REDUCED_MOTION,
         soundEnabled: Boolean(value.settings?.soundEnabled),
+        shadowsEnabled: value.settings?.shadowsEnabled === true,
         clothingTabs: value.settings?.clothingTabs === true,
         // On unless the player switched it off (D-047).
         cardboardFinish: typeof value.settings?.cardboardFinish === 'boolean' ? value.settings.cardboardFinish : true,

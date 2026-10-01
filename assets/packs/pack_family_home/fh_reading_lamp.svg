@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_reading_lamp"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="500" cy="865" rx="230" ry="50" fill="#514039"/><path d="M500 850 L500 365" fill="none"/><path d="M350 155 L650 155 L760 430 L240 430 Z" fill="#d7b86c"/><ellipse cx="500" cy="430" rx="260" ry="40" fill="#fff8eb"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_reading_lamp">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<ellipse cx="500" cy="875" rx="230" ry="45" fill="#bc8a5f"/>
+    <path d="M310 860 Q500 750 690 860 Q500 905 310 860 Z" fill="#e9c46a"/>
+    <path d="M483 845 V350 H517 V845 Z" fill="#e9c46a"/>
+    <path d="M350 155 H650 L760 430 H240 Z" fill="#e9c46a"/>
+    <path d="M405 205 L345 390 M595 205 L655 390" fill="none" stroke="#bc8a5f" stroke-width="10"/>
+    <path d="M450 200 L425 380" fill="none" stroke="#f8dfa0" stroke-width="18"/>
+    <ellipse cx="500" cy="430" rx="260" ry="40" fill="#fff8eb"/>
+    <path d="M650 445 V535" fill="none" stroke-width="9"/>
+    <circle cx="650" cy="545" r="17" fill="#e9c46a" stroke-width="9"/>
+  </g>
+</svg>

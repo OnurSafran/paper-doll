@@ -107,6 +107,11 @@ export function settingsReducer(state, action, context) {
       };
     }
 
+    case 'settings/setShadows': {
+      if (typeof action.enabled !== 'boolean' || state.settings.shadowsEnabled === action.enabled) return null;
+      return { state: { ...state, settings: { ...state.settings, shadowsEnabled: action.enabled } }, persist: true };
+    }
+
     case 'settings/setSound': {
       if (typeof action.enabled !== 'boolean' || state.settings.soundEnabled === action.enabled) return null;
       return {

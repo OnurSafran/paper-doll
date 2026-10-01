@@ -289,54 +289,42 @@
 }
 
 /* Play Screen Grid & Stage */
+main:has(> #play-screen:not([hidden])) {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
 #play-screen {
-  height: 100%;
-  max-height: 100%;
+  height: auto;
+  min-height: 100%;
+  max-height: none;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
   gap: 4px;
-  overflow: hidden;
-}
-
-.play-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.2rem 0.85rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--muted);
-  background: rgba(46, 38, 31, 0.05);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  max-width: 600px;
-  margin-right: auto;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.15s ease;
-}
-
-.play-status-pill:empty {
-  display: none;
+  overflow: visible;
 }
 
 .play-grid {
-  height: 100%;
+  --scene-panel-handle-size: 36px;
+  --scene-panel-padding: 6px;
+  height: auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(480px, 1fr) minmax(340px, 380px);
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 380px);
   grid-template-areas: "scene rail";
+  container-type: inline-size;
   gap: 14px;
-  align-items: stretch;
-  overflow: hidden;
+  align-items: start;
+  overflow: visible;
 }
 
 .play-stage-column {
   grid-area: scene;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -345,47 +333,123 @@
 
 .play-stage-viewport {
   position: relative;
-  flex: 1;
+  flex: none;
+  aspect-ratio: 16 / 9;
   min-height: 0;
   display: grid;
-  /*
-   * The panoramic camera HUD is a sibling row of the stage. Without an explicit
-   * track list its appearance turns the single auto row into two, and the
-   * stage's height:100% then resolves against a row sized by content that is
-   * entirely absolutely positioned — so the stage collapsed to a fraction of the
-   * viewport the moment a wide stage was selected. Pinning row 1 to the free
-   * space keeps the percentage height meaningful in both states.
-   */
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
   grid-template-columns: minmax(0, 1fr);
-  justify-items: center;
-  align-items: center;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--paper-grain), var(--cardboard);
-  box-shadow: inset 0 0 0 5px #ddc6a6, inset 0 0 0 6px var(--cardboard-edge), var(--shadow-md);
+  place-items: center;
   overflow: hidden;
-  /* Lets .play-stage cap its height from this box's width (cqw). */
   container-type: inline-size;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper-grain), var(--paper-deep);
 }
 
-/* Stage controls stay outside the scene in one scrollable row. */
-.play-stage-viewport:has(> #camera-hud:not([hidden])) {
-  --hud-space: 74px;
+/* The handle stays in the layout even when the panel content is hidden. */
+.play-grid:has(.play-rail-content[hidden]) {
+  grid-template-columns: minmax(0, 1fr) calc(var(--scene-panel-handle-size) + 2 * var(--scene-panel-padding) + 2px);
+}
+
+.scene-tray-toggle {
+  justify-self: end;
+  margin-left: auto;
+  flex: 0 0 auto;
+  width: var(--scene-panel-handle-size);
+  min-width: var(--scene-panel-handle-size);
+  height: var(--scene-panel-handle-size);
+  min-height: var(--scene-panel-handle-size);
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.scene-panel-chevron {
+  width: 16px;
+  height: 16px;
+  display: block;
+  pointer-events: none;
+  transform: rotate(180deg);
+  transform-origin: center;
+  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scene-tray-toggle[aria-expanded="true"] .scene-panel-chevron {
+  transform: rotate(0deg);
+}
+
+.play-rail:has(> .play-rail-content[hidden]) .play-panel-title {
+  display: none;
+}
+
+.play-rail:has(> .play-rail-content[hidden]) .play-panel-header {
+  justify-content: flex-end;
+}
+
+.play-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+}
+
+.inspector-header-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.inspector-header-title[hidden] {
+  display: none !important;
+}
+
+.play-panel-title {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.button.scene-tray-toggle:hover:not(:disabled),
+.button.scene-tray-toggle:active:not(:disabled) {
+  transform: none;
+}
+
+.play-rail .play-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.play-rail .inspector-title-wrap.play-panel-heading {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+@media (pointer: coarse), (max-width: 600px) {
+  .play-grid {
+    --scene-panel-handle-size: 44px;
+  }
 }
 
 .play-stage-controls {
+  min-width: 0;
+  width: 100%;
+  grid-area: controls;
+  --stage-control-height: 36px;
   order: 2;
   flex: 0 0 auto;
   display: grid;
-  grid-template-columns: max-content minmax(max-content, 1fr) max-content;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
   grid-template-areas: "outline playback size";
   align-items: center;
   gap: 0.5rem;
   overflow-x: auto;
   scrollbar-width: thin;
-  padding: 6px 8px;
+  padding: 6px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--paper-grain), var(--paper-card);
@@ -394,6 +458,56 @@
 .play-stage-controls > #scene-outline-btn {
   grid-area: outline;
   justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.play-animation-transport .transport-history-controls {
+  height: var(--stage-control-height);
+  padding: 2px;
+  gap: 0;
+  background: rgba(46, 38, 31, 0.06);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+}
+
+.play-animation-transport .transport-history-controls .history-btn {
+  height: calc(var(--stage-control-height) - 6px);
+  min-height: calc(var(--stage-control-height) - 6px);
+  width: calc(var(--stage-control-height) - 4px);
+  min-width: calc(var(--stage-control-height) - 4px);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.92rem;
+  font-weight: 750;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--radius-xs);
+  box-shadow: none;
+  color: var(--ink);
+  cursor: pointer;
+  line-height: 1;
+  transition: all 0.12s ease;
+}
+
+.play-animation-transport .transport-history-controls .history-btn:hover:not(:disabled) {
+  background: var(--paper-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.play-animation-transport .transport-history-controls .history-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.transport-history-controls .history-btn-text {
+  display: none;
 }
 
 .play-heading > .scene-picker-group {
@@ -421,10 +535,15 @@
   max-width: 100%;
 }
 
-.stage-width-group select {
+.play-stage-controls .stage-width-group select {
   flex: 0 0 auto;
+  field-sizing: content;
   width: auto;
   max-width: 100%;
+  appearance: none;
+  padding: 0 2rem 0 0.65rem;
+  border: 1px solid var(--line-strong);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%235e5141' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 0.65rem center / 12px 12px no-repeat, var(--paper-grain), var(--paper-card);
 }
 
 .play-animation-transport {
@@ -433,67 +552,134 @@
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 4px;
 }
 
 .play-stage-controls button,
 .play-stage-controls select {
-  min-height: 44px;
+  height: var(--stage-control-height);
+  min-height: var(--stage-control-height);
+  padding-block: 0;
+  font-size: 0.8rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.play-stage-controls .button {
+  padding-inline: 0.65rem;
+  box-shadow: 0 1px 0 #b7a184;
+}
+
+.play-stage-controls .button.primary {
+  box-shadow: 0 1px 0 #71341f;
 }
 
 .play-animation-transport button {
-  min-width: 44px;
-  padding: 0.25rem 0.55rem;
-  font-size: 0.8rem;
+  flex-shrink: 0;
+  min-width: var(--stage-control-height);
   font-weight: 750;
 }
 
-.play-animation-transport .speed-buttons button {
-  padding: 0.2rem 0.4rem;
-  font-size: 0.76rem;
+.play-animation-transport .speed-buttons {
+  height: var(--stage-control-height);
+  padding: 2px;
+  gap: 0;
 }
 
-@container (max-width: 1020px) {
+.play-animation-transport .speed-buttons button {
+  height: calc(var(--stage-control-height) - 6px);
+  min-height: calc(var(--stage-control-height) - 6px);
+  padding-inline: 0.45rem;
+  font-size: 0.76rem;
+  box-shadow: none;
+}
+
+@container (max-width: 860px) {
+  .play-stage-controls .outline-btn-text,
+  .play-stage-controls .play-btn-text,
+  .play-stage-controls .voice-btn-text {
+    display: none;
+  }
+
+  .play-stage-controls > #scene-outline-btn {
+    padding-inline: 0.5rem;
+    min-width: var(--stage-control-height);
+  }
+
+  .play-stage-controls .stage-width-group select {
+    width: var(--stage-control-height);
+    min-width: var(--stage-control-height);
+    max-width: var(--stage-control-height);
+    padding: 0;
+    font-size: 0;
+    color: transparent;
+    background-position: center center;
+  }
+
+  .play-stage-controls .stage-width-group select option {
+    font-size: 0.85rem;
+    color: var(--ink);
+  }
+}
+
+/* Keep playback and stage controls cleanly in one row */
+@container (max-width: 740px) {
   .play-stage-controls {
-    gap: 0.35rem;
-    padding: 4px 6px;
+    gap: 4px;
+    overflow-x: auto;
   }
   .play-animation-transport {
-    gap: 0.2rem;
+    flex-wrap: nowrap;
+    gap: 4px;
   }
-  .play-stage-controls > #scene-outline-btn,
-  .play-stage-controls > .stage-width-group select {
-    padding-inline: 0.5rem;
-    font-size: 0.8rem;
+  .scene-hud {
+    right: 12px;
+    min-width: 0;
+  }
+  .scene-hud span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .scene-hud span:not(:first-child) {
+    flex-shrink: 0;
+  }
 }
 
-@container (max-width: 600px) {
+@container (max-width: 400px) {
+  .empty-scene {
+    inset: 18% 8%;
+    padding: 0.65rem;
+    font-size: 0.75rem;
+  }
+  .camera-hud {
+    right: 6px;
+    bottom: 6px;
+  }
+  .stage-minimap {
+    width: 110px;
+  }
+}
+
+@media (pointer: coarse), (max-width: 600px) {
   .play-stage-controls {
-    gap: 0.25rem;
-    padding: 3px 4px;
+    --stage-control-height: 44px;
   }
-  .play-stage-controls > .stage-width-group select {
-    width: 148px;
+  .play-animation-transport .speed-buttons,
+  .play-animation-transport .transport-history-controls {
+    padding: 0;
+    border: 0;
+    box-shadow: inset 0 0 0 1px var(--line);
   }
-  .play-animation-transport button {
-    padding-inline: 0.3rem;
-  }
-}
-
-@container (max-width: 520px) {
-  .play-stage-viewport:has(> #camera-hud:not([hidden])) {
-    --hud-space: 126px;
-  }
-  .play-stage-viewport .camera-hud {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
-  }
-  .camera-hud .stage-minimap {
-    grid-column: 1 / -1;
-    width: 100%;
+  .play-animation-transport .speed-buttons button,
+  .play-animation-transport .transport-history-controls .history-btn {
     height: 44px;
+    min-height: 44px;
+  }
+  .play-animation-transport .transport-history-controls .history-btn {
+    width: 44px;
+    min-width: 44px;
   }
 }
 
@@ -503,19 +689,38 @@
   grid-area: rail;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  align-content: start;
+  align-self: stretch;
+  padding: var(--scene-panel-padding);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper-grain), var(--paper-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.play-rail-content {
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  overflow: hidden;
+}
+
+.play-rail-content[hidden] {
+  display: none;
 }
 
 .play-rail .spawn-panel,
 .play-rail .play-inspector-panel {
-  flex: 1;
+  padding: 0;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
 }
 
 /* Play Inspector Panel */
@@ -535,7 +740,8 @@
   display: none !important;
 }
 
-.play-inspector-panel .segmented-control {
+.play-inspector-panel .segmented-control,
+.play-inspector-panel .expression-buttons {
   flex-wrap: wrap;
   max-width: 100%;
 }
@@ -558,6 +764,8 @@
 
 .inspector-tabs {
   display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   align-items: center;
   gap: 4px;
   background: rgba(46, 38, 31, 0.05);
@@ -612,17 +820,12 @@
 
 .play-stage {
   position: relative;
-  width: auto;
-  height: 100%;
+  width: 100%;
+  height: auto;
   max-width: 100%;
   max-height: 100%;
-  /*
-   * A definite height wins over aspect-ratio, so once max-width clamps a narrow
-   * column the stage used to stretch tall. Capping the height from the
-   * viewport's width keeps it 16:9 whichever side is the limit.
-   */
-  max-height: min(100%, 100cqw * 9 / 16);
   aspect-ratio: 16 / 9;
+  border: 1px solid var(--cardboard-edge);
   border-radius: var(--radius-xs);
   background: var(--paper-card);
   box-shadow: 0 8px 24px rgba(46, 38, 31, 0.14);
@@ -716,71 +919,24 @@
   background: transparent;
 }
 
-/* Panoramic Camera HUD */
+/* Compact panoramic overview floats above the scene. */
 .camera-hud {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  width: 100%;
-  max-width: 100%;
-  margin-top: 8px;
-  padding: 6px 12px;
-  background: rgba(255, 253, 249, 0.95);
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.camera-pan-btn {
-  min-width: 44px;
-  min-height: 44px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-xs);
-  background: var(--paper-card);
-  color: var(--ink);
-  font-size: 0.95rem;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.12s ease;
-}
-
-@media (hover: hover) {
-  .camera-pan-btn:hover:not(:disabled) {
-    background: var(--paper-warm);
-    border-color: var(--ink-soft);
-    transform: scale(1.04);
-  }
-}
-
-.camera-slider-track {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  padding: 0 4px;
-}
-
-.camera-slider {
-  width: 100%;
-  accent-color: var(--coral);
-  cursor: pointer;
-  height: 8px;
-  border-radius: 4px;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 5;
 }
 
 .stage-minimap {
   position: relative;
   width: 140px;
-  height: 42px;
+  height: 44px;
   border: 1.5px solid var(--line);
   border-radius: var(--radius-sm);
   background: #e8dcc9;
   overflow: hidden;
   cursor: pointer;
+  touch-action: none;
   box-shadow: inset 0 1px 3px rgba(46, 38, 31, 0.15);
   flex-shrink: 0;
   outline: none;
@@ -1073,8 +1229,7 @@
   pointer-events: none;
 }
 
-.scene-hud span,
-.scene-help {
+.scene-hud span {
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: rgba(255, 253, 249, 0.9);
@@ -1094,16 +1249,6 @@
   color: var(--muted);
 }
 
-/* Keep scene hints clear of the scene name. */
-.scene-help {
-  position: absolute;
-  z-index: 5;
-  right: 12px;
-  top: 10px;
-  max-width: 52%;
-  padding: 0.35rem 0.65rem;
-  pointer-events: none;
-}
 
 .empty-scene {
   position: absolute;
@@ -1290,15 +1435,162 @@
   gap: 0.65rem;
 }
 
-.prop-collection-tabs {
-  margin-top: -0.2rem;
-  overflow-x: auto;
-  scrollbar-width: thin;
+.spawn-list > .tray-empty {
+  grid-column: 1 / -1;
+  padding: 0.5rem 0.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
-.prop-collection-tabs button {
+.spawn-panel .panel-heading {
+  padding-bottom: 0;
+  margin-bottom: 8px;
+  border-bottom: 0;
+}
+
+.spawn-panel .panel-heading h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+/* Category tabs, pack filter and collection chips have distinct visual roles. */
+#spawn-tabs,
+.spawn-panel #spawn-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  padding: 3px;
+  margin-bottom: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper-grain), var(--paper-warm);
+  overflow: visible;
+}
+
+#spawn-tabs[hidden] {
+  display: none !important;
+}
+
+#spawn-tabs button,
+.spawn-panel #spawn-tabs button {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0.25rem 0.2rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 0.76rem;
+  box-shadow: none;
+}
+
+#spawn-tabs button[aria-selected="true"],
+.spawn-panel #spawn-tabs button[aria-selected="true"] {
+  color: white;
+  background: var(--paper-grain), var(--sage);
+  border-color: var(--sage);
+  box-shadow: 0 1px 0 #424e32;
+}
+
+.tray-pack-filter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tray-pack-filter[hidden] {
+  display: none;
+}
+
+.tray-pack-filter select {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0.35rem 1.6rem 0.35rem 0.5rem;
+  appearance: none;
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 650;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%235e5141' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 0.65rem center / 12px 12px no-repeat, var(--paper-grain), var(--paper-card);
+}
+
+.spawn-panel .prop-collection-tabs {
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 6px;
+  padding: 2px;
+  overflow: visible;
+}
+
+.spawn-panel .prop-collection-tabs[hidden] {
+  display: none;
+}
+
+.spawn-panel .prop-collection-tabs button {
+  min-height: 30px;
+  padding: 0.25rem 0.45rem;
+  border-radius: var(--radius-pill);
+  background: transparent;
   white-space: nowrap;
   font-size: 0.72rem;
+  box-shadow: none;
+}
+
+.spawn-panel .prop-collection-tabs button[aria-selected="true"] {
+  color: var(--ink);
+  border-color: var(--sage);
+  background: var(--paper-grain), var(--sage-soft);
+  box-shadow: inset 0 -2px 0 var(--sage);
+}
+
+/* Creation shares the filter row but never looks like a prop preview. */
+.paint-prop-action-card {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0.25rem 0.35rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--coral-dark);
+  text-align: left;
+  box-shadow: none;
+}
+
+.paint-prop-action-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.paint-prop-action-copy strong {
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+@media (pointer: coarse), (max-width: 600px) {
+  #spawn-tabs button,
+  .spawn-panel #spawn-tabs button,
+  .spawn-panel .prop-collection-tabs button,
+  .tray-pack-filter select,
+  .paint-prop-action-card {
+    min-height: 44px;
+  }
+}
+
+@media (hover: hover) {
+  .paint-prop-action-card:hover {
+    color: var(--ink);
+    background: var(--sage-soft);
+  }
 }
 
 .spawn-item {
@@ -1512,9 +1804,39 @@
   color: var(--ink-soft);
 }
 
-.placement-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; padding: .5rem; background: var(--paper-card); border-radius: var(--radius-sm); }
-.placement-controls label { display: flex; align-items: center; gap: .4rem; }
-.placement-controls button, .placement-controls select { min-height: 44px; max-width: 100%; }
+.placement-actions-dialog { max-width: 420px; }
+.placement-destination-actions { display: grid; gap: .6rem; padding: 1rem; }
+.placement-destination-actions button { min-height: 44px; }
 .placement-contact-shadow { position: absolute; display: block; border-radius: 50%; transform: translate(-50%, -50%); background: #493c3429; pointer-events: none; }
 .placement-drop-guide { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 80; pointer-events: none; }
 .placement-drop-guide polygon { fill: #2a9d8f24; stroke: #237d71; stroke-width: 3; stroke-dasharray: 10 6; vector-effect: non-scaling-stroke; }
+
+/* Scene shadow preference leaves selection outlines and other UI effects intact. */
+body:not([data-scene-shadows="on"]) #play-stage .scene-entity-visual,
+body:not([data-scene-shadows="on"]) #play-stage .scene-entity-visual svg,
+body:not([data-scene-shadows="on"]) #play-stage .scene-entity-visual .scene-character-canvas,
+body:not([data-scene-shadows="on"]) #play-stage .scene-custom-prop-img,
+body:not([data-scene-shadows="on"]) #play-stage .scene-entity-positioner.is-dragging { filter: none; }
+.placement-drop-guide polygon[data-kind="surface"] { fill: #e9b44c59; stroke: #875008; stroke-width: 4; }
+.placement-drop-guide polygon[data-active="true"] { stroke-width: 5; stroke-dasharray: none; }
+.placement-drop-guide polygon[data-kind="surface"][data-active="true"] { fill: #e9b44c73; }
+.placement-drop-guide polygon.tabletop-guide-echo {
+  fill: none;
+  stroke-width: 2;
+  opacity: 0.6;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+  animation: tabletop-guide-bob 2.8s ease-in-out infinite;
+}
+.placement-drop-guide polygon.tabletop-guide-echo[data-active="true"],
+.placement-drop-guide[data-motion="reduce"] polygon.tabletop-guide-echo { display: none; }
+@keyframes tabletop-guide-bob {
+  0%, 100% { transform: translateY(0) scale(1.1); }
+  50% { transform: translateY(-6px) scale(1.1); }
+}
+.placement-drop-guide[data-motion="reduce"] polygon { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .placement-drop-guide polygon { animation: none; }
+  .placement-drop-guide polygon.tabletop-guide-echo { display: none; }
+}

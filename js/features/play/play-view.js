@@ -1,4 +1,3 @@
-import { createPlacementControls } from './placement-controls.js';
 import { orderedSceneEntities } from '../../domain/scene-placement.js';
 import { createPropSymbolRegistry } from '../../core/svg-symbols.js';
 import { createSceneEntityView } from './scene-entity-view.js';
@@ -86,7 +85,6 @@ export function createPlayView({
   getAssetsByKind = (kind, options = {}) => assetsByKind(kind, options),
   invalidateAnimationDomCache
 }) {
-  const placementControls = createPlacementControls({ store, $, getAsset });
   const propSymbols = createPropSymbolRegistry({ getHost: () => $('#play-stage') });
   let playRenderToken = 0;
 
@@ -96,7 +94,6 @@ export function createPlayView({
   let dropdownsBound = false;
 
   async function render(state = store.getState()) {
-    placementControls.render(state);
     const token = ++playRenderToken;
     const focusedEntityId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('.scene-entity-positioner'))?.dataset.instanceId;
     const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
@@ -116,7 +113,7 @@ export function createPlayView({
     if (sceneCountChip) sceneCountChip.textContent = t('play.itemCount', { count: state.currentScene.entities.length });
     const widthChip = $('#scene-width-chip');
 
-    if (widthChip) widthChip.textContent = `${stageWidth}px`;
+    if (widthChip) widthChip.textContent = t(stageWidth === 4800 ? 'play.stagePanoramic' : stageWidth === 3200 ? 'play.stageWide' : 'play.stageStandard');
 
     const background = $('#scene-background');
     const backgroundRenderKey = `${state.currentScene.backgroundId}:${stageWidth}`;
@@ -233,7 +230,6 @@ export function createPlayView({
   });
 
   const { renderSelectedActions, handleDropdownOutsideClick } = createSelectionInspectorController({
-    placementControls,
     store,
     $,
     $$,

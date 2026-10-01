@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_blocks"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><rect x="190" y="680" width="200" height="200" rx="10" fill="#dd9c89"/><ellipse cx="290" cy="780" rx="50" ry="50" fill="#fff8eb"/><rect x="400" y="680" width="200" height="200" rx="10" fill="#92b6a0"/><ellipse cx="500" cy="780" rx="50" ry="50" fill="#fff8eb"/><rect x="610" y="680" width="200" height="200" rx="10" fill="#d7b86c"/><ellipse cx="710" cy="780" rx="50" ry="50" fill="#fff8eb"/><rect x="295" y="470" width="200" height="200" rx="10" fill="#a9a1c5"/><ellipse cx="395" cy="570" rx="50" ry="50" fill="#fff8eb"/><rect x="505" y="470" width="200" height="200" rx="10" fill="#8cacc4"/><ellipse cx="605" cy="570" rx="50" ry="50" fill="#fff8eb"/><rect x="400" y="260" width="200" height="200" rx="10" fill="#dd9c89"/><ellipse cx="500" cy="360" rx="50" ry="50" fill="#fff8eb"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_blocks">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<rect x="190" y="680" width="200" height="200" rx="10" fill="#e07a5f"/>
+    <ellipse cx="290" cy="780" rx="50" ry="50" fill="#fff8eb"/>
+    <rect x="400" y="680" width="200" height="200" rx="10" fill="#81b29a"/>
+    <ellipse cx="500" cy="780" rx="50" ry="50" fill="#fff8eb"/>
+    <rect x="610" y="680" width="200" height="200" rx="10" fill="#e9c46a"/>
+    <ellipse cx="710" cy="780" rx="50" ry="50" fill="#fff8eb"/>
+    <rect x="295" y="470" width="200" height="200" rx="10" fill="#a78bc4"/>
+    <ellipse cx="395" cy="570" rx="50" ry="50" fill="#fff8eb"/>
+    <rect x="505" y="470" width="200" height="200" rx="10" fill="#78add2"/>
+    <ellipse cx="605" cy="570" rx="50" ry="50" fill="#fff8eb"/>
+    <rect x="400" y="260" width="200" height="200" rx="10" fill="#e07a5f"/>
+    <ellipse cx="500" cy="360" rx="50" ry="50" fill="#fff8eb"/>
+    <g fill="none" stroke="#f4d7a1" stroke-width="9"><path d="M210 700 H370 V860 M420 700 H580 V860 M630 700 H790 V860 M315 490 H475 V650 M525 490 H685 V650 M420 280 H580 V440"/></g>
+<path d="M265 770 H315 M290 745 V795 M475 775 L500 745 L525 775 L500 805 Z M682 808 L710 748 L738 808 Z M370 585 L395 545 L420 585 Z M580 557 L627 585 M580 585 L627 557" fill="none" stroke="#bc8a5f" stroke-width="10"/>
+  </g>
+</svg>

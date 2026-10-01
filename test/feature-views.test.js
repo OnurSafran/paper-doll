@@ -8,6 +8,8 @@ import { LIMITS } from '../js/domain/vocabulary.js';
 import { createSelectionInspectorController } from '../js/features/play/selection-inspector-controller.js';
 
 import { setLanguage } from '../js/core/i18n.js';
+import { APP_VERSION, createDefaultEnvelope, createRuntimeState, persistedProjection, sanitizeEnvelope } from '../js/core/state-schema.js';
+import { serializeProjectPackage } from '../js/services/project-portability.js';
 
 test('describeOutfit generates accessible text for empty and equipped drafts', () => {
   setLanguage('en');
@@ -74,7 +76,7 @@ test('Play panels follow the current selection, including direct prop-to-charact
     });
   }
   select('prop');
-  assert.equal(panels['#spawn-panel-section'].hidden, false);
+  assert.equal(panels['#spawn-panel-section'].hidden, true);
   select('character');
   assert.equal(panels['#play-inspector-panel'].hidden, false);
   assert.equal(panels['#spawn-panel-section'].hidden, true);
@@ -83,6 +85,47 @@ test('Play panels follow the current selection, including direct prop-to-charact
   select('bubble');
   assert.equal(panels['#play-inspector-panel'].hidden, false);
   select(null);
-  assert.equal(panels['#spawn-panel-section'].hidden, false);
+  assert.equal(panels['#spawn-panel-section'].hidden, true);
   assert.equal(panels['#play-inspector-panel'].hidden, true);
+});
+
+
+test('Panel handle toggles the tray and a new selection reopens the inspector', () => {
+  let click;
+  let expanded;
+  let state = { ui: { selectedEntityId: null, selectedEntityIds: [] }, currentScene: { entities: [{ instanceId: 'character', kind: 'character' }] } };
+  const panels = {
+    '#play-rail-content': { hidden: true },
+    '#spawn-panel-section': { hidden: true },
+    '#play-inspector-panel': { hidden: true },
+    '#scene-tray-toggle': { dataset: {}, addEventListener: (_event, handler) => { click = handler; }, setAttribute: (_key, value) => { expanded = value; } }
+  };
+  const controller = createSelectionInspectorController({ $: selector => panels[selector] || null, $$: () => [], store: { getState: () => state } });
+  controller.renderSelectedActions();
+  assert.equal(expanded, 'false');
+  click();
+  assert.equal(panels['#spawn-panel-section'].hidden, false);
+  assert.equal(expanded, 'true');
+  click();
+  assert.equal(panels['#play-rail-content'].hidden, true);
+  state = { ...state, ui: { selectedEntityId: 'character', selectedEntityIds: ['character'] } };
+  controller.renderSelectedActions();
+  assert.equal(panels['#play-inspector-panel'].hidden, false);
+  click();
+  controller.renderSelectedActions();
+  assert.equal(panels['#play-rail-content'].hidden, true, 'same selection does not undo manual close');
+  click();
+  assert.equal(panels['#spawn-panel-section'].hidden, false, 'Handle opens the tray while a character remains selected');
+});
+
+
+test('v2.0.0 is recorded consistently in local saves and exported projects', () => {
+  const defaults = createDefaultEnvelope();
+  const state = createRuntimeState(defaults);
+  const save = persistedProjection(state);
+  const exported = JSON.parse(serializeProjectPackage(state));
+  assert.equal(APP_VERSION, '2.0.0');
+  for (const value of [defaults, state, save, exported, exported.state, sanitizeEnvelope(save).envelope]) {
+    assert.equal(value.appVersion, APP_VERSION);
+  }
 });

@@ -3,6 +3,7 @@ import { getEntityBounds } from '../../domain/scene-rules.js';
 import { escapeCss } from '../../core/css-escape.js';
 import { CAMERA_CONSTANTS, DEFAULT_STAGE_WIDTH, VIEWPORT_WIDTH, bubbleStyleLabelKey } from '../../domain/vocabulary.js';
 import { assetName, t } from '../../core/i18n.js';
+import { getPlacementChoices, openPlacementActions } from './placement-controls.js';
 
 export function createSelectionHudController(context) {
   function openEditBubbleDialog(entity) {
@@ -95,7 +96,8 @@ export function createSelectionHudController(context) {
     dot.setAttribute('aria-hidden', 'true');
     const labelSpan = document.createElement('span');
     labelSpan.className = 'selected-label';
-    labelSpan.textContent = label;
+    const supportLabel = selected?.placement ? t(`placement.${selected.placement.kind === 'surface' ? 'onSurface' : selected.placement.kind === 'floor' ? 'onFloor' : selected.placement.kind === 'wall' ? 'onWall' : 'free'}`) : '';
+    labelSpan.textContent = supportLabel ? `${label} · ${supportLabel}` : label;
     pill.append(dot, labelSpan);
     ring.append(pill);
 
@@ -120,6 +122,7 @@ export function createSelectionHudController(context) {
     } else {
       controls = [
         ...(selected.kind === 'bubble' ? [['editBubble', '✏️', t('play.editBubble')]] : []),
+        ...(getPlacementChoices(state.currentScene, selected, context.getAsset).length ? [['placeOn', '⊞', t('placement.placeOn')]] : []),
         ['flip', '↔', t('play.flip')],
         ['smaller', '−', t('play.smaller')],
         ['larger', '+', t('play.larger')],
@@ -203,7 +206,8 @@ export function createSelectionHudController(context) {
     }
 
     if (!entity) return;
-    if (action === 'flip') context.store.dispatch({ type: 'scene/flipEntity', instanceId: id });
+    if (action === 'placeOn') openPlacementActions(context, id);
+    else if (action === 'flip') context.store.dispatch({ type: 'scene/flipEntity', instanceId: id });
     else if (action === 'smaller') context.store.dispatch({ type: 'scene/scaleEntity', instanceId: id, scale: entity.scale - .1 });
     else if (action === 'larger') context.store.dispatch({ type: 'scene/scaleEntity', instanceId: id, scale: entity.scale + .1 });
     else if (action === 'back') context.store.dispatch({ type: 'scene/reorderEntity', instanceId: id, direction: -1 });

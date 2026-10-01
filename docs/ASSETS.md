@@ -49,6 +49,15 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 - Catalog defines `displayWidth`, `displayHeight`, `groundAnchor`, and `defaultScale`.
 - Transparent padding is trimmed.
 - Scene clamping uses this metadata to keep props bounded within the stage.
+- Match the core plant's dark, rounded 16-unit silhouette outline on the
+  `1000 × 1000` canvas. Use lighter interior strokes for folds, stitching and
+  veins; avoid uniformly thin outlines that disappear in the tray.
+- Parts must connect visibly (stems, handles, frames and hanging cords).
+  Distinct silhouettes and restrained material details should remain readable
+  at 56px, alongside core props, and at `200%` scale.
+- Use [the prop quality review](../review/prop-quality.html) to inspect all
+  packs together at scene and tray sizes, including flipping and source-edge
+  checks. See [the quality audit](../review/prop-quality.md) for the first pass.
 
 ## Recolor contract
 
@@ -168,3 +177,9 @@ Each asset must pass validator, alternate-tint, `200%` zoom, preview, bounds, fl
 Serve the repository locally and open [the wardrobe fit review](../review/wardrobe-fit.html) to compare all supported doll/garment pairs, complete outfits, Designer layers, exported images, and wardrobe thumbnails. The review also runs browser pixel checks for standalone recoloring, thumbnail clipping, repaired fit landmarks, clear eyes, the rattle grip, and overalls layering. This developer page is not part of the offline app shell.
 
 Adding ordinary assets should require only SVG plus catalog entry. New slots, interactive state, uploads, patterns, or coordinate changes require schema, security, migration, test, and roadmap updates.
+
+Wall placement may declare a cosmetic `wallShadow` rectangle with normalized center
+`x`, `y`, `width`, and `height` in the artwork display rectangle. This keeps mounting
+shadows inside authored frame bounds rather than shading transparent SVG margins.
+Unspecified silhouettes use a small central ellipse. Play, Scene Book, and PNG export
+share these shadow coordinates; the field does not affect contact or placement fit.

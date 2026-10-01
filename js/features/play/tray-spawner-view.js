@@ -60,6 +60,7 @@ export function createTraySpawnerView(context) {
   function renderSpawnTray(state, token) {
     const tabs = context.$('#spawn-tabs');
     const collectionTabs = context.$('#spawn-collection-tabs');
+    const packFilter = context.$('#play-pack-filter');
     const list = context.$('#spawn-items');
     if (!tabs || !list) return;
 
@@ -77,7 +78,8 @@ export function createTraySpawnerView(context) {
     if (traySignature === spawnTraySignature) return;
     spawnTraySignature = traySignature;
 
-    const focusedTabId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#spawn-tabs [role="tab"]'))?.id;
+    if (packFilter) packFilter.hidden = spawnTab !== 'props';
+    const focusedTabId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#spawn-tabs [role="tab"], #spawn-collection-tabs [role="tab"]'))?.id;
     tabs.replaceChildren(...[['characters', t('play.trayDollsTab')], ['props', t('play.trayPropsTab')], ['bubbles', t('play.trayBubblesTab')]].map(([id, label]) => {
       const button = document.createElement('button');
       button.type = 'button';
@@ -187,7 +189,7 @@ export function createTraySpawnerView(context) {
       label.textContent = sourceName;
       const kindLabel = document.createElement('span');
       kindLabel.className = 'spawn-kind';
-      kindLabel.textContent = spawnTab === 'characters' ? t('play.savedDoll') : (source.custom ? t('play.customPropBadge') : t('play.sceneProp'));
+      kindLabel.textContent = spawnTab === 'characters' ? t('play.savedDoll') : source.supportSurfaces?.length ? t('placement.holdsProps') : source.placementRules?.allowedTargets.includes('surface') ? t('placement.smallProp') : (source.custom ? t('play.customPropBadge') : t('play.sceneProp'));
       card.append(thumb, kindLabel, label);
       card.setAttribute('aria-label', t('play.traySpawnAria', { name: sourceName, custom: source.custom ? t('play.customArtSuffix') : '' }));
 
@@ -217,18 +219,19 @@ export function createTraySpawnerView(context) {
     if (spawnTab === 'props') {
       const paintPropCard = document.createElement('button');
       paintPropCard.type = 'button';
-      paintPropCard.className = 'spawn-item paint-prop-action-card';
+      paintPropCard.className = 'paint-prop-action-card';
       paintPropCard.setAttribute('aria-label', t('play.paintPropAria'));
-      const thumb = document.createElement('span');
-      thumb.className = 'spawn-thumb';
-      thumb.textContent = '🎨';
-      const kindLabel = document.createElement('span');
-      kindLabel.className = 'spawn-kind';
-      kindLabel.textContent = t('play.customPropBadge');
-      const label = document.createElement('span');
-      label.className = 'spawn-name';
-      label.textContent = t('play.paintPropCard');
-      paintPropCard.append(thumb, kindLabel, label);
+      const plus = document.createElement('span');
+      plus.className = 'paint-prop-action-icon';
+      plus.setAttribute('aria-hidden', 'true');
+      plus.textContent = '+';
+      const copy = document.createElement('span');
+      copy.className = 'paint-prop-action-copy';
+      const label = document.createElement('strong');
+      label.textContent = t('play.paintPropShort');
+      paintPropCard.title = t('play.paintPropAria');
+      copy.append(label);
+      paintPropCard.append(plus, copy);
       paintPropCard.addEventListener('click', () => {
         if (context.openPaintStudio) {
           context.openPaintStudio({
@@ -239,7 +242,16 @@ export function createTraySpawnerView(context) {
           window.location.hash = '#paint';
         }
       });
-      cards.push(paintPropCard);
+      if (packFilter) {
+        packFilter.querySelector('.paint-prop-action-card')?.remove();
+        packFilter.append(paintPropCard);
+      }
+      if (!sources.length) {
+        const empty = document.createElement('p');
+        empty.className = 'tray-empty';
+        empty.textContent = t('play.noPropsInFilter');
+        cards.push(empty);
+      }
     }
 
     list.replaceChildren(...cards);

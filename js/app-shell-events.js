@@ -3,6 +3,7 @@ import { clientToLogical } from './core/coordinate-space.js';
 import { previewCustomColor } from './features/designer/designer-view.js';
 import { CLEARABLE_OUTFIT_SLOTS } from './domain/vocabulary.js';
 import { setLanguage, getCurrentLanguage, t } from './core/i18n.js';
+import { wireQuickTips } from './features/quick-tips.js';
 
 export function createAppShellEvents(context) {
   function wireDesignerEvents() {
@@ -75,6 +76,9 @@ export function createAppShellEvents(context) {
     context.$('#settings-sound-toggle')?.addEventListener('change', (event) => {
       context.store.dispatch({ type: 'settings/setSound', enabled: event.target.checked });
     });
+    context.$('#settings-shadows-toggle')?.addEventListener('change', (event) => {
+      context.store.dispatch({ type: 'settings/setShadows', enabled: event.target.checked });
+    });
     context.$('#settings-open-project-btn')?.addEventListener('click', () => {
       context.$('#settings-dialog')?.close();
       context.openProjectDialog();
@@ -108,6 +112,11 @@ export function createAppShellEvents(context) {
       context.$('#guide-dialog')?.showModal();
     });
     context.$('#close-guide-dialog')?.addEventListener('click', () => context.$('#guide-dialog')?.close());
+
+    wireQuickTips(context, () => {
+      selectGuideTab('tips');
+      context.$('#guide-dialog')?.showModal();
+    });
     context.$('#close-project-dialog')?.addEventListener('click', () => context.$('#project-dialog')?.close());
     context.$('#export-project-btn')?.addEventListener('click', () => context.exportProjectJsonFile());
 
@@ -184,7 +193,6 @@ export function createAppShellEvents(context) {
     context.$('#export-scene-png')?.addEventListener('click', () => void context.exportSceneAsPng());
     context.$('#export-frame-btn')?.addEventListener('click', () => void context.exportCurrentFrameAsPng());
     context.$('#play-stage')?.addEventListener('keydown', context.playView.handleStageKeydown);
-    context.$('#camera-hud')?.addEventListener('keydown', context.playView.handleStageKeydown);
     document.addEventListener('keydown', context.handleTabKeys);
     document.addEventListener('keydown', context.handleGlobalShortcuts);
 
@@ -252,7 +260,7 @@ export function createAppShellEvents(context) {
         }
         context.store.dispatch({ type: 'scene/spawnBubble', bubbleStyle: match[2], text, targetEntityId, ...point });
       } else {
-        context.store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, ...point });
+        context.store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, transfer: true, ...point });
       }
     });
 

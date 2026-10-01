@@ -10,7 +10,11 @@ import {
   persistedProjection,
   sanitizeCustomAsset,
   sanitizeEnvelope,
-  SCHEMA_VERSION
+  SCHEMA_VERSION,
+  APP_VERSION,
+  MIN_COMPATIBLE_VERSION,
+  isVersionOlderThan,
+  parseSemVer
 } from '../core/state-schema.js';
 import {
   base64ToUint8Array,
@@ -54,6 +58,7 @@ export function serializeProjectPackage(state, customArtwork = [], now = () => n
   const pkg = {
     format: PACKAGE_FORMAT,
     formatVersion: PACKAGE_FORMAT_VERSION,
+    appVersion: APP_VERSION,
     exportedAt: now().toISOString(),
     state: envelope,
     customArtwork: (customArtwork || []).map((item) => ({
@@ -197,7 +202,12 @@ export async function validateImportPayload(
     return { ok: false, error: 'The package does not contain a valid state envelope.', warnings: ['Missing state object.'] };
   }
 
-  if (rawState.schemaVersion !== SCHEMA_VERSION) return { ok: false, error: 'This project uses an incompatible save version.', warnings: ['Only current-version projects can be imported.'] };
+  const candidateVersion = rawState.appVersion || (typeof rawState.schemaVersion === 'string' ? rawState.schemaVersion : null);
+  const candidateSemver = parseSemVer(candidateVersion);
+  const currentSemver = parseSemVer(APP_VERSION);
+  if (!candidateVersion || isVersionOlderThan(candidateVersion, MIN_COMPATIBLE_VERSION) || (candidateSemver && currentSemver && candidateSemver.major !== currentSemver.major)) {
+    return { ok: false, error: 'This project uses an incompatible save version.', warnings: ['Only current-version projects can be imported.'] };
+  }
 
   // Pre-extract custom assets to feed the getAsset resolver
   const incomingCustomMeta = new Map();
@@ -637,7 +647,10 @@ export function getAvailableBackup(storage, getAsset = (_id) => undefined) {
     const raw = storage.getItem(BACKUP_KEY_LATEST);
     if (!raw) return { available: false };
     const parsed = JSON.parse(raw);
-    if (parsed?.schemaVersion !== SCHEMA_VERSION) return { available: false };
+    const candidateVersion = parsed?.appVersion || (typeof parsed?.schemaVersion === 'string' ? parsed?.schemaVersion : null);
+    const candidateSemver = parseSemVer(candidateVersion);
+    const currentSemver = parseSemVer(APP_VERSION);
+    if (!candidateVersion || isVersionOlderThan(candidateVersion, MIN_COMPATIBLE_VERSION) || (candidateSemver && currentSemver && candidateSemver.major !== currentSemver.major)) return { available: false };
     const result = sanitizeEnvelope(parsed, getAsset);
     if (!result.envelope || result.resetRequired) return { available: false };
     return {

@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_blanket_fort"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M80 900 L500 120 L920 900 Z" fill="#a9a1c5"/><path d="M500 200 L760 900 L290 900 Z" fill="#fff8eb"/><path d="M500 120 Q460 520 80 900 M500 120 Q560 520 920 900" fill="none"/><ellipse cx="440" cy="250" rx="12" ry="12" fill="#d7b86c"/><ellipse cx="390" cy="350" rx="12" ry="12" fill="#d7b86c"/><ellipse cx="330" cy="470" rx="12" ry="12" fill="#d7b86c"/><ellipse cx="265" cy="590" rx="12" ry="12" fill="#d7b86c"/><ellipse cx="210" cy="720" rx="12" ry="12" fill="#d7b86c"/><ellipse cx="160" cy="810" rx="12" ry="12" fill="#d7b86c"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_blanket_fort">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<path d="M80 900 L500 120 L920 900 Z" fill="#a78bc4"/>
+    <path d="M500 210 L755 900 H270 Z" fill="#514039"/>
+    <path d="M285 860 Q510 790 735 860 L750 900 H270 Z" fill="#81b29a"/>
+    <path d="M500 120 Q410 520 80 900 L270 900 Q425 655 500 210 Q555 655 755 900 H920 Q620 515 500 120 Z" fill="#a78bc4"/>
+    <path d="M455 295 Q365 635 160 845 M545 295 Q655 635 840 845" fill="none" stroke="#cdb9df" stroke-width="14"/>
+    <path d="M500 190 Q450 430 385 555 M500 190 Q555 440 635 575" fill="none" stroke="#e9c46a" stroke-width="9"/>
+    <g fill="#ffd166" stroke-width="8"><circle cx="466" cy="300" r="19"/><circle cx="433" cy="405" r="19"/><circle cx="392" cy="530" r="19"/><circle cx="538" cy="305" r="19"/><circle cx="580" cy="425" r="19"/><circle cx="629" cy="550" r="19"/></g>
+    <path d="M390 805 Q445 775 495 805 L475 870 H370 Z" fill="#e07a5f" stroke-width="12"/>
+    <path d="M570 815 Q620 790 665 815 L685 870 H560 Z" fill="#e9c46a" stroke-width="12"/>
+    <path d="M367 568 L405 592 L385 618 L345 595 Z M620 586 L655 560 L682 587 L646 615 Z" fill="#e9c46a" stroke-width="10"/>
+  </g>
+</svg>

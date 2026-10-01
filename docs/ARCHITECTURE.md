@@ -301,9 +301,11 @@ reload dialog and retry next startup. Incompatible imports/backups are rejected.
 `SceneRecord.placementMode` is internal state: background profiles enable room
 constraints automatically, with free placement on unprofiled backgrounds. There
 is no user mode toggle. Assets store `placementRules`/`supportSurfaces`; entities
-store `placement`. New scenes use the supported bedroom background. Bedroom, atelier, and cafe
-profiles describe their own visible wall/floor seam; background layout repeats
-and mirrors their region polygons across panoramic stages.
+store `placement`. New scenes use the supported bedroom background. Bedroom,
+atelier, cafe, and the three Family & Home indoor settings describe their visible
+wall/floor seams. Full-width rectangular planes form one logical support across
+the stage; narrower authored regions repeat/mirror with their artwork. Current
+saved tile IDs remain recognized as aliases and normalize on recovery.
 
 `domain/placement-geometry.js` validates convex geometry, insets support polygons
 by contact footprints, intersects full-stage visual bounds, and resolves the
@@ -314,8 +316,12 @@ render ordering. Surface children use the existing `attachedTo` relationship;
 compatibility outputs. Invalid support is detached into a visible free exception
 at the last position, never silently reattached on asset restoration.
 
-Play pointer previews and the native Place on chooser share these rules. Nudges
-remain on the current support; pointer drags may transfer. Hosts carry children
+Play pointer previews, tray drops, and secondary Place on destination buttons
+share these rules. There is no persistent placement dropdown. Small props may
+acquire and leave furniture support on free backgrounds; character-held drops
+retain generic attachments. Pointer grab offsets use the original press position.
+Nudges remain on the current logical support and can cross panorama seams;
+pointer drags may transfer. Hosts carry children
 when moved, scaled, and flipped. Ordinary Duplicate copies a host alone;
 Duplicate with contents remaps the entire assembly. Supported-child duplicates
 stay on their original surface. Invalid transforms reject the whole

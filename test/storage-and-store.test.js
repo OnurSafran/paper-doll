@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAppStore } from '../js/core/app-store.js';
 import { ASSETS, getAsset } from '../js/core/asset-catalog.js';
-import { createDefaultEnvelope, createRuntimeState, persistedProjection, sanitizeEnvelope, STORAGE_KEY } from '../js/core/state-schema.js';
+import { createDefaultEnvelope, createRuntimeState, persistedProjection, sanitizeEnvelope, STORAGE_KEY, APP_VERSION, SCHEMA_VERSION } from '../js/core/state-schema.js';
 import { createStorageAdapter, loadEnvelope } from '../js/core/storage-adapter.js';
 
 function memoryStorage(initial = {}) {
@@ -28,7 +28,7 @@ test('invalid child presets are skipped without discarding valid sections', () =
 test('malformed JSON requests a clean data reset', () => {
   const storage = memoryStorage({ [STORAGE_KEY]: '{broken' });
   const result = loadEnvelope(storage, getAsset);
-  assert.equal(result.envelope.schemaVersion, 8);
+  assert.equal(result.envelope.schemaVersion, SCHEMA_VERSION);
   assert.equal(result.available, true);
   assert.equal(result.resetRequired, true);
   assert.match(result.warnings[0], /clean start/);
@@ -38,8 +38,9 @@ test('malformed JSON requests a clean data reset', () => {
 test('version 1 data is discarded instead of migrated', () => {
   const legacy = createDefaultEnvelope();
   legacy.schemaVersion = 1;
+  legacy.appVersion = undefined;
   const result = sanitizeEnvelope(legacy, getAsset);
-  assert.equal(result.envelope.schemaVersion, 8);
+  assert.equal(result.envelope.schemaVersion, SCHEMA_VERSION);
   assert.equal(result.resetRequired, true);
   assert.deepEqual(result.envelope.presets, []);
 });
@@ -554,7 +555,8 @@ test('invalid or unknown expressions safely fallback to neutral', () => {
 
   // Invalid expression in raw envelope sanitizes to default 'neutral'
   const rawEnvelope = {
-    schemaVersion: 8,
+    schemaVersion: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
     savedAt: new Date(0).toISOString(),
     settings: { reducedMotion: 'system', soundEnabled: false },
     presets: [{
@@ -605,7 +607,7 @@ test('sanitizeScene preserves valid createdAt timestamps', () => {
     updatedAt: updatedStamp,
     entities: []
   };
-  const sanitized = sanitizeEnvelope({ schemaVersion: 8, scenes: [candidate], presets: [] }, getAsset);
+  const sanitized = sanitizeEnvelope({ schemaVersion: SCHEMA_VERSION, appVersion: APP_VERSION, scenes: [candidate], presets: [] }, getAsset);
   assert.equal(sanitized.envelope.scenes[0].createdAt, createdStamp);
   assert.equal(sanitized.envelope.scenes[0].updatedAt, updatedStamp);
 });

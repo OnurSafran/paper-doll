@@ -11,6 +11,7 @@ import {
 } from '../js/domain/scene-rules.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { isAlignmentMode, ALIGNMENT_MODES } from '../js/domain/vocabulary.js';
+import { APP_VERSION, SCHEMA_VERSION } from '../js/core/state-schema.js';
 
 const mockGetAsset = (id) => {
   if (id === 'prop_chair') return { id: 'prop_chair', name: 'Chair', displayWidth: 160, displayHeight: 220, groundAnchor: { x: 0.5, y: 0.95 } };
@@ -322,7 +323,8 @@ test('duplicateCurrentToLibrary assigns fresh entity instance IDs to cloned libr
 
 test('Scene and project replacement actions clear both single and multi-selection state', () => {
   const store = createAppStore({
-    schemaVersion: 8,
+    schemaVersion: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
     presets: [{ presetId: 'doll_a', name: 'Doll A', slots: {} }],
     scenes: [{
       sceneId: 'lib-scene-1',
@@ -359,7 +361,8 @@ test('Scene and project replacement actions clear both single and multi-selectio
   store.dispatch({
     type: 'project/importReplace',
     envelope: {
-      schemaVersion: 8,
+      schemaVersion: SCHEMA_VERSION,
+      appVersion: APP_VERSION,
       presets: [],
       scenes: [],
       currentScene: { sceneId: 'imported-scene', title: 'Imported', backgroundId: 'bg_park', entities: [] }
@@ -372,7 +375,8 @@ test('Scene and project replacement actions clear both single and multi-selectio
   store.dispatch({
     type: 'project/restoreBackup',
     envelope: {
-      schemaVersion: 8,
+      schemaVersion: SCHEMA_VERSION,
+      appVersion: APP_VERSION,
       presets: [],
       scenes: [],
       currentScene: { sceneId: 'restored-scene', title: 'Restored', backgroundId: 'bg_park', entities: [] }

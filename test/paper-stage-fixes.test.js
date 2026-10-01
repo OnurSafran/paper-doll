@@ -5,7 +5,7 @@ import { createEmptyScene, addEntity, moveEntity, moveEntities, flipEntity, scal
 import { setPlacementMode, placeEntity, recoverSurfacePlacements, resolvePlacement, changePlacementBackground } from '../js/domain/scene-placement.js';
 import { previewStageSize } from '../js/domain/stage-sizing.js';
 import { confirmStageSize } from '../js/features/play/background-placement-confirm.js';
-import { createDefaultEnvelope, sanitizeEnvelope, sanitizeScene, SCHEMA_VERSION, STORAGE_KEY } from '../js/core/state-schema.js';
+import { createDefaultEnvelope, sanitizeEnvelope, sanitizeScene, SCHEMA_VERSION, APP_VERSION, STORAGE_KEY } from '../js/core/state-schema.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { loadProject, resetObsoleteProject } from '../js/services/project-repository.js';
 import { validateImportPayload, getAvailableBackup, BACKUP_KEY_LATEST } from '../js/services/project-portability.js';
@@ -177,12 +177,13 @@ test('Shrink confirmation cannot apply to an arrangement changed while awaiting 
   assert.equal(store.getState().currentScene.stageWidth, 3200);
 });
 
-test('Every pre-release or unversioned save requests a full reset; version 8 survives', () => {
+test('Every pre-release or unversioned save requests a full reset; v2.0.0 survives', () => {
   const saved = { ...createDefaultEnvelope(), currentScene: furnished(), scenes: [furnished()], settings: { soundEnabled: true }, customAssets: [{ assetId: 'custom_old' }], presets: [{ presetId: 'old' }] };
-  for (const version of [undefined, null, 0, 1, 6, 7, '8']) {
-    const result = sanitizeEnvelope({ ...saved, schemaVersion: version }, getAsset);
+  for (const version of [undefined, null, 0, 1, 6, 7, 8, '8', '1.21.0']) {
+    const result = sanitizeEnvelope({ ...saved, schemaVersion: version, appVersion: typeof version === 'string' && version.includes('.') ? version : undefined }, getAsset);
     assert.equal(result.resetRequired, true);
     assert.equal(result.envelope.schemaVersion, SCHEMA_VERSION);
+    assert.equal(result.envelope.appVersion, APP_VERSION);
     assert.equal(result.envelope.currentScene, null);
     assert.deepEqual(result.envelope.scenes, []);
     assert.deepEqual(result.envelope.customAssets, []);
@@ -204,7 +205,7 @@ test('Clean start waits for artwork, drafts, staging, trash and backup reset bef
   assert.equal(JSON.parse(storage.getItem(STORAGE_KEY)).schemaVersion, 7);
   finishReset({ ok: true });
   await pending;
-  assert.equal(JSON.parse(storage.getItem(STORAGE_KEY)).schemaVersion, 8);
+  assert.equal(JSON.parse(storage.getItem(STORAGE_KEY)).schemaVersion, SCHEMA_VERSION);
   assert.deepEqual([...storage.data.keys()].sort(), [STORAGE_KEY, 'unrelated'].sort());
   assert.equal(storage.getItem('unrelated'), 'keep');
 });
@@ -217,8 +218,8 @@ test('Failed artwork reset never stamps the new version, so the next load retrie
 });
 
 test('Incompatible imports and backups cannot reintroduce old data or silently wipe the project', async () => {
-  for (const version of [undefined, 7, 9]) {
-    const saved = { ...createDefaultEnvelope(), schemaVersion: version };
+  for (const version of [undefined, 7, 8, '1.0.0', '3.0.0', 999]) {
+    const saved = { ...createDefaultEnvelope(), schemaVersion: version, appVersion: typeof version === 'string' ? version : undefined };
     assert.equal((await validateImportPayload(saved, getAsset)).ok, false);
     assert.equal(getAvailableBackup(storageFor({ [BACKUP_KEY_LATEST]: JSON.stringify(saved) }), getAsset).available, false);
   }

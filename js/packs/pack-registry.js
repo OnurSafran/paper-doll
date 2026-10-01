@@ -227,6 +227,14 @@ function validatePlacementMetadata(asset, errors) {
   const surfaces = sanitizeSurfaces(asset.supportSurfaces);
   if (asset.placementRules != null && (asset.kind !== 'prop' || !rules)) errors.push('asset ' + asset.id + ' has invalid placement rules');
   if (!surfaces || (surfaces.length && (asset.kind !== 'prop' || rules?.allowedTargets.join(',') !== 'floor'))) errors.push('asset ' + asset.id + ' has invalid support surfaces');
+  if (asset.wallShadow != null) {
+    const { x, y, width, height } = asset.wallShadow;
+    if (asset.kind !== 'prop' || !rules?.allowedTargets.includes('wall') ||
+        ![x, y, width, height].every(Number.isFinite) || width <= 0 || height <= 0 ||
+        x - width / 2 < 0 || x + width / 2 > 1 || y - height / 2 < 0 || y + height / 2 > 1) {
+      errors.push('asset ' + asset.id + ' has invalid wall shadow bounds');
+    }
+  }
   if (asset.placementProfile != null) {
     const regions = asset.placementProfile.regions;
     const width = asset.backgroundWidth || 1600;

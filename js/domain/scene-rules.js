@@ -437,7 +437,7 @@ export function scaleEntity(scene, instanceId, scale, getAsset = (_id) => undefi
   const target = scene.entities.find((e) => e.instanceId === instanceId);
   if (!target || target.pinned || target.scale === nextScale) return scene;
 
-  if (target.placement?.kind === 'surface' || scene.entities.some(e => e.attachedTo === instanceId && e.placement?.kind === 'surface') || (scene.placementMode === 'room' && target.placement && target.placement.kind !== 'free')) return transformPlacedEntity(scene, instanceId, { scale: nextScale }, getAsset);
+  if (target.placement?.kind === 'surface' || getAttachedDescendants(scene, instanceId).some(e => e.placement?.kind === 'surface') || (scene.placementMode === 'room' && target.placement && target.placement.kind !== 'free')) return transformPlacedEntity(scene, instanceId, { scale: nextScale }, getAsset);
   const scaledEntity = { ...target, scale: nextScale };
   const point = clampEntityPoint(target.x, target.y, scaledEntity, getAsset, scene?.stageWidth || STAGE_WIDTH);
   const deltaX = point.x - target.x;
@@ -466,11 +466,8 @@ export function scaleEntity(scene, instanceId, scale, getAsset = (_id) => undefi
 
 export function flipEntity(scene, instanceId, getAsset = (_id) => undefined) {
   const target = scene.entities.find(e => e.instanceId === instanceId);
-  if (target && (target.placement?.kind === 'surface' || scene.entities.some(e => e.attachedTo === instanceId && e.placement?.kind === 'surface') || scene.placementMode === 'room')) return transformPlacedEntity(scene, instanceId, { flipped: !target.flipped }, getAsset);
-  return updateEntity(scene, instanceId, (entity) => {
-    if (entity.pinned) return entity;
-    return { ...entity, flipped: !entity.flipped };
-  });
+  if (!target) return scene;
+  return transformPlacedEntity(scene, instanceId, { flipped: !target.flipped }, getAsset);
 }
 
 export function reorderEntity(scene, instanceId, direction) {
@@ -744,20 +741,8 @@ export function scaleEntities(scene, instanceIds, delta, getAsset = (_id) => und
 }
 
 export function flipEntities(scene, instanceIds, getAsset = (_id) => undefined) {
-  if (scene.placementMode === 'room' || scene.entities.some(e => e.placement?.kind === 'surface')) {
-    return (instanceIds || []).reduce((next, id) => flipEntity(next, id, getAsset), scene);
-  }
   if (!Array.isArray(instanceIds) || instanceIds.length === 0) return scene;
-  const idSet = new Set(instanceIds);
-  let changed = false;
-  const nextEntities = scene.entities.map((e) => {
-    if (idSet.has(e.instanceId) && !e.pinned) {
-      changed = true;
-      return { ...e, flipped: !e.flipped };
-    }
-    return e;
-  });
-  return changed ? touchScene({ ...scene, entities: nextEntities }) : scene;
+  return [...new Set(instanceIds)].reduce((next, id) => flipEntity(next, id, getAsset), scene);
 }
 
 export function deleteEntities(scene, instanceIds, getAsset = (_id) => undefined) {
@@ -847,6 +832,13 @@ function transformPlacedEntity(scene, instanceId, changes, getAsset) {
   // A transform is atomic: never detach a child or push an assembly outside its target.
   for (const e of next.entities) {
     if (!affected.has(e.instanceId)) continue;
+    // Stage bounds still apply when floor/wall constraints are relaxed.
+    const bounds = getEntityBounds(e, getAsset);
+    const anchorX = e.flipped ? 1 - bounds.anchorX : bounds.anchorX;
+    if (e.x - bounds.width * anchorX < -.01 ||
+        e.x + bounds.width * (1 - anchorX) > (scene.stageWidth || STAGE_WIDTH) + .01 ||
+        e.y - bounds.height * bounds.anchorY < -.01 ||
+        e.y + bounds.height * (1 - bounds.anchorY) > STAGE_HEIGHT + .01) return scene;
     const before = scene.entities.find(old => old.instanceId === e.instanceId);
     if (before.placement && before.placement.kind !== 'free' && e.placement?.kind !== before.placement.kind) return scene;
     if (e.placement?.kind === 'surface' || (scene.placementMode === 'room' && ['floor', 'wall'].includes(e.placement?.kind))) {

@@ -463,7 +463,13 @@ function corePlacementMetadata(id) {
   if (!floor.includes(id) && !small.includes(id) && id !== 'prop_painting') return {};
   return {
     placementRules: { allowedTargets: id === 'prop_painting' ? ['wall'] : small.includes(id) ? ['floor', 'surface'] : ['floor'], tags: small.includes(id) ? ['small-prop'] : ['furniture'], contactFootprint: { width: small.includes(id) ? .25 : .55, depth: .02 }, renderClass: ['prop_rug', 'prop_picnic_blanket'].includes(id) ? 'ground' : 'upright' },
-    ...(id === 'prop_painting' ? { groundAnchor: { x: .5, y: .5 } } : {}),
-    ...(id === 'prop_table' ? { supportSurfaces: [{ id: 'tabletop', nameKey: 'placement.tabletop', polygon: [[.24,.32],[.76,.32],[.84,.39],[.76,.46],[.24,.46],[.16,.39]], acceptsTags: ['small-prop'] }] } : {})
+    ...(id === 'prop_painting' ? {
+      groundAnchor: { x: .5, y: .5 },
+      // Frame bounds in the display rectangle, including the square SVG's side margins.
+      wallShadow: { x: .5, y: .54, width: 180 / 220 * .68, height: .56 }
+    } : {}),
+    ...(id === 'prop_table' ? { supportSurfaces: [{ id: 'tabletop', nameKey: 'placement.tabletop', polygon: [[.24,.32],[.76,.32],[.84,.39],[.76,.46],[.24,.46],[.16,.39]], acceptsTags: ['small-prop'] }] } : {}),
+    ...(id === 'prop_bookshelf' ? { supportSurfaces: [{ id: 'top', nameKey: 'placement.cabinetTop', polygon: [[.2,.115],[.8,.115],[.8,.145],[.2,.145]], acceptsTags: ['small-prop'] }] } : {}),
+    ...(id === 'prop_bench' ? { supportSurfaces: [{ id: 'seat', nameKey: 'placement.benchTop', polygon: [[.16,.62],[.84,.62],[.82,.66],[.18,.66]], acceptsTags: ['small-prop'] }] } : {})
   };
 }

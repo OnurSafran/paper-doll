@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_snow_globe"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="500" cy="430" rx="300" ry="300" fill="#dbe9e6"/><path d="M310 610 L500 310 L680 610 Z" fill="#92b6a0"/><rect x="265" y="710" width="470" height="160" rx="25" fill="#d7b86c"/><ellipse cx="340" cy="350" rx="15" ry="15" fill="#fff8eb"/><ellipse cx="580" cy="250" rx="15" ry="15" fill="#fff8eb"/><ellipse cx="710" cy="470" rx="15" ry="15" fill="#fff8eb"/><ellipse cx="380" cy="620" rx="15" ry="15" fill="#fff8eb"/><ellipse cx="570" cy="530" rx="15" ry="15" fill="#fff8eb"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_snow_globe">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<circle cx="500" cy="430" r="300" fill="#dbe9e6"/>
+    <path d="M265 590 Q360 530 455 595 Q575 540 735 590 L695 650 Q500 760 305 650 Z" fill="#fff8eb" stroke="none"/>
+    <rect x="475" y="515" width="45" height="120" rx="6" fill="#8b5e34" stroke-width="10"/>
+    <path d="M500 285 L390 425 H435 L355 525 H410 L325 610 H675 L590 525 H645 L565 425 H610 Z" fill="#81b29a"/>
+    <path d="M500 285 L455 350 H545 Z M408 475 L390 500 H447 M556 553 L600 580 H535" fill="#fff8eb" stroke="none"/>
+    <path d="M500 255 L512 281 L540 285 L520 305 L525 333 L500 320 L475 333 L480 305 L460 285 L488 281 Z" fill="#e9c46a" stroke-width="8"/>
+    <g fill="#e07a5f" stroke-width="8"><circle cx="480" cy="455" r="16"/><circle cx="555" cy="550" r="16"/></g>
+    <g fill="#fff8eb" stroke="none"><circle cx="340" cy="350" r="15"/><circle cx="580" cy="250" r="15"/><circle cx="710" cy="470" r="15"/><circle cx="380" cy="620" r="12"/><circle cx="650" cy="365" r="12"/><circle cx="315" cy="500" r="11"/></g>
+    <path d="M292 390 Q295 270 415 215" fill="none" stroke="#fff8eb" stroke-width="22"/>
+    <path d="M280 720 H720 L750 870 H250 Z" fill="#bc8a5f"/>
+    <rect x="265" y="710" width="470" height="55" rx="18" fill="#e9c46a"/>
+    <rect x="240" y="845" width="520" height="45" rx="18" fill="#e9c46a"/>
+    <rect x="405" y="783" width="190" height="42" rx="12" fill="#fff8eb" stroke-width="9"/>
+    <path d="M480 800 H520" fill="none" stroke="#d4a373" stroke-width="9"/>
+  </g>
+</svg>

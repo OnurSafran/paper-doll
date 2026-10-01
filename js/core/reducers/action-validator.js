@@ -73,6 +73,7 @@ export const ACTION_PAYLOAD_VALIDATORS = {
 
   'settings/setPapercraft': (action) => ['clothingTabs', 'cardboardFinish'].includes(action.setting) && typeof action.enabled === 'boolean',
   'settings/setSound': (action) => typeof action.enabled === 'boolean',
+  'settings/setShadows': (action) => typeof action.enabled === 'boolean',
   'settings/setReducedMotion': (action) => ['system', 'reduce', 'full'].includes(action.mode),
   'settings/unlockStamp': (action) => typeof action.stampId === 'string' && action.stampId.length > 0 && action.stampId.length <= 50,
   'settings/unlockBackground': (action) => typeof action.backgroundId === 'string'

@@ -6,18 +6,21 @@ import {
   createRuntimeState,
   persistedProjection,
   sanitizeEnvelope,
-  SCHEMA_VERSION
+  SCHEMA_VERSION,
+  APP_VERSION
 } from '../js/core/state-schema.js';
 
-test('state schema version is bumped to 8 and envelope defaults are valid', () => {
-  assert.equal(SCHEMA_VERSION, 8);
+test('state schema version is unified with APP_VERSION and envelope defaults are valid', () => {
+  assert.equal(SCHEMA_VERSION, APP_VERSION);
   const envelope = createDefaultEnvelope();
-  assert.equal(envelope.schemaVersion, 8);
+  assert.equal(envelope.schemaVersion, SCHEMA_VERSION);
+  assert.equal(envelope.appVersion, APP_VERSION);
 });
 
 test('older animation saves are discarded at the paper-stage boundary', () => {
   const result = sanitizeEnvelope({ schemaVersion: 4, scenes: [{ sceneId: 'old', entities: [] }] });
-  assert.equal(result.envelope.schemaVersion, 8);
+  assert.equal(result.envelope.schemaVersion, SCHEMA_VERSION);
+  assert.equal(result.envelope.appVersion, APP_VERSION);
   assert.equal(result.resetRequired, true);
   assert.equal(result.migrated, false);
   assert.deepEqual(result.envelope.scenes, []);

@@ -1,1 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_cocoa"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="790" cy="625" rx="105" ry="115" fill="#dd9c89"/><rect x="440" y="485" width="320" height="340" rx="55" fill="#dd9c89"/><ellipse cx="600" cy="485" rx="160" ry="50" fill="#886551"/><ellipse cx="180" cy="675" rx="95" ry="105" fill="#8cacc4"/><rect x="180" y="545" width="300" height="330" rx="55" fill="#8cacc4"/><ellipse cx="330" cy="545" rx="150" ry="50" fill="#886551"/><ellipse cx="310" cy="535" rx="32" ry="20" fill="#fff8eb"/><ellipse cx="365" cy="552" rx="30" ry="18" fill="#fff8eb"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_cocoa">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<!-- Open handles, ceramic rims and steam keep both cups readable at tray size. -->
+    <path d="M745 510 C945 425 970 760 750 765" fill="none" stroke-width="42"/>
+    <path d="M745 510 C945 425 970 760 750 765" fill="none" stroke="#e07a5f" stroke-width="22"/>
+    <rect x="440" y="485" width="320" height="340" rx="55" fill="#e07a5f"/>
+    <ellipse cx="600" cy="485" rx="160" ry="50" fill="#f4b39c"/>
+    <ellipse cx="600" cy="485" rx="132" ry="29" fill="#886551" stroke-width="8"/>
+    <path d="M225 575 C45 480 25 815 225 815" fill="none" stroke-width="42"/>
+    <path d="M225 575 C45 480 25 815 225 815" fill="none" stroke="#78add2" stroke-width="22"/>
+    <rect x="180" y="545" width="300" height="330" rx="55" fill="#78add2"/>
+    <ellipse cx="330" cy="545" rx="150" ry="50" fill="#cbe3ef"/>
+    <ellipse cx="330" cy="545" rx="124" ry="30" fill="#886551" stroke-width="8"/>
+    <g fill="#fff8eb" stroke-width="7"><rect x="283" y="520" width="52" height="31" rx="8" transform="rotate(-12 310 535)"/><rect x="345" y="540" width="46" height="29" rx="8" transform="rotate(14 365 552)"/></g>
+    <path d="M245 615 V745 M500 555 V665" fill="none" stroke="#fff8eb" stroke-width="14"/>
+    <path d="M310 455 Q270 410 315 355 M600 380 Q555 335 600 285" fill="none" stroke="#bc8a5f" stroke-width="10"/>
+    <path d="M370 745 C315 680 270 755 370 805 C465 735 425 680 370 745 Z" fill="#fff8eb" stroke-width="9"/>
+  </g>
+</svg>

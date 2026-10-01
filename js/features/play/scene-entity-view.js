@@ -9,15 +9,20 @@ import { assetName, t } from '../../core/i18n.js';
 
 export function createSceneEntityView(context) {
   function updateShadow(element, entity) {
-    const scene = context.store.getState().currentScene;
-    const shadow = placementShadow(scene, entity, context.getAsset);
+    const state = context.store.getState();
+    const scene = state.currentScene;
+    const shadow = placementShadow(scene, entity, context.getAsset, state.settings.shadowsEnabled === true);
     let node = element.querySelector('.placement-contact-shadow');
     if (!shadow) { node?.remove(); return; }
     if (!node) { node = document.createElement('span'); node.className = 'placement-contact-shadow'; node.setAttribute('aria-hidden', 'true'); element.prepend(node); }
     const b = getEntityBounds(entity, context.getAsset);
     node.style.width = `${shadow.width / b.width * 100}%`;
     node.style.height = `${shadow.height / b.height * 100}%`;
-    node.style.left = `${b.anchorX * 100}%`; node.style.top = `${b.anchorY * 100}%`;
+    // The positioner keeps the unflipped anchor; its visual flips around it.
+    node.style.left = `${(b.anchorX + (shadow.x - entity.x) / b.width) * 100}%`;
+    node.style.top = `${(b.anchorY + (shadow.y - entity.y) / b.height) * 100}%`;
+    node.style.borderRadius = shadow.shape === 'rect' ? '0' : '50%';
+    node.style.background = shadow.fill;
   }
 
   async function createSceneEntity(entity, isPrimarySelected, isMultiSelected) {

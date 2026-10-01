@@ -3103,7 +3103,32 @@ export const FAMILY_ASSETS = [
     },
     "backgroundWidth": 3200
   }
-];
+].map(asset => ({ ...asset, ...familyPlacementMetadata(asset.id) }));
+
+// Explicit rules and contact areas authored against each SVG; collections do not imply behavior.
+function familyPlacementMetadata(id) {
+  if (['fh_living_room', 'fh_nursery', 'fh_shared_bedroom'].includes(id)) return { placementProfile: { regions: [
+    { id: 'floor', kind: 'floor', polygon: [[0, 660], [1600, 660], [1600, 900], [0, 900]] },
+    { id: 'wall', kind: 'wall', polygon: [[0, 0], [1600, 0], [1600, 630], [0, 630]] }
+  ] } };
+  const smallAnchors = { fh_books: .87, fh_cocoa: .885, fh_bottle: .9, fh_tray: .85, fh_cookies: .86, fh_candy: .875, fh_snow_globe: .905 };
+  if (smallAnchors[id]) return {
+    groundAnchor: { x: .5, y: smallAnchors[id] },
+    placementRules: { allowedTargets: ['floor', 'surface'], tags: ['small-prop'], contactFootprint: { width: .25, depth: .02 }, renderClass: 'upright' }
+  };
+  const furniture = { fh_sofa: .9, fh_storage: .88, fh_high_chair: .92, fh_crib: .92, fh_stroller: .92, fh_rocking_horse: .92 };
+  if (!furniture[id]) return {};
+  const surfaces = {
+    fh_storage: [{ id: 'top', nameKey: 'placement.cabinetTop', polygon: [[.17,.205],[.83,.205],[.83,.235],[.17,.235]], acceptsTags: ['small-prop'] }],
+    fh_high_chair: [{ id: 'tray', nameKey: 'placement.trayTop', polygon: [[.25,.385],[.75,.385],[.75,.42],[.25,.42]], acceptsTags: ['small-prop'] }]
+  };
+  return {
+    groundAnchor: { x: .5, y: furniture[id] },
+    placementRules: { allowedTargets: ['floor'], tags: ['furniture'], contactFootprint: { width: .55, depth: .02 }, renderClass: 'upright' },
+    ...(surfaces[id] ? { supportSurfaces: surfaces[id] } : {})
+  };
+}
+
 export const FAMILY_CHAPTERS = [
   {
     "id": "everyday",

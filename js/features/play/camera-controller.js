@@ -48,9 +48,6 @@ export function createCameraController(context) {
   function initCameraControls() {
     const stageEl = context.$('#play-stage');
     const widthSelect = context.$('#stage-width-select');
-    const slider = context.$('#camera-slider');
-    const panLeftBtn = context.$('#camera-pan-left');
-    const panRightBtn = context.$('#camera-pan-right');
     const minimap = context.$('#stage-minimap');
 
     if (widthSelect && !widthSelect.dataset.bound) {
@@ -59,27 +56,6 @@ export function createCameraController(context) {
         context.cancelPointerController?.();
         const accepted = await confirmStageSize(context, Number(e.target.value));
         if (!accepted) e.target.value = String(context.store.getState().currentScene.stageWidth);
-      });
-    }
-
-    if (panLeftBtn && !panLeftBtn.dataset.bound) {
-      panLeftBtn.dataset.bound = 'true';
-      panLeftBtn.addEventListener('click', () => {
-        context.store.dispatch({ type: 'scene/panCamera', deltaX: -CAMERA_CONSTANTS.STEP });
-      });
-    }
-
-    if (panRightBtn && !panRightBtn.dataset.bound) {
-      panRightBtn.dataset.bound = 'true';
-      panRightBtn.addEventListener('click', () => {
-        context.store.dispatch({ type: 'scene/panCamera', deltaX: CAMERA_CONSTANTS.STEP });
-      });
-    }
-
-    if (slider && !slider.dataset.bound) {
-      slider.dataset.bound = 'true';
-      slider.addEventListener('input', (e) => {
-        context.store.dispatch({ type: 'scene/setCameraX', cameraX: Number(e.target.value) });
       });
     }
 
@@ -111,6 +87,7 @@ export function createCameraController(context) {
       });
       minimap.addEventListener('pointercancel', () => { isSeekingMinimap = false; });
       minimap.addEventListener('keydown', (event) => {
+        event.stopPropagation();
         const stageWidth = context.store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
         const maxCameraX = Math.max(0, stageWidth - VIEWPORT_WIDTH);
         let nextCameraX = null;
@@ -151,16 +128,6 @@ export function createCameraController(context) {
     if (!isPanoramic) return;
 
     const maxCameraX = stageWidth - VIEWPORT_WIDTH;
-    const slider = context.$('#camera-slider');
-    if (slider) {
-      slider.max = String(maxCameraX);
-      slider.value = String(cameraX);
-    }
-    const panLeftBtn = context.$('#camera-pan-left');
-    if (panLeftBtn) panLeftBtn.disabled = cameraX <= 0;
-    const panRightBtn = context.$('#camera-pan-right');
-    if (panRightBtn) panRightBtn.disabled = cameraX >= maxCameraX;
-
     const minimap = context.$('#stage-minimap');
     if (minimap) {
       const minimapBg = context.$('#minimap-bg');

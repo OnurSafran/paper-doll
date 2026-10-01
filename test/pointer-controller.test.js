@@ -76,9 +76,11 @@ test('pointer release flushes the final preview before commit', () => {
     const { root, subject, listeners } = harness();
     const previews = [];
     const commits = [];
+    const starts = [];
     const controller = new PointerController(root, {
       selector: '.entity',
       getId: () => 'item-1',
+      onStart: (id, _subject, event) => starts.push([id, event.clientX]),
       onPreview: (id, _subject, event) => previews.push([id, event.clientX]),
       onCommit: (id, _subject, event) => commits.push([id, event.clientX])
     });
@@ -86,6 +88,7 @@ test('pointer release flushes the final preview before commit', () => {
     listeners.get('pointermove')({ pointerId: 4, clientX: 30, clientY: 10, preventDefault() {} });
     listeners.get('pointerup')({ pointerId: 4, clientX: 42, clientY: 10, type: 'pointerup' });
     assert.deepEqual(previews, [['item-1', 42]]);
+    assert.deepEqual(starts, [['item-1', 10]]);
     assert.deepEqual(commits, [['item-1', 42]]);
     controller.destroy();
   } finally {

@@ -1,5 +1,5 @@
 /** Shared placement rules for commands, pointer previews, reload, and renderers. */
-import { getEntityBounds, getAttachedDescendants } from './scene-rules.js';
+import { getEntityBounds, getAttachedDescendants, clampCompoundEntityPoint } from './scene-rules.js';
 import { getBackgroundLayout } from '../core/background-layout.js';
 import { clipPolygon, insetPolygon, nearestPoint, validPolygon } from './placement-geometry.js';
 
@@ -20,9 +20,18 @@ export function getPlacementRegions(scene, getAsset) {
   const regions = asset?.placementProfile?.regions;
   if (!Array.isArray(regions) || regions.length > 8) return [];
   const layout = getBackgroundLayout(asset, scene.stageWidth);
-  return layout.tiles.flatMap((tile, index) => regions.filter(r => ['floor', 'wall'].includes(r.kind) && typeof r.id === 'string' && validPolygon(r.polygon, false)).map(r => ({
+  const validRegions = regions.filter(r => ['floor', 'wall'].includes(r.kind) && typeof r.id === 'string' && validPolygon(r.polygon, false));
+  // Full-width rectangular planes join across artwork seams. Islands stay separate.
+  const continuous = new Set(validRegions.filter(r => {
+    const xs = [...new Set(r.polygon.map(p => p[0]))], ys = [...new Set(r.polygon.map(p => p[1]))];
+    return r.polygon.length === 4 && xs.length === 2 && ys.length === 2 && Math.min(...xs) === 0 && Math.max(...xs) === layout.tileWidth;
+  }).map(r => r.id));
+  return layout.tiles.flatMap((tile, index) => validRegions.filter(r => !continuous.has(r.id) || index === 0).map(r => continuous.has(r.id) ? {
+    ...r, regionId: `${r.id}:0`, regionIds: layout.tiles.map((_, i) => `${r.id}:${i}`),
+    polygon: [[0, Math.min(...r.polygon.map(p => p[1]))], [layout.stageWidth, Math.min(...r.polygon.map(p => p[1]))], [layout.stageWidth, Math.max(...r.polygon.map(p => p[1]))], [0, Math.max(...r.polygon.map(p => p[1]))]]
+  } : {
     ...r, regionId: `${r.id}:${index}`, polygon: r.polygon.map(([x, y]) => [tile.x + (tile.mirrored ? layout.tileWidth - x : x), y])
-  })));
+  }));
 }
 export function getPlacementTargets(scene, entity, getAsset) {
   const rules = placementRules(entity, getAsset);
@@ -42,7 +51,18 @@ export function getPlacementTargets(scene, entity, getAsset) {
   return targets;
 }
 export function sameTarget(entity, target) {
-  return entity.placement?.kind === target.kind && (target.kind === 'surface' ? entity.attachedTo === target.hostId && entity.placement.surfaceId === target.surface.id : entity.placement?.regionId === target.placement.regionId);
+  return entity.placement?.kind === target.kind && (target.kind === 'surface' ? entity.attachedTo === target.hostId && entity.placement.surfaceId === target.surface.id : entity.placement?.regionId === target.placement.regionId || target.regionIds?.includes(entity.placement?.regionId));
+}
+/** Visible support boundaries, only where this item can actually fit. */
+export function getPlacementGuides(scene, entity, getAsset) {
+  return getPlacementTargets(scene, entity, getAsset)
+    .filter(target => (scene.placementMode === 'room' || target.kind === 'surface') &&
+      legalContactPolygon(scene, entity, target, getAsset).length > 0)
+    .map(target => ({ ...target, active: sameTarget(entity, target) }));
+}
+export function usesPlacementDrag(scene, entity, getAsset) {
+  return Boolean(entity && entity.kind !== 'bubble' && (entity.placement?.kind === 'surface' ||
+    (!entity.attachedTo && (scene.placementMode === 'room' && entity.placement?.kind !== 'free' || placementRules(entity, getAsset)?.allowedTargets.includes('surface')))));
 }
 export function legalContactPolygon(scene, entity, target, getAsset) {
   const b = getEntityBounds(entity, getAsset);
@@ -65,7 +85,7 @@ export function legalContactPolygon(scene, entity, target, getAsset) {
   return polygon;
 }
 export function resolvePlacement(scene, entity, point, getAsset, { target = null, transfer = false, snapDistance = 16, releaseDistance = 24, currentTarget = null } = {}) {
-  const options = getPlacementTargets(scene, entity, getAsset).filter(t => !target || (t.kind === target.kind && (t.kind === 'surface' ? t.hostId === target.hostId && t.surface.id === target.surfaceId : t.placement.regionId === target.regionId)));
+  const options = getPlacementTargets(scene, entity, getAsset).filter(t => !target || (t.kind === target.kind && (t.kind === 'surface' ? t.hostId === target.hostId && t.surface.id === target.surfaceId : t.placement.regionId === target.regionId || t.regionIds?.includes(target.regionId))));
   const candidates = options.map(t => { const p = nearestPoint(legalContactPolygon(scene, entity, t, getAsset), point); return p ? { ...t, point: p, distance: Math.hypot(point.x - p.x, point.y - p.y) } : null; }).filter(Boolean);
   if (target) return candidates.sort((a, b) => a.distance - b.distance)[0] || null;
   const current = candidates.find(t => sameTarget(entity, t));
@@ -75,6 +95,10 @@ export function resolvePlacement(scene, entity, point, getAsset, { target = null
     const supports = candidates.filter(t => t.kind === 'surface' && t.distance <= (isCurrent(t) ? releaseDistance : snapDistance));
     supports.sort((a, b) => Number(isCurrent(b)) - Number(isCurrent(a)) || a.distance - b.distance || scene.entities.find(e => e.instanceId === b.hostId).y - scene.entities.find(e => e.instanceId === a.hostId).y || a.hostId.localeCompare(b.hostId) || a.surface.id.localeCompare(b.surface.id));
     if (supports.length) return supports[0];
+    if (scene.placementMode === 'free') return {
+      kind: 'free', hostId: null, placement: { kind: 'free', reason: 'legacy' },
+      point: clampCompoundEntityPoint(point.x, point.y, scene, entity.instanceId, getAsset)
+    };
   }
   return candidates.filter(t => t.kind !== 'surface').sort((a, b) => a.distance - b.distance || a.placement.regionId.localeCompare(b.placement.regionId))[0] || null;
 }
@@ -113,6 +137,7 @@ export function recoverSurfacePlacements(scene, getAsset, warnings = [], affecte
         const target = getPlacementTargets({ ...scene, entities }, e, getAsset).find(t => sameTarget(e, t));
         const point = target && nearestPoint(legalContactPolygon({ ...scene, entities }, e, target, getAsset), e);
         if (!point || Math.hypot(point.x-e.x, point.y-e.y) > .01) { e.placement = { kind: 'free', reason: 'no-valid-target' }; warnings.push('A room placement is unavailable; the item was preserved in place.'); }
+        else e.placement = { ...target.placement };
       }
       continue;
     }
@@ -152,7 +177,17 @@ export function orderedSceneEntities(scene, getAsset) {
   const band = e => e.kind === 'bubble' || e.placement?.kind === 'free' || !e.placement ? 3 : e.placement.kind === 'wall' ? 0 : placementRules(e, getAsset)?.renderClass === 'ground' ? 1 : 2;
   roots.sort((a, b) => band(a) - band(b) || (band(a) === 2 ? a.y - b.y : 0) || a.order - b.order || a.instanceId.localeCompare(b.instanceId));
   const result = [], visited = new Set();
-  const visit = e => { if (visited.has(e.instanceId)) return; visited.add(e.instanceId); result.push(e); scene.entities.filter(c => c.attachedTo === e.instanceId && c.kind !== 'bubble').sort((a, b) => a.order - b.order).forEach(visit); };
+  const visit = e => {
+    if (visited.has(e.instanceId)) return;
+    visited.add(e.instanceId); result.push(e);
+    const children = scene.entities.filter(c => c.attachedTo === e.instanceId && c.kind !== 'bubble')
+      .sort((a, b) => a.order - b.order || a.instanceId.localeCompare(b.instanceId));
+    const supported = children.filter(c => c.placement?.kind === 'surface')
+      .sort((a, b) => a.placement.localPoint.y - b.placement.localPoint.y || a.order - b.order || a.instanceId.localeCompare(b.instanceId));
+    // Retain generic attachment slots while ordering supported siblings by depth.
+    let surfaceIndex = 0;
+    children.forEach(c => visit(c.placement?.kind === 'surface' ? supported[surfaceIndex++] : c));
+  };
   roots.forEach(visit);
   scene.entities.filter(e => e.kind !== 'bubble').forEach(visit);
   scene.entities.filter(e => e.kind === 'bubble').sort((a, b) => a.order - b.order).forEach(visit);

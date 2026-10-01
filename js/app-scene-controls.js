@@ -201,7 +201,7 @@ export function createAppSceneControls(context) {
 
   async function exportSceneAsPng() {
     const state = context.store.getState();
-    const result = await context.exportService.exportSceneAndDownload(state.currentScene);
+    const result = await context.exportService.exportSceneAndDownload(state.currentScene, { shadowsEnabled: state.settings.shadowsEnabled === true });
     if (result.ok) {
       context.showToast(t('toasts.sceneExportedPng'));
     } else {
@@ -215,6 +215,7 @@ export function createAppSceneControls(context) {
     const elapsedMs = isPlaying ? context.sceneAnimationService.getElapsedMs() : 0;
     const result = await context.exportService.exportSceneAndDownload(state.currentScene, {
       animationTimeMs: elapsedMs,
+      shadowsEnabled: state.settings.shadowsEnabled === true,
       playbackEnabled: isPlaying
     });
     if (result.ok) {

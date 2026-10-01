@@ -245,7 +245,8 @@ Derived thumbnails, DOM, SVG source, object URLs, pointer events, UI selection, 
 
 ## Depth-aware room placement
 
-Room mode is available for Cozy bedroom, Creative atelier, and Cozy cafe. It
+Room mode is available for Cozy bedroom, Creative atelier, Cozy cafe, and the
+Family & Home living room, nursery, and shared bedroom. It
 constrains authored floor furniture, avatars, and wall art to valid destinations;
 items without placement metadata remain explicit free exceptions. New scenes
 start with room constraints on the supported default background. Background
@@ -253,10 +254,15 @@ selection enables constraints automatically; there is no Room/Free toggle. A
 background change previews relocation before committing; unsupported backgrounds
 allow free placement.
 
-Select an item and use **Place on…** to choose the floor, wall, or a named compatible
-furniture surface. Dragging previews a legal contact area. Arrow nudges stay on
-the current support. The core cafe table provides a tabletop; the tea set, flower
-pot, cake, camera, and Family & Home reading lamp accept tabletop placement.
+Drag an item onto a compatible furniture surface; tray drops use the same rules.
+There is no persistent destination dropdown. A secondary **Place on…** action in
+the selected-item toolbar and Outline opens destination buttons for non-drag use.
+Dragging previews a legal contact area, including on free backgrounds. Arrow
+nudges stay on the current logical support and cross continuous panorama seams.
+The core cafe table, bookshelf top, bench seat, Family storage cabinet top, and
+high-chair tray hold small props. The tea set, flower pot, cake, camera, reading
+lamp, books, cocoa mugs, milk bottle, tray, cookies, candy bowl, and snow globe
+accept furniture placement. Tray badges identify both behaviors.
 Floor lamps and avatars cannot be placed on tables. Automatic depth applies in
 Room mode; Free collage retains manual layer ordering. Furnished hosts move,
 scale, and flip with supported props, through one scene command. Duplicate copies

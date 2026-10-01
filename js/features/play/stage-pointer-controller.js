@@ -1,4 +1,4 @@
-import { placeEntity, orderedSceneEntities, getPlacementTargets, sameTarget, legalContactPolygon } from '../../domain/scene-placement.js';
+import { placeEntity, orderedSceneEntities, getPlacementGuides, usesPlacementDrag } from '../../domain/scene-placement.js';
 /** Stage drag selection and compound entity previews. */
 import { clientToLogical } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, moveEntities } from '../../domain/scene-rules.js';
@@ -12,20 +12,47 @@ export function createStagePointerController(context) {
   const previewPoints = new Map();
   let previewTarget = null;
   let guide = null;
-  function clearGuide() { guide?.remove(); guide = null; }
+  const guidePolygons = new Map();
+  function clearGuide() { guide?.remove(); guide = null; guidePolygons.clear(); }
   function showGuide(scene, entity, stageEl) {
-    clearGuide();
-    const target = getPlacementTargets(scene, entity, context.getAsset).find(t => sameTarget(entity, t));
+    delete stageEl.dataset.placementPreview;
+    const targets = getPlacementGuides(scene, entity, context.getAsset);
     const world = context.$('#scene-world');
-    if (!target || !world) return;
-    guide = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    if (!targets.length || !world) { clearGuide(); return; }
+    if (!guide) {
+      guide = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      guide.setAttribute('class', 'placement-drop-guide');
+      guide.setAttribute('aria-hidden', 'true');
+      world.append(guide);
+    }
     guide.setAttribute('viewBox', `0 0 ${scene.stageWidth || 1600} 900`);
-    guide.setAttribute('class', 'placement-drop-guide');
-    guide.setAttribute('aria-hidden', 'true');
-    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    polygon.setAttribute('points', legalContactPolygon(scene, entity, target, context.getAsset).map(p => p.join(',')).join(' '));
-    guide.append(polygon); world.append(guide);
-    stageEl.dataset.placementPreview = target.kind;
+    guide.setAttribute('data-motion', context.store.getState().settings.reducedMotion || 'system');
+    const keys = new Set();
+    for (const target of targets) {
+      const key = target.kind === 'surface' ? `surface:${target.hostId}:${target.surface.id}` : target.regionId;
+      keys.add(key);
+      let nodes = guidePolygons.get(key);
+      if (!nodes) {
+        const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        const echo = target.kind === 'surface' ? document.createElementNS('http://www.w3.org/2000/svg', 'polygon') : null;
+        echo?.setAttribute('class', 'tabletop-guide-echo');
+        nodes = { polygon, echo };
+        guidePolygons.set(key, nodes);
+        guide.append(polygon);
+        if (echo) guide.append(echo);
+      }
+      for (const polygon of [nodes.polygon, nodes.echo]) {
+        if (!polygon) continue;
+        polygon.setAttribute('points', target.polygon.map(p => p.join(',')).join(' '));
+        polygon.setAttribute('data-kind', target.kind);
+        polygon.setAttribute('data-active', String(target.active));
+      }
+    }
+    // Patch existing nodes so the gentle bob does not restart on pointer moves.
+    for (const [key, nodes] of guidePolygons) {
+      if (!keys.has(key)) { nodes.polygon.remove(); nodes.echo?.remove(); guidePolygons.delete(key); }
+    }
+    stageEl.dataset.placementPreview = targets.find(t => t.active)?.kind || 'available';
   }
 
   const grabOffsets = new Map();
@@ -99,6 +126,9 @@ export function createStagePointerController(context) {
               if (childEl) childEl.classList.add('is-dragging');
             }
           }
+        }
+        if (entitiesToDrag.length === 1 && usesPlacementDrag(state.currentScene, entitiesToDrag[0], context.getAsset)) {
+          showGuide(state.currentScene, entitiesToDrag[0], stageEl);
         }
       },
       onPreview(instanceId, element, event) {
@@ -181,7 +211,7 @@ export function createStagePointerController(context) {
   function stateForPlacement(instanceId = context.activeDragInstanceId) {
     const scene = context.store.getState().currentScene;
     const entity = scene.entities.find(e => e.instanceId === instanceId);
-    return { placement: scene.placementMode === 'room' && entity?.placement?.kind !== 'free' && entity?.kind !== 'bubble' || entity?.placement?.kind === 'surface' };
+    return { placement: usesPlacementDrag(scene, entity, context.getAsset) };
   }
 
   function updateDragPreview(instanceId, event) {

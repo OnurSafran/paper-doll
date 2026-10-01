@@ -9,6 +9,7 @@ import { getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 import { escapeCss } from '../../core/css-escape.js';
 import { bubbleStyleLabelKey } from '../../domain/vocabulary.js';
 import { assetName, t } from '../../core/i18n.js';
+import { getPlacementChoices, openPlacementActions } from './placement-controls.js';
 
 
 export function createSceneOutlineView({
@@ -120,6 +121,7 @@ export function createSceneOutlineView({
       });
 
       actions.append(upBtn, downBtn, pinBtn, delBtn);
+      if (getPlacementChoices(state.currentScene, entity, getAsset).length) actions.prepend(miniButton('⊞', t('placement.placeOn'), () => openPlacementActions({ store, getAsset }, entity.instanceId)));
       row.append(selectBox, icon, info, actions);
       return row;
     });

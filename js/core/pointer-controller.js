@@ -34,6 +34,7 @@ export class PointerController {
       id,
       startX: event.clientX,
       startY: event.clientY,
+      startEvent: event,
       latestEvent: event,
       dragging: false,
       cancelled: false
@@ -49,7 +50,7 @@ export class PointerController {
     if (!session.dragging && distance >= threshold) {
       session.dragging = true;
       session.subject.setPointerCapture?.(event.pointerId);
-      this.options.onStart?.(session.id, session.subject, event);
+      this.options.onStart?.(session.id, session.subject, session.startEvent);
     }
     if (!session.dragging) return;
 

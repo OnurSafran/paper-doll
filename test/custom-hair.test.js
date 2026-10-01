@@ -6,7 +6,8 @@ import {
   sanitizeCustomAsset,
   sanitizeDraft,
   sanitizeEnvelope,
-  SCHEMA_VERSION
+  SCHEMA_VERSION,
+  APP_VERSION
 } from '../js/core/state-schema.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { getAsset } from '../js/core/asset-catalog.js';
@@ -251,7 +252,8 @@ test('project portability packages and validates custom hair Base64 artwork and 
     formatVersion: 1,
     exportedAt: '2026-08-17T12:00:00.000Z',
     state: {
-      schemaVersion: 8,
+      schemaVersion: SCHEMA_VERSION,
+      appVersion: APP_VERSION,
       presets: [{
         presetId: 'doll-with-custom-hair',
         name: 'Hairstyle Doll',

@@ -22,6 +22,9 @@ export function createAppRouter(context) {
     }
     const soundToggle = context.$('#settings-sound-toggle');
     if (soundToggle) soundToggle.checked = state.settings.soundEnabled === true;
+    const shadowsToggle = context.$('#settings-shadows-toggle');
+    if (shadowsToggle) shadowsToggle.checked = state.settings.shadowsEnabled === true;
+    document.body.dataset.sceneShadows = state.settings.shadowsEnabled === true ? 'on' : 'off';
     const designerActive = state.ui.mode === 'designer';
     const paintActive = state.ui.mode === 'paint';
     const playActive = state.ui.mode === 'play';
@@ -65,7 +68,6 @@ export function createAppRouter(context) {
     // The header already shows save status; keep workspace feedback for actions and warnings.
     const workspaceMessage = state.ui.messageKey === 'sync.storageSaved' ? '' : uiMessage;
     context.$('#designer-status').textContent = workspaceMessage;
-    context.$('#play-status').textContent = workspaceMessage;
     if (paintActive) {
       context.designerView.bumpToken();
       context.playView.bumpToken();

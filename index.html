@@ -2,9 +2,9 @@
 <html lang="tr">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#f3e8d0">
-    <meta name="description" content="Kağıt bebekler tasarlayın ve sahnelerde canlandırın." data-i18n-content="app.description">
+    <meta name="description" content="Kağıt bebekler tasarlayın ve sahFnelerde canlandırın." data-i18n-content="app.description">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Paper Doll">
@@ -32,11 +32,14 @@
         <button id="lang-toggle-btn" class="button secondary compact-action lang-toggle-btn" type="button" data-i18n-title="app.langToggleTitle" title="Dili Değiştir / Switch Language" data-i18n-aria-label="app.langToggleTitle" aria-label="Dili Değiştir / Switch Language">🌐 <span id="current-lang-text" class="header-btn-text">TR</span></button>
         <button id="guide-menu-btn" class="button secondary compact-action" type="button" data-i18n-title="header.guideTitle" title="Türkçe kullanım rehberini aç">📖 <span class="header-btn-text" data-i18n="header.guideText">Rehber</span></button>
         <button id="settings-menu-btn" class="button secondary compact-action" type="button" aria-haspopup="dialog" data-i18n-title="header.settingsTitle" title="Ayarlar, dil ve proje yedekleri" data-i18n-aria-label="header.settingsText" aria-label="Ayarlar">⚙️ <span class="header-btn-text" data-i18n="header.settingsText">Ayarlar</span></button>
-        <div class="history-controls" role="group" data-i18n-aria-label="header.historyGroup" aria-label="Geçmiş işlemleri">
-          <button id="undo-button" class="history-btn" type="button" data-i18n-title="header.undoTitle" title="Geri Al (Ctrl+Z veya ⌘Z)" data-i18n-aria-label="header.undoAria" aria-label="Geri Al" disabled>↺ <span class="history-btn-text" data-i18n="header.undoText">Geri Al</span></button>
-          <button id="redo-button" class="history-btn" type="button" data-i18n-title="header.redoTitle" title="Yinele (Ctrl+Shift+Z, ⌘⇧Z veya Ctrl+Y)" data-i18n-aria-label="header.redoAria" aria-label="Yinele" disabled>↻ <span class="history-btn-text" data-i18n="header.redoText">Yinele</span></button>
+        <div id="quick-tips" class="quick-tips">
+          <button id="quick-tip-chip" class="quick-tip-chip" type="button" aria-haspopup="dialog" data-i18n-title="header.tipTitle" title="Rehber ipuçlarını aç">
+            <span class="quick-tip-bulb" aria-hidden="true">💡</span>
+            <span id="quick-tip-text" class="quick-tip-text">Oyna: Shift ile tıklayıp çoklu seçim yap</span>
+          </button>
+          <button id="quick-tip-pause" class="quick-tip-pause" type="button" aria-label="İpuçlarını duraklat" title="İpuçlarını duraklat"><span aria-hidden="true">⏸</span></button>
         </div>
-        <div id="save-status" class="save-status" aria-live="polite" data-i18n-title="header.savedDevice" title="Bu cihaza kaydedildi" data-i18n="header.statusSaved">Kaydedildi</div>
+        <div id="save-status" class="visually-hidden" aria-live="polite" data-i18n-title="header.savedDevice" title="Bu cihaza kaydedildi" data-i18n="header.statusSaved">Kaydedildi</div>
       </div>
     </header>
 
@@ -143,7 +146,6 @@
             <label for="background-select" data-i18n="play.backgroundLabel" class="visually-hidden">🎨 Arka Plan:</label>
             <select id="background-select" class="visually-hidden" tabindex="-1"></select>
           </div>
-          <div id="play-status" class="play-status-pill" role="status" aria-live="polite"></div>
           <div class="scene-meta-actions">
             <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
             <button id="save-scene-btn" class="button primary compact-action" type="button" data-i18n-title="play.saveSceneTitle" title="Bu sahneyi Sahne Kitabına kaydet" data-i18n="play.saveSceneBtn">💾 Sahneyi Kaydet</button>
@@ -176,29 +178,22 @@
                 <div class="scene-hud" aria-hidden="true">
                   <span id="scene-name-chip">Yatak odası</span>
                   <span id="scene-count-chip">0 öğe</span>
-                  <span id="scene-width-chip" class="scene-width-chip">1600px</span>
+                  <span id="scene-width-chip" class="scene-width-chip" data-i18n="play.stageStandard">Standart</span>
                 </div>
                 <div id="empty-scene" class="empty-scene"><strong data-i18n="play.emptySceneTitle">Sahneniz hazır.</strong><span data-i18n="play.emptySceneCopy">Yerleştirmek için tepsiden bir bebek veya eşya tıklayın ya da sürükleyin.</span></div>
-                <div class="scene-help" aria-hidden="true" data-i18n="play.sceneHelp">Düzenlemek için sürükleyin · hızlı araçlar için dokunun · yön tuşlarıyla kaydırın · kenardan kaydır</div>
-              </div>
-
-              <div id="camera-hud" class="camera-hud" role="region" data-i18n-aria-label="play.cameraControls" aria-label="Panoramik kamera kontrolleri" hidden>
-                <button id="camera-pan-left" class="camera-pan-btn" type="button" data-i18n-title="play.cameraPanLeft" title="Kamerayı sola kaydır (Shift+Sol, PageUp)" data-i18n-aria-label="play.cameraPanLeft" aria-label="Kamerayı sola kaydır">◀</button>
-                <div class="camera-slider-track">
-                  <input id="camera-slider" class="camera-slider" type="range" min="0" max="0" step="10" value="0" data-i18n-aria-label="play.cameraSliderAria" aria-label="Panoramic camera position">
-                </div>
-                <button id="camera-pan-right" class="camera-pan-btn" type="button" data-i18n-title="play.cameraPanRight" title="Kamerayı sağa kaydır (Shift+Sağ, PageDown)" data-i18n-aria-label="play.cameraPanRight" aria-label="Kamerayı sağa kaydır">▶</button>
-                <div id="stage-minimap" class="stage-minimap" data-i18n-title="play.minimapTitle" title="Kamerayı konumlandırmak için tıklayın veya sürükleyin" data-i18n-aria-label="play.minimapAria" aria-label="Sahne mini harita genel bakışı" role="slider" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0">
-                  <div id="minimap-bg" class="minimap-bg"></div>
-                  <div id="minimap-entities" class="minimap-entities" aria-hidden="true"></div>
-                  <div id="minimap-lens" class="minimap-lens" aria-hidden="true"></div>
+                <div id="camera-hud" class="camera-hud" role="region" data-i18n-aria-label="play.cameraControls" aria-label="Panoramik kamera kontrolleri" hidden>
+                  <div id="stage-minimap" class="stage-minimap" data-i18n-title="play.minimapTitle" title="Kamerayı konumlandırmak için tıklayın veya sürükleyin" data-i18n-aria-label="play.minimapAria" aria-label="Sahne mini harita genel bakışı" role="slider" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0">
+                    <div id="minimap-bg" class="minimap-bg"></div>
+                    <div id="minimap-entities" class="minimap-entities" aria-hidden="true"></div>
+                    <div id="minimap-lens" class="minimap-lens" aria-hidden="true"></div>
+                  </div>
                 </div>
               </div>
             </div>
             <div class="play-stage-controls">
-              <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)" data-i18n="play.outlineBtn">📋 Katmanlar</button>
+              <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)"><span class="outline-btn-icon" aria-hidden="true">📋</span> <span class="outline-btn-text" data-i18n="play.outlineBtn">Katmanlar</span></button>
               <div id="scene-animation-transport" class="play-animation-transport" role="toolbar" data-i18n-aria-label="play.transportControls" aria-label="Animasyon oynatma kontrolleri">
-                <button id="play-animation-btn" class="button primary compact-action animation-transport-btn" type="button" data-action="togglePlayback" data-i18n-title="play.playAnimationTitle" title="Animasyonu başlat veya duraklat" data-i18n-aria-label="play.playAnimationTitle" aria-label="Animasyonu başlat veya duraklat" aria-pressed="false">▶ <span data-i18n="play.playBtn">Oynat</span></button>
+                <button id="play-animation-btn" class="button primary compact-action animation-transport-btn" type="button" data-action="togglePlayback" data-i18n-title="play.playAnimationTitle" title="Animasyonu başlat veya duraklat" data-i18n-aria-label="play.playAnimationTitle" aria-label="Animasyonu başlat veya duraklat" aria-pressed="false">▶ <span class="play-btn-text" data-i18n="play.playBtn">Oynat</span></button>
                 <button id="loop-animation-btn" class="button secondary compact-action animation-transport-btn is-looping" type="button" data-action="toggleLoop" data-i18n-title="play.loopAnimationTitle" title="Döngüsel animasyonu aç/kapat" data-i18n-aria-label="play.loopAnimationTitle" aria-label="Döngüsel animasyon" aria-pressed="true">🔁</button>
                 <button id="reset-animation-btn" class="button secondary compact-action animation-transport-btn" type="button" data-action="resetAnimation" data-i18n-title="play.resetAnimationTitle" title="Animasyonu başa sar" data-i18n-aria-label="play.resetAnimationTitle" aria-label="Başa sar">⏮</button>
                 <div id="scene-playback-rate-controls" class="segmented-control speed-buttons" role="group" data-i18n-aria-label="play.speedGroup" aria-label="Oynatma hızı">
@@ -207,31 +202,44 @@
                   <button data-playback-rate="1.5" type="button" data-i18n-title="play.speedFast" title="1.5x Hızlı" data-i18n-aria-label="play.speedFast" aria-label="1.5x Hızlı">1.5x</button>
                   <button data-playback-rate="2.0" type="button" data-i18n-title="play.speedTurbo" title="2.0x Çok Hızlı" data-i18n-aria-label="play.speedTurbo" aria-label="2.0x Çok Hızlı">2x</button>
                 </div>
-                <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" aria-pressed="false" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir" data-i18n="play.voiceBtn">🎙️ Seslendir</button>
+                <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" aria-pressed="false" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir">🎙️ <span class="voice-btn-text" data-i18n="play.voiceBtn">Seslendir</span></button>
+                <div class="segmented-control history-buttons transport-history-controls" role="group" data-i18n-aria-label="header.historyGroup" aria-label="Geçmiş işlemleri">
+                  <button id="undo-button" class="history-btn" type="button" data-i18n-title="header.undoTitle" title="Geri Al (Ctrl+Z veya ⌘Z)" data-i18n-aria-label="header.undoAria" aria-label="Geri Al" disabled>↺</button>
+                  <button id="redo-button" class="history-btn" type="button" data-i18n-title="header.redoTitle" title="Yinele (Ctrl+Shift+Z, ⌘⇧Z veya Ctrl+Y)" data-i18n-aria-label="header.redoAria" aria-label="Yinele" disabled>↻</button>
+                </div>
               </div>
               <div class="scene-picker-group stage-width-group">
-                <select id="stage-width-select" data-i18n-aria-label="play.stageWidthAria" aria-label="Sahne genişliği">
-                  <option value="1600" data-i18n="play.stageStandard">Standart (1600×900)</option>
-                  <option value="3200" data-i18n="play.stageWide">Geniş (3200×900)</option>
-                  <option value="4800" data-i18n="play.stagePanoramic">Panoramik (4800×900)</option>
+                <select id="stage-width-select" data-i18n-aria-label="play.stageWidthAria" aria-label="Sahne genişliği" data-i18n-title="play.stageWidthAria" title="Sahne genişliği">
+                  <option value="1600" data-i18n="play.stageStandard">Standart</option>
+                  <option value="3200" data-i18n="play.stageWide">Geniş</option>
+                  <option value="4800" data-i18n="play.stagePanoramic">Panoramik</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <aside class="play-rail" data-i18n-aria-label="play.railAria" aria-label="Sahne araçları">
+          <aside id="play-rail" class="play-rail" data-i18n-aria-label="play.railAria" aria-label="Sahne araçları">
+            <div class="play-panel-header">
+              <div id="spawn-tabs" class="tab-list spawn-tabs" role="tablist" data-i18n-aria-label="play.trayCategoriesAria" aria-label="Sahne tepsisi kategorileri"></div>
+              <div id="inspector-header-title" class="inspector-header-title" hidden>
+                <span class="eyebrow" data-i18n="play.characterInspectorTitle">Karakter & Öğe Ayarları</span>
+              </div>
+              <button id="scene-tray-toggle" class="button primary compact-action scene-tray-toggle" type="button" aria-controls="play-rail-content" aria-expanded="false" data-i18n-aria-label="play.togglePanel" aria-label="Sahne panelini aç veya kapat" data-i18n-title="play.togglePanel" title="Sahne panelini aç veya kapat"><svg class="scene-panel-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5.5 3.5L10.5 8L5.5 12.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
+            </div>
+            <div id="play-rail-content" class="play-rail-content" hidden>
             <section id="spawn-panel-section" class="paper-panel spawn-panel" aria-labelledby="tray-title">
-              <div class="panel-heading"><div><span class="eyebrow" data-i18n="play.trayEyebrow">Sahne Tepsisi</span><h2 id="tray-title" data-i18n="play.trayTitle">Sahneye ekleyici</h2><p class="panel-copy" data-i18n="play.trayCopy">Öğeleri sahneye tıklayın veya sürükleyin.</p></div><span class="panel-sticker" aria-hidden="true">✦</span></div>
-              <div id="spawn-tabs" class="tab-list" role="tablist" data-i18n-aria-label="play.trayCategoriesAria" aria-label="Sahne tepsisi kategorileri"></div>
-              <label for="play-pack-picker" data-i18n="pack_family_home.libraryPack">İçerik paketi</label>
-              <select id="play-pack-picker" data-pack-picker></select>
+              <h2 id="tray-title" class="visually-hidden" data-i18n="play.trayTitle">Sahneye ekleyici</h2>
               <div id="spawn-collection-tabs" class="tab-list prop-collection-tabs" role="tablist" data-i18n-aria-label="play.propCollectionsAria" aria-label="Eşya koleksiyonları" hidden></div>
+              <div id="play-pack-filter" class="tray-pack-filter" hidden>
+                <label for="play-pack-picker" class="visually-hidden" data-i18n="pack_family_home.libraryPack">İçerik paketi</label>
+                <select id="play-pack-picker" data-pack-picker></select>
+              </div>
               <div id="spawn-items" class="spawn-list"></div>
             </section>
 
             <section id="play-inspector-panel" class="paper-panel play-inspector-panel" aria-labelledby="inspector-title" data-i18n-aria-label="play.characterInspectorAria" aria-label="Karakter ve sahne öğesi kontrolleri" hidden>
               <div class="inspector-header">
-                <div class="inspector-title-wrap">
+                <div id="inspector-panel-heading" class="inspector-title-wrap panel-heading play-panel-heading visually-hidden">
                   <span id="inspector-title" class="eyebrow" data-i18n="play.characterInspectorTitle">Karakter & Öğe Ayarları</span>
                 </div>
                 <div id="inspector-tabs" class="tab-list inspector-tabs" role="tablist">
@@ -332,6 +340,7 @@
                 </div>
               </div>
             </section>
+            </div>
           </aside>
         </div>
       </section>
@@ -556,6 +565,12 @@
           <p class="panel-copy" data-i18n="settings.soundCopy">Diyar Haritası'nda yumuşak kâğıt hışırtısı, damga ve zil sesleri.</p>
         </section>
 
+        <section class="settings-section" aria-labelledby="settings-shadows-heading">
+          <h3 id="settings-shadows-heading" data-i18n="settings.shadowsHeading">Gölgeler</h3>
+          <label class="settings-toggle" for="settings-shadows-toggle"><input id="settings-shadows-toggle" type="checkbox"> <span data-i18n="settings.shadowsToggle">Sahne gölgeleri</span></label>
+          <p class="panel-copy" data-i18n="settings.shadowsCopy">Oyna sahnesinde, önizlemelerde ve PNG çıktılarında nesne ve temas gölgelerini göster. Varsayılan olarak kapalıdır.</p>
+        </section>
+
         <section class="settings-section" aria-labelledby="settings-papercraft-heading">
           <h3 id="settings-papercraft-heading" data-i18n="papercraft.title">Kağıt işi görünümü · Önizleme</h3>
           <div class="settings-toggle-row">
@@ -575,7 +590,7 @@
           <h3 id="settings-about-heading" data-i18n="projectDialog.updateHeading">Uygulama Sürümü ve Güncelleme</h3>
           <p class="panel-copy" data-i18n="projectDialog.updateCopy">Geçici tarayıcı komut dosyası önbelleklerini temizlemek veya en yeni stüdyo sürümünü yeniden yüklemek isterseniz, uygulamayı yenileyebilirsiniz. Depolamadaki kayıtlı bebekler, sahneler ve çizimleriniz güvende kalır.</p>
           <div class="export-meta-row">
-            <span class="app-version-badge">Paper Doll Studio <strong>v1.21.0</strong></span>
+            <span class="app-version-badge">Paper Doll Studio <strong>v2.0.0</strong></span>
             <button id="settings-hard-reset-btn" class="button secondary" type="button" data-i18n-title="projectDialog.forceReloadTitle" title="Önbelleği temizle ve en son sürümü yeniden yükle (Kayıtlı verileriniz silinmez)" data-i18n="projectDialog.forceReloadBtn">🔄 Uygulamayı Güncelle ve Yenile</button>
           </div>
         </section>
@@ -950,7 +965,7 @@
                 <tr>
                   <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
                   <td><kbd>O</kbd></td>
-                  <td data-i18n="guideDialog.scOutline">📋 Katmanlar listesini aç/kapat</td>
+                  <td data-i18n="guideDialog.scOutline">Katmanlar listesini aç/kapat</td>
                 </tr>
                 <tr>
                   <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>

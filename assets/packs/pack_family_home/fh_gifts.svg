@@ -1,1 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_gifts"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><rect x="120" y="515" width="350" height="360" rx="12" fill="#dd9c89"/><rect x="490" y="365" width="380" height="510" rx="12" fill="#92b6a0"/><rect x="260" y="515" width="60" height="360" rx="12" fill="#fff8eb"/><rect x="650" y="365" width="60" height="510" rx="12" fill="#fff8eb"/><path d="M280 505 Q100 300 300 490 Q480 290 310 505 M680 355 Q470 160 670 335 Q860 150 700 355" fill="#d7b86c"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_gifts">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<rect x="120" y="515" width="350" height="360" rx="12" fill="#e07a5f"/>
+    <rect x="490" y="365" width="380" height="510" rx="12" fill="#81b29a"/>
+    <path d="M150 850 H440 M520 850 H840" fill="none" stroke="#bc5849" stroke-width="9"/>
+    <g fill="#fff8eb" stroke-width="10"><path d="M265 515 H325 V875 H265 Z"/><path d="M650 365 H710 V875 H650 Z"/></g>
+    <rect x="100" y="490" width="390" height="65" rx="12" fill="#ef9b83"/>
+    <rect x="470" y="340" width="420" height="65" rx="12" fill="#a7c9aa"/>
+    <g fill="#e9c46a">
+      <path d="M295 487 C100 440 205 335 280 430 L295 487 C335 300 475 400 295 487 Z"/>
+      <path d="M680 336 C480 290 590 180 665 280 L680 336 C720 140 860 245 680 336 Z"/>
+      <rect x="265" y="485" width="60" height="70" rx="10"/>
+      <rect x="650" y="335" width="60" height="70" rx="10"/>
+    </g>
+    <path d="M705 410 L750 450 L710 555 L655 530 Z" fill="#fff8eb" stroke-width="9"/>
+    <circle cx="711" cy="445" r="8" fill="#8b5e34" stroke="none"/>
+    <path d="M175 620 L220 660 M175 680 L220 720 M370 745 L410 785" fill="none" stroke="#f4b39c" stroke-width="12"/>
+  </g>
+</svg>

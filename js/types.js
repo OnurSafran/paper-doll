@@ -173,9 +173,10 @@
 
 /**
  * @typedef {Object} AppState
- * @property {number} [schemaVersion]
+ * @property {string} [appVersion]
+ * @property {string|number} [schemaVersion]
  * @property {number} [revision]
- * @property {{ reducedMotion: string, soundEnabled: boolean, clothingTabs?: boolean, cardboardFinish?: boolean, stamps: string[], unlockedBackgrounds: string[], hiddenPacks?: string[] }} settings
+ * @property {{ reducedMotion: string, soundEnabled: boolean, shadowsEnabled?: boolean, clothingTabs?: boolean, cardboardFinish?: boolean, stamps: string[], unlockedBackgrounds: string[], hiddenPacks?: string[] }} settings
  * @property {{ id: string, version?: string }[]} packRequirements
  * @property {CustomAsset[]} customAssets
  * @property {{ draft: CharacterSnapshot, selectedSlot: string, editingPresetId: string|null, dirty: boolean, activeTab?: string, selectedFaceGroup?: string, selectedStyleFilter?: string }} designer
@@ -208,6 +209,7 @@
  * @property {{x: number, y: number}} [shoulderRightPivot]
  * @property {{x: number, y: number}} [hipLeftPivot]
  * @property {{x: number, y: number}} [hipRightPivot]
+ * @property {{x: number, y: number, width: number, height: number}} [wallShadow]
  * @property {PlacementRules} [placementRules]
  * @property {SupportSurface[]} [supportSurfaces]
  * @property {any} [placementProfile]

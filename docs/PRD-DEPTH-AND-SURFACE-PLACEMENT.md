@@ -13,6 +13,22 @@
 **Scope:** Play stage, props, avatars, custom drawing and surface authoring, persistence, previews, and export  
 **Product:** Paper Doll Studio & Play Sandbox
 
+## Follow-up behavior — 2026-10-02
+
+Each map's background profile owns its floor/wall polygons and may declare several
+separate floor areas. Full-width rectangular areas continue across panorama seams;
+other authored areas remain separate and follow the background tiles. Drag guides
+outline the actual region/surface boundary, including stage edges, rather than the
+inset contact-center polygon. All compatible targets with enough room for the piece
+are shown together; the active support is emphasized. Free backgrounds show furniture
+supports without implying floor constraints. Guides clear on release/cancel and are
+excluded from previews/export.
+
+Settings → Scene shadows defaults to off, including existing current-version saves
+without the setting. The persisted preference controls scene object CSS shadows and
+shared contact/mounting shadows in Play, Scene Book/template previews, and PNG export.
+Selection outlines and other UI shadows remain available as interaction feedback.
+
 ## 1. Recommendation
 
 Build a **2.5D paper theater**: an illustrated wall and visible floor, with upright paper/cardboard avatars and furniture. Use contact points, placement regions, and automatic depth ordering to make objects feel grounded. Keep the current 2D SVG/DOM renderer and logical coordinates.
@@ -546,8 +562,22 @@ These are reference patterns, not a recommendation to adopt Godot or add a runti
 
 ## Implementation notes — 2026-10-01
 
-Bedroom, atelier, and cafe profiles enable constraints automatically; other
-backgrounds allow free placement. There is no user Room/Free toggle. Schema 8
+Follow-up: the persistent Play destination dropdown is removed. Secondary
+Place on actions in the selection toolbar and Outline open destination buttons.
+Full-width rectangular floor/wall profiles span panorama tiles as one logical
+support, including for keyboard/group movement. Existing current-save tile IDs
+are recognized and normalized. Narrow/disconnected regions retain tiled geometry.
+Small props acquire/release furniture support on free backgrounds. Native tray
+drops resolve surface placement; only character-held props use generic drop
+attachments. Drag offsets preserve the initial pointer press even with sparse
+movement events. Additional support hosts are the bookshelf top, bench seat,
+Family storage top, and high-chair tray; seven more Family small props and three
+indoor room profiles are authored. Room templates initialize placement using
+their background profile. Paint's UI and authoring flow are unchanged.
+
+Bedroom, atelier, cafe, Family living room, nursery, and shared bedroom profiles
+enable constraints automatically; other backgrounds allow free placement.
+There is no user Room/Free toggle. Schema 8
 clears all older/unversioned device saves, artwork, drafts, backups, and preferences
 before startup. Imports and backups must use the current version. This replaces
 sections 11 and 14's migration requirements.

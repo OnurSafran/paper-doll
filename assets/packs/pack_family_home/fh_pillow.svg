@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_pillow"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M680 170 Q310 480 750 770 Q460 1030 230 650 Q80 250 430 130 Q570 90 680 170 Z" fill="#d7b86c"/><ellipse cx="360" cy="470" rx="14" ry="18" fill="#514039"/><path d="M390 545 Q440 580 485 540" fill="none"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_pillow">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<path d="M680 170 Q310 480 750 770 Q460 1030 230 650 Q80 250 430 130 Q570 90 680 170 Z" fill="#e9c46a"/>
+    <ellipse cx="360" cy="470" rx="14" ry="18" fill="#2d261e" stroke="none"/>
+    <path d="M390 545 Q440 580 485 540" fill="none"/>
+    <path d="M613 183 Q220 370 307 690 Q380 850 555 830" fill="none" stroke="#bc8a5f" stroke-width="9" stroke-dasharray="12 16"/>
+<ellipse cx="383" cy="512" rx="27" ry="17" fill="#e07a5f" stroke="none"/>
+<path d="M282 307 L294 332 L322 336 L302 355 L307 383 L282 370 L257 383 L262 355 L242 336 L270 332 Z" fill="#fff8eb" stroke-width="8"/>
+  </g>
+</svg>

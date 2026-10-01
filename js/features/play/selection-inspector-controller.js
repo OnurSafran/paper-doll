@@ -6,9 +6,10 @@ import { t } from '../../core/i18n.js';
 
 export function createSelectionInspectorController(context) {
   let activeInspectorTab = 'expressions';
+  let railMode = 'closed';
+  let previousSelection = '';
 
   function renderSelectedActions(state = context.store.getState()) {
-    context.placementControls?.render(state);
     initInspectorTabs();
     const selectedIds = state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []);
     const isMulti = selectedIds.length >= 2;
@@ -187,7 +188,7 @@ export function createSelectionInspectorController(context) {
 
     const hasAnyInspectorControls = hasCharactersSelected || isBubble || (isAttached && attachJointGroup && !attachJointGroup.hidden);
 
-    renderRailPanels(hasSelection && Boolean(hasAnyInspectorControls));
+    renderRailPanels(hasSelection && Boolean(hasAnyInspectorControls), selectedIds, state.currentScene.entities.length);
 
     const tabExpressions = context.$('#inspector-tab-expressions');
     const tabMotion = context.$('#inspector-tab-motion');
@@ -269,12 +270,33 @@ export function createSelectionInspectorController(context) {
     }
   }
 
-  function renderRailPanels(showInspector) {
+  function renderRailPanels(showInspector, selectedIds, entityCount) {
     initDropdowns();
+    const selection = selectedIds.join(':');
+    if (selection !== previousSelection) {
+      previousSelection = selection;
+      if (showInspector) railMode = 'inspector';
+      else if (railMode === 'inspector') railMode = 'closed';
+    }
+    const toggle = context.$('#scene-tray-toggle');
+    if (toggle && !toggle.dataset.bound) {
+      toggle.dataset.bound = 'true';
+      toggle.addEventListener('click', () => {
+        railMode = railMode === 'closed' ? 'add' : 'closed';
+        renderSelectedActions();
+      });
+    }
+    const railContent = context.$('#play-rail-content');
     const spawnSection = context.$('#spawn-panel-section');
     const inspectorPanel = context.$('#play-inspector-panel');
-    if (spawnSection) spawnSection.hidden = showInspector;
-    if (inspectorPanel) inspectorPanel.hidden = !showInspector;
+    const spawnTabs = context.$('#spawn-tabs');
+    const inspectorTitle = context.$('#inspector-header-title');
+    if (railContent) railContent.hidden = railMode === 'closed';
+    if (toggle) toggle.setAttribute('aria-expanded', String(railMode !== 'closed'));
+    if (spawnSection) spawnSection.hidden = railMode !== 'add';
+    if (spawnTabs) spawnTabs.hidden = railMode !== 'add';
+    if (inspectorTitle) inspectorTitle.hidden = railMode !== 'inspector';
+    if (inspectorPanel) inspectorPanel.hidden = railMode !== 'inspector' || !showInspector;
   }
 
   function handleDropdownOutsideClick(event) {

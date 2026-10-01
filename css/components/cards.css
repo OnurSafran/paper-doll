@@ -36,15 +36,4 @@
   letter-spacing: 0.12em;
 }
 
-.panel-sticker {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 auto;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  color: var(--coral-dark);
-  background: var(--gold-soft);
-  font-size: 0.95rem;
-}
+

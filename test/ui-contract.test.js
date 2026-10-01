@@ -309,14 +309,13 @@ test('multi-select, alignment controls, scene outline, and templates expose acce
   assert.match(js, /duplicateCurrentToLibrary/);
 });
 
-test('panoramic stages and camera navigation expose accessible HUD, slider, minimap, and CSS rules', () => {
+test('panoramic camera navigation exposes a compact accessible minimap overlay', () => {
   // DOM Elements
   assert.match(html, /id="stage-width-select"/);
   assert.match(html, /id="scene-world"/);
   assert.match(html, /id="camera-hud"/);
-  assert.match(html, /id="camera-pan-left"/);
-  assert.match(html, /id="camera-slider"/);
-  assert.match(html, /id="camera-pan-right"/);
+  assert.doesNotMatch(html, /id="camera-(?:pan-left|slider|pan-right)"/);
+  assert.match(html, /id="scene-tray-toggle"[^>]*aria-controls="play-rail-content"[^>]*aria-expanded="false"/);
   assert.match(html, /id="stage-minimap"/);
   assert.match(html, /id="minimap-lens"/);
   assert.match(html, /id="minimap-entities"/);
@@ -324,7 +323,7 @@ test('panoramic stages and camera navigation expose accessible HUD, slider, mini
   // CSS rules
   assert.match(css, /\.scene-world\s*{[^}]*transform:\s*translate3d/s);
   assert.match(css, /\.camera-hud\s*{/);
-  assert.match(css, /\.camera-pan-btn\s*{[^}]*min-width:\s*44px/s);
+  assert.match(css, /\.camera-hud\s*{[^}]*position:\s*absolute/s);
   assert.match(css, /\.stage-minimap\s*{/);
   assert.match(css, /\.minimap-lens\s*{/);
 

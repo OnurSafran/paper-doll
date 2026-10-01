@@ -24,6 +24,7 @@ import {
 import {
   createDefaultEnvelope,
   SCHEMA_VERSION,
+  APP_VERSION,
   sanitizeDraft,
   sanitizeEnvelope
 } from '../js/core/state-schema.js';
@@ -281,7 +282,7 @@ test('renderDollInto filters face layers by the active doll fit family', async (
 });
 
 test('old face saves reset and current drafts sanitize invalid face parts', () => {
-  assert.equal(SCHEMA_VERSION, 8);
+  assert.equal(SCHEMA_VERSION, APP_VERSION);
   const reset = sanitizeEnvelope({ schemaVersion: 3, presets: [{ presetId:'old-doll' }] }, getAsset);
   assert.equal(reset.resetRequired, true);
   assert.deepEqual(reset.envelope.presets, []);
@@ -310,7 +311,8 @@ test('old face saves reset and current drafts sanitize invalid face parts', () =
 
 test('invalid face groups produce group-level recovery warnings', () => {
   const result = sanitizeEnvelope({
-    schemaVersion: 8,
+    schemaVersion: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
     presets: [{
       presetId: 'p-face-warning',
       name: 'Face warning',

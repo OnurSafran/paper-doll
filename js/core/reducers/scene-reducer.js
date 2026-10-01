@@ -153,14 +153,15 @@ export function sceneReducer(state, action, context) {
 
       const targetId = action.targetEntityId ?? null;
       const target = targetId ? state.currentScene.entities.find((e) => e.instanceId === targetId) : null;
-      const attachedTo = target ? target.instanceId : null;
+      const attachedTo = target?.kind === 'character' ? target.instanceId : null;
       let spawnX = action.x ?? (target ? target.x : 800);
       let spawnY = action.y ?? (target ? target.y - 40 : 720);
-      const attachOffset = target ? { dx: Math.round(spawnX - target.x), dy: Math.round(spawnY - target.y) } : null;
+      const attachOffset = attachedTo ? { dx: Math.round(spawnX - target.x), dy: Math.round(spawnY - target.y) } : null;
 
-      const scene = addEntity(state.currentScene, {
+      let scene = addEntity(state.currentScene, {
         instanceId, kind: 'prop', sourceId: asset.id, x: spawnX, y: spawnY, attachedTo, attachOffset
       }, context.getAsset);
+      if (action.transfer && !attachedTo) scene = placeEntity(scene, instanceId, { x: spawnX, y: spawnY }, context.getAsset, { transfer: true });
       return { state: localizedMessage('play.statusPropAdded', { assetId: asset.id }, { ...state, currentScene: scene }), persist: true };
     }
 
@@ -459,8 +460,9 @@ export function sceneReducer(state, action, context) {
     }
 
     case 'scene/loadTemplate': {
-      const templateScene = instantiateSceneTemplate(action.templateId, context.makeId, state.designer.draft || createStarterDraft(), context.now);
-      if (!templateScene) return { state: localizedMessage('play.statusSceneId', {}, state), result: { ok: false, code: 'ID_FAILED' } };
+      const instantiated = instantiateSceneTemplate(action.templateId, context.makeId, state.designer.draft || createStarterDraft(), context.now);
+      if (!instantiated) return { state: localizedMessage('play.statusSceneId', {}, state), result: { ok: false, code: 'ID_FAILED' } };
+      const templateScene = changePlacementBackground(instantiated, instantiated.backgroundId, context.getAsset);
       return {
         state: localizedMessage('play.statusTemplateLoaded', { title: templateScene.title }, {
           ...state,

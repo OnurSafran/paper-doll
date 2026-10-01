@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createProjectRepository, loadProject, STORAGE_KEY } from '../js/services/project-repository.js';
-import { createDefaultEnvelope } from '../js/core/state-schema.js';
+import { createDefaultEnvelope, SCHEMA_VERSION, APP_VERSION } from '../js/core/state-schema.js';
 import { getAsset } from '../js/core/asset-catalog.js';
 
 function memoryStorage(initial = {}) {
@@ -18,7 +18,7 @@ test('project repository load handles null and unavailable storage', () => {
   const nullResult = loadProject(null, getAsset);
   assert.equal(nullResult.available, false);
   assert.equal(nullResult.recovered, false);
-  assert.equal(nullResult.envelope.schemaVersion, 8);
+  assert.equal(nullResult.envelope.schemaVersion, SCHEMA_VERSION);
 
   const throwingStorage = {
     getItem: () => { throw new Error('SecurityError: access denied'); }
@@ -47,15 +47,20 @@ test('project repository requests a complete reset for unreadable saves', () => 
 });
 
 test('project repository requests a complete reset for legacy saves', () => {
-  const legacy = { ...createDefaultEnvelope(), schemaVersion: 3 };
-  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
-
-  const result = loadProject(storage, getAsset);
-  assert.equal(result.available, true);
-  assert.equal(result.recovered, true);
-  assert.equal(result.envelope.schemaVersion, 8);
-  assert.equal(result.resetRequired, true);
-  assert.equal([...storage.data.keys()].some((key) => key.startsWith('paperDollStudio.quarantine.')), false);
+  for (const legacy of [
+    { ...createDefaultEnvelope(), schemaVersion: 3, appVersion: undefined },
+    { ...createDefaultEnvelope(), schemaVersion: 6, appVersion: undefined },
+    { ...createDefaultEnvelope(), schemaVersion: undefined, appVersion: '1.21.0' }
+  ]) {
+    const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+    const result = loadProject(storage, getAsset);
+    assert.equal(result.available, true);
+    assert.equal(result.recovered, true);
+    assert.equal(result.envelope.schemaVersion, SCHEMA_VERSION);
+    assert.equal(result.envelope.appVersion, APP_VERSION);
+    assert.equal(result.resetRequired, true);
+    assert.equal([...storage.data.keys()].some((key) => key.startsWith('paperDollStudio.quarantine.')), false);
+  }
 });
 
 test('project repository tracks monotonic revisions and detects cross-tab conflicts', () => {
@@ -175,17 +180,19 @@ test('project repository maps quota exceeded errors correctly and cleans up temp
 });
 
 test('project repository load quarantines parseable but unsupported/corrupted schema payloads and returns recovered: false', () => {
-  const unsupportedRaw = JSON.stringify({ schemaVersion: 999, presets: [] });
-  const storage = memoryStorage({
-    [STORAGE_KEY]: unsupportedRaw
-  });
+  for (const unsupported of [{ schemaVersion: 999, presets: [] }, { appVersion: '999.0.0', presets: [] }]) {
+    const unsupportedRaw = JSON.stringify(unsupported);
+    const storage = memoryStorage({
+      [STORAGE_KEY]: unsupportedRaw
+    });
 
-  const result = loadProject(storage, getAsset);
-  assert.equal(result.available, true);
-  assert.equal(result.recovered, false);
-  assert.ok(result.warnings.some((w) => w.includes('Unsupported schema version')));
+    const result = loadProject(storage, getAsset);
+    assert.equal(result.available, true);
+    assert.equal(result.recovered, false);
+    assert.ok(result.warnings.some((w) => w.includes('Unsupported schema version')));
 
-  const quarantineKeys = [...storage.data.keys()].filter((k) => k.startsWith('paperDollStudio.quarantine.'));
-  assert.equal(quarantineKeys.length, 1);
-  assert.equal(storage.data.get(quarantineKeys[0]), unsupportedRaw);
+    const quarantineKeys = [...storage.data.keys()].filter((k) => k.startsWith('paperDollStudio.quarantine.'));
+    assert.equal(quarantineKeys.length, 1);
+    assert.equal(storage.data.get(quarantineKeys[0]), unsupportedRaw);
+  }
 });

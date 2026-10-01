@@ -1,1 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_sofa"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><rect x="155" y="300" width="690" height="420" rx="70" fill="#92b6a0"/><rect x="170" y="560" width="325" height="220" rx="45" fill="#fff8eb"/><rect x="505" y="560" width="325" height="220" rx="45" fill="#fff8eb"/><rect x="100" y="495" width="110" height="300" rx="45" fill="#92b6a0"/><rect x="790" y="495" width="110" height="300" rx="45" fill="#92b6a0"/><rect x="180" y="790" width="55" height="95" rx="5" fill="#514039"/><rect x="765" y="790" width="55" height="95" rx="5" fill="#514039"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_sofa">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<g fill="#8b5e34"><path d="M180 750 H240 L228 885 H188 Z"/><path d="M760 750 H820 L812 885 H772 Z"/></g>
+    <rect x="145" y="290" width="710" height="455" rx="85" fill="#81b29a"/>
+    <path d="M195 365 Q205 335 250 335 H465 Q485 335 485 370 V555 H195 Z M515 555 V370 Q515 335 535 335 H750 Q795 335 805 365 V555 Z" fill="#a7c9aa" stroke-width="10"/>
+    <g fill="#238276" stroke="none"><circle cx="340" cy="430" r="14"/><circle cx="660" cy="430" r="14"/></g>
+    <rect x="140" y="690" width="720" height="120" rx="35" fill="#5e927e"/>
+    <g fill="#fff8eb"><rect x="170" y="560" width="325" height="185" rx="45"/><rect x="505" y="560" width="325" height="185" rx="45"/></g>
+    <path d="M210 700 H455 M545 700 H790" fill="none" stroke="#d4bda4" stroke-width="9"/>
+    <g fill="#81b29a"><rect x="100" y="475" width="110" height="315" rx="50"/><rect x="790" y="475" width="110" height="315" rx="50"/></g>
+    <path d="M130 530 V710 M820 530 V710" fill="none" stroke="#a7c9aa" stroke-width="14"/>
+    <path d="M232 455 Q300 430 373 460 L355 585 Q290 605 222 575 Z" fill="#e07a5f"/>
+    <path d="M245 477 L353 484 L337 569 L242 559 Z" fill="none" stroke="#f4a98e" stroke-width="9"/>
+  </g>
+</svg>

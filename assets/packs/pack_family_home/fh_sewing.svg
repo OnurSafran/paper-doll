@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_sewing"><g id="prop" stroke="#514039" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><rect x="190" y="455" width="620" height="400" rx="25" fill="#92b6a0"/><rect x="160" y="400" width="680" height="100" rx="15" fill="#d7b86c"/><path d="M390 400 L390 315 L610 315 L610 400" fill="none"/><rect x="440" y="475" width="120" height="100" rx="12" fill="#fff8eb"/><ellipse cx="540" cy="665" rx="35" ry="35" fill="#fff8eb"/><ellipse cx="640" cy="710" rx="30" ry="30" fill="#dd9c89"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_sewing">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+<rect x="190" y="455" width="620" height="400" rx="25" fill="#81b29a"/>
+    <rect x="160" y="400" width="680" height="100" rx="15" fill="#e9c46a"/>
+    <path d="M390 400 L390 315 L610 315 L610 400" fill="none"/>
+    <rect x="440" y="475" width="120" height="100" rx="12" fill="#fff8eb"/>
+    <ellipse cx="540" cy="665" rx="35" ry="35" fill="#fff8eb"/>
+    <ellipse cx="640" cy="710" rx="30" ry="30" fill="#e07a5f"/>
+    <path d="M390 400 V325 Q500 270 610 325 V400" fill="none" stroke="#8b5e34" stroke-width="24"/>
+<path d="M220 520 V820 H780 V520" fill="none" stroke="#5e927e" stroke-width="9"/>
+<circle cx="500" cy="525" r="16" fill="#e9c46a" stroke-width="9"/>
+<path d="M520 650 L550 680 M550 650 L520 680 M620 694 L655 726 M655 694 L620 726" fill="none" stroke="#bc8a5f" stroke-width="8"/>
+  </g>
+</svg>
