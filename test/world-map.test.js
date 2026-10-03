@@ -14,8 +14,7 @@ import {
   evaluateUnlockableBackgrounds,
   getLandmarkById,
   getLandmarkByBackgroundId,
-  getStampById,
-  getLandmarksByBiome
+  getStampById
 } from '../js/domain/world-map-catalog.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { createDefaultEnvelope, sanitizeEnvelope } from '../js/core/state-schema.js';

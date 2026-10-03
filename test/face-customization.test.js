@@ -10,13 +10,12 @@ import {
   isPresentationStyle
 } from '../js/domain/vocabulary.js';
 import { IRIS_COLORS, isIrisColor } from '../js/core/palette.js';
-import { facesByGroup, getAsset, ASSETS } from '../js/core/asset-catalog.js';
+import { facesByGroup, getAsset } from '../js/core/asset-catalog.js';
 import {
   clearFaceDetail,
   countAssetUses,
   createDefaultFace,
   createStarterDraft,
-  DEFAULT_FACE_BY_DOLL,
   resetFace,
   setFaceFeature,
   setIrisColor
@@ -373,9 +372,6 @@ test('AppStore handles designer face actions with undo/redo support', () => {
 
 test('createExportDollSvg renders face layers in exact visual hierarchy', async () => {
   // Provide a minimal DOM shim for Node.js environment
-  const NS = 'http://www.w3.org/2000/svg';
-  const attrs = {};
-  const children = [];
   const fakeElement = (tag) => {
     const el = {
       tagName: tag,
@@ -387,7 +383,7 @@ test('createExportDollSvg renders face layers in exact visual hierarchy', async 
       appendChild(child) { el._children.push(child); },
       querySelector() { return null; },
       querySelectorAll() { return []; },
-      style: { setProperty(k, v) {} },
+      style: { setProperty() {} },
       id: '',
       cloneNode() { return fakeElement(tag); }
     };
@@ -511,8 +507,6 @@ test('FACE_PREVIEW_VIEWBOX zooms preview cards and appendAsset sets iris color',
   assert.equal(FACE_PREVIEW_VIEWBOX[mouthAsset.faceGroup], '135 64 30 22');
 
   const origDocument = globalThis.document;
-  const origDOMParser = globalThis.DOMParser;
-  const origFetch = globalThis.fetch;
   const styles = new Map();
   const children = [];
 

@@ -117,6 +117,9 @@ const { openProjectDialog, exportProjectJsonFile, handleProjectFile, executeImpo
   customArtRepo,
   store,
   storage,
+  // Same resolver as the startup load: backups and imports may reference pack
+  // assets that are currently hidden, and those must not be stripped.
+  getAsset: PACK_REGISTRY.getAsset,
   get showToast() { return showToast; },
   get askConfirm() { return askConfirm; },
   get showAlert() { return showAlert; },

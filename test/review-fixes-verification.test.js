@@ -8,9 +8,8 @@ import { createSceneAnimationService, resolveVoiceTargetCharacter } from '../js/
 import { getSceneActiveAnimationDuration } from '../js/domain/motion-evaluator.js';
 import { createPaintSaveService } from '../js/features/paint/paint-save-service.js';
 import { sanitizeCustomAsset } from '../js/core/state-schema.js';
-import { VIEWPORT_WIDTH } from '../js/domain/vocabulary.js';
 
-function createMockElement(instanceId, x = 800) {
+function createMockElement(instanceId) {
   const styles = new Map();
   const motionStyles = new Map();
   const eyesStyles = new Map();

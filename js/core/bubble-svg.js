@@ -91,7 +91,7 @@ export function measureBubble(entity) {
  * Creates an SVG Element representing a speech, thought, shout, or caption bubble.
  */
 export function createBubbleSvg(entity) {
-  const { width, text, style, lines, lineHeight, textBlockHeight, bubbleBodyHeight, totalHeight } = measureBubble(entity);
+  const { width, style, lines, lineHeight, textBlockHeight, bubbleBodyHeight, totalHeight } = measureBubble(entity);
 
   const svg = createSvgElement('svg');
   svg.setAttribute('viewBox', `0 0 ${width} ${totalHeight}`);

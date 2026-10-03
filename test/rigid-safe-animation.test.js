@@ -3,8 +3,6 @@ import assert from 'node:assert/strict';
 import {
   SAFE_MOTION_CLIP_IDS,
   SAFE_STATIC_POSES,
-  MOTION_CLIP_IDS,
-  STATIC_POSES,
   isSafeMotionClipId,
   isSafeStaticPose,
   isMotionProfile,
@@ -12,11 +10,8 @@ import {
   DEFAULT_MOTION_PROFILE
 } from '../js/domain/vocabulary.js';
 import {
-  MOTION_CLIPS,
-  STATIC_POSE_TRANSFORMS,
   RIGID_CLIP_FALLBACKS,
   RIGID_POSE_FALLBACKS,
-  MOTION_PROFILES_CONFIG,
   resolveMotionProfile,
   resolveSafeClipId,
   resolveSafePoseId,
@@ -591,9 +586,7 @@ test('Full-body custom artwork correctly resolves root profile and renders skin 
     slots: {}
   };
 
-  let loadedAssetId = null;
-  const mockLoadSvg = async (id) => {
-    loadedAssetId = id;
+  const mockLoadSvg = async () => {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     return el;
   };

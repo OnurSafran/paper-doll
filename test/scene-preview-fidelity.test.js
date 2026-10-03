@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCompositeSceneThumbnailSvg, renderSceneThumbnail } from '../js/features/scene-book/scene-book-view.js';
-import { DEFAULT_EXPRESSION } from '../js/domain/vocabulary.js';
 
 test('createCompositeSceneThumbnailSvg builds valid composite SVG with background, character, prop, and bubble', async () => {
   // Mock DOM environment for Node.js test runner
@@ -58,7 +57,7 @@ test('createCompositeSceneThumbnailSvg builds valid composite SVG with backgroun
     return root;
   };
 
-  const mockLoadSvg = async (id) => makeFakeSvg('svg');
+  const mockLoadSvg = async () => makeFakeSvg('svg');
 
   const mockGetAsset = (id) => {
     if (id === 'prop_chair') return { id: 'prop_chair', name: 'Chair', displayWidth: 150, displayHeight: 200 };

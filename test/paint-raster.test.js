@@ -10,8 +10,7 @@ import {
   drawBrushStamp,
   applyStroke,
   drawShape,
-  samplePixel,
-  executeFloodFill
+  samplePixel
 } from '../js/features/paint/paint-raster.js';
 
 test('hexToRgba and rgbaToHex convert accurately', () => {

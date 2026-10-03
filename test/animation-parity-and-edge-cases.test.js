@@ -1,18 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAppStore } from '../js/core/app-store.js';
-import { ASSETS, hasRigidWearableForLimb } from '../js/core/asset-catalog.js';
+import { ASSETS } from '../js/core/asset-catalog.js';
 import {
   evaluateCharacterPose,
-  evaluateProceduralBlink,
-  evaluateAttachedEntityTransform,
   resolveEntityAttachmentTransform
 } from '../js/domain/motion-evaluator.js';
 import { createSceneAnimationService } from '../js/services/scene-animation-service.js';
-import { createExportService } from '../js/services/export-service.js';
 import { createExportDollSvg } from '../js/core/doll-svg.js';
-import { createCompositeSceneThumbnailSvg } from '../js/features/scene-book/scene-book-view.js';
-import { CHARACTER_DIMENSIONS, LIMITS } from '../js/domain/vocabulary.js';
 import fs from 'node:fs';
 
 // Mock minimal DOM for Node test environment
@@ -176,7 +171,6 @@ test('P2 Fix: User-selectable reduced-motion mode via app store and sceneAnimati
   store.dispatch({ type: 'settings/setReducedMotion', mode: 'invalid_mode' });
   assert.equal(store.getState().settings.reducedMotion, 'full', 'Invalid modes must be rejected');
 
-  let staticApplied = false;
   const service = createSceneAnimationService({
     store,
     queryAll: () => [],

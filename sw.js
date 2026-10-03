@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paper-doll-studio-ve32dea25';
+const CACHE_NAME = 'paper-doll-studio-v3cb77f9b';
 const APP_SHELL = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const APP_SHELL = [
   './css/features/header.css?v=1ccd465c',
   './css/features/paint.css?v=f4ba7d86',
   './css/features/papercraft.css?v=248785fa',
-  './css/features/play.css?v=d5d28346',
+  './css/features/play.css?v=9dc6a1ef',
   './css/features/world-map.css?v=bc8392e3',
   './css/responsive/responsive.css?v=8f9b446e',
   './css/tokens.css?v=c0813b5f',

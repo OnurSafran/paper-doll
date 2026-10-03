@@ -519,3 +519,13 @@ test('translated button labels do not repeat icons already supplied by their mar
     }
   }
 });
+
+test('narrow stage controls never let the playback transport paint over Layers or stage width', () => {
+  // Visible overflow here once covered the neighbouring grid cells at 375px.
+  const narrow = css.slice(css.indexOf('@container (max-width: 740px)'), css.indexOf('@container (max-width: 400px)'));
+  assert.match(narrow, /\.play-animation-transport\s*{[^}]*min-width:\s*0[^}]*overflow-x:\s*auto/s);
+  // Below the single-row width, the transport takes its own full-width row.
+  const stacked = narrow.slice(narrow.indexOf('@container (max-width: 440px)'));
+  assert.match(stacked, /grid-template-areas:\s*"outline \. size"\s*"playback playback playback"/);
+  assert.match(stacked, /\.play-animation-transport\s*{[^}]*flex-wrap:\s*wrap/s);
+});

@@ -5,9 +5,7 @@ import {
   createEmptyScene,
   deleteEntity,
   detachEntity,
-  duplicateEntity,
   flipEntity,
-  getAttachedDescendants,
   moveEntity,
   scaleEntity,
   setEntityPinned

@@ -164,7 +164,7 @@ test('camera respects the explicit reduced-motion preference', (t) => {
 });
 
 test('the world lies back on a tilt and turns with the direction of the pan', (t) => {
-  const { $, camera, svg } = setup(t);
+  const { camera, svg } = setup(t);
   const tiltOf = (el) => parseFloat(el.style.getPropertyValue('--map-tilt'));
   const spinOf = (el) => parseFloat(el.style.getPropertyValue('--map-spin'));
 
@@ -186,14 +186,14 @@ test('the world lies back on a tilt and turns with the direction of the pan', (t
 });
 
 test('the spin is capped so a fast flick cannot roll the map over', (t) => {
-  const { $, camera } = setup(t);
+  const { camera } = setup(t);
   camera.scrollLeft = 100000;
   camera.emit('scroll', {});
   assert.ok(Math.abs(parseFloat(camera.style.getPropertyValue('--map-spin'))) <= 7);
 });
 
 test('reduced motion keeps the map flat, still and un-parallaxed', (t) => {
-  const { $, state, camera, svg } = setup(t);
+  const { state, camera, svg } = setup(t);
   state.settings.reducedMotion = 'reduce';
   camera.scrollLeft = 480;
   camera.emit('scroll', {});

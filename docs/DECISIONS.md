@@ -47,10 +47,13 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-045 | Retain the papercraft pilot unchanged; deprioritize clothing tabs and favor broader cardboard finish coverage later. | Accepted; expansion deferred | Clothing tabs add little value to the intended experience; cardboard finish can carry the papercraft style across more artwork. |
 | D-046 | Consolidate app-wide preferences into a header Settings dialog and move the Dollbox into a dialog opened from the Designer topbar. | Implemented | The papercraft bar, footer, and header Project button competed with the workspace; the Dollbox pushed the Wardrobe below the fold. Language stays a one-tap header toggle. |
 | D-047 | Cardboard finish is on by default for new studios and for projects that lack the setting; clothing tabs stay off. Refines D-045. | Implemented | Cardboard finish is the preferred papercraft direction, so new players should see it without finding the switch. An explicit off is preserved. |
-| D-048 | Lock Family & Home Stories (`pack_family_home`) as the first content expansion at a fixed 92-asset scope. | Accepted; production pending | A fixed first package gives content production a measurable target while keeping the exact asset ledger, representative scene, and pack implementation as explicit gates. |
+| D-048 | Lock Family & Home Stories (`pack_family_home`) as the first content expansion at a fixed 92-asset scope. | Implemented; independent fit, export, and device checks pending | A fixed first package gives content production a measurable target; the ledger, recipes, starter scenes, and pack infrastructure now exist. |
 
 | D-049 | Depth-aware room placement and drawn furniture surfaces. | Implemented; amended by D-050 | Preserve 2D rendering with explicit contact/support geometry. |
 | D-050 | Reset all pre-Paper Stage data at schema 8; derive placement behavior from backgrounds and confirm destructive panorama shrink. | Implemented | User requested a clean start and simpler controls; removal previews keep size changes predictable and undoable. |
+| D-051 | Project import, merge, and backup restore resolve assets through the full pack registry, never the built-in catalog. | Implemented | The built-in resolver silently stripped Family & Home clothing and reset pack backgrounds before the import preview, so a Replace or Restore lost content with no warning. |
+| D-052 | IndexedDB transactions never await non-IndexedDB work; validate and hash first, then open the transaction. | Implemented | Browsers commit a transaction as soon as it has no pending request, so `restoreBackup` failed in real browsers while permissive mocks passed. The test mock now models transaction lifetime. |
+| D-053 | Play stage controls wrap on narrow containers instead of overflowing or scrolling sideways. | Implemented | The playback transport overflowed its grid cell and covered Layers and stage width at 375 px; hidden scrolled controls are undiscoverable for young players. |
 
 ## Decision details
 
@@ -249,11 +252,11 @@ In the Designer, the Dollbox card sat at the top of the rail and pushed the Ward
 
 ### D-048 — Family & Home Stories first-expansion lock
 
-**Date:** 2026-09-12. **Status:** Accepted; production pending.
+**Date:** 2026-09-12. **Status:** Implemented; independent fit, export, and device checks pending.
 
 Family & Home Stories (`pack_family_home`) is the first committed content expansion. Its scope is fixed at 48 wearables, 40 props, 4 backgrounds, 6 starter scenes, 12 bilingual story prompts, and 8 compatible outfit recipes. It must cover all five life stages, work with core content alone, and remain within static scene-based pretend play.
 
-The exact asset-ID ledger, fit assignments, art brief, and authored files are not yet complete. Production starts with that ledger and a representative family living-room scene; the scene must pass fit, tint, thumbnail, Play, PNG export, save/reload, and target-iPad performance checks before the full package is authored.
+The full ledger, fit assignments, authored files, recipes, and starter scenes are in `assets/packs/pack_family_home/` and `js/packs/family-home/`. Independent fit, tint, thumbnail, PNG export, and target-iPad performance checks remain release gates.
 
 ### D-049 — Depth-aware room placement and drawn furniture surfaces
 
@@ -310,3 +313,49 @@ Defer selected-instance artwork replacement, occlusion-aware pointer targeting,
 extra ghost failure reasons, and a second authoring sample (vase). Keep Edit Copy
 and the lamp test preview. Physical iPad, moderated authoring, and crowded-scene
 performance validation remain release gates.
+
+### D-051 — Project workflows use the full pack registry
+
+**Date:** 2026-10-03. **Status:** Implemented.
+
+`app.js` injects `PACK_REGISTRY.getAsset` into the project controller, matching
+the startup load. Import validation, the backup preview, and backup restore all
+use it. Hidden packs are still resolved, because hiding a pack is a browsing
+preference and must not delete the clothing or backgrounds that a saved project
+references. `packRequirements` is recomputed from the resolved assets, so a
+project that uses pack content keeps declaring it.
+
+The controller no longer imports `core/asset-catalog.js`. A source contract in
+`test/pack-project-portability.test.js` guards that wiring, and round-trip
+fixtures use real Family & Home clothing and backgrounds.
+
+### D-052 — IndexedDB transaction lifetime
+
+**Date:** 2026-10-03. **Status:** Implemented.
+
+`restoreBackup` read each PNG and computed its SHA-256 after opening the write
+transaction. Native IndexedDB commits an idle transaction, so the first `put`
+threw `TransactionInactiveError` and a recoverable backup could not be restored.
+The repository now validates and hashes every record first, then opens the
+transaction and awaits only its own requests. Backup records also keep
+`createdAt` and `updatedAt`.
+
+The repository test mock enforces the rule: a transaction goes inactive when
+control returns to the event loop with no pending request, and any later request
+throws. The restore test fails against the old implementation.
+
+
+### D-053 — Narrow stage controls wrap
+
+**Date:** 2026-10-03. **Status:** Implemented.
+
+Below a 440 px stage container, `.play-stage-controls` uses two grid rows: Layers
+and stage width on the first, the playback transport on its own full-width row
+that wraps rather than scrolls. Between 440 and 740 px the transport clips to its
+grid cell and scrolls as a fallback, so it can never paint over a neighbouring
+control. Every control keeps a 44 px touch target.
+
+Browser verification must activate controls by pointer. Keyboard focus followed by
+Enter bypasses overlap, which is how the earlier defect went unnoticed. The Scene
+Outline script now taps by pointer and asserts that every stage control is what
+sits at its own centre, fully on screen, at 375 px.

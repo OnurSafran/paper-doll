@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAssetRegistry, customAssetToDescriptor } from '../js/core/asset-registry.js';
-import { getAsset } from '../js/core/asset-catalog.js';
 
 test('customAssetToDescriptor produces valid descriptor for wearable and prop', () => {
   const wearableMeta = {

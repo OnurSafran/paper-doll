@@ -11,15 +11,11 @@ import {
   evaluateProceduralBlink
 } from '../js/domain/motion-evaluator.js';
 import {
-  PLAYBACK_RATES,
-  ATTACH_JOINTS,
   DEFAULT_ATTACH_JOINT,
-  DEFAULT_PLAYBACK_RATE,
   isPlaybackRate,
   isAttachJoint
 } from '../js/domain/vocabulary.js';
 import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../js/domain/scene-templates.js';
-import { createSceneAnimationService } from '../js/services/scene-animation-service.js';
 import { createExportService } from '../js/services/export-service.js';
 
 test('Vocabulary: playback rates, attach joints, and validators', () => {

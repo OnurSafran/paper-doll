@@ -4,7 +4,7 @@ import { createAppStore } from '../js/core/app-store.js';
 import { createDefaultEnvelope } from '../js/core/state-schema.js';
 import { createSceneAnimationService } from '../js/services/scene-animation-service.js';
 
-function createMockElement(instanceId, x = 800) {
+function createMockElement(instanceId) {
   const styles = new Map();
   const motionStyles = new Map();
   const eyesStyles = new Map();

@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   addEntity,
-  clampEntityPoint,
   clampPoint,
   createEmptyScene,
   deleteEntity,

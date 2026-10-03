@@ -1,276 +1,48 @@
 # Implementation Status and Roadmap
 
-Updated: 2026-09-12
+Updated: 2026-10-03
 
-This is the single authority for implementation status, open work, and delivery order. Product behavior belongs in [PROJECT.md](PROJECT.md); release evidence belongs in [QUALITY.md](QUALITY.md); foundation roadmap belongs in [IMPROVEMENTS.md](IMPROVEMENTS.md).
+This is the single authority for implementation status, open work, and delivery order. Product behavior belongs in [PROJECT.md](PROJECT.md); release evidence belongs in [QUALITY.md](QUALITY.md); accepted decisions belong in [DECISIONS.md](DECISIONS.md); foundation work belongs in [IMPROVEMENTS.md](IMPROVEMENTS.md).
 
 ## Current snapshot
 
-- Working dependency-free Designer and Play vertical slice (v1.20.0)
-- 6 base dolls across 5 life stages (Baby, Child, Teen, Adult, Elder), 19 modular face features, 87 wearable/hair/accessory assets, 11 backgrounds, and 22 props
-- Dollbox, Scene Book, current-scene autosave/reload, and local schema migration (v4 modular face, v5 animations, v6 joints)
-- Pointer/keyboard scene editing, bounded Undo/Redo, and PNG export (scene & animation frame)
-- Seven in-session expressions, strictly local voice puppetry, character poses, and looping scene animation engine
-- Custom Paint Studio Gates 0–3B complete with IndexedDB storage, portability, mixed renderers, bounded history, My Art lifecycle, non-destructive wearable slot switching, trusted cutout actions, and precision body/alignment overlays
-- Character Customization System (Gates 0–5) complete:
-  - Gate 0: Modular layer order, fit families, presentation styles, and domain contracts
-  - Gate 1: 19 modular face SVGs, iris palette, schema v4 migration, resting-face restoration, and full undo/redo
-  - Gate 2: 6 base doll models across 5 life stages, fit-family wardrobe filtering, retention on model switch
-  - Gate 3: Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage hair/garments
-  - Gate 4: Single-layer custom hair architecture with Layer 70 rendering, Paint Studio guides for all 6 models, and portability
-  - Gate 5: Automated tests passing, 145 cataloged SVGs validated, complete release evidence and documentation
-- Character Expressions, Poses, and Looping Scene Animation complete:
-  - Multi-channel limb gesture presets, head tilt/orientation evaluator, animation clips (idle, talk, celebrate, walk, wave, bow, laugh, listen)
-  - Looping scene animation playback transport HUD (Play/Pause, Loop toggle, Reset, 0.5x-2.0x playback speed)
-  - Animation frame export to PNG
-- Play UI & Full-Height Stage complete:
-  - Segmented rail tabs (`➕ Ekle` / `⚙️ Seçili`) for spawn tray and inspector
-  - Dedicated play-status and paint-status pill rows above stages
-- 100% store status message localization across Designer, Play, Custom Art, and Project operations with `messageKey` and `translateMessage`
-- 519 automated tests passing
-- 145 cataloged SVG files passing asset validation
-- Catalog assets carry `added_date`, `creator`, `concept`, `dlc`, and `source` provenance metadata; current content pack is `core`
-- Props are grouped in Play by `Home`, `Outdoors`, `Creative`, `Fun`, and derived `My Art`; custom prop collection membership is persisted and editable from My Art
-- Installable offline PWA shell with comprehensive multi-tab Turkish & English in-app guide
-- Documentation validation passing with canonical documents
-- Designer, Paint, and Play source hardening passes complete; hosted iPad smoke test remains before family release
-- Phase 1 Foundation Improvements complete: automated service worker manifest sync (`npm run update:sw`), modularized isolated locale dictionaries (`tr.js`, `en.js`), RAF-throttled live previews in Paint Studio, scoped dropdown lifecycle in play-view, context-aware focus restoration on dialog dismissal, and accessible screen reader live announcements for batch studio operations.
-- Phase 2 Foundation Improvements complete: domain slice reducers (`js/core/reducers/`), action payload validation, generalized teardown disposable registry (`js/core/error-boundary.js`), JSDoc static type checking (`tsc --noEmit`), keyboard panoramic navigation shortcuts (`PageUp`/`PageDown`/`Home`/`End`/`Shift+Arrow`), and ESLint flat config code quality guardrails (`eslint.config.js`). See [IMPROVEMENTS.md](IMPROVEMENTS.md) and [DECISIONS.md](DECISIONS.md) (D-041 through D-044).
-- Phase 3 Foundation Improvements complete: sub-controller decomposition, worker/OffscreenCanvas export paths, SVG prop symbology, bounding-box memoization, and dynamic outline contrast. See [IMPROVEMENTS.md](IMPROVEMENTS.md).
+Version 2.0.0, schema 8 (the first supported Paper Stage save; older data is cleared, see D-050). Dependency-free Designer, Play, and Paint Studio, installable offline as a PWA.
 
-## Status by capability
+- **Core catalog:** 6 base dolls across 5 life stages, 19 modular face features, 87 wearables/hair/accessories, 11 backgrounds, and 26 props (149 validated SVGs).
+- **Family & Home Stories** (`pack_family_home`): 92 assets, 8 outfit recipes, 6 starter scenes, and 12 bilingual prompts, with trusted pack manifests, pack-aware registry filtering, and missing-pack placeholders (D-048).
+- **Designer:** Dollbox, modular faces, fit-aware wardrobe and shuffle, custom hair, seven expressions, poses, and local voice puppetry.
+- **Play:** Scene Book, templates, speech bubbles, pinning and attachment, multi-select and alignment, Scene Outline, panoramic stages (`1600`/`3200`/`4800`) with camera navigation, looping animation, PNG and animation-frame export, and the World Map with souvenir stamps.
+- **Paper Stage:** background-driven floor/wall constraints, automatic depth, furniture surfaces, drawn support areas, alpha-accurate hit testing, and grounded bounding boxes (D-049, D-050, [hitbox PRD](hitbox_and_bounding_box_prd.md)).
+- **Paint Studio:** IndexedDB artwork, mixed raster/vector rendering, My Art, cutouts, and placement authoring.
+- **Portability:** versioned project package with SHA-256 artwork integrity, Replace/Merge, collision rewriting, and recoverable backups (D-051, D-052).
+- **Quality:** 710 automated tests, ESLint with 0 errors and 0 warnings, `tsc --noEmit`, and asset, pack, cache-busting, and documentation validators. All run through `npm run check`.
+- **Foundations:** slice reducers, disposable teardown registry, JSDoc type checking, isolated locale dictionaries, generated service-worker manifest, worker/OffscreenCanvas export, and SVG symbol reuse (D-038 to D-044).
 
-| Area | Status | Open work |
+## Open work
+
+Ordered by what blocks a family release first.
+
+| Item | State | Needed to close |
 |:--|:--|:--|
-| Domain/store | Implemented | Shared vocabulary, injected time/identity, and validated generated IDs are centralized. |
-| Schema/storage | Implemented | Monotonic revision guards, post-write race detection, and recovery/availability reporting are complete. |
-| Asset pipeline | Implemented | Add clone-ID scoping before patterns/definitions. Core asset provenance metadata, prop collections, custom collection persistence, and ordinary SVG expansion are in place. |
-| Designer/Dollbox | Implemented | Modular feature architecture extracted cleanly. Hardening pass closed shared catalog filtering, fit-aware layers, focus restoration, the Dollbox render gate, and the in-app rename prompt. Complete real-browser accessibility journey. |
-| Play/Scene Book | Implemented | Modular feature architecture extracted cleanly. Full entity thumbnails; panoramic world & camera navigation. Hardening pass closed panoramic move clamping, Scene Outline labelling, custom-prop discovery, render patching, context-ring focus, keyboard and wheel input, full Play localization, and the consistency backlog. Composition-root asset-resolver wiring is now covered by a source contract test. |
-| Undo/Redo | Implemented | Verify longer mixed-domain journeys and history semantics. |
-| PNG export | Implemented | Extracted export service with immutable snapshots, progress/failure reporting, and parity fixtures. |
-| Expressions/voice | Implemented | Extracted voice puppetry service with injected browser APIs, frequency analyzer, and teardown tests. |
-| Browser/accessibility gate | Implemented | Evaluated across Chrome, Safari, Firefox, Edge across 4 standard viewports. |
-| Performance/release gate | Implemented | Validated drag frame-budget, debounced storage coalescing, and capacity limits. |
-| Offline PWA | Implemented | HTTPS install flow, app-shell caching, offline startup, cache-version update procedure, and iPad Home Screen guidance are documented. |
-| In-app Turkish guide | Implemented | Header guide menu explains dressing, scenes, saving, backups, and offline play. |
-| Custom Paint Studio | Implemented | Hardening pass restored pointer selection, reachable 20-step undo depth, accessible dialogs, full localization, and 6 uniquely labeled reference models. Pointer-selection regression coverage added. See completed improvement backlog I-01 to I-06 for the drawing-loop performance and Paint architecture work. |
+| Hosted iPad install and offline journey (J-18) | Blocked | Hosted HTTPS URL and a dated run on the target iPad, including offline Paint save, reload, use, and export; see [OFFLINE-PWA.md](OFFLINE-PWA.md). |
+| Browser/device matrix | Open | Dated evidence for Safari, Firefox, Edge, and the target iPad. Only Chromium has been exercised. |
+| Family & Home release checks | Open | Independent fit, tint, thumbnail, and PNG export review, plus target-iPad performance. |
+| Paper Stage validation | Open | Moderated five-user pilot, physical iPad run, and crowded-scene frame-time measurements (D-049, D-050). |
+| Phase 4: browser E2E suite | Open | Automated multi-browser journeys for create, persist, transfer, and offline. Today only `scripts/verify-hit-testing-browser.mjs` and `scripts/verify-scene-outline-browser.mjs` exist, both outside `npm run check`. |
+| Scene transitions and Scene Book slideshow | Specified, not built | [PRD](PRD-STORYBOOK-SCENE-TRANSITIONS.md). Only a page-flip on background change exists; there is no curtain, dissolve, scene-load transition, or reader mode. |
+| Fabric patterns | Deferred | Per-clone SVG ID scoping before patterns or definitions are admitted ([ASSETS.md](ASSETS.md)). |
+| Papercraft finish coverage | Deferred | Broader cardboard finish only; clothing tabs stay off (D-045, D-047). |
+| Interactive props and prop sound effects | Deferred | Needs its own design; map interactions already use procedural sound. |
+| Paper Stage follow-ups | Deferred | Selected-piece artwork replacement, vase sample, occlusion-aware targeting, richer invalid-placement reasons, seating, nested supports, and perspective scaling (D-050). |
 
-## Release blockers
+## Delivery order
 
-### R-01 — Persist all seven expressions (Completed)
-
-Centralized vocabulary in `domain/vocabulary.js` and all seven expressions (`neutral`, `smile`, `happy`, `surprised`, `o_mouth`, `talking`, `wide_open`) round-trip through store projection, serialization, sanitization, reload, history, and export. Tested with regression fixtures.
-
-### R-02 — Make scene boundaries asset-aware (Completed)
-
-Replaced generic fixed margins with character/prop dimensions, scale, and catalog ground anchor in `js/domain/scene-rules.js`. Tested characters, floor lamp, and pastel rug across min/default/max scale at all edges, plus scale-up re-clamping.
-
-### R-03 — Prevent stale cross-tab overwrite (Completed)
-
-Added monotonic project revisions (`revision`) to the state schema envelope and base-revision preconditions in `StorageAdapter`. Stale saves are blocked on cross-tab revision conflict, protecting disk data unless overwrite is explicitly confirmed.
-
-### R-04 — Add top-level error recovery (Completed)
-
-Implemented `classifyError` and `executeSafeTeardown` in `js/core/error-boundary.js` and top-level listeners for `error` and `unhandledrejection` in `js/app.js`. Active pointer dragging is cancelled, audio streams are stopped, pending storage timers are cancelled (preserving disk state), and an accessible alert dialog with privacy-safe codes and Reload options is presented.
-
-### R-05 — Complete release evidence (Completed)
-
-Documented and verified all User Journeys (J-01–J-17), Failure Matrix scenarios (F-01–F-10), accessibility requirements, cross-browser/viewport coverage, storage budgets, and signed the Gate A release report in [QUALITY.md](QUALITY.md).
-
-### R-06 — Restore panoramic move clamping (Completed)
-
-`moveEntity`'s single-entity branch calls `getEntityAllowedRange(root, getAsset)` without a stage width (`js/domain/scene-rules.js:333`), so it clamps against the fixed `1600` viewport instead of the scene's `stageWidth`. The compound branch, the drag preview, `addEntity`, and `scaleEntity` all use the scene width correctly.
-
-On a `3200` or `4800` stage, an unattached entity follows the pointer to the far panel and then snaps back into the first `1600px` on pointer-up. The same snap occurs on every arrow-key nudge, on every alignment command, and when narrowing `4800 → 3200`. Player work placed in the extended world is silently discarded, which violates the product promise and the panoramic acceptance criteria below.
-
-Closed 2026-08-18 by passing `scene?.stageWidth || STAGE_WIDTH` at the single call site. Verified 2026-08-19: moves, narrowing reclamps, and alignment all respect the active stage width, and the two new tests in `test/panoramic-stages.test.js` were confirmed to fail when the argument is removed. Details: PL-1 in [../review/ISSUES.md](../review/ISSUES.md).
-
-### R-07 — Restore custom props in the Play spawn tray (Completed)
-
-Regression introduced while closing PL-13. `createPlayView` gained a `getAssetsByKind` parameter defaulting to the built-in catalog (`js/features/play/play-view.js:61`), and the hand-rolled custom-prop merge it replaced was deleted. `js/app.js` passes `getAssetsByKind: getEffectiveAssetsByKind` to `createDesignerView` (`:192`) but not to `createPlayView` (`:204-213`), so Play silently uses built-ins only — 22 props instead of 23.
-
-A child paints a prop, saves it to My Art, opens Play, and their artwork is not in the tray. Existing scene entities still render, so only discovery is broken. Every `source.custom` branch in the tray is now unreachable, and the tray's render signature still tracks `customProps` — both confirm the merge was meant to survive.
-
-Closed 2026-08-19 by passing `getAssetsByKind: getEffectiveAssetsByKind` to `createPlayView`. Two tests guard it, because the view and the wiring fail independently: a tray render test asserting a custom prop produces a labelled card, and a source contract in `test/ui-contract.test.js` asserting that every view factory declaring `getAsset` or `getAssetsByKind` is handed the registry-backed resolver in `app.js`. The second was confirmed to fail when the argument is removed. Details: PLR-1 in [../review/ISSUES.md](../review/ISSUES.md).
-
-## Delivery plan
-
-### Gate A — Correctness and truthful status (Completed)
-
-1. [x] Fix R-01 and add all-expression regression tests.
-2. [x] Fix R-02 and add asset-boundary fixtures.
-3. [x] Separate storage availability from recovery outcome.
-4. [x] Add R-04 error boundary and browser failure tests.
-5. [x] Complete the browser/accessibility/performance matrices and ship decision.
-
-### Gate B — Architecture hardening (Completed)
-
-1. [x] Centralize shared domain vocabulary.
-2. [x] Extract project repository without changing behavior; migrate revisions afterward.
-3. [x] Extract export service with immutable snapshots.
-4. [x] Extract voice service with injected browser APIs and teardown tests.
-5. [x] Split Designer, Play, and Scene Book modules.
-
-Every extraction is independently reviewable and behavior-preserving. Do not combine file movement with new product behavior.
-
-### Gate C — Player-work and storytelling features (Completed)
-
-1. [x] Project export/import and recoverable backups
-2. [x] Speech bubbles and captions
-3. [x] Scene object stickiness and attachment (scenery pinning, prop/bubble attachment, compound clamping)
-4. [x] Scene Book entity preview fidelity
-5. [x] Multi-select, grouping, alignment, and keyboard scene outline
-6. [x] Scene templates and duplicate-current-scene flow
-
-### Gate D — Offline family release (Completed)
-
-1. [x] Add installable PWA manifest and Home Screen metadata.
-2. [x] Cache the app shell and cataloged artwork for offline startup.
-3. [x] Add Turkish in-app guide with accessible dialog and iPad instructions.
-4. [x] Document HTTPS hosting, GitHub Pages suitability, cache updates, and local data limits.
-
-### Gate E — Expansion
-
-1. [x] New backgrounds, dolls, clothing, and props
-2. [x] Expand core wearables and props with catalog/provenance metadata
-3. Fabric patterns after SVG ID scoping
-4. Papercraft appearance — retain the current screen-only pilot unchanged. Clothing tabs are deprioritized; do not expand their garment coverage. Cardboard finish is the preferred direction for broader artwork coverage, deferred for now. The pilot keeps independent, persisted controls for Teen (Classic A), three garments, armchair and cafe table; image exports remain unaffected. Cardboard finish starts on for new studios (D-047). See [D-045: Papercraft pilot direction](DECISIONS.md#d-045--papercraft-pilot-direction).
-5. Interactive props and optional sound effects
-6. [x] Panoramic stages and camera navigation (`1600`, `3200`, `4800` widths with persisted cameraX, minimap, steppers, trackpad/wheel, edge auto-pan)
-7. [x] World map; scene transitions remain open — see [PRD: The Papercraft World Map](PRD-WORLD-MAP.md) and [PRD: Papercraft Scene Transitions](PRD-STORYBOOK-SCENE-TRANSITIONS.md)
-8. [x] Custom paint studio (implementation complete; hosted-device and cross-browser evidence in progress)
-9. [x] Pose/gesture animation and looping scene animation (complete with 90+ tests, multi-channel evaluator, transport HUD, and frame export)
-
-### Gate F — Play hardening (Completed)
-
-Ordered by player impact. Sourced from the 2026-08-18 Play review; full detail in [../review/ISSUES.md](../review/ISSUES.md).
-
-1. [x] Close R-06 (PL-1) and add the two panoramic movement regression tests.
-2. [x] Fix the Scene Outline labelling defects: per-style bubble names (PL-2) and injected `getAsset` so custom props keep their name (PL-3).
-3. [x] Restore keyboard reachability: context-ring focus after its own actions (PL-8) and modifier-aware stage shortcuts (PL-10).
-4. [x] Localize the Play surface: all `scene/*` reducer messages, per-mode alignment phrasing, tray/entity/outline accessible names, `BUBBLE_PRESETS`, the camera slider label, and `assets.*` entries for all 22 props, 8 backgrounds, and 6 dolls with `assetName()` applied at every call site (PL-4, PL-5, PL-6).
-5. [x] Patch-render the Play surface instead of rebuilding it per mutation, following the I-05 pattern and gating the spawn tray (PL-7).
-6. [x] Correct panoramic input details: wheel handler claims only horizontal gestures (PL-9), and tray spawns respect `cameraX` (PL-11).
-7. [x] Clear the consistency backlog: PL-13 to PL-20, including a single `bubbleStyleLabelKey` in `domain/vocabulary.js` replacing three copies of the bubble label map (PL-14).
-
-8. [x] Close R-07 (PLR-1) and add both the custom-prop tray test and the composition-root wiring contract.
-
-Gate F is closed. The hosted iPad smoke test is the last item before family release.
-
-### First expansion commitment
-
-**Family & Home Stories** (`pack_family_home`) is the locked first content expansion. Its product scope is fixed at 48 wearables, 40 props, 4 backgrounds, 6 starter scenes, 12 bilingual story prompts, and 8 compatible outfit recipes. It must work with core content alone, cover all five life stages, and stay within the static scene-based scope defined in [DLC-AND-STUFF-PACKS.md](DLC-AND-STUFF-PACKS.md).
-
-The full 92-asset development build, exact ledger, eight outfit recipes and six bilingual starter scenes are implemented. Independent fit, export and physical-device checks remain open, and hosted release stays gated on them.
-
-Pack infrastructure baseline is implemented: trusted manifests, pack-aware registry filtering, missing-pack descriptors, pack reference persistence, and service-worker resource validation. The full package manifest, pack browsing controls, recipe loading, localization and template registration are now implemented.
-
-### Gate G — Foundation & Architecture Improvements
-
-Structured foundation improvements tracked with quantitative metrics in [IMPROVEMENTS.md](IMPROVEMENTS.md).
-
-1. [x] **Phase 1 — Guardrails & DX**: Automated service worker manifest sync (`npm run update:sw`), isolated locale dictionaries (`locales/tr.js`, `en.js`), Paint Studio RAF live preview throttling, scoped dropdown lifecycle in `play-view.js`, context-aware dialog focus restoration, screen reader live announcements (`#sr-announcements`).
-2. [x] **Phase 2 — Core Architectural Modularization**: Domain slice reducers in `app-store.js`, disposable teardown registry in `error-boundary.js`, JSDoc/TypeScript static type verification (`checkJs`), keyboard panoramic viewport shortcuts, and lightweight linter.
-3. [x] **Phase 3 — Sub-Controller Decomposition & Performance**: View sub-controllers, OffscreenCanvas in export service, SVG symbology `<use>` reuse, bounding box memoization, and dynamic outline contrast. Completed 2026-09-08; see [IMPROVEMENTS.md](IMPROVEMENTS.md).
-4. [ ] **Phase 4 — Real Browser E2E Suite**: Headless browser automation for multi-browser rendering and PWA installation verification.
-
-## Acceptance summaries for planned features
-
-| Feature | Must prove |
-|:--|:--|
-| Project portability | Validate-before-mutate, Replace/Merge, collision rewriting, backup/rollback, limits, custom-asset handling. |
-| Speech bubbles | Plain text, grapheme limits, attachment behavior, keyboard path, preview/export parity. |
-| Object stickiness | Pinned scenery immovable by pointer, hierarchical parent-child delta move, compound boundary clamping, cycle-free attachment, detach-on-parent-delete. |
-| Multi-select | One command/history entry, deterministic order, accessible outline alternative. |
-| Panoramic stages | Persisted camera, correct coordinate offset, all input modes, edge pan, efficient offscreen behavior. |
-| Custom paint | IndexedDB transactions, byte quotas, safe metadata, placeholders, portability, explicit destructive cleanup, mixed raster/vector render parity, and dated hosted-device evidence. |
-
-## Completed implementation sequence
-
-The original 19-task plan is consolidated here instead of retained as separate plan/status/task documents:
-
-1. Domain model, shell, store/storage, asset contract/catalog, coordinate and pointer primitives
-2. Doll renderer, wardrobe, color editing, Dollbox CRUD
-3. Stage/backgrounds, spawn tray, selection/editing, controls, autosave/reload
-4. Automated domain/integration/static UI tests
-5. Offline PWA shell, Turkish guide, and family deployment documentation
-
-Manual core journeys and the formal release matrices remain open even where automated coverage exists. The PWA installation path and Custom Paint offline flow are documented, but a real hosted iPad Safari install/offline smoke test is still required before a family release.
-
-## Improvement backlog
-
-Observations from the 2026-08-18 hardening pass. Completed items remain here for traceability; the rest are deliberate trade-offs worth revisiting before or shortly after the family release. Ordered by expected value on the target iPad.
-
-### Performance
-
-| ID | Item | Why it matters | Suggested approach |
-|:--|:--|:--|:--|
-| I-01 | **Completed 2026-08-18.** Paint history stores full-frame `ImageData` snapshots | 2.16 MB per wearable step, 4 MB per prop step. Twenty prop steps hold ~80 MB resident, the largest memory commitment in the app. | History now stores dirty-rectangle patches; transient full-canvas state is retained only while a drag needs restoration. |
-| I-02 | **Completed 2026-08-18.** `imageDataChanged` reads and compares the whole canvas per commit | Full-canvas comparisons allocated a copy on every stroke end, selection edit, clear, and cutout. | History comparisons now read only the affected rectangle. |
-| I-03 | **Completed 2026-08-18.** Every stroke allocates two full-canvas buffers | On a 1000×1000 prop this created 8 MB of short-lived allocation per stroke. | A stroke keeps one transient before-image and uses rectangle-sized comparison/history buffers. |
-| I-04 | **Completed 2026-08-18.** Flood fill uses a per-pixel stack of plain numbers | Up to ~2M array entries on a full-canvas fill. | Flood fill now uses a scanline span stack and reports its dirty bounds. |
-| I-05 | **Completed 2026-08-18.** Designer re-renders the full doll on every dispatch | Each colour swatch or slot change rebuilt all layers, even when only one CSS custom property changed. | Color-only draft changes now update existing layer custom properties; model, asset, face, and baked-face structure changes still rebuild. |
-
-### Architecture and maintenance
-
-| ID | Item | Suggested approach |
-|:--|:--|:--|
-| I-06 | **Completed 2026-08-18.** `paint-view.js` is ~2.4k lines and owns canvas, toolbars, dialogs, My Art, save pipeline, and draft recovery | My Art/library flows now live in `paint-library-view.js`; save, draft checkpoint, and recovery flows now live in `paint-save-service.js`; the view owns the canvas and tools. |
-| I-07 | `makeAssetPlaceholder` builds its accessible name in English (`${label} unavailable`) | Route through `i18n` like the rest of the render path. Currently the only untranslated string reaching assistive technology. |
-| I-08 | **Completed 2026-08-18.** Three separate slot→viewBox tables exist (`SLOT_PREVIEW_VIEWBOX` plus `tightViewBoxes` in Paint) with different values | The two intentional contracts now live in `core/preview-viewboxes.js`: `SLOT_PREVIEW_VIEWBOX` for wardrobe cards and `SLOT_CUTOUT_FALLBACK_VIEWBOX` for raw Paint cutouts without `getBBox()`. |
-| I-09 | **Completed 2026-08-18.** CSS is loaded through an `@import` chain behind a single `?v=` marker | Every stylesheet link and import now carries a content fingerprint validated by `scripts/validate-cache-busting.mjs`. |
-| I-10 | **Completed 2026-08-18.** No automated check couples asset or shell changes to a `CACHE_NAME` bump | The validator fingerprints every `APP_SHELL` resource and fails when `CACHE_NAME` does not match the current shell. It runs as part of `npm run check`. |
-
-### Product
-
-| ID | Item | Suggested approach |
-|:--|:--|:--|
-| I-11 | **Completed 2026-08-18.** Fit warnings render one label per incompatible item, stacked over the doll | Incompatible pieces now share one compact expandable warning with a readable detail list; the individual placeholders remain labeled for fallback consumers. |
-| I-12 | **Completed 2026-08-18.** Paint reference model choice no longer constrains fit (D-034), but nothing tells the player which bodies their artwork will suit | The wearable save dialog states that player artwork is compatible with every doll model. |
-| I-13 | **Completed 2026-08-18.** `editCopyOfArtwork` draws the copied bitmap without seeding history | Opening a copy now records the blank canvas as the first undo step. |
-| I-14 | **Completed 2026-08-19.** `assets.*` had no entries for 29 of 87 wearables — the child, baby, adult, and elder garments added in Gate E | All built-in wearable labels now resolve in both locales, and a catalog-backed i18n test prevents future omissions. |
-
-### Play (2026-08-18 review)
-
-Status verified against source and at runtime on 2026-08-19. All twenty findings are closed, as is the PLR-1 regression that the verification pass uncovered.
-
-| ID | Sev | Status | Item |
-|:--|:--|:--|:--|
-| PLR-1 | P1 | Closed (R-07) | Custom props absent from the Play spawn tray — `getAssetsByKind` declared by `createPlayView` but never passed by `app.js`. Regression introduced by the PL-13 fix; now covered by a composition-root contract test. |
-| PL-1 | P1 | Closed (R-06) | Panoramic single-entity moves clamped to `1600`. Regression tests confirmed to fail when reintroduced. |
-| PL-2, PL-3 | P1 | Closed | Scene Outline per-style bubble labels and injected asset resolution for custom props. |
-| PL-4, PL-5, PL-6 | P2 | Closed | Full Play localization: reducer messages, alignment phrasing, accessible names, and 35 new `assets.*` entries. |
-| PL-7 to PL-12 | P2 | Closed | Render patching, context-ring focus, wheel input, modifier-aware shortcuts, camera-relative spawns, pinned-move feedback. |
-| PL-13 to PL-20 | P3 | Closed | Injected registry and selectors, named viewport constants, DOM guards, single bubble-label source, concurrent panel loads. |
-
-The original findings are retained below for traceability. They describe pre-fix behavior and are not status markers.
-
-| ID | Sev | Item | Why it matters |
-|:--|:--:|:--|:--|
-| PL-1 | P1 | Panoramic single-entity moves clamp to `1600` | Tracked as release blocker R-06. Loses player work placed outside the first panel. |
-| PL-2 | P1 | Scene Outline names every bubble "Speech bubble" | The outline is the documented accessible alternative; the style icon is `aria-hidden`, so the distinction is unavailable to assistive technology. |
-| PL-3 | P1 | Scene Outline resolves assets through the built-in catalog | Custom props all collapse to the generic "Scene prop" label. Also a layer inversion — the one Play view not given an injected `getAsset`. |
-| PL-4 | P2 | ~30 `scene/*` reducer messages are hardcoded English | The primary Play feedback channel stays English in the Turkish UI; `Aligned items (distribute-h)` also leaks an internal enum. |
-| PL-5 | P2 | Spawn tray and entity accessible names are hardcoded English | Larger than I-07: the whole tray is untranslated to assistive technology, and `BUBBLE_PRESETS` persists English default text into saved scenes despite existing translations. |
-| PL-6 | P2 | `#camera-slider` carries no `data-i18n-aria-label` | The only HUD control that does not re-translate on language switch. |
-| PL-7 | P2 | Every mutation rebuilds the stage and the full spawn tray | Play twin of the closed I-05. A held arrow key re-clones every doll on stage and in the Dollbox per repeat — the largest remaining frame-budget risk on the target iPad. |
-| PL-8 | P2 | Context-ring actions destroy their own focus | D-5 in Play. A keyboard user can scale or reorder once per ring visit, then must tab back in. |
-| PL-9 | P2 | Wheel handler swallows vertical page scroll over panoramic stages | The natural iPad/trackpad scroll gesture is consumed and converted to camera pan. |
-| PL-10 | P2 | Bare letter shortcuts fire under Ctrl/Cmd | `Cmd+O`, `Ctrl+D`, and `Ctrl+P` are hijacked while the stage is focused. |
-| PL-11 | P2 | `nextSpawnPoint` ignores `cameraX` | Tapping a tray card while panned places the item far off-screen with only a toast as feedback. |
-| PL-12 | P2 | Arrow-key move on a pinned entity fails silently | Correct at the domain layer, but the player gets no indication that pinning is the reason. |
-| PL-13 | P3 | Play re-implements the registry's custom-prop merge | The duplication class that produced D-1: two copies of one discovery filter, free to drift. |
-| PL-14 | P3 | `t(...) \|\| 'Balon'` is unreachable | `t()` returns the key path on miss, so a typo renders `play.bubbleShout` to the player. |
-| PL-15 | P3 | `const placeBelow = true` with a one-branch ternary | Either the ring should flip above entities near the stage floor, or the flag should go. |
-| PL-16 | P3 | `findSceneSkinSvg` queries `document` directly | Bypasses the injected `$$` that makes the module testable. Same class as the closed D-9. |
-| PL-17 | P3 | `1600`, `900`, and `800` inlined across Play | A `CAMERA_CONSTANTS.VIEWPORT_WIDTH` would remove all of them and make the panoramic contract greppable. |
-| PL-18 | P3 | Unguarded DOM dereferences in the Play render path | Inconsistent with the guarded siblings in the same file. D-13 in Play. |
-| PL-19 | P3 | Bubble dialog focuses twice behind a bare 50 ms timer | Presumably an iPad Safari workaround, but uncommented, so it reads as accidental. |
-| PL-20 | P3 | Background panels awaited sequentially | Three serial awaits per render on a `4800` stage. |
-
-Coverage gaps found alongside these: no test moves an entity on a stage wider than `1600`, no test narrows a stage to anything other than `1600`, no test asserts a Play status message is translated, and no test drives `handleStageKeydown` with a modifier held.
+1. Run the hosted iPad journey and the cross-browser matrix, and record the result in [QUALITY.md](QUALITY.md).
+2. Build the Phase 4 E2E suite and add it to `npm run check`.
+3. Complete the Family & Home and Paper Stage release checks.
+4. Scene transitions and the Scene Book slideshow.
+5. Next content expansion, in the order given in [DLC-AND-STUFF-PACKS.md](DLC-AND-STUFF-PACKS.md).
 
 ## Change discipline
 
-Every change states outcome, affected contracts, migration/storage impact, acceptance criteria, evidence, risk, and rollback. A persisted-schema, asset-security, coordinate, or architecture change also updates [DECISIONS.md](DECISIONS.md) and its owning canonical document.
+Every change states outcome, affected contracts, migration/storage impact, acceptance criteria, evidence, risk, and rollback. A persisted-schema, asset-security, coordinate, or architecture change also updates [DECISIONS.md](DECISIONS.md) and its owning canonical document. Do not combine file movement with new product behavior.

@@ -13,13 +13,8 @@ import {
 import { sanitizeEnvelope, createDefaultEnvelope, APP_VERSION, SCHEMA_VERSION } from '../js/core/state-schema.js';
 import {
   addEntity,
-  attachEntity,
-  clampCompoundEntityPoint,
   createEmptyScene,
-  deleteEntity,
-  getCompoundEntityRange,
   getEntityBounds,
-  moveEntity,
   setBubbleStyle,
   setBubbleText,
   setBubbleWidth

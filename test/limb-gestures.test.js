@@ -7,12 +7,10 @@ import {
   SAFE_MOTION_CLIP_IDS,
   POSE_CHANNELS,
   isStaticPose,
-  isMotionClipId,
-  DEFAULT_STATIC_POSE,
-  DEFAULT_MOTION_CLIP_ID
+  isMotionClipId
 } from '../js/domain/vocabulary.js';
 import { STATIC_POSE_TRANSFORMS, MOTION_CLIPS, getMotionClip, getStaticPoseTransform } from '../js/domain/animation-clips.js';
-import { evaluateClipAtTime, evaluateCharacterPose } from '../js/domain/motion-evaluator.js';
+import { evaluateCharacterPose } from '../js/domain/motion-evaluator.js';
 import { ASSETS, getLimbBoundChannel, isLimbBoundLayer } from '../js/core/asset-catalog.js';
 import { createExportDollSvg } from '../js/core/doll-svg.js';
 import { TRANSLATIONS } from '../js/core/i18n.js';

@@ -1,91 +1,35 @@
 # Quality and Release Plan
 
-Updated: 2026-09-12
+Updated: 2026-10-03
 
-Character Customization Gates 0–5, Custom Paint, Gate E Animation/Stage milestones, and Foundation Improvement Phases 1–3: **complete**. Automated tests, asset validation, and source contracts are green. Hosted-device evidence is still required before family release.
+Automated checks are green. Hosted-device and cross-browser evidence is still missing, so the app is not yet cleared for a family release.
 
 ## Current evidence
 
-| Check | Current result | What it proves |
+Run on 2026-10-03 with `npm run check`.
+
+| Check | Result | What it proves |
 |:--|:--|:--|
-| `node --test` | 519 pass, 0 fail | Domain, storage, portability, rendering, painter, panoramic stages, speech bubbles, library coverage, modular face foundation, 6 body models, fit families, fit-aware shuffle, single-layer custom hair, resting-face restoration, Designer/Paint/Play hardening, character poses, multi-channel gesture animation, looping scene playback, 100% status message localization, built-in asset-name coverage, isolated locale dictionaries, throttled paint live preview, dialog focus restoration, screen reader announcements, scoped view teardown lifecycles, worker export, SVG symbols, geometry memoization, and dynamic outline contrast. |
-| Asset validator | 145 pass | All 145 cataloged SVG files satisfy the strict security and layout subset, including core provenance metadata (6 dolls, 19 face assets, 87 wearables, 11 backgrounds, 22 props). |
-| Documentation validator | Canonical documents, 0 broken links | Canonical documentation suite and internal references are synchronized and valid. |
-| PWA shell validation | Pass | Manifest, service-worker syntax, and all offline app-shell assets validate. |
+| `node --test` | 710 pass, 0 fail | Domain rules, storage and revisions, portability, rendering and export parity, Paint, Play, depth placement, hit testing, packs, localization, accessibility contracts, and source-wiring contracts. |
+| ESLint | 0 errors, 0 warnings | Unused code and undeclared globals in runtime, scripts, and tests. |
+| `tsc --noEmit` | Pass | JSDoc contracts for runtime modules and `type-tests/`. |
+| Documentation validator | Pass | Canonical documents exist and every relative link resolves. |
+| Asset validator | 149 SVGs pass | Strict security and layout subset for the core catalog. |
+| Pack validator | 2 manifests, 243 resources pass | Pack manifests, bundled files, and service-worker coverage. |
+| Cache validator | Pass | CSS fingerprints, precached modules, and the app-shell cache version are current. |
 
-## Character Customization & Feature Evidence
+Automated tests use mocked DOM and storage. The IndexedDB mock models transaction lifetime (D-052); it does not substitute for a real browser run.
 
-| Evidence | Result | Notes |
+## Open evidence
+
+| Evidence | Status | Notes |
 |:--|:--|:--|
-| `npm run check` | Pass | 519 tests, documentation validation, cache-busting validation, and 145 cataloged SVG assets passed on 2026-09-12. ESLint reports 0 errors and 91 advisory warnings. |
-| Phase 3 controllers and performance | Pass | 519 automated tests; controller refactor, worker replay/fallback/cancellation, scoped SVG symbol reuse, geometry memoization, dynamic outline contrast, and Chromium navigation/paint/4800×900 export smoke checks. |
-| Phase 1 Foundation Improvements | Pass | Automated SW manifest sync (`npm run update:sw`), isolated locale dictionaries (`tr.js`, `en.js`), RAF live preview throttling, scoped dropdown lifecycle, context-aware focus restoration, and live announcements pass automated tests. |
-| Modular Face Customization (Gates 0–1) | Pass | 19 face SVGs, iris palette, schema v4 migration, resting-face restoration, and full undo/redo pass automated test suites. |
-| Body Models & Fit Families (Gate 2) | Pass | 6 base dolls (Baby, Child, Teen Classic A/B, Adult, Elder), fit-family filtering, presentation style discovery filters pass tests. |
-| Expanded Catalog & Shuffle (Gate 3) | Pass | Fit-aware outfit and face randomization, 7 expressive face variants, 5 life-stage wardrobe items pass tests. |
-| Custom Hair Design (Gate 4) | Pass | Single-layer custom hair at Layer 70, Paint Studio guides for all 6 models, storage, and project transfer pass tests. |
-| Custom-art storage and recovery contracts | Pass | IndexedDB repository, PNG integrity, staging, backups, trash, restore, orphan safety, and object-URL lifecycle are covered by automated tests. |
-| Painter and accessibility contracts | Pass | Raster operations, bounded history, keyboard cursor, dirty/draft recovery, semantic controls, 44px targets, dark/checkerboard UI, and narrow responsive layout are covered by tests. |
-| Character Expressions, Poses & Looping Animation | Pass | Multi-channel poses, animation clips, playback transport HUD, frame export, and rigid-safe limb motion are covered by automated tests. |
-| Play Stage Full-Height & Layout Polish | Pass | Segmented rail tabs, dedicated status row, context-ring clamping, and 100% store message localization pass test suites. |
-| In-App Guide ("Rehber") | Pass | Multi-tab Turkish & English interactive guide modal with accessible controls, shortcuts, and iPad tips. |
-| Project transfer contracts | Pass | Package validation, SHA-256 artwork integrity, Replace/Merge, collision rewriting, and missing/corrupt artwork behavior are covered by tests. |
-| Browser/device manual matrix | Open | Must be run against hosted Chrome, Safari, Firefox, Edge, and the target iPad; source tests do not substitute for this evidence. |
-| Hosted iPad Home Screen offline journey | Blocked | No hosted URL and target iPad evidence is present in this workspace. Follow the smoke test in [OFFLINE-PWA.md](OFFLINE-PWA.md) and record the result here. |
-
-## Designer and Paint hardening pass (2026-08-18)
-
-A source review of `js/features/designer/` and `js/features/paint/` recorded 41 findings in `review/ISSUES.md`. All 41 are closed, along with 5 follow-ups found while verifying the fixes. Contract-visible outcomes:
-
-| Area | Change | Evidence |
-|:--|:--|:--|
-| Catalog discovery | Built-in and custom wearables now share one filter (`matchesDiscoveryFilters`), so untagged custom artwork is reachable under the `unsorted` style. | `discovery filters keep untagged custom descriptors in the unsorted style` |
-| Fit warnings | Incompatible equipped items render labeled fit-warning placeholders instead of disappearing, satisfying D-031. | `setBaseDoll retains compatible items and preserves incompatible references` |
-| Fit checks | Accessory and all five modular face layers are compatibility-checked on render, matching the wardrobe layers. | `face-customization` suite |
-| Paint selection | The select tool responds to pointer input; the marquee previously never left a zero-area rectangle. | Manual; see open coverage gap below |
-| Paint history | History byte ceiling raised so the documented 20-step undo depth is reachable for both wearable and prop canvases. | `paint-session` suite |
-| Paint dialogs | All native `alert()`/`confirm()` replaced with the app's accessible dialog service; zero `innerHTML` assignments remain in the view. | `paint-ui` suite |
-| Localization | Cutout prompts, canvas and palette ARIA, alignment guide labels, and reference model names resolve through `i18n`; label-by-string-surgery removed. | `i18n` suite |
-| Reference models | Paint exposes all 6 base dolls, satisfying the D-033 claim; `REFERENCE_DOLL_IDS` centralized in `domain/vocabulary.js`. | `paint-guides` suite |
-| Shared modules | `core/preview-viewboxes.js` and `core/mouth-expression.js` extracted; the Designer no longer imports rendering helpers from `services/export-service.js`. | Source contract |
-
-### Follow-up items (all closed 2026-08-18)
-
-| ID | Item | Resolution | Evidence |
-|:--|:--|:--|:--|
-| N-1 | `preset/update` left a stale Dollbox thumbnail on J-03 | Render gate keys on `updatedAt`, not just id and name | `Dollbox re-renders when preset/update replaces the draft under the same name`; verified in-browser |
-| N-2 | Dollbox did not re-translate on language switch | Active language added to the gate signature | `Dollbox re-renders on language change so row actions are translated`; verified in-browser |
-| N-3 | Fit-warning placeholder was hardcoded English | `designer.fitWarningPlaceholder` added to both locales | Verified in-browser in `tr` and `en` |
-| N-4 | Two indistinguishable "Teen" reference models | Picker labels switched to per-model `models.*` names | Verified: 6 unique labels in both locales |
-| N-5 | Fit-warning placeholders rendered stacked on one another, illegibly | Warnings offset by index, clipped to one line, full text kept in tooltip and accessible name | Verified in-browser: 4 warnings, 0 overlaps |
-
-**Coverage gap closed**: `test/paint-selection-pointer.test.js` drives the real `pointerdown → pointermove → pointerup` sequence through `createPaintView`, and `test/dollbox-render-gate.test.js` covers the render gate. Both suites were confirmed to fail when their defects are reintroduced and pass once fixed.
-
-### Browser verification (2026-08-18, Chromium, local HTTP)
-
-| Journey | Result |
-|:--|:--|
-| Preset rename via the new prompt dialog: open, prefill, submit, cancel, Escape, blank input | Pass — only a non-empty submit renames |
-| Focus returns to the invoking Dollbox action after rename | Pass |
-| `preset/update` under an unchanged name refreshes the card image | Pass |
-| Language toggle re-translates Dollbox actions and reference model names | Pass |
-| Fit warnings on model switch: legible, non-overlapping, localized | Pass |
-| Console errors during the above | None |
-
-### Custom Paint required journeys
-
-CP-01–CP-15 are covered by the current feature, domain, storage, portability, and UI contract suites. They still need dated browser-session evidence for release sign-off. CP-16 is hardware-only and remains blocked until the hosted iPad run is recorded.
-
-| ID | Evidence status | Release note |
-|:--|:--|:--|
-| CP-01–CP-05 | Automated pass; browser evidence open | Create/use wearable, prop, history, draft recovery, and dirty-route protection. |
-| CP-06, CP-11 | Automated pass; browser evidence open | Quota and corrupt/over-limit import preserve the last known-good project. |
-| CP-07–CP-10 | Automated pass; cross-browser evidence open | Render parity, export/import, Replace, Merge, and collision rewriting. |
-| CP-12–CP-15 | Automated pass; browser evidence open | Placeholder-safe removal, restore, delete-with-uses undo, and keyboard creation. |
-| CP-16 | Blocked | Hosted iPad: paint, save, reload, use, and export without network. |
-| CP-17–CP-18 | Automated and local browser pass | Slot/history retention and reference-only cutout selection. |
-| CP-19 | Automated pass; Replace browser matrix open | Add/Undo passed locally; explicit Replace confirmation remains in the Gate 4 browser matrix. |
-| CP-20–CP-21 | Automated and local browser pass | Guide controls preserve history, remain keyboard reachable, align with the canvas, and do not overflow tablet portrait. |
+| Browser/device matrix | Open | Only Chromium has been exercised, through `scripts/verify-hit-testing-browser.mjs` and `scripts/verify-scene-outline-browser.mjs`. Safari, Firefox, Edge, and the target iPad have no dated record. |
+| Hit-testing script | Needs review | The 2026-10-03 run failed watering-can screenshot parity (mean difference 0.0014, max 19 against a limit of 16), likely Chromium antialiasing. No visible defect established. |
+| Hosted iPad Home Screen offline journey (J-18) | Blocked | No hosted URL or device evidence. Follow [OFFLINE-PWA.md](OFFLINE-PWA.md), including offline Paint save, reload, use, and export, and record the result here. |
+| Custom Paint browser journeys | Open | Create, history, draft recovery, quota and corrupt-import safety, export/import, Replace, Merge, and placeholder-safe removal are covered by automated suites; dated browser evidence is still needed for sign-off. |
+| Family & Home release checks | Open | Independent fit, tint, thumbnail, PNG export, and target-iPad performance. |
+| Paper Stage validation | Open | Moderated five-user pilot, physical iPad run, and crowded-scene frame times (D-049, D-050). |
 
 ## Automated coverage requirements
 
@@ -166,12 +110,13 @@ CP-01–CP-15 are covered by the current feature, domain, storage, portability, 
 
 | Browser | Desktop | Tablet Landscape | Tablet Portrait | Keyboard Complete |
 |:--|:--:|:--:|:--:|:--:|
-| Chromium / Chrome | Verified | Verified | Verified | Verified |
-| Safari / WebKit | Verified | Verified | Verified | Verified |
-| Firefox / Gecko | Verified | Verified | Verified | Verified |
-| Edge | Verified | Verified | Verified | Verified |
+| Chromium / Chrome | Partial | Partial | Partial | Partial |
+| Safari / WebKit | Not recorded | Not recorded | Not recorded | Not recorded |
+| Firefox / Gecko | Not recorded | Not recorded | Not recorded | Not recorded |
+| Edge | Not recorded | Not recorded | Not recorded | Not recorded |
 
-- **Tested viewports**: `1440 × 900` (desktop standard), `1280 × 720` (compact desktop), `1024 × 768` (tablet landscape), `768 × 1024` (tablet portrait). Responsive layout shifts controls to single-column rail on narrow screens without disabling functionality.
+- **Target viewports**: `1440 × 900`, `1280 × 720`, `1024 × 768`, `768 × 1024`, and `375 × 812` with touch.
+- Replace a cell with `Verified (date)` only after a recorded run.
 
 ## Performance budgets
 
@@ -191,27 +136,3 @@ CP-01–CP-15 are covered by the current feature, domain, storage, portability, 
 - **Sanitization**: Serialized payloads contain no base64, data URLs, DOM nodes, or transient UI state.
 - **Guarded writes**: Two-key write sequence (`${STORAGE_KEY}.tmp` -> `${STORAGE_KEY}`) ensures failed writes preserve previous valid bytes.
 - **Monotonic revisions**: Revisions increment sequentially on commit; stale tab writes are rejected.
-
-## Release report
-
-# Release Report — Gate A & Quality Sign-Off
-
-- **Commit/version**: `0.1.1` (MVP Pre-Release)
-- **Date**: 2026-08-14
-- **Environment**: macOS / Node.js test runner / Chromium, WebKit, Gecko engines
-
-## Automated checks
-- **Tests**: 170 pass, 0 fail (`npm run check` via Node.js test runner)
-- **Assets**: 24 cataloged SVGs validated (`npm run validate:assets`)
-- **Documentation**: 9 canonical documents validated, 0 broken links (`npm run validate:docs`)
-
-## Evaluation summary (Manual & Contract Verification)
-- **Journeys J-01–J-17**: Verified via manual test protocol and contract test suite.
-- **Journey J-18**: PWA install/offline smoke test remains to be run on the target iPad after hosting.
-- **Failure Matrix F-01–F-10**: Verified via error recovery and storage test suites.
-- **Accessibility & Touch Targets**: Verified WCAG AA semantics, 44px touch targets, visible focus, ARIA live region.
-- **Browser & Viewports**: Verified across Chrome, Safari, Firefox, Edge across 4 standard viewports (manual browser QA).
-- **Performance**: Drag updates run without layout thrashing; storage writes coalesce efficiently.
-
-## Decision
-- [x] **Implementation ready (Gates A–D complete; hosted iPad install/offline smoke test pending)**

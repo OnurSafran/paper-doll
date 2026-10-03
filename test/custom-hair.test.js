@@ -2,10 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createDefaultEnvelope,
-  createRuntimeState,
   sanitizeCustomAsset,
   sanitizeDraft,
-  sanitizeEnvelope,
   SCHEMA_VERSION,
   APP_VERSION
 } from '../js/core/state-schema.js';
@@ -16,13 +14,10 @@ import { getReferenceGuides, guideIsInBounds } from '../js/features/paint/paint-
 import { renderDollInto } from '../js/features/designer/designer-view.js';
 import { createExportDollSvg } from '../js/core/doll-svg.js';
 import {
-  exportProjectPackage,
   mergeProjectEnvelopes,
-  serializeProjectPackage,
   validateImportPayload
 } from '../js/services/project-portability.js';
 import { computeSha256 } from '../js/services/custom-art-repository.js';
-import { createAppStore } from '../js/core/app-store.js';
 
 test('sanitizeCustomAsset accepts valid custom hair wearable assets', () => {
   const validHair = {

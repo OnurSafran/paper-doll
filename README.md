@@ -36,9 +36,7 @@ These are the canonical project documents:
 | [QUALITY.md](docs/QUALITY.md) | Automated checks, browser/accessibility/performance matrices, and release gate |
 | [DECISIONS.md](docs/DECISIONS.md) | Accepted decisions and pending architecture commitments |
 | [OFFLINE-PWA.md](docs/OFFLINE-PWA.md) | iPad installation, offline behavior, hosting, and update procedure |
-| [IMPROVEMENTS.md](docs/IMPROVEMENTS.md) | Architectural review, foundation improvements, quantitative metrics, and roadmap |
-
-Dated audits are non-canonical history under [`review/`](review/). If a review conflicts with a canonical document, the canonical document wins.
+| [IMPROVEMENTS.md](docs/IMPROVEMENTS.md) | Completed foundation work and the open real-browser E2E phase |
 
 Proposed feature designs include [Paper Stage Depth & Furniture Surface Placement](docs/PRD-DEPTH-AND-SURFACE-PLACEMENT.md), covering room depth, floor/wall constraints, and objects placed on furniture.
 
@@ -71,7 +69,7 @@ node --test                            # Run all unit and integration tests
 
 ## Definition of done
 
-Release requires the correctness blockers in [ROADMAP.md](docs/ROADMAP.md) to be closed and the dated evidence in [QUALITY.md](docs/QUALITY.md) to pass. Automated source-contract checks alone do not close browser, accessibility, or performance gates.
+Release requires the open work at the top of [ROADMAP.md](docs/ROADMAP.md) to be closed and the dated evidence in [QUALITY.md](docs/QUALITY.md) to pass. Automated source-contract checks alone do not close browser, accessibility, or performance gates.
 
 ### Family & Home Stories
 

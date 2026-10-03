@@ -68,8 +68,29 @@ function createMockIndexedDB() {
               }
             };
           },
-          transaction(storeNames, mode = 'readonly') {
-            const txStoreNames = Array.isArray(storeNames) ? storeNames : [storeNames];
+          transaction() {
+            // Real IndexedDB commits a transaction once control returns to the event loop
+            // with no pending request, after which any new request throws.
+            let active = true;
+            let deactivate = null;
+            const arm = () => {
+              clearImmediate(deactivate);
+              deactivate = setImmediate(() => { active = false; });
+            };
+            const guard = () => {
+              if (!active) {
+                const err = new Error('The transaction is not active.');
+                err.name = 'TransactionInactiveError';
+                throw err;
+              }
+            };
+            const dispatch = (req, fire) => queueMicrotask(() => {
+              active = true;
+              fire();
+              if (req.onsuccess) req.onsuccess({ target: req });
+              arm();
+            });
+            arm();
             const tx = {
               error: null,
               oncomplete: null,
@@ -83,55 +104,47 @@ function createMockIndexedDB() {
                 if (!store) throw new Error(`Store not found: ${storeName}`);
                 return {
                   get(key) {
+                    guard();
                     const req = { result: undefined, error: null, onsuccess: null, onerror: null };
-                    queueMicrotask(() => {
-                      req.result = store.data.get(key);
-                      if (req.onsuccess) req.onsuccess({ target: req });
-                    });
+                    dispatch(req, () => { req.result = store.data.get(key); });
                     return req;
                   },
                   getAll() {
+                    guard();
                     const req = { result: [], error: null, onsuccess: null, onerror: null };
-                    queueMicrotask(() => {
-                      req.result = Array.from(store.data.values());
-                      if (req.onsuccess) req.onsuccess({ target: req });
-                    });
+                    dispatch(req, () => { req.result = Array.from(store.data.values()); });
                     return req;
                   },
                   put(val, key) {
+                    guard();
                     const req = { result: key, error: null, onsuccess: null, onerror: null };
                     const effectiveKey = key ?? (store.keyPath ? val[store.keyPath] : null);
                     store.data.set(effectiveKey, val);
-                    queueMicrotask(() => {
-                      if (req.onsuccess) req.onsuccess({ target: req });
-                    });
+                    dispatch(req, () => {});
                     return req;
                   },
                   delete(key) {
+                    guard();
                     const req = { result: undefined, error: null, onsuccess: null, onerror: null };
                     store.data.delete(key);
-                    queueMicrotask(() => {
-                      if (req.onsuccess) req.onsuccess({ target: req });
-                    });
+                    dispatch(req, () => {});
                     return req;
                   },
                   clear() {
+                    guard();
                     const req = { result: undefined, error: null, onsuccess: null, onerror: null };
                     store.data.clear();
-                    queueMicrotask(() => {
-                      if (req.onsuccess) req.onsuccess({ target: req });
-                    });
+                    dispatch(req, () => {});
                     return req;
                   },
                   index(idxName) {
                     const keyField = store.indexes.get(idxName);
                     return {
                       getAll(query) {
+                        guard();
                         const req = { result: [], error: null, onsuccess: null, onerror: null };
-                        queueMicrotask(() => {
-                          const results = Array.from(store.data.values()).filter((item) => item[keyField] === query);
-                          req.result = results;
-                          if (req.onsuccess) req.onsuccess({ target: req });
+                        dispatch(req, () => {
+                          req.result = Array.from(store.data.values()).filter((item) => item[keyField] === query);
                         });
                         return req;
                       }

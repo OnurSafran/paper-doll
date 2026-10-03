@@ -1,24 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ASSETS,
   dolls,
   dollsByLifeStage,
   getAsset,
   getOfferedWearables,
-  matchesDiscoveryFilters,
-  wearablesBySlot
+  matchesDiscoveryFilters
 } from '../js/core/asset-catalog.js';
 import {
   createDefaultFace,
   createStarterDraft,
-  DEFAULT_FACE_BY_DOLL,
   equipWearable,
   setBaseDoll
 } from '../js/domain/outfit-rules.js';
 import {
-  createDefaultEnvelope,
-  sanitizeDraft
+  createDefaultEnvelope
 } from '../js/core/state-schema.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { dollsForLifeStagePicker } from '../js/features/designer/designer-view.js';

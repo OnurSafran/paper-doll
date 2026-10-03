@@ -1,5 +1,4 @@
 /** Project backup, import, and export workflows. */
-import { getAsset } from './core/asset-catalog.js';
 import { persistedProjection } from './core/state-schema.js';
 import { LIMITS } from './domain/vocabulary.js';
 import { clearProjectBackup, exportProjectPackage, formatProjectExportFilename, getAvailableBackup, mergeProjectEnvelopes, saveProjectBackup, validateImportPayload } from './services/project-portability.js';
@@ -25,7 +24,7 @@ export function createAppProjectController(context) {
     }
 
     const backupSection = context.$('#project-backup-section');
-    const backupRes = getAvailableBackup(context.storageRef, getAsset);
+    const backupRes = getAvailableBackup(context.storageRef, context.getAsset);
     if (backupSection) {
       if (backupRes.available) {
         backupSection.hidden = false;
@@ -74,7 +73,7 @@ export function createAppProjectController(context) {
     }
     try {
       const text = await file.text();
-      const res = await validateImportPayload(text, getAsset);
+      const res = await validateImportPayload(text, context.getAsset);
       if (!res.ok) {
         context.showToast(res.error || t('toasts.projectParseError'));
         return;
@@ -193,7 +192,7 @@ export function createAppProjectController(context) {
   }
 
   async function executeRestoreBackup() {
-    const backup = getAvailableBackup(context.storageRef, getAsset);
+    const backup = getAvailableBackup(context.storageRef, context.getAsset);
     if (!backup.available) {
       context.showToast(t('toasts.noBackupFound'));
       return;

@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DEFAULT_STATIC_POSE,
   MOTION_CLIP_IDS,
   POSE_SUPPORT_LEVELS,
   STATIC_POSES,
@@ -9,13 +8,11 @@ import {
 } from '../js/domain/vocabulary.js';
 import {
   getMotionClip,
-  getStaticPoseTransform,
-  STATIC_POSE_TRANSFORMS
+  getStaticPoseTransform
 } from '../js/domain/animation-clips.js';
 import {
   evaluateCharacterPose,
-  evaluateClipAtTime,
-  interpolateKeyframes
+  evaluateClipAtTime
 } from '../js/domain/motion-evaluator.js';
 import { isHeadBoundLayer } from '../js/core/asset-catalog.js';
 

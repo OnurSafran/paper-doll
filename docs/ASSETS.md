@@ -58,9 +58,8 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 - Parts must connect visibly (stems, handles, frames and hanging cords).
   Distinct silhouettes and restrained material details should remain readable
   at 56px, alongside core props, and at `200%` scale.
-- Use [the prop quality review](../review/prop-quality.html) to inspect all
-  packs together at scene and tray sizes, including flipping and source-edge
-  checks. See [the quality audit](../review/prop-quality.md) for the first pass.
+- Check all packs together at scene and tray sizes, including flipping and
+  source-edge checks.
 
 ## Recolor contract
 
@@ -177,7 +176,7 @@ Total: 149 cataloged SVG files, including 87 wearable/hair/accessory assets, 6 b
 
 Each asset must pass validator, alternate-tint, `200%` zoom, preview, bounds, flip/scale, placeholder-label, and distribution-provenance checks.
 
-Serve the repository locally and open [the wardrobe fit review](../review/wardrobe-fit.html) to compare all supported doll/garment pairs, complete outfits, Designer layers, exported images, and wardrobe thumbnails. The review also runs browser pixel checks for standalone recoloring, thumbnail clipping, repaired fit landmarks, clear eyes, the rattle grip, and overalls layering. This developer page is not part of the offline app shell.
+Compare every supported doll/garment pair, complete outfits, Designer layers, exported images, and wardrobe thumbnails in the running app, covering standalone recoloring, thumbnail clipping, fit landmarks, eyes, the rattle grip, and overalls layering.
 
 Adding ordinary assets should require only SVG plus catalog entry. New slots, interactive state, uploads, patterns, or coordinate changes require schema, security, migration, test, and roadmap updates.
 

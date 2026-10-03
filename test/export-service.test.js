@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { createExportService } from '../js/services/export-service.js';
 import { createExportDollSvg } from '../js/core/doll-svg.js';
 import { applyMouthExpression } from '../js/core/mouth-expression.js';
-import { createDefaultEnvelope } from '../js/core/state-schema.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { EXPRESSIONS } from '../js/domain/vocabulary.js';
 
@@ -60,12 +59,11 @@ test('applyMouthExpression sets valid SVG mouth paths for all seven expressions'
 });
 
 test('createExportService enforces single in-flight export lock and immutable snapshots', async () => {
-  let drawCount = 0;
   const mockCanvas = {
     width: 0,
     height: 0,
     getContext: () => ({
-      drawImage: () => { drawCount += 1; },
+      drawImage: () => {},
       fillRect: () => {},
       save: () => {},
       restore: () => {},
@@ -347,7 +345,7 @@ test('createExportDollSvg applies head transform to rigged doll SVG and head-bou
     const headTransform = { x: -3, y: 0, rotate: -4, scaleX: 0.98, scaleY: 1 };
     const svg = await createExportDollSvg(draft, 'neutral', {
       headTransform,
-      loadAssetSvg: async (id) => ({
+      loadAssetSvg: async () => ({
         cloneNode: () => ({
           querySelector: (sel) => {
             if (sel === '#pose-head') {

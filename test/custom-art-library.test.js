@@ -2,10 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { countAssetUses } from '../js/domain/outfit-rules.js';
 import { createAppStore } from '../js/core/app-store.js';
-import { createDefaultEnvelope, createRuntimeState, sanitizeCustomAsset } from '../js/core/state-schema.js';
+import { createDefaultEnvelope, sanitizeCustomAsset } from '../js/core/state-schema.js';
 import { createCustomArtRepository } from '../js/services/custom-art-repository.js';
 import { createAssetRegistry } from '../js/core/asset-registry.js';
-import { createPaintView } from '../js/features/paint/paint-view.js';
 
 // Minimal valid PNG for testing
 const MINIMAL_PNG_BYTES = new Uint8Array([
@@ -44,7 +43,7 @@ function createMockIndexedDB() {
               createIndex(idxName, keyPath) { db.stores.get(name).indexes.set(idxName, keyPath); }
             };
           },
-          transaction(storeNames, mode = 'readonly') {
+          transaction() {
             const tx = {
               error: null, oncomplete: null, onerror: null, onabort: null,
               abort() { if (tx.onabort) tx.onabort(); },

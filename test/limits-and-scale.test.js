@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { createAppStore } from '../js/core/app-store.js';
 import { getAsset, ASSETS } from '../js/core/asset-catalog.js';
 import { createDefaultEnvelope, persistedProjection, sanitizeEnvelope } from '../js/core/state-schema.js';
-import { createStorageAdapter } from '../js/core/storage-adapter.js';
 
 test('boundary limit: 50 presets limit enforced cleanly and rejects 51st', () => {
   const store = createAppStore(createDefaultEnvelope(), { getAsset, assets: ASSETS });

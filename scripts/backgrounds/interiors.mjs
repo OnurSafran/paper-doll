@@ -337,7 +337,6 @@ export function library() {
         if (!keepsake && (row + seed) % 3 !== 1) {
           const leaningBookX = Math.min(x + 6, 460);
           items.push(`<path d="M${R(leaningBookX)} ${y + 108}L${R(leaningBookX + 14)} ${y + 40}L${R(leaningBookX + 42)} ${y + 48}L${R(leaningBookX + 28)} ${y + 108}Z" fill="${bookColors[(i + 3) % bookColors.length]}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`);
-          x += 54;
         }
         if (keepsake) {
           // A stack of books laid flat, a globe and a small pot.

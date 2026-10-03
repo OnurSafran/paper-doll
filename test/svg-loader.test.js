@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateSvg, makeAssetPlaceholder } from '../js/core/svg-loader.js';
+import { validateSvg } from '../js/core/svg-loader.js';
 import { getAsset } from '../js/core/asset-catalog.js';
 
 // Minimal DOM mock for Node environment tests of validateSvg

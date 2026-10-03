@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { describeOutfit, previewCustomColor, WARDROBE_SLOTS } from '../js/features/designer/designer-view.js';
+import { describeOutfit, WARDROBE_SLOTS } from '../js/features/designer/designer-view.js';
 import { getWheelPanDelta, nextSpawnPoint } from '../js/features/play/play-view.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 import { LIMITS } from '../js/domain/vocabulary.js';

@@ -13,7 +13,7 @@ import {
 import { computeSha256 } from '../js/services/custom-art-repository.js';
 import { createAppStore } from '../js/core/app-store.js';
 import { getAsset } from '../js/core/asset-catalog.js';
-import { createDefaultEnvelope, createRuntimeState, persistedProjection, APP_VERSION, SCHEMA_VERSION } from '../js/core/state-schema.js';
+import { createDefaultEnvelope, createRuntimeState, APP_VERSION, SCHEMA_VERSION } from '../js/core/state-schema.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';
 
 function memoryStorage(initial = {}) {
@@ -489,7 +489,6 @@ test('serializeProjectPackage formats package format v1 with custom artwork base
     status: 'available'
   };
 
-  const rawBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 2, 88, 0, 0, 3, 132, 8, 6]);
   const customArtList = [{
     metadata: customAssetMeta,
     data: 'iVBORw0KGgoAAAANSUhEUgAAAlgAAANkCAYAAAC8zXQvAAA='

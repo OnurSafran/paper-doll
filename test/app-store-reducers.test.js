@@ -4,10 +4,6 @@ import {
   createAppStore,
   validateActionPayload,
   uiReducer,
-  designerReducer,
-  presetReducer,
-  sceneReducer,
-  customAssetReducer,
   settingsReducer
 } from '../js/core/app-store.js';
 import { createStarterDraft } from '../js/domain/outfit-rules.js';

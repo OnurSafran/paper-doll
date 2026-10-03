@@ -60,7 +60,6 @@ test('classifyError returns privacy-safe diagnostic codes without player text', 
 
 test('executeSafeTeardown runs all callbacks safely and collects warnings if any fail', () => {
   let pointerCancelled = false;
-  let audioStopped = false;
   let exportCancelled = false;
   let storageCancelled = false;
   let animationStopped = false;

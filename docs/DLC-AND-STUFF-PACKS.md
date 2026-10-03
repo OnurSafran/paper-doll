@@ -1,8 +1,8 @@
 # DLC Expansions: Packages, Content, and Roadmap
 
 **Feature Area**: Content Packs, DLC Architecture & Expansion Packs  
-**Current Version**: v1.21.0  
-**Status**: Family & Home Stories development build implemented; independent release QA pending — 2026-09-12  
+**Current Version**: v2.0.0  
+**Status**: Family & Home Stories development build implemented; independent release QA pending — 2026-10-03  
 **Related Documents**: [ARCHITECTURE.md](ARCHITECTURE.md) · [ASSETS.md](ASSETS.md) · [ROADMAP.md](ROADMAP.md) · [PRD-WORLD-MAP.md](PRD-WORLD-MAP.md) · [DECISIONS.md](DECISIONS.md)
 
 ---
@@ -37,7 +37,7 @@ The locked first expansion is **Family & Home Stories**:
 This locks the product scope and production budget. The fit assignments and authored files live in `assets/packs/pack_family_home/` and `js/packs/family-home/`.
 
 
-Paper Doll Studio is a zero-dependency, offline-first, client-side paper doll storytelling studio. The shipped core catalog (`v1.20.0`) provides **145 cataloged SVG assets** across 6 base dolls, 19 modular facial features, 87 wearables/hair/accessories, 11 backgrounds, and 22 props.
+Paper Doll Studio is a zero-dependency, offline-first, client-side paper doll storytelling studio. The shipped core catalog (`v2.0.0`) provides **149 cataloged SVG assets** across 6 base dolls, 19 modular facial features, 87 wearables/hair/accessories, 11 backgrounds, and 26 props.
 
 All catalog assets already carry provenance metadata declaring their content-pack origin:
 ```javascript
@@ -87,7 +87,7 @@ This document establishes:
    - Child, adult, and elder each have only two compatible choices in tops, bottoms, dresses, hair, and accessories. Prioritize those gaps instead of adding mostly teen garments.
    - Counts were checked against `ASSETS` and `supportedFitFamilies` in `js/core/asset-catalog.js` on 2026-09-10.
 2. **Sparse Prop Ecosystem**:
-   - 22 props is modest for complex storytelling.
+   - 26 core props is modest for complex storytelling.
    - Only **one placeable animal prop** exists (`prop_cat`); world-map animal decorations and easter eggs are separate.
    - Food and culinary items are limited to `prop_tea_set` and `prop_cake`.
 3. **Underrepresented Aesthetic Themes**:

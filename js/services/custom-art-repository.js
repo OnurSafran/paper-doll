@@ -589,7 +589,9 @@ export function createCustomArtRepository(options = {}) {
         assetId: item.assetId,
         blob: item.blob,
         byteLength: item.byteLength,
-        sha256: item.sha256
+        sha256: item.sha256,
+        ...(item.createdAt ? { createdAt: item.createdAt } : {}),
+        ...(item.updatedAt ? { updatedAt: item.updatedAt } : {})
       }))
     };
 
@@ -642,10 +644,10 @@ export function createCustomArtRepository(options = {}) {
       return { ok: false, error: 'Backup not found or incomplete.' };
     }
     try {
-      const db = await getDb();
-      const tx = db.transaction(STORES.ARTWORK, 'readwrite');
-      const txDone = transactionToPromise(tx);
-      const store = tx.objectStore(STORES.ARTWORK);
+      // Validate before opening the transaction: IndexedDB commits a transaction
+      // as soon as it awaits anything that is not one of its own requests, so the
+      // blob read and digest below must not run while it is open.
+      const records = [];
       for (const item of backup.artwork) {
         const bytes = await blobToUint8Array(item.blob);
         const parsed = parsePngHeader(bytes);
@@ -654,19 +656,29 @@ export function createCustomArtRepository(options = {}) {
         }
         const sha256 = await computeSha256(bytes, cryptoInstance);
         if (sha256 !== item.sha256) throw new Error('Backup artwork digest mismatch.');
-        await reqToPromise(store.put({
-          ...item,
+        const stamp = now().toISOString();
+        records.push({
+          assetId: item.assetId,
+          blob: item.blob,
+          byteLength: bytes.byteLength,
           pixelWidth: parsed.width,
           pixelHeight: parsed.height,
-          sha256
-        }));
-        if (objectUrlCache.has(item.assetId)) {
-          revokeObjectURL(objectUrlCache.get(item.assetId).url);
-          objectUrlCache.delete(item.assetId);
-        }
+          sha256,
+          createdAt: item.createdAt || stamp,
+          updatedAt: item.updatedAt || stamp
+        });
+      }
+
+      const db = await getDb();
+      const tx = db.transaction(STORES.ARTWORK, 'readwrite');
+      const txDone = transactionToPromise(tx);
+      const store = tx.objectStore(STORES.ARTWORK);
+      for (const record of records) {
+        await reqToPromise(store.put(record));
       }
       await txDone;
-      return { ok: true, count: backup.artwork.length };
+      for (const record of records) revokeTrackedObjectUrl(record.assetId);
+      return { ok: true, count: records.length };
     } catch (err) {
       return { ok: false, error: err.message || 'Backup restore failed.' };
     }

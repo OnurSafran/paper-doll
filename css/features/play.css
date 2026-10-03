@@ -626,6 +626,12 @@ main:has(> #play-screen:not([hidden])) {
   .play-animation-transport {
     flex-wrap: nowrap;
     gap: 4px;
+    /* Clip to the grid track and scroll; visible overflow paints over the
+       neighbouring Layers and stage-width cells and steals their taps. */
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    justify-content: flex-start;
   }
   .scene-hud {
     right: 12px;
@@ -639,6 +645,26 @@ main:has(> #play-screen:not([hidden])) {
   }
   .scene-hud span:not(:first-child) {
     flex-shrink: 0;
+  }
+}
+
+/* Too narrow for one row (outline + transport + stage width needs ~410px):
+   the transport takes its own full-width row so no control is covered. */
+@container (max-width: 440px) {
+  .play-stage-controls {
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    grid-template-areas:
+      "outline . size"
+      "playback playback playback";
+    row-gap: 6px;
+  }
+  /* The transport (~370px) is wider than a phone row, so wrap it: every
+     control stays visible instead of hiding behind a sideways scroll. */
+  .play-animation-transport {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: visible;
+    row-gap: 4px;
   }
 }
 

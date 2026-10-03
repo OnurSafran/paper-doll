@@ -5,7 +5,6 @@ import {
   dolls,
   facesByGroup,
   getAsset,
-  getOfferedWearables,
   wearablesBySlot
 } from '../js/core/asset-catalog.js';
 import {
@@ -99,7 +98,7 @@ test('designer/shuffle produces strictly compatible outfits across all 5 life-st
       }
 
       // 3. Strict fit-family compatibility for all equipped slots
-      for (const [slot, item] of Object.entries(draft.slots)) {
+      for (const item of Object.values(draft.slots)) {
         if (!item) continue;
         const asset = getAsset(item.assetId);
         assert.ok(asset, `Doll ${doll.id}: equipped asset ${item.assetId} must exist`);

@@ -21,7 +21,7 @@ test('rooftop bulbs have valid colors and windows stay inside their towers', () 
   assert.equal(new Set(bulbs.map((match) => match[1])).size, 4);
   for (const [, color] of bulbs) assert.match(color, /^#[0-9a-f]{6}$/);
 
-  const towers = [...source.matchAll(/<g transform="translate\([^\"]+\)">\s*<rect x="0" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)" fill="#5f3f5e"\/>\s*([\s\S]*?)<\/g>/g)];
+  const towers = [...source.matchAll(/<g transform="translate\([^"]+\)">\s*<rect x="0" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)" fill="#5f3f5e"\/>\s*([\s\S]*?)<\/g>/g)];
   assert.ok(towers.length >= 25);
   let windows = 0;
   for (const [, top, width, height, contents] of towers) {

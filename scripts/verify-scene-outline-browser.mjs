@@ -43,12 +43,24 @@ try {
     }, { key: STORAGE_KEY, envelope });
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/#play`);
+    // Every stage control must be what a pointer actually lands on at its centre,
+    // fully on screen, and (on touch) at least 44px: an overlapped control passes
+    // keyboard checks while being untappable.
+    const unreachable = await page.evaluate(({ touch }) => [...document.querySelectorAll('.play-stage-controls button, .play-stage-controls select')]
+      .filter(el => el.getBoundingClientRect().width > 0)
+      .flatMap(el => {
+        const rect = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        const problems = [];
+        if (!(hit === el || el.contains(hit))) problems.push(`covered by ${hit?.id || hit?.className || hit?.tagName}`);
+        if (rect.left < -0.5 || rect.right > window.innerWidth + 0.5) problems.push('off screen');
+        if (touch && (rect.width < 43.5 || rect.height < 43.5)) problems.push(`${Math.round(rect.width)}x${Math.round(rect.height)} touch target`);
+        return problems.length ? [`${el.id || el.dataset.playbackRate}: ${problems.join(', ')}`] : [];
+      }), { touch });
+    assert.deepEqual(unreachable, [], `stage controls reachable by pointer at ${viewport.width}px`);
     async function openOutline() {
-      if (touch) {
-        // The existing narrow-screen transport overlaps the outline button's centre.
-        await page.locator('#scene-outline-btn').focus();
-        await page.keyboard.press('Enter');
-      } else await page.locator('#scene-outline-btn').click();
+      if (touch) await page.locator('#scene-outline-btn').tap();
+      else await page.locator('#scene-outline-btn').click();
     }
     await openOutline();
     const rows = page.locator('#scene-outline-list .outline-row');

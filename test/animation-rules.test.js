@@ -22,8 +22,7 @@ import {
   evaluateCharacterPose,
   evaluateClipAtTime,
   interpolateKeyframes,
-  resolveEffectiveMotion,
-  smoothCosine
+  resolveEffectiveMotion
 } from '../js/domain/motion-evaluator.js';
 
 test('animation vocabulary defines expression intensities, static poses, motion clips, and predicates', () => {
