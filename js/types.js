@@ -125,6 +125,7 @@
  * @property {string} [text]
  * @property {number} [width]
  * @property {string} [targetEntityId]
+ * @property {any} [placementTarget]
  * @property {{ instanceId: string, x: number, y: number }[]} [moves]
  * @property {string} [setting]
  * @property {boolean} [enabled]

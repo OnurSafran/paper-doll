@@ -210,8 +210,13 @@ export function createTraySpawnerView(context) {
         event.dataTransfer.effectAllowed = 'copy';
         event.dataTransfer.setData('text/plain', `paper-doll-spawn:${kind}:${sourceId}`);
         card.classList.add('is-dragging');
+        // Props preview their real artwork and placement targets over the stage; dolls keep the card image.
+        if (kind === 'prop') context.trayDragPreview?.begin(sourceId, event.dataTransfer);
       });
-      card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
+      card.addEventListener('dragend', () => {
+        card.classList.remove('is-dragging');
+        context.trayDragPreview?.end();
+      });
 
       if (spawnTab === 'characters') {
         // Each card owns its thumbnail; scene renders can reuse it while artwork loads.

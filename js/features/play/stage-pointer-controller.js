@@ -1,4 +1,5 @@
-import { placeEntity, orderedSceneEntities, getPlacementGuides, usesPlacementDrag } from '../../domain/scene-placement.js';
+import { placeEntity, orderedSceneEntities, usesPlacementDrag } from '../../domain/scene-placement.js';
+import { createPlacementGuide } from './placement-guide.js';
 /** Stage drag selection and compound entity previews. */
 import { clientToLogical, renderedCameraX, stageContentRect } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, moveEntities } from '../../domain/scene-rules.js';
@@ -22,53 +23,13 @@ export function createStagePointerController(context) {
   let pointerController = null;
   let hoverCursor = null;
   let pointerStage = null;
+  let outsideScreen = null;
   let disposing = false;
 
   const previewPoints = new Map();
   let previewTarget = null;
-  let guide = null;
-  const guidePolygons = new Map();
-  function clearGuide() { guide?.remove(); guide = null; guidePolygons.clear(); }
-  function showGuide(scene, entity, stageEl) {
-    delete stageEl.dataset.placementPreview;
-    const targets = getPlacementGuides(scene, entity, context.getAsset);
-    const world = context.$('#scene-world');
-    if (!targets.length || !world) { clearGuide(); return; }
-    if (!guide) {
-      guide = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      guide.setAttribute('class', 'placement-drop-guide');
-      guide.setAttribute('aria-hidden', 'true');
-      world.append(guide);
-    }
-    guide.setAttribute('viewBox', `0 0 ${scene.stageWidth || 1600} 900`);
-    guide.setAttribute('data-motion', context.store.getState().settings.reducedMotion || 'system');
-    const keys = new Set();
-    for (const target of targets) {
-      const key = target.kind === 'surface' ? `surface:${target.hostId}:${target.surface.id}` : target.regionId;
-      keys.add(key);
-      let nodes = guidePolygons.get(key);
-      if (!nodes) {
-        const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        const echo = target.kind === 'surface' ? document.createElementNS('http://www.w3.org/2000/svg', 'polygon') : null;
-        echo?.setAttribute('class', 'tabletop-guide-echo');
-        nodes = { polygon, echo };
-        guidePolygons.set(key, nodes);
-        guide.append(polygon);
-        if (echo) guide.append(echo);
-      }
-      for (const polygon of [nodes.polygon, nodes.echo]) {
-        if (!polygon) continue;
-        polygon.setAttribute('points', target.polygon.map(p => p.join(',')).join(' '));
-        polygon.setAttribute('data-kind', target.kind);
-        polygon.setAttribute('data-active', String(target.active));
-      }
-    }
-    // Patch existing nodes so the gentle bob does not restart on pointer moves.
-    for (const [key, nodes] of guidePolygons) {
-      if (!keys.has(key)) { nodes.polygon.remove(); nodes.echo?.remove(); guidePolygons.delete(key); }
-    }
-    stageEl.dataset.placementPreview = targets.find(t => t.active)?.kind || 'available';
-  }
+  const guide = createPlacementGuide(context);
+  function clearGuide() { guide.clear(); }
 
   const grabOffsets = new Map();
 
@@ -79,6 +40,19 @@ export function createStagePointerController(context) {
     hoverCursor?.clear();
     clearGuide();
     context.stopEdgePan();
+  }
+
+  /**
+   * The stage clears its own selection on an empty click. A click anywhere else on the Play screen,
+   * blank space and the header's save/export/scene menus included, clears it too. The tools that act
+   * on the selection keep it: the stage, its toolbar, the tool rail (inspector, bubble tray), the
+   * stage controls (outline, voice, history), and the map pill, whose marker shows the selected doll.
+   */
+  const SELECTION_TOOLS = '#play-stage, .context-ring, .play-rail, .play-stage-controls, .scene-picker-group';
+  function onOutsidePointerDown(event) {
+    if (event.target?.closest?.(SELECTION_TOOLS)) return;
+    const ui = context.store.getState().ui;
+    if (ui.selectedEntityId || ui.selectedEntityIds?.length) context.store.dispatch({ type: 'ui/clearSelection' });
   }
 
   function onHoverMove(event) { hoverCursor?.onMove(event); }
@@ -100,6 +74,8 @@ export function createStagePointerController(context) {
     pointerStage?.removeEventListener('pointermove', onHoverMove);
     pointerStage?.removeEventListener('pointerleave', onPointerLeave);
     pointerStage?.removeEventListener('dblclick', onDoubleClick);
+    outsideScreen?.removeEventListener('pointerdown', onOutsidePointerDown);
+    outsideScreen = null;
     hoverCursor = null;
     pointerStage = null;
     disposing = false;
@@ -146,6 +122,8 @@ export function createStagePointerController(context) {
     stageEl.addEventListener('pointermove', onHoverMove);
     stageEl.addEventListener('pointerleave', onPointerLeave);
     stageEl.addEventListener('dblclick', onDoubleClick);
+    outsideScreen = context.$('#play-screen');
+    outsideScreen?.addEventListener('pointerdown', onOutsidePointerDown);
     pointerController = new PointerController(stageEl, {
       selector: '.scene-entity-positioner',
       shouldHandleEvent: (event) => !context.hitTester || isStageArtworkEvent(stageEl, event),
@@ -221,7 +199,11 @@ export function createStagePointerController(context) {
           }
         }
         if (entitiesToDrag.length === 1 && usesPlacementDrag(state.currentScene, entitiesToDrag[0], context.getAsset)) {
-          showGuide(state.currentScene, entitiesToDrag[0], stageEl);
+          const stageRect = stageContentRect(stageEl);
+          const count = guide.start(state.currentScene, entitiesToDrag[0], stageEl);
+          if (count) guide.show(state.currentScene, entitiesToDrag[0], { stageRect, cameraX: renderedCameraX(stageEl, state.currentScene.cameraX, stageRect) });
+          // Room mode with nowhere legal to rest: the piece stays put, so say why once.
+          else if (state.currentScene.placementMode === 'room') context.store.dispatch({ type: 'ui/message', message: t('placement.invalid') });
         }
       },
       onPreview(instanceId, element, event) {
@@ -264,6 +246,9 @@ export function createStagePointerController(context) {
           }
         }
 
+        const start = moves.length === 1 ? grabOffsets.get(moves[0].instanceId) : null;
+        const landed = Boolean(start && (moves[0].x !== start.startX || moves[0].y !== start.startY) && stateForPlacement(moves[0].instanceId).placement);
+
         grabOffsets.clear();
         previewPoints.clear();
         context.activeDragInstanceId = null;
@@ -279,6 +264,7 @@ export function createStagePointerController(context) {
         previewTarget = null;
         clearGuide();
         delete stageEl.dataset.placementPreview;
+        if (landed) guide.settle(stageEl, moves[0].instanceId);
       },
       onCancel(instanceId, element) {
         element?.classList?.remove('is-dragging');
@@ -332,7 +318,7 @@ export function createStagePointerController(context) {
         const element = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(e.instanceId)}"]`);
         if (element) { element.style.setProperty('--x', String(e.x)); element.style.setProperty('--y', String(e.y)); element.style.zIndex = String(index + 1); }
       }
-      showGuide(next, entity, stageEl);
+      guide.update(state.currentScene, entity, { stageRect, cameraX: currentCameraX });
       context.updateContextRingPosition?.(stageRect);
       return;
     }

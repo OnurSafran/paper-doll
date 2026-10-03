@@ -60,10 +60,10 @@ export function createSceneOutlineView({ store, $, $$: _$$ = undefined, askConfi
       drag.moved = true;
       row.classList.add('is-dragging');
       list.classList.add('is-reordering');
-      const body = list.closest('.outline-dialog-body');
-      const bounds = body.getBoundingClientRect();
-      if (event.clientY < bounds.top + 40) body.scrollTop -= 16;
-      else if (event.clientY > bounds.bottom - 40) body.scrollTop += 16;
+      const dialog = list.closest('dialog');
+      const bounds = dialog.getBoundingClientRect();
+      if (event.clientY < bounds.top + 40) dialog.scrollTop -= 16;
+      else if (event.clientY > bounds.bottom - 40) dialog.scrollTop += 16;
       const remaining = [...list.children].filter(other => other !== row);
       const nextRow = remaining.find(other => {
         const rect = other.getBoundingClientRect();

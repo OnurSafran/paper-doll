@@ -82,6 +82,20 @@ Paper Doll Studio is a calm browser toy for creating paper dolls and arranging s
 - Cancel is the safe default in destructive dialogs.
 - Custom asset deletion must retain recoverable placeholders by default; deleting all uses is a separate, impact-counted, undoable choice.
 
+## Guide and planned live tutorial
+
+The bilingual guide retains Quick Start, How to Play, Try These Ideas, and
+Shortcuts. Quick Start shows all four first-scene cards together, with static
+button examples using the real controls’ translated labels. The examples teach
+recognition and do not perform actions.
+
+An optional Tutorial entry and action-driven prompts on the real studio are
+specified, not implemented. The first tutorial will cover dressing/saving a doll,
+adding it to Play, choosing movement, and saving/reopening a scene. It must preserve
+existing work, advance only on successful actions, and support exit, touch,
+keyboard, and both languages. See [guide and live tutorial PRD](PRD-GUIDE-AND-LIVE-TUTORIAL.md)
+for scope, safeguards, and acceptance criteria.
+
 ## Persistence contract
 
 All small project records live under `paperDollStudio.state`.

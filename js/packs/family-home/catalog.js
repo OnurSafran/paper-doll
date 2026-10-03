@@ -2952,7 +2952,7 @@ export const FAMILY_ASSETS = [
     },
     "backgroundWidth": 3200
   }
-].map(asset => normalizePropPlacement({ ...asset, ...familyPlacementMetadata(asset.id) }));
+].map(asset => normalizePropPlacement({ ...asset, ...familyPlacementMetadata(asset.id), ...familyDefaultPlacement(asset) }));
 
 // Prop crops retain the former meet-fit artwork scale. Placement metadata was
 // authored in the original 1000 × 1000 canvas, so remap it with the crop.
@@ -2972,6 +2972,33 @@ function normalizePropPlacement(asset) {
     ...(asset.supportSurfaces ? { supportSurfaces: asset.supportSurfaces.map(surface => ({
       ...surface, polygon: surface.polygon.map(([u, v]) => point(u, v))
     })) } : {})
+  };
+}
+
+// Props without bespoke contact geometry still need explicit rules, or Room mode lets them rest anywhere.
+// Each class gets a bottom-center contact (center for wall hangings) and a proportional footprint.
+function familyDefaultPlacement(asset) {
+  // Declared inside: the catalog array above is mapped while this module is still initializing.
+  const FAMILY_DEFAULT_CLASSES = {
+    small: ['fh_cushions', 'fh_blocks', 'fh_teddy', 'fh_knitting', 'fh_dominoes', 'fh_album', 'fh_chess', 'fh_sewing', 'fh_popcorn', 'fh_board_game', 'fh_pillow', 'fh_lantern', 'fh_cologne', 'fh_paper_flowers', 'fh_cards'],
+    floor: ['fh_laundry', 'fh_blanket_fort', 'fh_gifts'],
+    ground: ['fh_play_mat', 'fh_sleeping_bag'],
+    wall: ['fh_family_frame', 'fh_mobile', 'fh_slumber_banner', 'fh_bunting', 'fh_winter_wreath', 'fh_calendar']
+  };
+  const FAMILY_FOOTPRINT_WIDTH = { small: .5, floor: .55, ground: .8, wall: .5 };
+  const kind = Object.keys(FAMILY_DEFAULT_CLASSES).find(name => FAMILY_DEFAULT_CLASSES[name].includes(asset.id));
+  if (!kind || asset.kind !== 'prop') return {};
+  const [x, y, width, height] = asset.viewBox;
+  const wall = kind === 'wall';
+  // Authored in the 1000-unit canvas like the rest; normalizePropPlacement maps it into the crop.
+  return {
+    groundAnchor: { x: (x + width * .5) / 1000, y: (y + height * (wall ? .5 : 1)) / 1000 },
+    placementRules: {
+      allowedTargets: wall ? ['wall'] : kind === 'small' ? ['floor', 'surface'] : ['floor'],
+      tags: kind === 'small' ? ['small-prop'] : ['furniture'],
+      contactFootprint: { width: FAMILY_FOOTPRINT_WIDTH[kind] * width / 1000, depth: .02 * height / 1000 },
+      renderClass: kind === 'ground' ? 'ground' : 'upright'
+    }
   };
 }
 

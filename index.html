@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#f3e8d0">
-    <meta name="description" content="Kağıt bebekler tasarlayın ve sahFnelerde canlandırın." data-i18n-content="app.description">
+    <meta name="description" content="Kâğıt bebekler tasarla ve sahnede hikâyeni anlat." data-i18n-content="app.description">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Paper Doll">
     <link rel="manifest" href="manifest.webmanifest">
     <title>Paper Doll Studio</title>
-    <link rel="stylesheet" href="css/tokens.css?v=c0813b5f">
+    <link rel="stylesheet" href="css/tokens.css?v=5b45363f">
     <link rel="stylesheet" href="css/app.css?v=24d7d5ee">
   </head>
   <body>
@@ -33,9 +33,9 @@
         <button id="guide-menu-btn" class="button secondary compact-action" type="button" data-i18n-title="header.guideTitle" title="Türkçe kullanım rehberini aç">📖 <span class="header-btn-text" data-i18n="header.guideText">Rehber</span></button>
         <button id="settings-menu-btn" class="button secondary compact-action" type="button" aria-haspopup="dialog" data-i18n-title="header.settingsTitle" title="Ayarlar, dil ve proje yedekleri" data-i18n-aria-label="header.settingsText" aria-label="Ayarlar">⚙️ <span class="header-btn-text" data-i18n="header.settingsText">Ayarlar</span></button>
         <div id="quick-tips" class="quick-tips">
-          <button id="quick-tip-chip" class="quick-tip-chip" type="button" aria-haspopup="dialog" data-i18n-title="header.tipTitle" title="Rehber ipuçlarını aç">
+          <button id="quick-tip-chip" class="quick-tip-chip" type="button" aria-haspopup="dialog" data-i18n-title="header.tipTitle" title="Bu ipucunun yardımını aç">
             <span class="quick-tip-bulb" aria-hidden="true">💡</span>
-            <span id="quick-tip-text" class="quick-tip-text">Oyna: Shift ile tıklayıp çoklu seçim yap</span>
+            <span id="quick-tip-text" class="quick-tip-text">Sahnedeki bir eşyaya dokun. Düğmeleri görünür.</span>
           </button>
         </div>
         <div id="save-status" class="visually-hidden" aria-live="polite" data-i18n-title="header.savedDevice" title="Bu cihaza kaydedildi" data-i18n="header.statusSaved">Kaydedildi</div>
@@ -59,8 +59,8 @@
               </div>
             </div>
             <div class="designer-stage paper-stage">
-              <div id="snap-target" class="snap-target" aria-hidden="true"><span data-i18n="designer.snapTarget">✨ Bebeğin üzerine bırakın</span></div>
-              <div id="doll-stage" class="doll-canvas" role="img" data-i18n-aria-label="designer.stageAria" aria-label="Kâğıt bebeğiniz"></div>
+              <div id="snap-target" class="snap-target" aria-hidden="true"><span data-i18n="designer.snapTarget">✨ Bebeğin üzerine bırak</span></div>
+              <div id="doll-stage" class="doll-canvas" role="img" data-i18n-aria-label="designer.stageAria" aria-label="Kâğıt bebeğin"></div>
               <span class="paper-stand" aria-hidden="true"></span>
             </div>
           </div>
@@ -99,7 +99,7 @@
               <div class="panel-heading compact-panel-heading">
                 <div>
                   <h2 id="wardrobe-title" data-i18n="designer.wardrobeTitle">Gardırop</h2>
-                  <p class="panel-copy" data-i18n="designer.wardrobeCopy">Bebeğin üzerine bir parça tıklayın veya sürükleyin.</p>
+                  <p class="panel-copy" data-i18n="designer.wardrobeCopy">Giydirmek için bir kıyafet kartına dokun veya kartı bebeğe sürükle.</p>
                 </div>
               </div>
               <div id="wardrobe-tabs" class="tab-list" role="tablist" data-i18n-aria-label="designer.wardrobeTabsAria" aria-label="Gardırop kategorileri"></div>
@@ -115,7 +115,7 @@
               <div class="panel-heading compact-panel-heading">
                 <div>
                   <h2 id="face-title" data-i18n="designer.faceTitle">Yüz Özellikleri</h2>
-                  <p class="panel-copy" data-i18n="designer.faceCopy">Göz, kaş, burun, ağız ve detayları seçin.</p>
+                  <p class="panel-copy" data-i18n="designer.faceCopy">Göz, kaş, burun, ağız ve yüz detayları seç.</p>
                 </div>
               </div>
               <div id="face-tabs" class="tab-list" role="tablist" data-i18n-aria-label="designer.faceTabsAria" aria-label="Yüz özellikleri"></div>
@@ -146,12 +146,12 @@
             <select id="background-select" class="visually-hidden" tabindex="-1"></select>
           </div>
           <div class="scene-meta-actions">
-            <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
+            <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hazır hikâye sahnelerine bak" data-i18n="play.templatesBtn">✦ Şablonlar</button>
             <button id="save-scene-btn" class="button primary compact-action" type="button" data-i18n-title="play.saveSceneTitle" title="Bu sahneyi Sahne Kitabına kaydet" data-i18n="play.saveSceneBtn">💾 Sahneyi Kaydet</button>
             <details id="play-scene-dropdown" class="menu-dropdown">
               <summary class="button secondary compact-action dropdown-summary" data-i18n-title="play.scenesTitle" title="Sahne Kitabı Kütüphanesini Aç">📚 <span data-i18n="play.sceneMenuBtn">Sahne</span> ▾</summary>
               <div class="menu-dropdown-panel" role="menu">
-                <button id="scene-library-btn" class="button secondary compact-action dropdown-item" type="button" data-i18n-title="play.scenesTitle" title="Sahne Kitabı Kütüphanesini Aç">📚 <span data-i18n="play.trayEyebrow">Sahneler</span> (<span id="scene-library-count">0</span>)</button>
+                <button id="scene-library-btn" class="button secondary compact-action dropdown-item" type="button" data-i18n-title="play.scenesTitle" title="Sahne Kitabı Kütüphanesini Aç">📚 <span data-i18n="play.sceneLibraryBtn">Sahneler</span> (<span id="scene-library-count">0</span>)</button>
                 <button id="save-scene-copy-btn" class="button secondary compact-action dropdown-item" type="button" data-i18n-title="play.saveCopyTitle" title="Bu sahnenin bir kopyasını Sahne Kitabına kaydet" data-i18n="play.saveCopyBtn">⧉ Kopyasını Kaydet</button>
                 <button id="new-scene" class="button secondary compact-action clear-scene-btn dropdown-item" type="button" data-i18n-title="play.clearSceneTitle" title="Sahnedeki tüm öğeleri temizle" data-i18n="play.clearSceneBtn">🗑️ Sahneyi Temizle</button>
               </div>
@@ -169,7 +169,7 @@
         <div class="play-grid">
           <div class="play-stage-column">
             <div id="play-stage-viewport" class="play-stage-viewport">
-              <div id="play-stage" class="play-stage" tabindex="0" data-i18n-aria-label="play.stageAria" aria-label="Oyun sahnesi. Bir öğe seçin, ardından hareket ettirmek için yön tuşlarını kullanın.">
+              <div id="play-stage" class="play-stage" tabindex="0" data-i18n-aria-label="play.stageAria" aria-label="Oyun sahnesi. Bir eşya seç, sonra taşımak için yön tuşlarını kullan.">
                 <div id="scene-world" class="scene-world">
                   <div id="scene-background" class="scene-background" aria-hidden="true"></div>
                   <div id="scene-entities" class="scene-entities"></div>
@@ -179,9 +179,9 @@
                   <span id="scene-count-chip">0 öğe</span>
                   <span id="scene-width-chip" class="scene-width-chip" data-i18n="play.stageStandard">Standart</span>
                 </div>
-                <div id="empty-scene" class="empty-scene"><strong data-i18n="play.emptySceneTitle">Sahneniz hazır.</strong><span data-i18n="play.emptySceneCopy">Yerleştirmek için tepsiden bir bebek veya eşya tıklayın ya da sürükleyin.</span></div>
+                <div id="empty-scene" class="empty-scene"><strong data-i18n="play.emptySceneTitle">Sahnen hazır.</strong><span data-i18n="play.emptySceneCopy">Sahneye eklemek için tepsideki bir bebek veya eşyaya dokun. Sürükleyerek de ekleyebilirsin.</span></div>
                 <div id="camera-hud" class="camera-hud" role="region" data-i18n-aria-label="play.cameraControls" aria-label="Panoramik kamera kontrolleri" hidden>
-                  <div id="stage-minimap" class="stage-minimap" data-i18n-title="play.minimapTitle" title="Kamerayı konumlandırmak için tıklayın veya sürükleyin" data-i18n-aria-label="play.minimapAria" aria-label="Sahne mini harita genel bakışı" role="slider" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0">
+                  <div id="stage-minimap" class="stage-minimap" data-i18n-title="play.minimapTitle" title="Kamerayı taşımak için dokun veya sürükle" data-i18n-aria-label="play.minimapAria" aria-label="Sahne mini harita genel bakışı" role="slider" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0">
                     <div id="minimap-bg" class="minimap-bg"></div>
                     <div id="minimap-entities" class="minimap-entities" aria-hidden="true"></div>
                     <div id="minimap-lens" class="minimap-lens" aria-hidden="true"></div>
@@ -402,7 +402,7 @@
           <div class="paint-stage-column">
             <div id="paint-canvas-viewport" class="paint-canvas-viewport">
               <div class="paint-canvas-floating-actions" role="toolbar" data-i18n-aria-label="paint.canvasActionsAria" aria-label="Tuval görünümleri">
-                <button id="paint-mirror-btn" class="button secondary compact-action" type="button" aria-pressed="false" data-i18n-title="paint.mirrorTitle" title="Yatay ayna çizimini aç/kapat (Kısayol: M)" data-i18n="paint.mirrorBtn">🪞 Ayna</button>
+                <button id="paint-mirror-btn" class="button secondary compact-action" type="button" aria-pressed="false" data-i18n-title="paint.mirrorTitle" title="İki tarafa aynı anda çiz (Kısayol: M)" data-i18n="paint.mirrorBtn">🪞 Ayna</button>
                 <button id="paint-zoom-btn" class="button secondary compact-action" type="button" data-i18n-title="paint.zoomTitle" title="Tuval yakınlaştırmasını aç/kapat (Kısayol: Z)">🔍 1×</button>
                 <button id="paint-clear-btn" class="button secondary compact-action" type="button" data-i18n-title="paint.clearTitle" title="Tuvali temizle" data-i18n="paint.clearBtn">🗑️ Temizle</button>
               </div>
@@ -410,7 +410,7 @@
               <div id="paint-canvas-stage" class="paint-canvas-stage">
                 <div id="paint-guide-layer" class="paint-guide-layer" aria-hidden="true"></div>
                 <div class="paint-canvas-wrapper">
-                  <canvas id="paint-canvas" tabindex="0" role="img" data-i18n-aria-label="paint.canvasAriaDefault" aria-label="Sanat eseri çizim tuvali. Boyamak için fare/kalem/dokunma veya klavye yön tuşları ve Boşluk tuşunu kullanın."></canvas>
+                  <canvas id="paint-canvas" tabindex="0" role="img" data-i18n-aria-label="paint.canvasAriaDefault" aria-label="Çizim tuvali. Fare, kalem veya dokunarak çiz. Klavyede yön tuşlarıyla ilerle ve Boşluk ile boya."></canvas>
                   <div id="paint-selection-outline" class="paint-selection-outline" aria-hidden="true"></div>
                   <div id="paint-cursor" class="paint-virtual-cursor" aria-hidden="true"></div>
                 </div>
@@ -435,7 +435,7 @@
                   </div>
 
                   <div id="paint-wearable-config" class="paint-config-group">
-                    <label for="paint-slot-select"><strong data-i18n="paint.clothingSlotLabel">Kıyafet Yuvası</strong></label>
+                    <label for="paint-slot-select"><strong data-i18n="paint.clothingSlotLabel">Kıyafet Türü</strong></label>
                     <select id="paint-slot-select">
                       <option value="top" data-i18n="paint.slotTop">Üst</option>
                       <option value="bottom" data-i18n="paint.slotBottom">Alt</option>
@@ -454,8 +454,8 @@
                     </select>
                     <label for="paint-prop-placement-select"><strong data-i18n="paint.propPlacementLabel">Eşya Yerleşimi</strong></label>
                     <select id="paint-prop-placement-select">
-                      <option value="surface" selected data-i18n="paint.propPlacementSurface">Yüzeye oturur (Alt tutucu)</option>
-                      <option value="hang" data-i18n="paint.propPlacementHang">Asılır / Uçar (Merkez tutucu)</option>
+                      <option value="surface" selected data-i18n="paint.propPlacementSurface">Zeminde veya bir yüzeyde durur</option>
+                      <option value="hang" data-i18n="paint.propPlacementHang">Duvara asılır</option>
                     </select>
                   </div>
                 </div>
@@ -467,7 +467,7 @@
               <button id="tool-eraser" class="tool-btn" data-tool="eraser" type="button" data-i18n-title="paint.eraserTool" title="Silgi (Kısayol: E)" aria-pressed="false">🧹 <span data-i18n="paint.eraserSpan">Silgi</span></button>
               <button id="tool-fill" class="tool-btn" data-tool="fill" type="button" data-i18n-title="paint.fillTool" title="Boya Kovası (Kısayol: G)" aria-pressed="false">🪣 <span data-i18n="paint.fillSpan">Doldur</span></button>
               <button id="tool-shape" class="tool-btn" data-tool="shape" type="button" data-i18n-title="paint.shapesTool" title="Şekiller (Kısayol: R)" aria-pressed="false">⭕ <span data-i18n="paint.shapesSpan">Şekiller</span></button>
-              <button id="tool-select" class="tool-btn" data-tool="select" type="button" data-i18n-title="paint.selectTool" title="Pikselleri seç ve taşı (Kısayol: S)" aria-pressed="false">▣ <span data-i18n="paint.selectSpan">Seçim</span></button>
+              <button id="tool-select" class="tool-btn" data-tool="select" type="button" data-i18n-title="paint.selectTool" title="Çizimin Bir Parçasını Seç ve Taşı (Kısayol: S)" aria-pressed="false">▣ <span data-i18n="paint.selectSpan">Seçim</span></button>
               <button id="tool-eyedropper" class="tool-btn" data-tool="eyedropper" type="button" data-i18n-title="paint.eyedropperTool" title="Damlalık (Kısayol: I)" aria-pressed="false">💉 <span data-i18n="paint.eyedropperSpan">Damlalık</span></button>
             </div>
 
@@ -496,17 +496,17 @@
               <div id="paint-selection-options" class="tool-prop-group paint-selection-options" role="toolbar" data-i18n-aria-label="paint.selectionOptionsAria" aria-label="Seçim araçları" hidden>
                 <label><strong data-i18n="paint.selectSpan">Seçim</strong></label>
                 <div class="paint-selection-actions-grid">
-                  <button id="paint-selection-delete-btn" class="button secondary compact-action danger-hover" type="button" data-i18n-title="paint.deleteSelectionTitle" title="Seçili pikselleri sil (Del/Backspace)" data-i18n="paint.deleteSelectionBtn">🗑️ Seçimi Sil</button>
+                  <button id="paint-selection-delete-btn" class="button secondary compact-action danger-hover" type="button" data-i18n-title="paint.deleteSelectionTitle" title="Çizimin seçili parçasını sil (Del/Backspace)" data-i18n="paint.deleteSelectionBtn">🗑️ Seçimi Sil</button>
                   <button id="paint-selection-cancel-btn" class="button secondary compact-action" type="button" data-i18n-title="paint.cancelSelectionTitle" title="Seçim çerçevesini kaldır (Esc)" data-i18n="paint.cancelSelectionBtn">✕ Seçimi Bırak</button>
-                  <button id="paint-selection-flip-btn" class="button secondary compact-action" type="button" data-i18n-title="paint.flipSelectionTitle" title="Seçili pikselleri yatay çevir" data-i18n="paint.flipSelectionBtn">↔ Çevir</button>
-                  <button id="paint-selection-duplicate-btn" class="button secondary compact-action" type="button" data-i18n-title="paint.duplicateSelectionTitle" title="Seçili pikselleri çoğalt" data-i18n="paint.duplicateSelectionBtn">⧉ Çoğalt</button>
+                  <button id="paint-selection-flip-btn" class="button secondary compact-action" type="button" data-i18n-title="paint.flipSelectionTitle" title="Çizimin seçili parçasını sağdan sola çevir" data-i18n="paint.flipSelectionBtn">↔ Çevir</button>
+                  <button id="paint-selection-duplicate-btn" class="button secondary compact-action" type="button" data-i18n-title="paint.duplicateSelectionTitle" title="Çizimin seçili parçasını kopyala" data-i18n="paint.duplicateSelectionBtn">⧉ Çoğalt</button>
                 </div>
               </div>
             </div>
 
             <div class="paint-color-bar">
               <div class="paint-color-bar-row">
-                <button id="paint-active-color" class="paint-active-color-swatch" type="button" data-i18n-title="paint.activeColorTitle" title="Aktif renk (özel renk seçmek için tıklayın)" data-i18n-aria-label="paint.activeColorAria" aria-label="Aktif renk: Renk seçiciyi açmak için tıklayın"></button>
+                <button id="paint-active-color" class="paint-active-color-swatch" type="button" data-i18n-title="paint.activeColorTitle" title="Seçili renk (başka bir renk seçmek için dokun)" data-i18n-aria-label="paint.activeColorAria" aria-label="Seçili renk. Renk seçmek için dokun."></button>
                 <div id="paint-palette-grid" class="paint-palette-grid" role="toolbar" data-i18n-aria-label="paint.paletteAria" aria-label="Renk paleti"></div>
                 <label class="paint-color-picker-label" for="paint-color-picker" data-i18n-title="paint.customColorTitle" title="Özel renk">
                   <input id="paint-color-picker" type="color" value="#e76f51" data-i18n-aria-label="paint.customColorTitle" aria-label="Özel renk">
@@ -515,14 +515,14 @@
             </div>
 
             <details id="paint-reference-controls" class="paint-reference-disclosure">
-              <summary class="paint-reference-summary" data-i18n="paint.referenceControlsSummary">⚙️ Kalıp & Referans Katmanı</summary>
+              <summary class="paint-reference-summary" data-i18n="paint.referenceControlsSummary">⚙️ Çizim Yardımcıları</summary>
               <div class="paint-reference-content">
                 <div class="cutout-picker-wrap">
                   <label><strong data-i18n="paint.startingCutoutLabel">Başlangıç Kalıbı</strong></label>
-                  <div id="paint-cutout-grid" class="cutout-grid" role="listbox" data-i18n-aria-label="paint.startingCutoutAria" aria-label="Başlangıç kalıp referansları"></div>
-                  <p id="paint-cutout-status" class="panel-copy cutout-status" role="status" data-i18n="paint.cutoutHelpStatus">Kaydedilmeyen bir referans olarak kullanmak için bir kalıp seçin.</p>
+                  <div id="paint-cutout-grid" class="cutout-grid" role="listbox" data-i18n-aria-label="paint.startingCutoutAria" aria-label="Çizim yardımcı kalıpları"></div>
+                  <p id="paint-cutout-status" class="panel-copy cutout-status" role="status" data-i18n="paint.cutoutHelpStatus">Çizimine yardım etmesi için soluk bir kalıp seç. Kalıp resminle birlikte kaydedilmez.</p>
                   <div class="cutout-action-row">
-                    <button id="paint-cutout-add-btn" class="button secondary" type="button" disabled data-i18n="paint.addCutoutPixelsBtn">Kalıp Piksellerini Ekle</button>
+                    <button id="paint-cutout-add-btn" class="button secondary" type="button" disabled data-i18n="paint.addCutoutPixelsBtn">Çizime Ekle</button>
                     <button id="paint-cutout-replace-btn" class="button secondary" type="button" disabled data-i18n="paint.replaceArtworkBtn">Çizimi Değiştir</button>
                   </div>
                 </div>
@@ -531,9 +531,9 @@
 
                 <label class="reference-toggle" for="paint-reference-visible">
                   <input id="paint-reference-visible" type="checkbox" checked>
-                  <span data-i18n="paint.bodyReferenceToggle">Vücut referansı</span>
+                  <span data-i18n="paint.bodyReferenceToggle">Rehber bebeği göster</span>
                 </label>
-                <label for="paint-reference-model"><strong data-i18n="paint.referenceModelLabel">Referans Model</strong></label>
+                <label for="paint-reference-model"><strong data-i18n="paint.referenceModelLabel">Rehber Bebek</strong></label>
                 <select id="paint-reference-model">
                   <option value="doll_baby_a" data-i18n="models.doll_baby_a">Bebek</option>
                   <option value="doll_chibi_a" data-i18n="models.doll_chibi_a">Çocuk</option>
@@ -543,17 +543,17 @@
                   <option value="doll_elder_a" data-i18n="models.doll_elder_a">Yaşlı</option>
                 </select>
                 <div class="reference-opacity-row">
-                  <label for="paint-reference-opacity"><strong data-i18n="paint.opacityLabel">Opaklık</strong></label>
+                  <label for="paint-reference-opacity"><strong data-i18n="paint.opacityLabel">Yardımcı Görünürlüğü</strong></label>
                   <output id="paint-reference-opacity-value" for="paint-reference-opacity">50%</output>
                 </div>
-                <input id="paint-reference-opacity" class="reference-opacity-slider" type="range" min="20" max="80" step="10" value="50" data-i18n-aria-label="paint.opacityAria" aria-label="Referans katmanı opaklığı">
+                <input id="paint-reference-opacity" class="reference-opacity-slider" type="range" min="20" max="80" step="10" value="50" data-i18n-aria-label="paint.opacityAria" aria-label="Çizim yardımcılarının görünürlüğü">
                 <label class="reference-toggle" for="paint-guides-visible">
                   <input id="paint-guides-visible" type="checkbox" checked>
-                  <span data-i18n="paint.guidesToggle">Hizalama kılavuzları</span>
+                  <span data-i18n="paint.guidesToggle">Rehber çizgileri göster</span>
                 </label>
                 <label class="reference-toggle" for="paint-cutout-reference-visible">
                   <input id="paint-cutout-reference-visible" type="checkbox" checked>
-                  <span data-i18n="paint.cutoutReferenceToggle">Seçili kalıp referansı</span>
+                  <span data-i18n="paint.cutoutReferenceToggle">Rehber kalıbı göster</span>
                 </label>
               </div>
             </details>
@@ -608,7 +608,7 @@
             <label class="settings-toggle"><input type="checkbox" data-papercraft-setting="clothingTabs"> <span data-i18n="papercraft.tabs">Kıyafet kulakçıkları</span></label>
             <label class="settings-toggle"><input type="checkbox" data-papercraft-setting="cardboardFinish"> <span data-i18n="papercraft.cardboard">Karton görünümü</span></label>
           </div>
-          <p class="panel-copy" data-i18n="papercraft.help">Genç modelinde dene: çizgili tişört, tenis eteği ve parti elbisesi. Karton görünümü Genç modelinde, koltukta ve kafe masasında görünür. Bu önizleme ekrandaki görünümü değiştirir; indirilen görsellere eklenmez.</p>
+          <p class="panel-copy" data-i18n="papercraft.help">Kıyafet kulakçıklarını Klasik modelinde çizgili tişört, tenis eteği veya parti elbisesiyle dene. Karton görünümü bebeklere ve desteklenen eşyalara katlanmış kenarlar ve ayaklıklar ekler. Bu önizleme ekrandaki görünümü değiştirir; indirilen görsellere eklenmez.</p>
         </section>
 
         <section class="settings-section" aria-labelledby="settings-data-heading">
@@ -619,10 +619,10 @@
 
         <section class="settings-section" aria-labelledby="settings-about-heading">
           <h3 id="settings-about-heading" data-i18n="projectDialog.updateHeading">Uygulama Sürümü ve Güncelleme</h3>
-          <p class="panel-copy" data-i18n="projectDialog.updateCopy">Geçici tarayıcı komut dosyası önbelleklerini temizlemek veya en yeni stüdyo sürümünü yeniden yüklemek isterseniz, uygulamayı yenileyebilirsiniz. Depolamadaki kayıtlı bebekler, sahneler ve çizimleriniz güvende kalır.</p>
+          <p class="panel-copy" data-i18n="projectDialog.updateCopy">İnternete bağlan, sonra son sürümü almak için uygulamayı güncelle ve yeniden aç. Bu işlem uygulama dosyalarını yeniler; kayıtlı bebeklerini, sahnelerini ve çizimlerini korur.</p>
           <div class="export-meta-row">
             <span class="app-version-badge">Paper Doll Studio <strong>v2.0.0</strong></span>
-            <button id="settings-hard-reset-btn" class="button secondary" type="button" data-i18n-title="projectDialog.forceReloadTitle" title="Önbelleği temizle ve en son sürümü yeniden yükle (Kayıtlı verileriniz silinmez)" data-i18n="projectDialog.forceReloadBtn">🔄 Uygulamayı Güncelle ve Yenile</button>
+            <button id="settings-hard-reset-btn" class="button secondary" type="button" data-i18n-title="projectDialog.forceReloadTitle" title="Son uygulama dosyalarını indir ve yeniden aç. Kayıtlı çalışmalarını korur." data-i18n="projectDialog.forceReloadBtn">🔄 Uygulamayı Güncelle ve Yenile</button>
           </div>
         </section>
       </div>
@@ -652,7 +652,7 @@
 
     <dialog id="confirm-dialog" class="confirm-dialog">
       <form method="dialog">
-        <span class="eyebrow" data-i18n="confirmDialog.eyebrow">Lütfen onaylayın</span>
+        <span class="eyebrow" data-i18n="confirmDialog.eyebrow">Onayla</span>
         <h2 id="confirm-title" data-i18n="confirmDialog.defaultTitle">Devam edilsin mi?</h2>
         <p id="confirm-message"></p>
         <div class="button-row end">
@@ -689,7 +689,7 @@
     <dialog id="project-dialog" class="library-dialog project-dialog" closedby="any">
       <div class="dialog-header">
         <div>
-          <span class="eyebrow" data-i18n="projectDialog.eyebrow">Stüdyo Taşınabilirliği</span>
+          <span class="eyebrow" data-i18n="projectDialog.eyebrow">Çalışmalarını Sakla ve Taşı</span>
           <h2 id="project-dialog-title" data-i18n="projectDialog.title">Proje ve Yedekler</h2>
         </div>
         <button id="close-project-dialog" class="icon-close-btn" type="button" data-i18n-aria-label="projectDialog.closeAria" aria-label="Proje iletişim kutusunu kapat">✕</button>
@@ -698,7 +698,7 @@
         <section class="project-section export-section">
           <div class="section-title-wrap">
             <h3 data-i18n="projectDialog.exportHeading">Proje Yedeğini Dışa Aktar</h3>
-            <p class="panel-copy" data-i18n="projectDialog.exportCopy">Eksiksiz stüdyonuzu (bebekler, sahneler, geçerli sahne ve Çizimlerim PNG dosyaları) taşınabilir bir <code>.json</code> dosyası olarak indirin.</p>
+            <p class="panel-copy" data-i18n="projectDialog.exportCopy">Bebeklerini, sahnelerini, açık sahneni ve Çizimlerim’deki kayıtlı çizimlerini içeren bir <code>.json</code> yedek dosyası indir. Uygulamanın dışında sakla veya başka bir cihazda kullan.</p>
           </div>
           <div class="export-meta-row">
             <div id="project-export-stats" class="project-stats-chips"></div>
@@ -709,13 +709,13 @@
         <section class="project-section import-section">
           <div class="section-title-wrap">
             <h3 data-i18n="projectDialog.importHeading">Projeyi İçe Aktar</h3>
-            <p class="panel-copy" data-i18n="projectDialog.importCopy">Kayıtlı bir <code>.json</code> proje dosyasını yükleyin. Özel kıyafet ve eşyalar içe aktarılmadan önce doğrulanır; öğeleri birleştirebilir veya stüdyonuzu tamamen değiştirebilirsiniz.</p>
+            <p class="panel-copy" data-i18n="projectDialog.importCopy">Kayıtlı bir <code>.json</code> proje dosyası seç. Uygulama yüklemeden önce çizimleri kontrol eder. Önizlemeye bak, sonra çalışmaları ekle veya tüm stüdyoyu değiştir.</p>
           </div>
           <div id="import-dropzone" class="import-dropzone">
             <input type="file" id="project-file-input" accept=".json,application/json" class="visually-hidden">
             <div class="dropzone-inner">
               <span class="dropzone-icon" aria-hidden="true">📂</span>
-              <p><strong data-i18n="projectDialog.dropzonePrompt">Bir proje dosyası seçin veya buraya sürükleyip bırakın</strong></p>
+              <p><strong data-i18n="projectDialog.dropzonePrompt">Bir proje dosyası seç veya buraya sürükle</strong></p>
               <button id="browse-project-file-btn" class="button secondary" type="button" data-i18n="projectDialog.browseBtn">JSON Dosyası Seç</button>
             </div>
           </div>
@@ -728,7 +728,7 @@
             <div id="import-summary-badges" class="import-summary-badges"></div>
             <div id="import-warnings-box" class="import-warnings-box" hidden></div>
             <div class="import-decision-actions">
-              <button id="import-merge-btn" class="button primary" type="button" data-i18n-title="projectDialog.addMergeTitle" title="İçe aktarılan bebek ve sahneleri geçerli stüdyonuza ekleyin" data-i18n="projectDialog.addMergeBtn">✦ Stüdyoya Ekle (Birleştir)</button>
+              <button id="import-merge-btn" class="button primary" type="button" data-i18n-title="projectDialog.addMergeTitle" title="Dosyadaki bebekleri ve sahneleri stüdyona ekle" data-i18n="projectDialog.addMergeBtn">✦ Stüdyoya Ekle (Birleştir)</button>
               <button id="import-replace-btn" class="button danger-fill" type="button" data-i18n-title="projectDialog.replaceTitle" title="Tüm stüdyoyu değiştirir. Önce otomatik bir yedek oluşturulur" data-i18n="projectDialog.replaceBtn">↺ Tüm Stüdyoyu Değiştir</button>
               <button id="import-cancel-btn" class="button secondary" type="button" data-i18n="projectDialog.cancelBtn">İptal</button>
             </div>
@@ -738,7 +738,7 @@
         <section id="project-backup-section" class="project-section backup-section" hidden>
           <div class="section-title-wrap">
             <h3 data-i18n="projectDialog.backupHeading">Kurtarılabilir Yedekler</h3>
-            <p class="panel-copy" data-i18n="projectDialog.backupCopy">Son stüdyo değiştirme işleminizden önce bir güvenlik anlık görüntüsü kaydedildi.</p>
+            <p class="panel-copy" data-i18n="projectDialog.backupCopy">Stüdyoyu değiştirmeden önce bir kopyası kaydedildi. Geri getirmek için Önceki Stüdyoyu Geri Yükle’yi kullan.</p>
           </div>
           <div class="backup-card">
             <div class="backup-info">
@@ -758,7 +758,7 @@
             <p class="panel-copy" data-i18n="projectDialog.factoryResetCopy">Kayıtlı tüm bebekleri, sahneleri ve özel boyama çizimlerini kalıcı olarak siler ve stüdyoyu ilk günkü haline getirir.</p>
           </div>
           <div class="export-meta-row">
-            <span class="panel-copy danger-hint" data-i18n="projectDialog.factoryResetHint">⚠️ Bu işlem geri alınamaz. Gerekirse önce yukarıdan proje yedeğinizi indirin.</span>
+            <span class="panel-copy danger-hint" data-i18n="projectDialog.factoryResetHint">⚠️ Bu işlem geri alınamaz. Çalışmalarını saklamak istiyorsan önce proje yedeğini indir.</span>
             <button id="project-factory-reset-btn" class="button danger-fill" type="button" data-i18n-title="projectDialog.factoryResetBtn" title="Tüm stüdyo verilerini kalıcı olarak sil" data-i18n="projectDialog.factoryResetBtn">⚠️ Tüm Stüdyoyu Sıfırla</button>
           </div>
         </section>
@@ -778,7 +778,7 @@
         <div id="guide-tabs" class="tab-list guide-tabs" role="tablist" data-i18n-aria-label="guideDialog.tabsAria" aria-label="Rehber sekmeleri">
           <button id="guide-tab-quickstart" class="mode-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="guide-panel-quickstart" data-guide-tab="quickstart" data-i18n="guideDialog.tabQuickstart">🌟 Kolay Başlangıç</button>
           <button id="guide-tab-features" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="guide-panel-features" data-guide-tab="features" data-i18n="guideDialog.tabFeatures">🎮 Oyun Bölümleri</button>
-          <button id="guide-tab-tips" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="guide-panel-tips" data-guide-tab="tips" data-i18n="guideDialog.tabTips">💡 Usta İpuçları</button>
+          <button id="guide-tab-tips" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="guide-panel-tips" data-guide-tab="tips" data-i18n="guideDialog.tabTips">💡 Bunları Dene</button>
           <button id="guide-tab-shortcuts" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="guide-panel-shortcuts" data-guide-tab="shortcuts" data-i18n="guideDialog.tabShortcuts">⌨️ Kısayollar</button>
         </div>
       </nav>
@@ -787,8 +787,8 @@
         <!-- 1. Quickstart Panel -->
         <section id="guide-panel-quickstart" class="guide-tab-panel is-active" role="tabpanel" aria-labelledby="guide-tab-quickstart">
           <div class="guide-panel-hero">
-            <h3 data-i18n="guideDialog.qsHeading">4 Kolay Adımda Kendi Çizgi Hikayeni Yarat!</h3>
-            <p class="panel-copy" data-i18n="guideDialog.qsSubtitle">Paper Doll Studio ile hayalindeki kağıt bebekleri tasarlayabilir, kendi kıyafetlerini çizebilir, sahnede konuşturup dans ettirebilirsin.</p>
+            <h3 data-i18n="guideDialog.qsHeading">4 Adımda İlk Sahneni Kur</h3>
+            <p class="panel-copy" data-i18n="guideDialog.qsSubtitle">Bir bebeği giydir, sahneye koy, hikâye ekle ve kaydet. Sonra istersen Boya ve Seslendir’i dene.</p>
           </div>
 
           <div class="guide-step-grid">
@@ -797,35 +797,75 @@
                 <span class="guide-step-num" data-i18n="guideDialog.step1Number">1</span>
                 <span class="guide-card-tag" data-i18n="guideDialog.step1Badge">👗 Tasarım</span>
               </div>
-              <h4 data-i18n="guideDialog.step1Title">Bebeğini Yarat & Giydir</h4>
-              <p data-i18n="guideDialog.step1Desc"><strong>Tasarımcı</strong> bölümünde 6 farklı modelden birini seç. Ten, saç ve göz renklerini ayarla. Beğendiğin saçları, elbiseleri ve aksesuarları bebeğin üzerine sürükleyip bırak. 🎲 <strong>Karıştır</strong> butonuyla harika sürpriz kombinler deneyebilirsin! Bebeğine isim verip Dollbox'a kaydet.</p>
+              <h4 data-i18n="guideDialog.step1Title">Bebeğini Giydir ve Kaydet</h4>
+              <p data-i18n="guideDialog.step1Desc"><strong>Tasarımcı</strong> bölümünü aç. Bir bebek seç ve kıyafet kartlarına dokunarak giydir. <strong>Bebeği Kaydet</strong>’e dokun, bir isim ver ve <strong>Yeni Kaydet</strong>’e bas. Bebeğin artık <strong>Bebek Kutusu</strong>’nda!</p>
+              <div class="guide-button-examples">
+                <p class="guide-example-caption" data-i18n="guideDialog.buttonExamples">Düğme örnekleri · atölyede bunları bul</p>
+                <div class="guide-example-sequence">
+                  <span class="guide-button-example" data-i18n="nav.designer">Tasarımcı</span>
+                  <span class="guide-example-arrow" aria-hidden="true">→</span>
+                  <span class="guide-button-example is-primary" data-i18n="designer.saveDollBtn">💾 Bebeği Kaydet</span>
+                  <span class="guide-example-arrow" aria-hidden="true">→</span>
+                  <span class="guide-button-example is-primary" data-i18n="designer.saveNew">Yeni kaydet</span>
+                </div>
+              </div>
             </article>
 
             <article class="guide-step-card step-card-2">
               <div class="guide-card-header">
                 <span class="guide-step-num" data-i18n="guideDialog.step2Number">2</span>
-                <span class="guide-card-tag" data-i18n="guideDialog.step2Badge">🎨 Çizim</span>
+                <span class="guide-card-tag" data-i18n="guideDialog.step2Badge">🎭 Sahne</span>
               </div>
-              <h4 data-i18n="guideDialog.step2Title">Kendi Kıyafetlerini Çiz</h4>
-              <p data-i18n="guideDialog.step2Desc"><strong>Boya</strong> bölümüne geç! 🪞 <strong>Ayna Modu</strong> sayesinde tek bir çizgiyle iki tarafı simetrik tişörtler, elbiseler veya şapkalar çiz. Bebeğin vücut çizgilerini rehber alarak çiziminin tam üstüne oturmasını sağla.</p>
+              <h4 data-i18n="guideDialog.step2Title">Bebeğini Sahneye Koy</h4>
+              <p data-i18n="guideDialog.step2Desc"><strong>Oyna</strong> bölümünü aç. Ekleme tepsisinde <strong>Bebekler</strong>’i seç ve kaydettiğin bebeğe dokun. Bebeğin sahnede görünür! Bir eşya kartına dokunarak eşya ekle, sonra istediğin yere sürükle.</p>
+              <div class="guide-button-examples">
+                <p class="guide-example-caption" data-i18n="guideDialog.buttonExamples">Düğme örnekleri · atölyede bunları bul</p>
+                <div class="guide-example-sequence">
+                  <span class="guide-button-example" data-i18n="nav.play">Oyna</span>
+                  <span class="guide-example-arrow" aria-hidden="true">→</span>
+                  <span class="guide-button-example" data-i18n="play.trayDollsTab">Bebekler</span>
+                  <span class="guide-example-arrow" aria-hidden="true">→</span>
+                  <span class="guide-button-example" data-i18n="guideDialog.savedDollExample">Kaydettiğin bebek</span>
+                </div>
+              </div>
             </article>
 
             <article class="guide-step-card step-card-3">
               <div class="guide-card-header">
                 <span class="guide-step-num" data-i18n="guideDialog.step3Number">3</span>
-                <span class="guide-card-tag" data-i18n="guideDialog.step3Badge">🎭 Sahne</span>
+                <span class="guide-card-tag" data-i18n="guideDialog.step3Badge">💬 Hikâye</span>
               </div>
-              <h4 data-i18n="guideDialog.step3Title">Sahneni Kur & Süsle</h4>
-              <p data-i18n="guideDialog.step3Desc"><strong>Oyna</strong> bölümüne geç. Güzel bir arka plan seç ve kaydettiğin bebekleri sahneye koy. Mobilyalar, tatlı evcil hayvanlar ve süsler ekle. Eşyalara dokunarak büyüt, küçült veya çevir.</p>
+              <h4 data-i18n="guideDialog.step3Title">Hareket veya Balon Ekle</h4>
+              <p data-i18n="guideDialog.step3Desc">Bebeğine dokun. <strong>Hareket</strong> bölümünü aç ve <strong>Zıpla</strong>’yı seç. Ya da tepside <strong>Balonlar</strong>’ı açıp bir balona dokun. Balonu seç ve hikâyeni yazmak için <strong>Metin</strong>’e dokun.</p>
+              <div class="guide-button-examples">
+                <p class="guide-example-caption" data-i18n="guideDialog.buttonExamples">Düğme örnekleri · atölyede bunları bul</p>
+                <div class="guide-example-sequence">
+                  <span class="guide-button-example" data-i18n="play.motionTab">🎬 Hareket</span>
+                  <span class="guide-example-arrow" aria-hidden="true">→</span>
+                  <span class="guide-button-example" data-i18n="play.clipBounceShort">🦘 Zıpla</span>
+                </div>
+              </div>
             </article>
 
             <article class="guide-step-card step-card-4">
               <div class="guide-card-header">
                 <span class="guide-step-num" data-i18n="guideDialog.step4Number">4</span>
-                <span class="guide-card-tag" data-i18n="guideDialog.step4Badge">🎙️ Canlandır</span>
+                <span class="guide-card-tag" data-i18n="guideDialog.step4Badge">💾 Kaydet</span>
               </div>
-              <h4 data-i18n="guideDialog.step4Title">Seslendir & Canlandır!</h4>
-              <p data-i18n="guideDialog.step4Desc">Duruş ve dans hareketleri seç. 🎙️ <strong>Seslendir</strong> butonuna basıp mikrofona konuştuğunda bebeğin ağzı sesinle birlikte gerçek bir kukla gibi hareket eder! 📸 <strong>Dışa Aktar</strong> ile sahnenin fotoğrafını indir.</p>
+              <h4 data-i18n="guideDialog.step4Title">Sahneni Kaydet</h4>
+              <p data-i18n="guideDialog.step4Desc"><strong>Sahneyi Kaydet</strong>’e dokun. Sahnen için bir başlık yaz ve <strong>Yeni Olarak Kaydet</strong>’e bas. Yeniden oynamak için <strong>Sahne → Sahneler</strong> yolunu aç. Sahneni <strong>Sahne Kitabı</strong>’nda bulabilirsin.</p>
+              <div class="guide-button-examples">
+                <p class="guide-example-caption" data-i18n="guideDialog.buttonExamples">Düğme örnekleri · atölyede bunları bul</p>
+                <div class="guide-example-sequence">
+                  <span class="guide-button-example is-primary" data-i18n="play.saveSceneBtn">💾 Sahneyi Kaydet</span>
+                  <span class="guide-example-arrow" aria-hidden="true">→</span>
+                  <span class="guide-button-example is-primary" data-i18n="saveSceneDialog.saveNew">Yeni Olarak Kaydet</span>
+                  <span class="guide-example-arrow" aria-hidden="true">→</span>
+                  <span class="guide-button-example" data-i18n="play.sceneMenuBtn">Sahne</span>
+                  <span class="guide-example-arrow" aria-hidden="true">→</span>
+                  <span class="guide-button-example" data-i18n="play.sceneLibraryBtn">Sahneler</span>
+                </div>
+              </div>
             </article>
           </div>
         </section>
@@ -833,50 +873,57 @@
         <!-- 2. Features Panel -->
         <section id="guide-panel-features" class="guide-tab-panel" role="tabpanel" aria-labelledby="guide-tab-features" hidden>
           <div class="guide-panel-hero">
-            <h3 data-i18n="guideDialog.featHeading">Stüdyodaki Tüm Bölümleri Keşfet</h3>
+            <h3 data-i18n="guideDialog.featHeading">Deneyebileceklerin</h3>
           </div>
 
           <div class="guide-feature-grid">
-            <article class="guide-feature-card">
-              <h4 data-i18n="guideDialog.featDesignerTitle">👗 Bebek Tasarımcısı (Designer)</h4>
-              <p data-i18n="guideDialog.featDesignerP1"><strong>6 Farklı Model:</strong> Bebek, Çocuk, Klasik, Yetişkin ve Yaşlı modelleri arasından istediğin karakteri seç.</p>
-              <p data-i18n="guideDialog.featDesignerP2"><strong>Yüz & Stil Stüdyosu:</strong> Gözleri, kaşları, burnu, ağzı ve gözlük, çil, allık gibi tatlı detayları belirle. Göz bebeği (iris) rengini ve kıyafet renklerini istediğin gibi değiştir.</p>
-              <p data-i18n="guideDialog.featDesignerP3"><strong>Dollbox (Bebek Kutusu):</strong> Sahnenin üstündeki <strong>💾 Bebeği Kaydet</strong> butonuna bas, bebeğine bir isim verip <strong>Yeni Kaydet</strong> ile kaydet. <strong>🧺 Bebek Kutusu</strong> ile kaydettiğin bebekleri istediğin zaman açıp güncelleyebilir veya Oyna sahnesine ekleyebilirsin.</p>
+            <article class="guide-feature-card" id="guide-feature-designer">
+              <h4 data-i18n="guideDialog.featDesignerTitle">👗 Bebek Tasarımcısı</h4>
+              <p data-i18n="guideDialog.featDesignerP1"><strong>Bir bebek seç:</strong> Bebek, Çocuk, Klasik, Neşeli, Yetişkin veya Yaşlı modelini dene. Giydirmek için bir kıyafet kartına dokun. Kartı bebeğin üzerine sürükleyerek de giydirebilirsin.</p>
+              <p data-i18n="guideDialog.featDesignerP2"><strong>Yüz ve renkler:</strong> Göz, kaş, burun ve ağız seç. Gözlük, çil veya allık ekle. Göz rengini ve kıyafet renklerini değiştir.</p>
+              <p data-i18n="guideDialog.featDesignerP3"><strong>Bebek Kutusu:</strong> Sahnenin üstündeki <strong>Bebeği Kaydet</strong>’e dokun, bir isim ver ve <strong>Yeni Kaydet</strong>’e bas. <strong>Bebek Kutusu</strong>’ndan kaydettiğin bebekleri açabilir, güncelleyebilir veya Oyna sahnesine ekleyebilirsin.</p>
             </article>
 
-            <article class="guide-feature-card">
-              <h4 data-i18n="guideDialog.featPaintTitle">🎨 Boyama Stüdyosu (Paint Studio)</h4>
-              <p data-i18n="guideDialog.featPaintP1"><strong>Kıyafet ve Eşya Çizimi:</strong> Tişört, etek, elbise, ayakkabı veya sahnede kullanabileceğin oyuncaklar ve dekorasyonlar çiz.</p>
-              <p data-i18n="guideDialog.featPaintP2"><strong>Akıllı Araçlar:</strong> Fırça, Silgi, Boya Kovası, Şekiller (çizgi, daire, kutu) ve Renk Damlalığı. 🪞 <strong>Ayna Modu (M)</strong> ile iki tarafı birden aynı anda çiz!</p>
-              <p data-i18n="guideDialog.featPaintP3"><strong>Piksel Seçimi ve Kalıplar:</strong> Seçim aracıyla çizimin bir parçasını kopyala (⌘D) veya yatay çevir (H). Başlangıç kalıplarından ilham al ve manken referansıyla tam üstüne oturt.</p>
+            <article class="guide-feature-card" id="guide-feature-paint">
+              <h4 data-i18n="guideDialog.featPaintTitle">🎨 Boyama Stüdyosu</h4>
+              <p data-i18n="guideDialog.featPaintP1"><strong>Bir üst çiz:</strong> Boya bölümünü aç. <strong>Kıyafet</strong> ve ardından <strong>Üst</strong> seç. Fırçayla çiz. <strong>Çizimi Kaydet</strong>’e dokun, bir isim ver ve <strong>Çizimlerime Kaydet</strong>’e bas.</p>
+              <p data-i18n="guideDialog.featPaintP2"><strong>Çizimini kullan:</strong> Tasarımcı’da <strong>Üstler</strong>’i aç ve kaydettiğin üste dokun. <strong>Eşya</strong> olarak kaydettiğin çizimler Oyna’daki <strong>Eşyalar</strong> tepsisinde görünür. <strong>Kaydet ve Giy</strong> düğmesi görünüyorsa çizimini kaydedip bebeğini tek adımda giydirebilirsin.</p>
+              <p data-i18n="guideDialog.featPaintP3"><strong>Çizim yardımcıları:</strong> Soluk görünen bebek ve kalıp kaydettiğin resimde görünmez. Kalıbı resmine kopyalamak için <strong>Çizime Ekle</strong>’ye dokun. Rehber bebeği değiştirmek çizimini değiştirmez. Çizimini bir bebekte dene ve nasıl göründüğünü kontrol et.</p>
+              <p data-i18n="guideDialog.featPaintP4"><strong>Araçları dene:</strong> Silgi, Doldur, Şekiller veya Damlalık kullan. <strong>Ayna Modu</strong> iki tarafa aynı anda çizer. Seçim aracıyla çizimin bir parçasını taşı, kopyala veya çevir.</p>
             </article>
 
-            <article class="guide-feature-card">
-              <h4 data-i18n="guideDialog.featPlayTitle">🎭 Sahne ve Oyun Alanı (Play Stage)</h4>
-              <p data-i18n="guideDialog.featPlayP1"><strong>Bebek ve Eşya Yerleşimi:</strong> Tepsiden karakterleri ve eşyaları sahneye sürükle. Büyütmek veya küçültmek için köşelerden çek, ↔ butonuyla aynala, öne veya arkaya al.</p>
-              <p data-i18n="guideDialog.featPlayP2"><strong>📌 Sabitleme (Pin):</strong> Arka plandaki masayı, yatağı veya halıyı sahneye sabitleyerek yanlışlıkla yerinden oynamasını engelle.</p>
+            <article class="guide-feature-card" id="guide-feature-play">
+              <h4 data-i18n="guideDialog.featPlayTitle">🎭 Sahne ve Oyun Alanı</h4>
+              <p data-i18n="guideDialog.featPlayP1"><strong>Ekle ve seç:</strong> Tepsideki bebek veya eşya kartına dokunarak sahneye ekle. Tepsiden sürükleyerek de ekleyebilirsin. Sahnedeki bir eşyaya dokununca düğmeleri görünür. Büyütmek için <strong>+</strong>, küçültmek için <strong>−</strong> kullan. Seçimi bitirmek için boş bir yere dokun.</p>
+              <p data-i18n="guideDialog.featPlayP2"><strong>Mobilyayı yerinde tut:</strong> Kanepe, yatak veya halıyı seç ve <strong>Sabitle</strong>’ye dokun. Taşımadan, çevirmeden veya boyutunu değiştirmeden önce <strong>Öğeyi serbest bırak</strong>’a dokun. Arkada kalan bir eşyayı seçmek için <strong>Katmanlar</strong>’ı aç.</p>
               <p data-i18n="guideDialog.featPlayP3"><strong>Panoramik Sahne ve Mini Harita:</strong> Sahneyi Geniş (3200px) veya Panoramik (4800px) yaparak kocaman bir dünya kur. Mini haritadan istediğin yere hızla kay.</p>
             </article>
 
             <article class="guide-feature-card">
               <h4 data-i18n="guideDialog.featBubblesTitle">💬 Konuşma ve Hikaye Balonları</h4>
               <p data-i18n="guideDialog.featBubblesP1"><strong>4 Farklı Stil:</strong> Konuşma Balonu (💬), Düşünce Bulutu (💭), Haykırış/Çığlık (💥) ve Hikaye Altyazısı (📜).</p>
-              <p data-i18n="guideDialog.featBubblesP2">Balona çift tıklayarak veya seçip <strong>✏️ Metin</strong> diyerek 120 karaktere kadar istediğin diyaloğu yaz. Balonun ucunu konuşan bebeğe doğru sürükle.</p>
+              <p data-i18n="guideDialog.featBubblesP2">Bir balona dokun, sonra <strong>Metin</strong>’e bas. Boşluk ve noktalama işaretleriyle birlikte en fazla 120 karakter yazabilirsin. Çift tıklayarak da yazı kutusunu açabilirsin. Balonun tamamını konuşan bebeğin yakınına taşı.</p>
             </article>
 
-            <article class="guide-feature-card">
+            <article class="guide-feature-card" id="guide-feature-animation">
               <h4 data-i18n="guideDialog.featAnimationTitle">🎬 Canlandırma, Dans ve Sesli Kukla</h4>
               <p data-i18n="guideDialog.featAnimationP1"><strong>Yüz & Duruş:</strong> Bir bebeğe dokun, sonra bir yüz ifadesi veya duruş seç. Küçük, Orta ve Büyük, ifadenin ne kadar belirgin olacağını değiştirir.</p>
-              <p data-i18n="guideDialog.featAnimationP2"><strong>Hareket:</strong> Bir bebeğe dokun, <strong>Hareket</strong> bölümünü aç ve Zıpla, Sallan, Selam Ver veya başka bir hareket seç. Bebeğini sahnede izle! <strong>Küçük / Orta / Büyük</strong> hareketin büyüklüğünü, sahnenin üstündeki hız düğmeleri ise tüm sahnenin hızını değiştirir. <strong>Hareketsiz</strong> seçili bebeği, <strong>Duraklat</strong> tüm sahneyi durdurur. Ayarlar’da veya cihazında hareket kapalıysa bebek hareket etmez.</p>
+              <p data-i18n="guideDialog.featAnimationP2"><strong>Hareket:</strong> Bir bebeğe dokun, <strong>Hareket</strong> bölümünü aç ve Zıpla, Sallan, Eğil veya başka bir hareket seç. Bebeğini sahnede izle! <strong>Küçük / Orta / Büyük</strong> hareketin büyüklüğünü, sahnenin üstündeki hız düğmeleri ise tüm sahnenin hızını değiştirir. <strong>Hareketsiz</strong> seçili bebeği, <strong>Duraklat</strong> tüm sahneyi durdurur. Ayarlar’da veya cihazında hareket kapalıysa bebek hareket etmez.</p>
               <p data-i18n="guideDialog.featAnimationMoves"><strong>Hikâye hareketleri:</strong> Teşekkür etmek için <strong>Eğil</strong>, neşeli bir an için <strong>Kıpırda</strong>, hayır demek için <strong>Hayır De</strong> seç. Eğil ve Kıpırda, çizdiğin karakterlerde de çalışır. Hayır De, başı ayrı hareket edebilen bebeklerde görünür.</p>
-              <p data-i18n="guideDialog.featAnimationP3"><strong>🎙️ Canlı Sesli Kukla:</strong> Mikrofona konuş veya şarkı söyle; bebeğin ağzı sesinle birlikte hareket eder. Sesin kaydedilmez veya yüklenmez.</p>
+              <p data-i18n="guideDialog.featAnimationP3"><strong>Seslendir’i istersen dene:</strong> Bir bebek seç ve <strong>Seslendir</strong>’e dokun. Tarayıcın sorunca mikrofon izni ver, sonra konuş veya şarkı söyle. Bebeğin ağzı sesinle hareket eder. Durdurmak için yeniden <strong>Seslendir</strong>’e dokun. Sesin kaydedilmez veya yüklenmez.</p>
             </article>
 
             <article class="guide-feature-card">
               <h4 data-i18n="guideDialog.featStoryTitle">📚 Sahne Kitabı ve Fotoğraf Çekme</h4>
               <p data-i18n="guideDialog.featStoryP1"><strong>✦ Hikaye Şablonları:</strong> Çay Partisi, Yatak Odası, Moda Atölyesi, Güneşli Bahçe ve Çizgi Roman hazır sahneleriyle hemen hikayeni başlat.</p>
-              <p data-i18n="guideDialog.featStoryP2"><strong>Sahne Kitabı:</strong> Sahnelerini bir çizgi roman gibi sayfa sayfa kaydet, kopyasını çıkar ve istediğin zaman aç.</p>
-              <p data-i18n="guideDialog.featStoryP3"><strong>📸 PNG İndir:</strong> Sahnenin veya o anki hareketli karenin tertemiz, yüksek kaliteli resmini tek tıkla bilgisayarına veya tablete kaydet.</p>
+              <p data-i18n="guideDialog.featStoryP2"><strong>Kaydet ve yeniden aç:</strong> <strong>Sahneyi Kaydet</strong>’e dokun, bir başlık yaz ve <strong>Yeni Olarak Kaydet</strong>’i seç. <strong>Sahne → Sahneler</strong> yolunu açıp kayıtlı sahnede <strong>Aç</strong>’a dokun. Değişiklik yaptıktan sonra aynı sayfayı yenilemek için <strong>Sahneyi Kaydet → Mevcut Olanı Güncelle</strong>’yi, yeni sayfa için <strong>Yeni Olarak Kaydet</strong>’i kullan.</p>
+              <p data-i18n="guideDialog.featStoryP3"><strong>Bir resim sakla:</strong> <strong>Dışa Aktar</strong> menüsünü aç. Sahnenin resmi için <strong>Dışa Aktar</strong>’ı, o anın resmi için <strong>Kareyi Aktar</strong>’i seç. PNG dosyaları hareketsiz resimlerdir. Ses veya video içermezler.</p>
+            </article>
+
+            <article class="guide-feature-card" id="guide-feature-map">
+              <h4 data-i18n="guideDialog.featMapTitle">🗺️ Haritayı Keşfet</h4>
+              <p data-i18n="guideDialog.featMapP1">Oyna’da <strong>Harita</strong>’ya dokun ve bir yer seç. Gitmek için <strong>Buraya Git</strong>’e dokun. Kilitliyse nasıl açılacağına dair ipucunu oku. Bulunduğun yerde <strong>Şu An Buradasın</strong> yazar.</p>
+              <p data-i18n="guideDialog.featMapP2">Yerin ipucunu oku ve hatıra pulu toplamak için haritadaki gizli nesneye dokun. Topladığın pullar altta görünür. Bazı pullar yeni yerlerin açılmasına yardım eder.</p>
             </article>
           </div>
         </section>
@@ -884,50 +931,88 @@
         <!-- 3. Pro Tips Panel -->
         <section id="guide-panel-tips" class="guide-tab-panel" role="tabpanel" aria-labelledby="guide-tab-tips" hidden>
           <div class="guide-panel-hero">
-            <h3 data-i18n="guideDialog.tipsHeading">Usta Oyuncular İçin Püf Noktaları ve Gizli Numaralar</h3>
+            <h3 data-i18n="guideDialog.tipsHeading">Bunları Dene</h3>
           </div>
 
           <div class="guide-pro-grid">
             <article class="guide-pro-card">
-              <div class="pro-tag">⭐ PRO</div>
-              <h4 data-i18n="guideDialog.tipJointsTitle">🔗 Eşyaları Ele ve Başa Bağlama (Joints)</h4>
-              <p data-i18n="guideDialog.tipJointsDesc">Bir eşyayı (örneğin mikrofon, çanta, asa veya şapka) seçip <strong>Ekleme Noktası</strong> panelinden <strong>Sol El</strong>, <strong>Sağ El</strong> veya <strong>Baş</strong> seçtiğinde, eşya bebeğin vücuduna kilitlenir. Bebek dans edip zıpladığında eşya da onunla birlikte sallanır!</p>
+              <div class="pro-tag" data-i18n="guideDialog.tipBadge">⭐ İpucu</div>
+              <h4 data-i18n="guideDialog.tipPlacementTitle">🧸 Küçük Eşyaları Mobilyanın Üzerine Koy</h4>
+              <p data-i18n="guideDialog.tipPlacementDesc">Sahneye bir masa koy ve küçük bir eşya ekle. Eşyayı seç. <strong>Yerleştir…</strong> düğmesi görünüyorsa dokun ve masanın üstünü seç. Eşyayı işaretli alana doğru sürükleyerek de yerleştirebilirsin. Yalnızca eşyanın sığdığı yerler sunulur.</p>
             </article>
 
             <article class="guide-pro-card">
-              <div class="pro-tag">⭐ PRO</div>
+              <div class="pro-tag" data-i18n="guideDialog.tipBadge">⭐ İpucu</div>
               <h4 data-i18n="guideDialog.tipRhythmTitle">💃 Bebekleri Birlikte Dans Ettir</h4>
               <p data-i18n="guideDialog.tipRhythmDesc">Boş bir yerden sürükleyerek iki veya daha fazla bebeğin etrafına seçim kutusu çiz ya da <strong>Shift</strong> tuşuyla bebeklere tıkla. <strong>Hareket</strong> bölümünde hepsine aynı hareketi ver. Aynı anda hareket etmeleri için <strong>Birlikte</strong>, iki grubun sırayla hareket etmesi için <strong>Sırayla</strong>, dört adımlı bir dalga için <strong>Birbiri Ardına</strong> seç. <strong>Diğer zamanlama seçenekleri</strong> içindeki Adım 1–4, bebeğin tekrarlanan hareketin hangi anında olduğunu seçer; hızı değiştirmez. İki bebeğe Zıpla hareketini ver, birine Adım 1, diğerine Adım 3 seç.</p>
             </article>
 
             <article class="guide-pro-card">
-              <div class="pro-tag">⭐ PRO</div>
-              <h4 data-i18n="guideDialog.tipMultiSelectTitle">🔲 Çoklu Seçim ve Hizalama (Shift Tuşu)</h4>
-              <p data-i18n="guideDialog.tipMultiSelectDesc">Klavyede <strong>Shift</strong> tuşunu basılı tutarak birden fazla eşyaya tıklayabilir veya boşluktan sürükleyerek seçim kutusu açabilirsin. Tüm grubu aynı anda taşıyabilir, boyutlandırabilir veya hizalama butonlarıyla aynı çizgiye dizebilirsin.</p>
+              <div class="pro-tag" data-i18n="guideDialog.tipBadge">⭐ İpucu</div>
+              <h4 data-i18n="guideDialog.tipMultiSelectTitle">🔲 Bir Grubu Seç ve Hizala</h4>
+              <p data-i18n="guideDialog.tipMultiSelectDesc">Sahnenin boş bir yerinden sürükleyerek birkaç eşyanın etrafına kutu çiz. Klavyede <strong>Shift</strong>’e basılı tutarak her eşyaya tıklayabilirsin. Hizalamak için en az iki, eşit aralıklarla dizmek için üç sabitlenmemiş eşya seç. Farklı yerleşim alanlarındaki eşyalar birlikte hizalanamayabilir.</p>
+            </article>
+
+            <article class="guide-pro-card" id="guide-tip-pin">
+              <div class="pro-tag" data-i18n="guideDialog.tipBadge">⭐ İpucu</div>
+              <h4 data-i18n="guideDialog.tipPinningTitle">📌 Mobilyayı Yerinde Tut</h4>
+              <p data-i18n="guideDialog.tipPinningDesc">Büyük bir halı, kanepe veya masayı seç ve yerinde tutmak için <strong>Sabitle</strong>’ye dokun. Yeniden taşımak, çevirmek veya boyutunu değiştirmek için seçip <strong>Öğeyi serbest bırak</strong>’a dokun.</p>
+            </article>
+
+            <article class="guide-pro-card" id="guide-tip-undo">
+              <div class="pro-tag" data-i18n="guideDialog.tipBadge">⭐ İpucu</div>
+              <h4 data-i18n="guideDialog.tipUndoTitle">↺ Geri Al ve Kaydet</h4>
+              <p data-i18n="guideDialog.tipUndoDesc">Yanlış mı yaptın? <strong>Geri Al</strong>’a dokun. Bebeğini, sahneni veya çizimini kendi kutusunda saklamak için <strong>Bebeği Kaydet</strong>, <strong>Sahneyi Kaydet</strong> veya <strong>Çizimi Kaydet</strong> kullan. Çalışmaların bu cihazdaki tarayıcıda saklanır. Bir kopyasını daha saklamak için proje yedeğini indir.</p>
+            </article>
+
+            <article class="guide-pro-card" id="guide-tip-layers">
+              <h4 data-i18n="guideDialog.tipLayersTitle">📋 Arkada Kalan Eşyayı Bul</h4>
+              <p data-i18n="guideDialog.tipLayersDesc">Oyna’da <strong>Katmanlar</strong>’ı aç. Seçmek için eşyanın satırına dokun. Sahne düğmelerini kullanmak için listeyi kapat. Üzeri başka bir eşyayla örtülü olsa da bu yolla seçebilirsin.</p>
+            </article>
+          </div>
+          <div class="guide-panel-hero">
+            <h3 data-i18n="guideDialog.helpHeading">Yardım mı Gerekiyor?</h3>
+          </div>
+          <div class="guide-pro-grid">
+            <article class="guide-pro-card" id="guide-help-move">
+              <h4 data-i18n="guideDialog.helpMoveTitle">Bir Eşya Hareket Etmiyor</h4>
+              <p data-i18n="guideDialog.helpMoveDesc">Eşyayı seç. Sabitlenmişse <strong>Öğeyi serbest bırak</strong>’a dokun. Odada zemin, duvar veya mobilya gidebileceği yeri sınırlayabilir. <strong>Yerleştir…</strong> düğmesi görünüyorsa dene.</p>
+            </article>
+
+            <article class="guide-pro-card" id="guide-help-art">
+              <h4 data-i18n="guideDialog.helpArtTitle">Çizimini Bulamıyor musun?</h4>
+              <p data-i18n="guideDialog.helpArtDesc">Kaydettiğini kontrol etmek için Boya’da <strong>Çizimlerim</strong>’i aç. Tasarımcı’da çizdiğin kıyafet türünü seç. Kayıtlı eşyalar için Oyna’da <strong>Eşyalar</strong>’ı aç. Bir çizim görünmüyorsa paket ve stil süzgeçlerini kontrol et.</p>
+            </article>
+
+            <article class="guide-pro-card" id="guide-help-motion">
+              <h4 data-i18n="guideDialog.helpMotionTitle">Hareket veya Seslendir Başlamıyor</h4>
+              <p data-i18n="guideDialog.helpMotionDesc">Hareket için bir hareket seç ve sahnenin duraklatılmadığını kontrol et. Ayarlar veya cihazın hareketi kapatmış olabilir. Seslendir için bir bebek seç ve tarayıcının mikrofon iznini kontrol et. Hikâyeni balonlarla da anlatabilirsin.</p>
+            </article>
+
+            <article class="guide-pro-card" id="guide-help-save">
+              <h4 data-i18n="guideDialog.helpSaveTitle">Kaydetme Başarısız Oldu</h4>
+              <p data-i18n="guideDialog.helpSaveDesc">Ekranda <strong>Kaydedilmedi</strong> veya kaydetme hatası görünüyorsa uygulamayı açık tut ve yeniden dene. Kutu doluysa artık gerek duymadığın bir şeyi kaldır. Tarayıcı verilerini temizlemeden önce proje yedeği indirmek için bir yetişkinden yardım iste.</p>
+            </article>
+          </div>
+          <div class="guide-panel-hero">
+            <h3 data-i18n="guideDialog.familyHeading">Aileler İçin</h3>
+          </div>
+          <div class="guide-pro-grid">
+            <article class="guide-pro-card">
+              <div class="pro-tag" data-i18n="guideDialog.tipBadge">⭐ İpucu</div>
+              <h4 data-i18n="guideDialog.tipBackupTitle">📦 Proje Yedeği Sakla veya Yükle</h4>
+              <p data-i18n="guideDialog.tipBackupDesc">Ekranın üstündeki <strong>Ayarlar → Proje ve Yedekleri Aç</strong> yolunu izle. Bebekleri, sahneleri ve özel çizimleri bir dosyada saklamak için <strong>Proje JSON Dosyasını İndir</strong>’e dokun. Yüklemek için <strong>JSON Dosyası Seç</strong>’e dokun ve önizlemeyi kontrol et. <strong>Stüdyoya Ekle (Birleştir)</strong> dosyadaki çalışmaları ekler. <strong>Tüm Stüdyoyu Değiştir</strong> stüdyonun yerini alır ve önce kurtarma yedeği oluşturur.</p>
             </article>
 
             <article class="guide-pro-card">
-              <div class="pro-tag">⭐ PRO</div>
-              <h4 data-i18n="guideDialog.tipPinningTitle">📌 Arka Planı Sabitle (Kazaları Önle)</h4>
-              <p data-i18n="guideDialog.tipPinningDesc">Büyük bir kanepe, masa veya halıyı sahneye yerleştirdikten sonra <strong>📌 Sabitle</strong> butonuna bas. Sabitlenen eşyalar kilitlenir; böylece önlerindeki bebekleri seçip taşırken masa yanlışlıkla yerinden kaymaz.</p>
+              <div class="pro-tag" data-i18n="guideDialog.tipBadge">⭐ İpucu</div>
+              <h4 data-i18n="guideDialog.tipOfflineTitle">✈️ İnternetsiz Oyna</h4>
+              <p data-i18n="guideDialog.tipOfflineDesc">İlk indirme için internet gerekir. Bitmesini bekle ve uygulamayı yeniden aç. Yolculuktan önce interneti kapatıp oyunun açıldığını kontrol et. iPad’de siteyi Safari’de aç, sonra <strong>Paylaş → Ana Ekrana Ekle</strong>’yi kullan. Başka cihazlarda tarayıcının yükleme seçeneği varsa onu kullan.</p>
             </article>
 
-            <article class="guide-pro-card">
-              <div class="pro-tag">⭐ PRO</div>
-              <h4 data-i18n="guideDialog.tipBackupTitle">📦 Projeyi Arkadaşına Gönderme (JSON Dosyası)</h4>
-              <p data-i18n="guideDialog.tipBackupDesc">Header'daki <strong>⚙️ Ayarlar</strong> menüsünden <strong>📦 Proje ve Yedekleri Aç</strong>'a, ardından <strong>JSON İndir</strong> butonuna bas. Bu dosya yaptığın tüm bebekleri, sahneleri ve kendi çizdiğin özel kıyafetleri içerir. Bu dosyayı arkadaşına gönderirsen o da kendi stüdyosuna yükleyip oynayabilir!</p>
-            </article>
-
-            <article class="guide-pro-card">
-              <div class="pro-tag">⭐ PRO</div>
-              <h4 data-i18n="guideDialog.tipOfflineTitle">✈️ İnternetsiz (Çevrimdışı) Tam Sürüm Oynama</h4>
-              <p data-i18n="guideDialog.tipOfflineDesc">Uygulamayı Safari veya Chrome'da açtıktan sonra <strong>Ana Ekrana Ekle</strong> (Add to Home Screen) yap. Oyun cihazına yüklenir ve uçakta, arabada veya yazlıkta internetin olmadığı her yerde kesintisiz çalışır.</p>
-            </article>
-
-            <article class="guide-pro-card">
-              <div class="pro-tag">⭐ İPUCU</div>
-              <h4 data-i18n="guideDialog.tipUndoTitle">↺ Bir Şey Kaybolursa Panik Yok!</h4>
-              <p data-i18n="guideDialog.tipUndoDesc">Yanlışlıkla bir eşyayı sildiysen veya rengini beğenmediysen hemen <strong>↺ Geri Al</strong> (Ctrl+Z) butonuna bas. Yaptığın her şey cihazında güvenle otomatik kaydedilir.</p>
+            <article class="guide-pro-card" id="guide-family-storage">
+              <h4 data-i18n="guideDialog.tipStorageTitle">📱 Cihazda Saklama ve Sıfırlama</h4>
+              <p data-i18n="guideDialog.tipStorageDesc">Kaydettiğin çalışmalar bu cihazdaki tarayıcıda kalır. Başka bir cihaza kendiliğinden taşınmaz. Site verilerini temizlemek hem oyunun internetsiz açılması için gereken dosyaları hem de çalışmalarını silebilir. <strong>Tüm Stüdyoyu Sıfırla</strong> kayıtlı bebekleri, sahneleri, çizimleri, pulları ve ayarları kalıcı olarak siler. Önce proje yedeğini indir.</p>
             </article>
           </div>
         </section>
@@ -936,7 +1021,7 @@
         <section id="guide-panel-shortcuts" class="guide-tab-panel" role="tabpanel" aria-labelledby="guide-tab-shortcuts" hidden>
           <div class="guide-panel-hero">
             <h3 data-i18n="guideDialog.scHeading">Klavye ve Hızlı Kullanım Kısayolları</h3>
-            <p class="panel-copy" data-i18n="guideDialog.scSubtitle">Fare, dokunmatik ekran veya klavye tuşlarıyla stüdyoda çok daha hızlı hareket et!</p>
+            <p class="panel-copy" data-i18n="guideDialog.scSubtitle">Klavye kısayollarını istersen kullan. Oyna kısayolları için önce sahneye veya bir eşyaya odaklan. Boya kısayolları için tuvale odaklan. Yazı kutusunda yazarken kısayollar sahneyi değiştirmez.</p>
           </div>
 
           <div class="guide-shortcut-table-wrap">
@@ -966,7 +1051,7 @@
                 </tr>
                 <tr>
                   <td><span class="guide-area-pill play" data-i18n="guideDialog.scAreaPlay">Oyun Sahnesi</span></td>
-                  <td><kbd>Shift</kbd> + <kbd>Yön Tuşları</kbd></td>
+                  <td><kbd>Shift</kbd> + <kbd data-i18n="guideDialog.scArrowKeys">Yön tuşları</kbd></td>
                   <td data-i18n="guideDialog.scShiftArrows">Seçili öğeyi 1px hassas kaydır</td>
                 </tr>
                 <tr>
@@ -1046,7 +1131,7 @@
                 </tr>
                 <tr>
                   <td><span class="guide-area-pill paint" data-i18n="guideDialog.scAreaPaint">Boya Stüdyosu</span></td>
-                  <td><kbd>Yön Tuşları</kbd> + <kbd>Boşluk</kbd></td>
+                  <td><kbd data-i18n="guideDialog.scArrowKeys">Yön tuşları</kbd> + <kbd data-i18n="guideDialog.scSpace">Boşluk</kbd></td>
                   <td data-i18n="guideDialog.scPaintKeys">Sanal imleci hareket ettir ve Boşluk ile boya</td>
                 </tr>
               </tbody>
@@ -1071,7 +1156,7 @@
 
         <div class="world-map-viewport">
           <div class="world-map-stage">
-            <div id="world-map-camera" class="world-map-camera" tabindex="0" role="group" data-i18n-aria-label="worldMap.cameraAria" aria-label="Harita kamerası — sürükleyerek veya ok tuşlarıyla gezinin">
+            <div id="world-map-camera" class="world-map-camera" tabindex="0" role="group" data-i18n-aria-label="worldMap.cameraAria" aria-label="Diyar küresi — kaydır, sürükle veya yön tuşlarıyla çevir">
               <div id="world-map-svg-container" class="world-map-svg-frame">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 900" width="2400" height="900" preserveAspectRatio="xMidYMid meet" class="world-map-svg" role="group" data-i18n-aria-label="worldMap.svgAria" aria-label="Kâğıttan Masal Haritası">
   <defs>
@@ -1623,7 +1708,7 @@
     <!-- Fluttering Paper Flag -->
     <g class="sprite-anchor" transform="translate(0, -36)"><g class="marker-flag">
       <polygon points="-48,-12 48,-12 56,0 48,12 -48,12" fill="#ffb703" stroke="#e09f3e" stroke-width="1.5"/>
-      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="800" fill="#58310c" text-anchor="middle" data-i18n="worldMap.youAreHereBadge">📍 BURADASINIZ</text>
+      <text x="0" y="4" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="800" fill="#58310c" text-anchor="middle" data-i18n="worldMap.youAreHereBadge">📍 BURADASIN</text>
     </g></g>
     <!-- Pointer Pin Arrow -->
     <polygon points="-6,-24 6,-24 0,-14" fill="#ffb703" stroke="#e09f3e" stroke-width="1"/>
@@ -1639,7 +1724,7 @@
             <p class="world-map-turn-hint" data-i18n="worldMap.turnHint">Dünyayı çevirmek için kaydır veya sürükle</p>
             <div class="world-map-camera-hud">
               <button id="world-map-pan-left" class="map-pan-btn" type="button" data-i18n-aria-label="worldMap.panLeftAria" aria-label="Haritayı sola kaydır">◀</button>
-              <div id="world-map-minimap" class="world-map-minimap" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0" data-i18n-aria-label="worldMap.minimapAria" aria-label="Harita mini haritası">
+              <div id="world-map-minimap" class="world-map-minimap" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0" data-i18n-aria-label="worldMap.minimapAria" aria-label="Mini harita — haritada bir yere dokunarak oraya git">
                 <div id="world-map-minimap-dots" class="minimap-dots"></div>
                 <div id="world-map-minimap-window" class="minimap-window"></div>
               </div>
@@ -1693,7 +1778,7 @@
       <div class="outline-dialog-body">
         <div class="outline-header-row">
           <span id="scene-outline-summary" class="outline-summary">0 öğe</span>
-          <span class="outline-reorder-hint" data-i18n="sceneOutlineDialog.dragHint">Sıralamak için tutamacı sürükleyin</span>
+          <span class="outline-reorder-hint" data-i18n="sceneOutlineDialog.dragHint">Sıralamak için tutamacı sürükle</span>
         </div>
         <div id="scene-outline-list" class="outline-list" role="list"></div>
       </div>
@@ -1717,7 +1802,7 @@
       <form id="save-scene-form">
         <span class="eyebrow" data-i18n="saveSceneDialog.eyebrow">Sahne Kitabı</span>
         <h2 data-i18n="saveSceneDialog.title">Sahneyi Kaydet</h2>
-        <p data-i18n="saveSceneDialog.copy">Bu sahneyi Sahne Kitabınıza kaydetmek için bir başlık verin.</p>
+        <p data-i18n="saveSceneDialog.copy">Sahne Kitabı’na kaydetmek için sahnenin başlığını yaz.</p>
         <label for="scene-title-input" data-i18n="saveSceneDialog.label">Sahne Başlığı</label>
         <input id="scene-title-input" type="text" inputmode="text" name="sceneTitle" maxlength="40" data-i18n-placeholder="saveSceneDialog.placeholder" placeholder="İkindi Çayı Hikayesi" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
         <div class="button-row end">
@@ -1732,11 +1817,11 @@
       <form id="paint-save-form">
         <span class="eyebrow" data-i18n="paintSaveDialog.eyebrow">Boyama Stüdyosu</span>
         <h2 data-i18n="paintSaveDialog.title">Özel Çizimi Kaydet</h2>
-        <p data-i18n="paintSaveDialog.copy">Çiziminizi Çizimlerim kütüphanesine kaydetmek için bir ad verin.</p>
+        <p data-i18n="paintSaveDialog.copy">Çizimlerim’e kaydetmek için çiziminin adını yaz.</p>
         <div class="paint-save-preview-wrap">
           <div id="paint-save-thumb" class="paint-save-thumb" role="img" data-i18n-aria-label="paintSaveDialog.thumbAria" aria-label="Çizim küçük resim önizlemesi"></div>
         </div>
-        <p id="paint-save-fit-note" class="paint-save-fit-note" data-i18n="paintSaveDialog.fitNote" hidden>🎨 Bu özel çizim tüm bebek modelleriyle uyumlu olacaktır.</p>
+        <p id="paint-save-fit-note" class="paint-save-fit-note" data-i18n="paintSaveDialog.fitNote" hidden>🎨 Bu çizimi her bebekte deneyebilirsin. Nasıl göründüğünü önizlemeden kontrol et.</p>
         <label for="paint-artwork-name" data-i18n="paintSaveDialog.label">Çizim Adı</label>
         <input id="paint-artwork-name" type="text" inputmode="text" name="artworkName" maxlength="30" data-i18n-placeholder="paintSaveDialog.placeholder" placeholder="Özel Tişörtüm" autocomplete="off" autocapitalize="sentences" autocorrect="on" required>
         <div class="button-row end">
@@ -1751,10 +1836,10 @@
       <div class="dialog-content">
         <span class="eyebrow" data-i18n="paintDirtyDialog.eyebrow">Kaydedilmemiş Değişiklikler</span>
         <h2 data-i18n="paintDirtyDialog.title">Boyamaya Devam Edilsin mi?</h2>
-        <p data-i18n="paintDirtyDialog.copy">Boyama Stüdyosunda kaydedilmemiş çizim değişiklikleriniz var.</p>
+        <p data-i18n="paintDirtyDialog.copy">Çiziminin son değişiklikleri henüz Çizimlerim’de değil. Çizmeye devam et, kaydet veya vazgeç.</p>
         <div class="button-row end">
           <button id="paint-dirty-keep-btn" type="button" class="button primary" data-i18n="paintDirtyDialog.keepBtn">Boyamaya Devam Et</button>
-          <button id="paint-dirty-discard-btn" type="button" class="button secondary" data-i18n="paintDirtyDialog.discardBtn">Taslağı Sil</button>
+          <button id="paint-dirty-discard-btn" type="button" class="button secondary" data-i18n="paintDirtyDialog.discardBtn">Değişikliklerden Vazgeç</button>
           <button id="paint-dirty-save-btn" type="button" class="button secondary" data-i18n="paintDirtyDialog.saveBtn">Çizimi Kaydet</button>
         </div>
       </div>
@@ -1762,12 +1847,12 @@
 
     <dialog id="paint-draft-recovery-dialog" class="confirm-dialog">
       <div class="dialog-content">
-        <span class="eyebrow" data-i18n="paintDraftRecoveryDialog.eyebrow">Taslak Kurtarma</span>
+        <span class="eyebrow" data-i18n="paintDraftRecoveryDialog.eyebrow">Çizimine Devam Et</span>
         <h2 data-i18n="paintDraftRecoveryDialog.title">Kaydedilmemiş Çizim Kurtarılsın mı?</h2>
-        <p data-i18n="paintDraftRecoveryDialog.copy">Bu cihazda önceki boyama oturumunuzdan kaydedilmemiş bir çizim taslağı bulundu.</p>
+        <p data-i18n="paintDraftRecoveryDialog.copy">Bu cihazda kaydetmeyi bitirmediğin bir çizim bulundu. Devam et veya çizimden vazgeç.</p>
         <div class="button-row end">
-          <button id="paint-recover-discard-btn" type="button" class="button secondary" data-i18n="paintDraftRecoveryDialog.discardBtn">Taslağı Sil</button>
-          <button id="paint-recover-continue-btn" type="button" class="button primary" data-i18n="paintDraftRecoveryDialog.continueBtn">Taslağa Devam Et</button>
+          <button id="paint-recover-discard-btn" type="button" class="button secondary" data-i18n="paintDraftRecoveryDialog.discardBtn">Çizimden Vazgeç</button>
+          <button id="paint-recover-continue-btn" type="button" class="button primary" data-i18n="paintDraftRecoveryDialog.continueBtn">Çizime Devam Et</button>
         </div>
       </div>
     </dialog>
@@ -1802,7 +1887,7 @@
     <dialog id="paint-impact-dialog" class="confirm-dialog impact-dialog" aria-labelledby="impact-dialog-title">
       <div class="dialog-content">
         <span class="eyebrow" data-i18n="paintImpactDialog.eyebrow">Çizim Kullanımı ve Kaldırma</span>
-        <h2 id="impact-dialog-title" data-i18n="paintImpactDialog.title">Çizim Etkisi</h2>
+        <h2 id="impact-dialog-title" data-i18n="paintImpactDialog.title">Çizimin Kullanıldığı Yerler</h2>
         <div class="impact-art-preview">
           <div id="impact-art-thumb" class="impact-thumb" role="img" data-i18n-aria-label="paintImpactDialog.thumbAria" aria-label="Çizim küçük resmi"></div>
           <div class="impact-art-meta">
@@ -1811,10 +1896,10 @@
           </div>
         </div>
         <div id="impact-details-box" class="impact-details-box"></div>
-        <p id="impact-warning-text" class="impact-warning-text" data-i18n="paintImpactDialog.warningText">Kaldırma işlemi bu öğeyi kütüphanenizden gizler. Şu anda onu kullanan bebekler ve sahneler etiketli bir yer tutucu gösterecektir. İstediğiniz zaman Çöp Kutusundan geri yükleyebilirsiniz.</p>
+        <p id="impact-warning-text" class="impact-warning-text" data-i18n="paintImpactDialog.warningText">Kaldırmak bu çizimi Çizimlerim’den gizler. Çizimi kullanan bebekler ve sahneler, resmin yerine adının yazdığı bir kutu gösterir. Yeniden görünmesi için Çöp Kutusu’ndan geri yükle.</p>
         <div class="button-row end">
           <button id="paint-impact-cancel-btn" type="button" class="button secondary" data-i18n="paintImpactDialog.cancelBtn">İptal</button>
-          <button id="paint-impact-remove-btn" type="button" class="button secondary" data-i18n-title="paintImpactDialog.removeTitle" title="Çizimi kütüphaneden gizler; güvenli yer tutucuları korur" data-i18n="paintImpactDialog.removeBtn">Çizimlerimden Kaldır</button>
+          <button id="paint-impact-remove-btn" type="button" class="button secondary" data-i18n-title="paintImpactDialog.removeTitle" title="Çizimi Çizimlerim’den gizle; bebek ve sahnelerdeki yerini koru" data-i18n="paintImpactDialog.removeBtn">Çizimlerimden Kaldır</button>
           <button id="paint-impact-delete-all-btn" type="button" class="button danger-fill" data-i18n-title="paintImpactDialog.deleteAllTitle" title="Çizimi ve bebekler ile sahnelerdeki tüm kullanımlarını tamamen siler" data-i18n="paintImpactDialog.deleteAllBtn">Çizimi ve Tüm Kullanımlarını Sil</button>
         </div>
       </div>
@@ -1853,7 +1938,7 @@
       <form id="bubble-text-form">
         <span class="eyebrow" data-i18n="bubbleDialog.eyebrow">Konuşma Balonu</span>
         <h2 data-i18n="bubbleDialog.title">Balon Metnini Düzenle</h2>
-        <p data-i18n="bubbleDialog.copy">Bu balon için mesaj veya hikaye metnini yazın.</p>
+        <p data-i18n="bubbleDialog.copy">Balonun içine mesajını veya hikâyeni yaz.</p>
         <label for="bubble-text-input" data-i18n="bubbleDialog.label">Balon Mesajı</label>
         <textarea id="bubble-text-input" inputmode="text" name="bubbleText" maxlength="120" rows="3" data-i18n-placeholder="bubbleDialog.placeholder" placeholder="Merhaba!" autocomplete="off" autocapitalize="sentences" autocorrect="on" required></textarea>
         <div class="character-count-row"><span id="bubble-char-count">0/120</span></div>
@@ -1868,7 +1953,7 @@
       <div class="error-dialog-content">
         <span class="eyebrow danger-eyebrow" data-i18n="errorBoundaryDialog.eyebrow">Stüdyo Kurtarma</span>
         <h2 id="error-boundary-title" data-i18n="errorBoundaryDialog.title">Bir sorun oluştu</h2>
-        <p id="error-boundary-message" data-i18n="errorBoundaryDialog.message">Beklenmeyen bir çalışma zamanı hatası oluştu. Güvenli olmayan görevler durduruldu ve bu cihaza önceden kaydedilmiş proje verileriniz korundu.</p>
+        <p id="error-boundary-message" data-i18n="errorBoundaryDialog.message">Bir sorun oluştu ve stüdyo durdu. Son kaydettiğin çalışmalar bu cihazda duruyor. Yeniden denemek için stüdyoyu yeniden yükle.</p>
         <p class="error-code-label"><span data-i18n="errorBoundaryDialog.codeLabel">Hata Kodu:</span> <code id="error-boundary-code">ERR_RUNTIME</code></p>
         <div class="button-row end">
           <button id="dismiss-error-btn" type="button" class="button secondary" data-i18n="errorBoundaryDialog.dismissBtn">Kapat</button>

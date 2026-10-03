@@ -7,7 +7,7 @@ import { createDefaultEnvelope, sanitizeScene } from '../js/core/state-schema.js
 import { getAsset } from '../js/core/asset-catalog.js';
 import { createEmptyScene, addEntity, alignEntities, setEntityPinned } from '../js/domain/scene-rules.js';
 import { setPlacementMode, placeEntity } from '../js/domain/scene-placement.js';
-import { createSelectionHudController, sceneControlDisabledReason } from '../js/features/play/selection-hud-controller.js';
+import { createSelectionHudController, offersDetach, sceneControlDisabledReason } from '../js/features/play/selection-hud-controller.js';
 
 function fixture() {
   let scene = setPlacementMode(createEmptyScene('audit'), 'room', getAsset);
@@ -72,14 +72,14 @@ test('pinned transforms and invalid alignment/distribution show why the action i
   assert.notEqual(aligned, furnished, 'pinned items on other supports do not block movable items');
 });
 
-test('supported prop detachment works through toolbar and undo restores the support', async () => {
-  const scene = placeEntity(fixture(), 'tea', { x: 1000, y: 640 }, getAsset, { transfer: true });
-  const { store, hud } = controls(scene);
-  store.dispatch({ type: 'ui/selectEntity', instanceId: 'tea' });
-  await hud.handleEntityAction('detach');
-  assert.equal(store.getState().currentScene.entities.find(e => e.instanceId === 'tea').attachedTo, null);
-  store.dispatch({ type: 'app/undo' });
-  assert.equal(store.getState().currentScene.entities.find(e => e.instanceId === 'tea').attachedTo, 'table');
+test('Detach is offered for pieces that follow a doll, not for furniture-supported pieces', () => {
+  const supported = placeEntity(fixture(), 'tea', { x: 1000, y: 640 }, getAsset, { transfer: true });
+  const tea = supported.entities.find(e => e.instanceId === 'tea');
+  assert.equal(tea.placement.kind, 'surface');
+  assert.equal(offersDetach(tea), false, 'dragging already moves it to another support or the floor');
+  const held = { instanceId: 'cup', kind: 'prop', attachedTo: 'doll', placement: undefined };
+  assert.equal(offersDetach(held), true, 'a held prop keeps following its doll when dragged');
+  assert.equal(offersDetach({ instanceId: 'chair', kind: 'prop', attachedTo: null }), false);
 });
 
 test('SVG requests refresh stale artwork with code and retain an offline fallback', async () => {

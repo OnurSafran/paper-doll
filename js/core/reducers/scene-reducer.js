@@ -162,7 +162,7 @@ export function sceneReducer(state, action, context) {
       let scene = addEntity(state.currentScene, {
         instanceId, kind: 'prop', sourceId: asset.id, x: spawnX, y: spawnY, attachedTo, attachOffset
       }, context.getAsset);
-      if (action.transfer && !attachedTo) scene = placeEntity(scene, instanceId, { x: spawnX, y: spawnY }, context.getAsset, { transfer: true });
+      if (action.transfer && !attachedTo) scene = placeEntity(scene, instanceId, { x: spawnX, y: spawnY }, context.getAsset, { transfer: true, ...(action.placementTarget ? { target: action.placementTarget } : {}) });
       return { state: localizedMessage('play.statusPropAdded', { assetId: asset.id }, { ...state, currentScene: scene }), persist: true };
     }
 

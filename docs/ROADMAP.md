@@ -15,6 +15,7 @@ Version 2.0.0, schema 8 (the first supported Paper Stage save; older data is cle
 - **Paper Stage:** background-driven floor/wall constraints, automatic depth, furniture surfaces, drawn support areas, alpha-accurate hit testing, and grounded bounding boxes (D-049, D-050, [hitbox PRD](hitbox_and_bounding_box_prd.md)).
 - **Paint Studio:** IndexedDB artwork, mixed raster/vector rendering, My Art, cutouts, and placement authoring.
 - **Portability:** versioned project package with SHA-256 artwork integrity, Replace/Merge, collision rewriting, and recoverable backups (D-051, D-052).
+- **Guide:** four existing tabs retained; Quick Start button examples implemented in English/Turkish (design A). Live studio tutorial specified, not built; child/iPad comprehension checks remain open. See [PRD](PRD-GUIDE-AND-LIVE-TUTORIAL.md).
 - **Quality:** 710 automated tests, ESLint with 0 errors and 0 warnings, `tsc --noEmit`, and asset, pack, cache-busting, and documentation validators. All run through `npm run check`.
 - **Foundations:** slice reducers, disposable teardown registry, JSDoc type checking, isolated locale dictionaries, generated service-worker manifest, worker/OffscreenCanvas export, and SVG symbol reuse (D-038 to D-044).
 
@@ -29,6 +30,8 @@ Ordered by what blocks a family release first.
 | Family & Home release checks | Open | Independent fit, tint, thumbnail, and PNG export review, plus target-iPad performance. |
 | Paper Stage validation | Open | Moderated five-user pilot, physical iPad run, and crowded-scene frame-time measurements (D-049, D-050). |
 | Phase 4: browser E2E suite | Open | Automated multi-browser journeys for create, persist, transfer, and offline. Today only `scripts/verify-hit-testing-browser.mjs` and `scripts/verify-scene-outline-browser.mjs` exist, both outside `npm run check`. |
+| Live studio tutorial | Specified, not built | Optional Tutorial entry, real-control highlights, successful-action progress, and first-scene save/reopen; see [PRD](PRD-GUIDE-AND-LIVE-TUTORIAL.md). |
+| Guide comprehension | External validation pending | Child observation of button examples and first-scene flow, plus physical iPad touch/readability checks; see [review](GUIDE-CONTENT-REVIEW.md). |
 | Scene transitions and Scene Book slideshow | Specified, not built | [PRD](PRD-STORYBOOK-SCENE-TRANSITIONS.md). Only a page-flip on background change exists; there is no curtain, dissolve, scene-load transition, or reader mode. |
 | Fabric patterns | Deferred | Per-clone SVG ID scoping before patterns or definitions are admitted ([ASSETS.md](ASSETS.md)). |
 | Papercraft finish coverage | Deferred | Broader cardboard finish only; clothing tabs stay off (D-045, D-047). |

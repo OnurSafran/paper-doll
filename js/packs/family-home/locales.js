@@ -290,9 +290,9 @@ export const FAMILY_LOCALES = {
         },
         "winter": {
           "title": "Kış okuma akşamı",
-          "description": "Hayalî bir kar yolculuğu için bir kitap seçin. Kar küresine hangi dileği fısıldayacaksınız?",
-          "prompt1": "Hayalî bir kar yolculuğu için bir kitap seçin.",
-          "prompt2": "Kar küresine hangi dileği fısıldayacaksınız?"
+          "description": "Hayalî bir kar yolculuğu için bir kitap seç. Kar küresine hangi dileği fısıldayacaksın?",
+          "prompt1": "Hayalî bir kar yolculuğu için bir kitap seç.",
+          "prompt2": "Kar küresine hangi dileği fısıldayacaksın?"
         },
         "bayram": {
           "title": "Bayram ziyareti",
@@ -314,7 +314,7 @@ export const FAMILY_LOCALES = {
       "allPacks": "Tüm paketler",
       "libraryPack": "İçerik paketi",
       "outfitsLabel": "Aile kombinleri",
-      "chooseOutfit": "Bir kombin seçin…"
+      "chooseOutfit": "Bir kombin seç…"
     }
   }
 };

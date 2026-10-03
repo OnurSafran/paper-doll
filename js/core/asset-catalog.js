@@ -490,11 +490,15 @@ function corePlacementMetadata(id) {
     { id: 'floor', kind: 'floor', polygon: [[0, seams[id]], [1600, seams[id]], [1600, 900], [0, 900]] },
     { id: 'wall', kind: 'wall', polygon: [[0, 0], [1600, 0], [1600, seams[id]], [0, seams[id]]] }
   ] } };
-  const floor = ['prop_chair', 'prop_table', 'prop_plant', 'prop_lamp', 'prop_rug', 'prop_easel', 'prop_bookshelf', 'prop_bench', 'prop_picnic_blanket', 'prop_puppy', 'prop_beach_ball'];
-  const small = ['prop_tea_set', 'prop_flower_pot', 'prop_cake', 'prop_camera', 'prop_watering_can', 'prop_paint_palette'];
-  if (!floor.includes(id) && !small.includes(id) && id !== 'prop_painting') return {};
+  const floor = ['prop_chair', 'prop_table', 'prop_plant', 'prop_lamp', 'prop_rug', 'prop_easel', 'prop_bookshelf', 'prop_bench', 'prop_picnic_blanket', 'prop_puppy', 'prop_beach_ball', 'prop_umbrella', 'prop_balloons', 'prop_guitar', 'prop_bicycle', 'prop_mailbox'];
+  const small = ['prop_tea_set', 'prop_flower_pot', 'prop_cake', 'prop_camera', 'prop_watering_can', 'prop_paint_palette', 'prop_cat', 'prop_picnic_basket'];
+  const wall = ['prop_painting', 'prop_kite'];
+  if (!floor.includes(id) && !small.includes(id) && !wall.includes(id)) return {};
+  // Slim bases (a parasol pole, a balloon bunch's strings) need a narrower footprint than the artwork width.
+  const footprintWidth = { prop_umbrella: .2, prop_balloons: .3 }[id] ?? (small.includes(id) ? .25 : .55);
   return {
-    placementRules: { allowedTargets: id === 'prop_painting' ? ['wall'] : small.includes(id) ? ['floor', 'surface'] : ['floor'], tags: small.includes(id) ? ['small-prop'] : ['furniture'], contactFootprint: { width: small.includes(id) ? .25 : .55, depth: .02 }, renderClass: ['prop_rug', 'prop_picnic_blanket'].includes(id) ? 'ground' : 'upright' },
+    placementRules: { allowedTargets: wall.includes(id) ? ['wall'] : small.includes(id) ? ['floor', 'surface'] : ['floor'], tags: small.includes(id) ? ['small-prop'] : ['furniture'], contactFootprint: { width: footprintWidth, depth: .02 }, renderClass: ['prop_rug', 'prop_picnic_blanket'].includes(id) ? 'ground' : 'upright' },
+    ...(id === 'prop_kite' ? { groundAnchor: { x: .5, y: .5 } } : {}),
     // Normalized to the trimmed viewBox. The wall anchor keeps the frame where the
     // former 220 × 180 display box centered it.
     ...(id === 'prop_painting' ? {

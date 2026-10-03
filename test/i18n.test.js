@@ -223,7 +223,7 @@ test('updateDomTranslations updates element text, titles, placeholders, content,
   assert.equal(titleEl.title, 'Geri Al (Ctrl+Z veya ⌘Z)');
   assert.equal(placeholderEl.placeholder, 'Güneşli gün bebeği');
   assert.equal(ariaEl['aria-label'], 'Dili Değiştir / Switch Language');
-  assert.equal(contentEl.content, 'Kağıt bebekler tasarlayın ve sahnelerde canlandırın.');
+  assert.equal(contentEl.content, 'Kâğıt bebekler tasarla ve sahnede hikâyeni anlat.');
 });
 
 import { validateArtworkName } from '../js/features/paint/paint-session.js';
@@ -232,7 +232,7 @@ test('validateArtworkName error messages adapt to active language', () => {
   setLanguage('tr');
   const trEmpty = validateArtworkName('');
   assert.equal(trEmpty.valid, false);
-  assert.equal(trEmpty.error, 'Lütfen çiziminiz için bir ad girin.');
+  assert.equal(trEmpty.error, 'Çizimin için bir isim yaz.');
 
   const trTooLong = validateArtworkName('A'.repeat(50));
   assert.equal(trTooLong.valid, false);
@@ -331,5 +331,3 @@ test('Custom asset and project status messages adapt to active language and retr
     setLanguage(originalLanguage);
   }
 });
-
-

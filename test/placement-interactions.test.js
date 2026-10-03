@@ -161,8 +161,8 @@ test('Real stage pointer release acquires support on a free background; cancel p
   const listeners = {};
   const nodes = new Map(store.getState().currentScene.entities.map(e => [e.instanceId, { dataset: { instanceId: e.instanceId }, style: { setProperty() {} }, classList: { add() {}, remove() {} }, closest() { return this; } }]));
   const stage = { dataset: {}, addEventListener: (type, fn) => { listeners[type] = fn; }, getBoundingClientRect: () => ({ left: 0, top: 0, width: 1600, height: 900 }), querySelector: selector => nodes.get(selector.match(/data-instance-id="([^"]+)"/)?.[1]) || null };
-  const svgNode = () => ({ setAttribute() {}, append() {}, remove() {} });
-  globalThis.document = { createElementNS: svgNode };
+  const svgNode = () => ({ setAttribute() {}, append() {}, remove() {}, dataset: {}, style: {}, animate() {}, getAnimations: () => [] });
+  globalThis.document = { createElementNS: svgNode, createElement: svgNode };
   globalThis.requestAnimationFrame = () => 1;
   globalThis.cancelAnimationFrame = () => {};
   const controller = createStagePointerController({ store, getAsset, $: selector => selector === '#play-stage' ? stage : selector === '#scene-world' ? { append() {} } : null, initCameraControls() {}, stopEdgePan() {}, startEdgePan() {}, render: async () => {}, playRenderToken: 0 });

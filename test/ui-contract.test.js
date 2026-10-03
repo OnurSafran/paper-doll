@@ -232,7 +232,7 @@ test('project portability and backup controls expose accessible dialogs, dropzon
 });
 
 test('project and paint copy do not duplicate localized labels on narrow layouts', () => {
-  assert.match(html, /<p><strong data-i18n="projectDialog\.dropzonePrompt">[^<]*drag|<p><strong data-i18n="projectDialog\.dropzonePrompt">[^<]*sürükleyip/);
+  assert.match(html, /<p><strong data-i18n="projectDialog\.dropzonePrompt">[^<]*drag|<p><strong data-i18n="projectDialog\.dropzonePrompt">[^<]*sürükle/);
   assert.doesNotMatch(html, /data-i18n="projectDialog\.dropzonePrompt"[^>]*>[^<]*<\/strong>\s+(?:or|veya)\s+/);
   assert.doesNotMatch(paintJs, /`👗 \$\{t\('paint\.wearableTypeBtn'\)/);
   assert.doesNotMatch(paintJs, /`🧸 \$\{t\('paint\.propTypeBtn'\)/);

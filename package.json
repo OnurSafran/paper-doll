@@ -7,6 +7,7 @@
     "test": "node --test",
     "test:hit-testing-browser": "node scripts/verify-hit-testing-browser.mjs",
     "test:play-browser": "node scripts/verify-play-features-browser.mjs",
+    "test:guide-browser": "node scripts/verify-guide-browser.mjs",
     "build:backgrounds": "node scripts/build-backgrounds.mjs",
     "validate:docs": "node scripts/validate-docs.mjs",
     "validate:assets": "node scripts/validate-assets.mjs",

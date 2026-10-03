@@ -37,6 +37,15 @@ export function contextToolbarPosition(art, size, viewport, avoid = null) {
   return { left, top: Math.max(minY, Math.min(maxY, preferredTop)), isAbove: Boolean(isAbove) };
 }
 
+/**
+ * Detach is for pieces that follow another one (a held prop, a speech bubble): dragging them keeps
+ * the link. Furniture-supported pieces just drag to another support or the floor, and Detach would
+ * only strand them as a free exception.
+ */
+export function offersDetach(entity) {
+  return Boolean(entity?.attachedTo) && entity.placement?.kind !== 'surface';
+}
+
 export function createSelectionHudController(context) {
   let ring = null;
   let anchors = [];
@@ -196,7 +205,7 @@ export function createSelectionHudController(context) {
         ['back', '↓', t('play.sendBackward')],
         ['front', '↑', t('play.bringForward')],
         ['togglePin', selected.pinned ? '📌' : '📍', selected.pinned ? t('play.unpin') : t('play.pin')],
-        ...(selected.attachedTo ? [['detach', '⛓️', t('play.detach')]] : []),
+        ...(offersDetach(selected) ? [['detach', '⛓️', t('play.detach')]] : []),
         ['duplicate', '⧉', t('play.duplicate')],
         ...(context.store.getState().currentScene.entities.some(e => e.attachedTo === selected.instanceId && e.placement?.kind === 'surface') ? [['duplicateWithContents','⧉+',t('placement.duplicateWithContents')]] : []),
         ['delete', '', t('play.deleteItem')]

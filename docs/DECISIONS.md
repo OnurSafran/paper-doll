@@ -54,6 +54,9 @@ Change an accepted decision only by recording a replacement and updating its own
 | D-051 | Project import, merge, and backup restore resolve assets through the full pack registry, never the built-in catalog. | Implemented | The built-in resolver silently stripped Family & Home clothing and reset pack backgrounds before the import preview, so a Replace or Restore lost content with no warning. |
 | D-052 | IndexedDB transactions never await non-IndexedDB work; validate and hash first, then open the transaction. | Implemented | Browsers commit a transaction as soon as it has no pending request, so `restoreBackup` failed in real browsers while permissive mocks passed. The test mock now models transaction lifetime. |
 | D-053 | Play stage controls wrap on narrow containers instead of overflowing or scrolling sideways. | Implemented | The playback transport overflowed its grid cell and covered Layers and stage width at 375 px; hidden scrolled controls are undiscoverable for young players. |
+| D-054 | Placement drag guides use idle/active states with a fixed-pixel contact marker and one label chip above the dragged piece; geometry is built once per drag. | Implemented (Phases 0–1) | Uniformly outlined, bobbing polygons were unreadable and recomputed every move; a ghost, invalid styling, ripple, and `:has()` selectors were rejected. |
+| D-055 | Every prop declares placement rules; Detach is offered only for pieces that follow another piece; any click on the Play screen outside the selection's own tools clears the selection. | Implemented | First user test: unconstrained props (a teddy, building blocks) rested anywhere in rooms; Detach on furniture-supported pieces was redundant; the toolbar stayed open after clicking beside the scene. |
+| D-056 | A prop dragged out of the tray is previewed as a virtual entity: real artwork, the shared placement guides, and a drop that commits exactly the previewed placement. | Implemented | Tray props were not in the scene until dropped, so players saw neither the real piece nor where it could go. |
 
 ## Decision details
 
@@ -359,3 +362,58 @@ Browser verification must activate controls by pointer. Keyboard focus followed 
 Enter bypasses overlap, which is how the earlier defect went unnoticed. The Scene
 Outline script now taps by pointer and asserts that every stage control is what
 sits at its own centre, fully on screen, at 375 px.
+
+### D-054 — Placement guide feedback
+
+**Date:** 2026-10-03. **Status:** Implemented (Phases 0–1). Full rationale: [PRD-PLACEMENT-GUIDE-FEEDBACK.md](PRD-PLACEMENT-GUIDE-FEEDBACK.md).
+
+While a piece is dragged, the legal targets draw as soft areas (floor and wall without
+edges, furniture surfaces with a thin edge); the one the piece snaps to is emphasized and
+shows a contact ring and a short label chip in a HUD layer above the dragged artwork.
+Guide geometry is built once per drag and rebuilt only when the background, stage, mode, or
+an entity object changes; camera auto-pan and position previews never trigger a rebuild.
+
+Rejected: a drag ghost (the real piece already snaps), invalid-state styling (a drop is
+effectively never rejected), looping or ripple animation, and polygon pulsing. The
+selection toolbar is hidden during a placement drag because it occupies the chip's spot.
+Guide-driven state must not use `:has()`: it measurably raised drag-handler time (~25%) and
+was replaced with a `body[data-placement-drag]` attribute. The desktop per-move saving from
+caching is within noise; the iPad measurement is still required before claiming a speedup.
+
+### D-055 — Prop rules, Detach scope, and outside clicks
+
+**Date:** 2026-10-03. **Status:** Implemented.
+
+Thirty-eight of the 66 props (including the teddy, building blocks, cat, umbrella, and every
+hanging decoration in the Family & Home pack) had no placement rules, so Room mode let them rest
+anywhere. Each now has an explicit class: small pieces rest on the floor or a surface, large
+pieces on the floor, flat mats and sleeping bags on the floor under other pieces, and hangings
+(frames, bunting, wreath, mobile, calendar, kite) on the wall. `test/prop-placement-coverage.test.js`
+fails if any built-in or pack prop ships without rules.
+
+Detach stays for pieces that follow another one (held props, speech bubbles), because dragging them
+keeps the link. It is no longer offered for furniture-supported pieces: dragging already moves them
+to another support or the floor, and Detach only stranded them as a free exception.
+
+A click beside the stage (the tan area around it belongs to the Play screen, not the stage element)
+left the selection and its toolbar open, unlike a click on empty stage. Now any click on the Play
+screen clears the selection, header save, export, scene-menu and template controls included, except
+on the tools that act on it: the stage, its toolbar, the tool rail (inspector, bubble tray), the stage
+controls (outline, voice, undo/redo), and the map pill, whose marker shows the selected doll. A
+selection audit found no other consumer: none of the cleared header controls, their dialogs, or the
+save and export code read the selection. Intended: opening a header dialog and cancelling it leaves nothing
+selected, since the player has moved on from the piece. Tray previews are specified in
+[PRD-PLACEMENT-GUIDE-FEEDBACK.md §12](PRD-PLACEMENT-GUIDE-FEEDBACK.md).
+
+### D-056 — Tray drag preview
+
+**Date:** 2026-10-03. **Status:** Implemented (PRD §12.2.1). Rationale and open risks: [PRD-PLACEMENT-GUIDE-FEEDBACK.md §12](PRD-PLACEMENT-GUIDE-FEEDBACK.md).
+
+Dragging a prop out of the tray no longer shows only the tray card. The piece is built as a virtual
+entity on a copy of the scene, resolved with the same placement rules as a stage drag, and drawn as the
+real artwork with the shared guides, marker and chip. The scene, store and history are untouched until
+the drop, which commits the previewed position and target through `scene/spawnProp`
+(`placementTarget`), as one undo entry. Over a doll the prop stays a held item and the chip says who
+holds it. Dolls, bubbles and full scenes keep the old behavior. Native drag and drop on touch devices
+and the iPad frame cost are still unverified.
+

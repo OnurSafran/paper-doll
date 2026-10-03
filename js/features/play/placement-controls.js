@@ -1,7 +1,8 @@
 import { getPlacementTargets, legalContactPolygon, sameTarget } from '../../domain/scene-placement.js';
 import { nearestPoint } from '../../domain/placement-geometry.js';
 import { escapeCss } from '../../core/css-escape.js';
-import { assetName, t } from '../../core/i18n.js';
+import { t } from '../../core/i18n.js';
+import { targetLabel } from './placement-labels.js';
 import { enableDialogLightDismiss, enableDialogFocusRestoration } from '../../core/dialog-dismiss.js';
 
 /** Secondary non-drag actions; Play has no persistent destination selector. */
@@ -29,7 +30,7 @@ export function openPlacementActions({ store, getAsset }, instanceId) {
   for (const target of targets) {
     const button = document.createElement('button'); button.type = 'button'; button.className = 'button secondary';
     const host = scene.entities.find(e => e.instanceId === target.hostId);
-    button.textContent = target.kind === 'surface' ? `${assetName(getAsset(host.sourceId))} — ${target.surface.name || t(target.surface.nameKey || 'placement.tabletop')}` : t(`placement.${target.kind}`);
+    button.textContent = targetLabel(target, host, getAsset);
     button.addEventListener('click', () => {
       store.dispatch({ type: 'scene/placeEntity', instanceId, target: target.kind === 'surface' ? { kind: 'surface', hostId: target.hostId, surfaceId: target.surface.id } : { kind: target.kind, regionId: target.placement.regionId } });
       dialog.close();

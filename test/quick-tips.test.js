@@ -43,10 +43,21 @@ function setup(ctx, reducedMotion = false) {
   }
   setLanguage('en');
   let opened = 0;
-  const dispose = wireQuickTips({ $: (selector) => nodes[selector.slice(1)] }, () => opened++);
+  let topic;
+  let state = { ui: { mode: 'play' } };
+  const subscribers = new Set();
+  const store = {
+    getState: () => state,
+    subscribe: (listener) => { subscribers.add(listener); return () => subscribers.delete(listener); }
+  };
+  const dispose = wireQuickTips({ $: (selector) => nodes[selector.slice(1)], store }, (value) => { opened++; topic = value; });
   ctx.after(() => { dispose(); setLanguage(language); restoreGlobals(); });
   const tick = () => { ctx.mock.timers.tick(7500); ctx.mock.timers.tick(200); };
-  return { nodes, win, doc, motion, tick, opened: () => opened };
+  const setMode = (mode) => {
+    state = { ui: { mode } };
+    for (const listener of subscribers) listener({ state });
+  };
+  return { nodes, win, doc, motion, tick, opened: () => opened, topic: () => topic, setMode, dispose, subscribers };
 }
 
 test('tips rotate, open the guide, and translate immediately during a pending fade', (ctx) => {
@@ -120,4 +131,38 @@ test('all rotating tips have English and Turkish copy', () => {
       for (const key of QUICK_TIP_KEYS) assert.ok(t(key), `${lang}: ${key}`);
     }
   } finally { setLanguage(language); }
+});
+
+test('tips follow the current studio mode, cancel old fades, and open matching persistent help', (ctx) => {
+  const { nodes, tick, topic, setMode, dispose, subscribers } = setup(ctx);
+  const text = nodes['quick-tip-text'];
+  const click = () => nodes['quick-tip-chip'].dispatchEvent(new Event('click'));
+  click();
+  assert.equal(topic().target, 'guide-feature-play');
+  assert.equal(topic().tab, 'features');
+  tick(); tick();
+  click();
+  assert.equal(topic().target, 'guide-tip-layers');
+  assert.equal(topic().tab, 'tips');
+  ctx.mock.timers.tick(7500);
+  setMode('paint');
+  assert.equal(text.textContent, t('header.quickTips.undo'));
+  ctx.mock.timers.tick(200);
+  assert.equal(text.textContent, t('header.quickTips.undo'));
+  tick();
+  assert.equal(text.textContent, t('header.quickTips.paint'));
+  click();
+  assert.equal(topic().target, 'guide-feature-paint');
+  tick();
+  assert.equal(text.textContent, t('header.quickTips.undo'));
+  setMode('designer');
+  tick();
+  assert.equal(text.textContent, t('header.quickTips.designer'));
+  click();
+  assert.equal(topic().target, 'guide-feature-designer');
+  const current = text.textContent;
+  dispose();
+  assert.equal(subscribers.size, 0);
+  tick();
+  assert.equal(text.textContent, current);
 });

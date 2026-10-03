@@ -97,6 +97,9 @@ export function createAppShellEvents(context) {
         panel.hidden = !isTarget;
         panel.classList.toggle('is-active', isTarget);
       });
+      // Each topic starts at the top of the dialog's single scroll area.
+      const dialog = context.$('#guide-dialog');
+      if (dialog) dialog.scrollTop = 0;
     }
 
     context.$('#guide-tabs')?.addEventListener('click', (event) => {
@@ -112,9 +115,10 @@ export function createAppShellEvents(context) {
     });
     context.$('#close-guide-dialog')?.addEventListener('click', () => context.$('#guide-dialog')?.close());
 
-    wireQuickTips(context, () => {
-      selectGuideTab('tips');
+    wireQuickTips(context, ({ tab, target }) => {
+      selectGuideTab(tab);
       context.$('#guide-dialog')?.showModal();
+      context.$(`#${target}`)?.scrollIntoView({ block: 'start' });
     });
     context.$('#close-project-dialog')?.addEventListener('click', () => context.$('#project-dialog')?.close());
     context.$('#export-project-btn')?.addEventListener('click', () => context.exportProjectJsonFile());
@@ -232,13 +236,22 @@ export function createAppShellEvents(context) {
       event.preventDefault();
       event.dataTransfer.dropEffect = 'copy';
       playStage.classList.add('is-spawn-target');
+      context.playView.trayDragPreview?.over(event);
     });
     playStage.addEventListener('dragleave', (event) => {
-      if (!playStage.contains(event.relatedTarget)) playStage.classList.remove('is-spawn-target');
+      if (playStage.contains(event.relatedTarget)) return;
+      // Safari reports no relatedTarget on dragleave, so child-to-child moves look like leaving: check the pointer too.
+      const box = playStage.getBoundingClientRect();
+      if (event.clientX > box.left && event.clientX < box.right && event.clientY > box.top && event.clientY < box.bottom) return;
+      playStage.classList.remove('is-spawn-target');
+      context.playView.trayDragPreview?.leave();
     });
     playStage.addEventListener('drop', (event) => {
       event.preventDefault();
       playStage.classList.remove('is-spawn-target');
+      // The tray card may be re-rendered by the spawn, so dragend is not guaranteed: read the preview, then end it.
+      const previewed = context.playView.trayDragPreview?.finish();
+      context.playView.trayDragPreview?.end();
       const match = event.dataTransfer.getData('text/plain').match(/^paper-doll-spawn:(character|prop|bubble):([a-zA-Z0-9_-]+)(?::(.*))?$/);
       if (!match) return;
       // Hosts are the visible artwork under the drop, not whichever transparent box is on top.
@@ -258,7 +271,8 @@ export function createAppShellEvents(context) {
         }
         context.store.dispatch({ type: 'scene/spawnBubble', bubbleStyle: match[2], text, targetEntityId, ...point });
       } else {
-        context.store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, transfer: true, ...point });
+        // A previewed drop commits exactly the previewed position and target; a drop on a doll stays a held prop.
+        context.store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, transfer: true, ...(previewed ? { x: previewed.x, y: previewed.y, placementTarget: previewed.placementTarget } : point) });
       }
     });
 

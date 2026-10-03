@@ -35,4 +35,11 @@
   --font-display: Georgia, 'Times New Roman', serif;
   --font-ui: 'Avenir Next', Avenir, 'Segoe UI', system-ui, sans-serif;
   --app-header-height: 58px;
+  --guide-floor: #2a9d8f;
+  --guide-floor-strong: #1b6f65;
+  --guide-wall: #7a68c8;
+  --guide-wall-strong: #4e3f99;
+  --guide-surface: #e9a23b;
+  --guide-surface-strong: #8a4f00;
+  --guide-edge-light: #fffdf5;
 }

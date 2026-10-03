@@ -1933,8 +1933,6 @@ main:has(> #play-screen:not([hidden])) {
 .placement-destination-actions { display: grid; gap: .6rem; padding: 1rem; }
 .placement-destination-actions button { min-height: 44px; }
 .placement-contact-shadow { position: absolute; display: block; border-radius: 50%; transform: translate(-50%, -50%); background: #493c3429; pointer-events: none; }
-.placement-drop-guide { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 80; pointer-events: none; }
-.placement-drop-guide polygon { fill: #2a9d8f24; stroke: #237d71; stroke-width: 3; stroke-dasharray: 10 6; vector-effect: non-scaling-stroke; }
 
 /* Scene shadow preference leaves selection outlines and other UI effects intact. */
 body:not([data-scene-shadows="on"]) #play-stage .scene-entity-visual,
@@ -1942,26 +1940,37 @@ body:not([data-scene-shadows="on"]) #play-stage .scene-entity-visual svg,
 body:not([data-scene-shadows="on"]) #play-stage .scene-entity-visual .scene-character-canvas,
 body:not([data-scene-shadows="on"]) #play-stage .scene-custom-prop-img,
 body:not([data-scene-shadows="on"]) #play-stage .scene-entity-positioner.is-dragging { filter: none; }
-.placement-drop-guide polygon[data-kind="surface"] { fill: #e9b44c59; stroke: #875008; stroke-width: 4; }
-.placement-drop-guide polygon[data-active="true"] { stroke-width: 5; stroke-dasharray: none; }
-.placement-drop-guide polygon[data-kind="surface"][data-active="true"] { fill: #e9b44c73; }
-.placement-drop-guide polygon.tabletop-guide-echo {
-  fill: none;
-  stroke-width: 2;
-  opacity: 0.6;
-  transform-box: fill-box;
-  transform-origin: center;
-  pointer-events: none;
-  animation: tabletop-guide-bob 2.8s ease-in-out infinite;
-}
-.placement-drop-guide polygon.tabletop-guide-echo[data-active="true"],
-.placement-drop-guide[data-motion="reduce"] polygon.tabletop-guide-echo { display: none; }
-@keyframes tabletop-guide-bob {
-  0%, 100% { transform: translateY(0) scale(1.1); }
-  50% { transform: translateY(-6px) scale(1.1); }
-}
-.placement-drop-guide[data-motion="reduce"] polygon { animation: none; }
+/* Placement drag guides: soft target areas below the dragged piece; marker and label above it. */
+.placement-drop-guide { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 80; pointer-events: none; animation: placement-guide-in 120ms ease-out; }
+.placement-drop-guide polygon { fill: var(--guide-c); fill-opacity: 0.14; stroke: none; vector-effect: non-scaling-stroke; }
+.placement-drop-guide polygon[data-kind="floor"], .placement-drop-hud[data-kind="floor"] { --guide-c: var(--guide-floor); --guide-c-strong: var(--guide-floor-strong); }
+.placement-drop-guide polygon[data-kind="wall"], .placement-drop-hud[data-kind="wall"] { --guide-c: var(--guide-wall); --guide-c-strong: var(--guide-wall-strong); }
+.placement-drop-guide polygon[data-kind="surface"], .placement-drop-hud[data-kind="surface"] { --guide-c: var(--guide-surface); --guide-c-strong: var(--guide-surface-strong); }
+/* Only furniture surfaces carry an edge: a floor outline would just box in the whole room. */
+.placement-drop-guide polygon[data-kind="surface"] { fill-opacity: 0.26; stroke: var(--guide-c-strong); stroke-width: 2; }
+.placement-drop-guide polygon[data-active="true"] { fill-opacity: 0.3; }
+.placement-drop-guide polygon[data-kind="surface"][data-active="true"] { fill-opacity: 0.5; stroke-width: 3; }
+.placement-drop-hud { position: absolute; inset: 0; z-index: 1000; pointer-events: none; animation: placement-guide-in 120ms ease-out; }
+.placement-contact-marker { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.placement-contact-ring { position: absolute; left: 0; top: 0; width: 44px; height: 22px; translate: -50% -50%; box-sizing: border-box; border: 3px solid var(--guide-c-strong, var(--ink)); border-radius: 50%; box-shadow: 0 0 0 2px var(--guide-edge-light), inset 0 0 0 2px var(--guide-edge-light); }
+.placement-guide-chip { position: absolute; left: 0; top: 0; display: inline-flex; align-items: center; gap: 0.35rem; max-width: 260px; box-sizing: border-box; padding: 0.3rem 0.65rem 0.3rem 0.5rem; border: 2px solid var(--guide-c-strong, var(--ink)); border-radius: var(--radius-pill); background: var(--paper-card); color: var(--ink); font: 700 14px/1.2 var(--font-ui); white-space: nowrap; box-shadow: var(--shadow-sm); }
+.placement-guide-chip-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.placement-guide-glyph { display: none; flex: none; color: var(--guide-c-strong, var(--ink)); }
+.placement-drop-hud[data-kind="floor"] .placement-guide-glyph[data-glyph="floor"],
+.placement-drop-hud[data-kind="wall"] .placement-guide-glyph[data-glyph="wall"],
+.placement-drop-hud[data-kind="surface"] .placement-guide-glyph[data-glyph="surface"] { display: block; }
+.placement-contact-marker[hidden], .placement-guide-chip[hidden] { display: none; }
+/* The selection toolbar follows the piece below its base, exactly where the label sits; it is not usable mid-drag anyway. */
+body[data-placement-drag] .context-ring { opacity: 0; }
+/* The tray piece's picture while it is dragged over the stage: lifted like a stage drag, never interactive. */
+.scene-entity-positioner.is-held-ghost { pointer-events: none; opacity: 0.92; }
+@keyframes placement-guide-in { from { opacity: 0; } to { opacity: 1; } }
+.placement-drop-guide[data-motion="reduce"], .placement-drop-hud[data-motion="reduce"] { animation: none; }
 @media (prefers-reduced-motion: reduce) {
-  .placement-drop-guide polygon { animation: none; }
-  .placement-drop-guide polygon.tabletop-guide-echo { display: none; }
+  .placement-drop-guide, .placement-drop-hud { animation: none; }
+}
+@media (forced-colors: active) {
+  .placement-drop-guide polygon { fill: none; stroke: Highlight; stroke-width: 1; }
+  .placement-drop-guide polygon[data-active="true"] { stroke-width: 3; }
+  .placement-contact-ring, .placement-guide-chip { border-color: CanvasText; forced-color-adjust: none; background: Canvas; color: CanvasText; }
 }
