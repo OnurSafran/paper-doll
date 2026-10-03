@@ -140,7 +140,7 @@ test('the scene renderer applies a measured stand and clears it when the doll ch
   const view = createSceneEntityView({
     getAsset: (assetId) => all.find(a => a.id === assetId),
     sceneEntityRenderKey: () => 'k',
-    store: { getState: () => ({ settings: {}, currentScene: { entities: [] } }) },
+    store: { getState: () => ({ settings: {}, presets: [], currentScene: { entities: [] } }) },
     customArtRepo: { getTrackedObjectUrl: async () => 'data:image/png;base64,example' }
   });
   const entity = { instanceId: 'c1', sourceId: 'doll', kind: 'character', x: 500, y: 600, scale: 1, order: 1, characterSnapshot: { baseDollId: id, slots: {} } };

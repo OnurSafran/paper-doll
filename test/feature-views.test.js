@@ -89,6 +89,21 @@ test('Play panels follow the current selection, including direct prop-to-charact
   assert.equal(panels['#play-inspector-panel'].hidden, true);
 });
 
+test('pose selection normalizes implicit rest and preserves mixed group state', () => {
+  const buttons = ['rest', 'lean_left'].map(pose => ({ dataset: { pose }, classList: { toggle() {} }, setAttribute(key, value) { this[key] = value; } }));
+  const group = { hidden: true };
+  const controller = createSelectionInspectorController({
+    $: selector => selector === '#character-pose-controls' ? group : null,
+    $$: (_selector, root) => root === group ? buttons : []
+  });
+  for (const poses of [[undefined], [undefined, 'rest'], [undefined, 'lean_left']]) {
+    const entities = poses.map((pose, index) => ({ kind: 'character', instanceId: String(index), pose }));
+    controller.renderSelectedActions({ ui: { selectedEntityId: '0', selectedEntityIds: entities.map(e => e.instanceId) }, currentScene: { entities } });
+    assert.equal(buttons[0]['aria-pressed'], poses.includes('lean_left') ? 'false' : 'true');
+    assert.equal(buttons[1]['aria-pressed'], 'false', 'mixed poses never claim a common selection');
+  }
+});
+
 
 test('Panel starts expanded and only the handle changes its collapsed state', () => {
   let click;

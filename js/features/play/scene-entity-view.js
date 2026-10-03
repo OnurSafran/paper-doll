@@ -32,6 +32,20 @@ export function createSceneEntityView(context) {
     return `scene-entity-positioner${isPrimarySelected ? ' is-selected' : ''}${isMultiSelected ? ' is-multi-selected' : ''}${entity.pinned ? ' is-pinned' : ''}${entity.kind === 'bubble' ? ' is-bubble-entity' : ''}${entity.kind === 'character' ? ' is-character-entity' : ''}`;
   }
 
+  function updateAccessibleLabel(element, entity) {
+    const pinned = entity.pinned ? `${t('play.pinned')} ` : '';
+    let label;
+    if (entity.kind === 'character') {
+      const preset = context.store.getState().presets.find(item => item.presetId === entity.sourceId);
+      label = preset?.name ?? (entity.sourceId === 'demo_emma' ? 'Emma' : t('play.savedDoll'));
+    } else if (entity.kind === 'bubble') {
+      label = `${t(bubbleStyleLabelKey(entity.bubbleStyle))}: ${entity.text}`;
+    } else {
+      label = assetName(context.getAsset(entity.sourceId), t('play.sceneProp'));
+    }
+    element.setAttribute('aria-label', pinned + label);
+  }
+
   /** Geometry shared by create and patch; the envelope ratio is derived, never assumed. */
   function applyPositionerGeometry(element, entity) {
     const asset = context.getAsset(entity.sourceId);
@@ -141,12 +155,9 @@ export function createSceneEntityView(context) {
       }
       motion.append(canvas);
       visual.append(motion);
-      const preset = context.store.getState().presets.find((item) => item.presetId === entity.sourceId);
-      button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${preset?.name ?? (entity.sourceId === 'demo_emma' ? 'Emma' : t('play.savedDoll'))}`);
     } else if (entity.kind === 'bubble') {
       const bubbleSvg = createBubbleSvg(entity);
       visual.append(bubbleSvg);
-      button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${t(bubbleStyleLabelKey(entity.bubbleStyle))}: ${entity.text}`);
     } else {
       if (isCustomAssetId(entity.sourceId)) {
         const url = await context.customArtRepo?.getTrackedObjectUrl?.(entity.sourceId);
@@ -166,9 +177,9 @@ export function createSceneEntityView(context) {
         if (sharedSvg) visual.append(sharedSvg);
         else await appendAsset(visual, entity.sourceId, { customArtRepo: context.customArtRepo, getAsset: context.getAsset });
       }
-      button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${assetName(asset, t('play.sceneProp'))}`);
     }
     button.append(visual);
+    updateAccessibleLabel(button, entity);
     updateShadow(button, entity);
     if (entity.pinned) {
       const badge = document.createElement('span');
@@ -185,6 +196,7 @@ export function createSceneEntityView(context) {
 
   function patchSceneEntity(element, entity, isPrimarySelected, isMultiSelected) {
     element.className = positionerClassName(entity, isPrimarySelected, isMultiSelected);
+    updateAccessibleLabel(element, entity);
     applyPositionerGeometry(element, entity);
     if (entity.kind === 'prop') {
       const visual = element.querySelector('.scene-entity-visual');

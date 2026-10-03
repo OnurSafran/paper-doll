@@ -2,8 +2,15 @@ import { confirmStageSize } from './background-placement-confirm.js';
 /** Panoramic camera transforms, edge panning, and minimap controls. */
 import { CAMERA_CONSTANTS, DEFAULT_STAGE_WIDTH, VIEWPORT_HEIGHT, VIEWPORT_WIDTH } from '../../domain/vocabulary.js';
 import { getBackgroundLayout } from '../../core/background-layout.js';
+import { stageContentRect } from '../../core/coordinate-space.js';
+import { createDisposableRegistry } from '../../core/error-boundary.js';
 
 export function createCameraController(context) {
+  const disposables = createDisposableRegistry();
+  function listen(element, type, handler, options = undefined) {
+    element.addEventListener(type, handler, options);
+    disposables.register(() => element.removeEventListener(type, handler, options));
+  }
   let edgePanRaf = null;
 
   let edgePanDirection = 0;
@@ -52,7 +59,8 @@ export function createCameraController(context) {
 
     if (widthSelect && !widthSelect.dataset.bound) {
       widthSelect.dataset.bound = 'true';
-      widthSelect.addEventListener('change', async (e) => {
+      disposables.register(() => { delete widthSelect.dataset.bound; });
+      listen(widthSelect, 'change', async (e) => {
         context.cancelPointerController?.();
         const accepted = await confirmStageSize(context, Number(e.target.value));
         if (!accepted) e.target.value = String(context.store.getState().currentScene.stageWidth);
@@ -61,7 +69,15 @@ export function createCameraController(context) {
 
     if (minimap && !minimap.dataset.bound) {
       minimap.dataset.bound = 'true';
-      let isSeekingMinimap = false;
+      disposables.register(() => { delete minimap.dataset.bound; });
+      let seekingPointerId = null;
+      const endSeek = () => {
+        if (seekingPointerId === null) return;
+        const id = seekingPointerId;
+        seekingPointerId = null;
+        try { minimap.releasePointerCapture(id); } catch { /* capture may already be lost */ }
+      };
+      disposables.register(endSeek);
 
       const seekFromMinimap = (event) => {
         const rect = minimap.getBoundingClientRect();
@@ -71,22 +87,19 @@ export function createCameraController(context) {
         context.store.dispatch({ type: 'scene/setCameraX', cameraX: Math.round(targetX) });
       };
 
-      minimap.addEventListener('pointerdown', (event) => {
-        isSeekingMinimap = true;
+      listen(minimap, 'pointerdown', (event) => {
+        if (event.isPrimary === false || event.button !== 0 || seekingPointerId !== null) return;
+        seekingPointerId = event.pointerId;
         minimap.setPointerCapture(event.pointerId);
         seekFromMinimap(event);
       });
-      minimap.addEventListener('pointermove', (event) => {
-        if (isSeekingMinimap) seekFromMinimap(event);
+      listen(minimap, 'pointermove', (event) => {
+        if (event.pointerId === seekingPointerId) seekFromMinimap(event);
       });
-      minimap.addEventListener('pointerup', (event) => {
-        if (isSeekingMinimap) {
-          isSeekingMinimap = false;
-          try { minimap.releasePointerCapture(event.pointerId); } catch {}
-        }
-      });
-      minimap.addEventListener('pointercancel', () => { isSeekingMinimap = false; });
-      minimap.addEventListener('keydown', (event) => {
+      for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+        listen(minimap, type, event => { if (event.pointerId === seekingPointerId) endSeek(); });
+      }
+      listen(minimap, 'keydown', (event) => {
         event.stopPropagation();
         const stageWidth = context.store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
         const maxCameraX = Math.max(0, stageWidth - VIEWPORT_WIDTH);
@@ -103,13 +116,15 @@ export function createCameraController(context) {
 
     if (stageEl && !stageEl.dataset.wheelBound) {
       stageEl.dataset.wheelBound = 'true';
-      stageEl.addEventListener('wheel', (event) => {
+      disposables.register(() => { delete stageEl.dataset.wheelBound; });
+      listen(stageEl, 'wheel', (event) => {
         const stageWidth = context.store.getState().currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
         if (stageWidth <= VIEWPORT_WIDTH) return;
-        const delta = context.getWheelPanDelta(event);
+        const rect = stageContentRect(stageEl);
+        const delta = context.getWheelPanDelta(event, rect.width);
         if (!delta) return;
         event.preventDefault();
-        context.store.dispatch({ type: 'scene/panCamera', deltaX: delta });
+        context.store.dispatch({ type: 'scene/panCamera', deltaX: delta * VIEWPORT_WIDTH / rect.width });
       }, { passive: false });
     }
   }
@@ -176,5 +191,10 @@ export function createCameraController(context) {
     context.updateContextRingPosition?.(undefined, true);
   }
 
-  return { stopEdgePan, startEdgePan, initCameraControls, renderCameraHud, syncCamera };
+  function destroy() {
+    stopEdgePan();
+    disposables.disposeAll();
+  }
+
+  return { stopEdgePan, startEdgePan, initCameraControls, renderCameraHud, syncCamera, destroy };
 }

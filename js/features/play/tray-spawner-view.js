@@ -119,7 +119,7 @@ export function createTraySpawnerView(context) {
     if (spawnTab === 'characters' && !state.presets.length) {
       const empty = document.createElement('div');
       empty.className = 'tray-empty';
-      empty.textContent = t('play.emptySceneCopy');
+      empty.textContent = t('play.emptyDollsCopy');
       list.replaceChildren(empty);
       return;
     }
@@ -145,11 +145,12 @@ export function createTraySpawnerView(context) {
         card.append(thumb, kindLabel, label);
 
         card.addEventListener('click', () => {
+          const scene = context.store.getState().currentScene;
           context.store.dispatch({
             type: 'scene/spawnBubble',
             bubbleStyle: preset.style,
             text: defaultText,
-            ...context.nextSpawnPoint(state.currentScene.entities.length, state.currentScene.cameraX)
+            ...context.nextSpawnPoint(scene.entities.length, scene.cameraX)
           });
         });
 
@@ -196,10 +197,12 @@ export function createTraySpawnerView(context) {
       card.setAttribute('aria-label', t('play.traySpawnAria', { name: sourceName, custom: source.custom ? t('play.customArtSuffix') : '' }));
 
       card.addEventListener('click', () => {
-        if (spawnTab === 'characters') {
-          context.store.dispatch({ type: 'scene/spawnCharacter', presetId: source.presetId, ...context.nextSpawnPoint(state.currentScene.entities.length, state.currentScene.cameraX) });
+        const scene = context.store.getState().currentScene;
+        const point = context.nextSpawnPoint(scene.entities.length, scene.cameraX);
+        if (kind === 'character') {
+          context.store.dispatch({ type: 'scene/spawnCharacter', presetId: source.presetId, ...point });
         } else {
-          context.store.dispatch({ type: 'scene/spawnProp', assetId: source.id, ...context.nextSpawnPoint(state.currentScene.entities.length, state.currentScene.cameraX) });
+          context.store.dispatch({ type: 'scene/spawnProp', assetId: source.id, ...point });
         }
       });
 
@@ -211,7 +214,8 @@ export function createTraySpawnerView(context) {
       card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
 
       if (spawnTab === 'characters') {
-        void context.renderDollInto(thumb, source, { customArtRepo: context.customArtRepo, getAsset: context.getAsset, enforceFit: false }).then(() => { if (token !== context.playRenderToken) thumb.replaceChildren(); });
+        // Each card owns its thumbnail; scene renders can reuse it while artwork loads.
+        void context.renderDollInto(thumb, source, { customArtRepo: context.customArtRepo, getAsset: context.getAsset, enforceFit: false });
       } else {
         void renderAssetPreview(thumb, source, { customArtRepo: context.customArtRepo, getAsset: context.getAsset });
       }

@@ -335,7 +335,7 @@ test('panoramic camera navigation exposes a compact accessible minimap overlay',
   assert.match(playJs, /scene\/setCameraX/);
   assert.match(playJs, /scene\/panCamera/);
   assert.match(playJs, /CAMERA_CONSTANTS\.EDGE_ZONE/);
-  assert.match(playJs, /minimap\.addEventListener\('keydown'/);
+  assert.match(playJs, /listen\(minimap, 'keydown'/);
   assert.match(playJs, /minimap-bg-panel/);
   assert.match(playJs, /function syncCamera\(/);
   assert.match(playJs, /entityRoot\.replaceChildren\(\.\.\.nextElements\);/);

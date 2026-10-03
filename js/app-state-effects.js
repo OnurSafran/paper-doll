@@ -7,6 +7,7 @@ import { translateMessage } from './core/i18n.js';
 
 export function createAppStateEffects(context) {
   const toastActions = new Set([
+    'ui/message',
     'designer/equip', 'designer/clearOutfit', 'designer/shuffle', 'preset/save', 'preset/update', 'preset/delete',
     'scene/spawnCharacter', 'scene/spawnProp', 'scene/spawnBubble', 'scene/duplicateEntity', 'scene/deleteEntity', 'scene/deleteEntities', 'scene/new',
     'scene/togglePin', 'scene/togglePinEntities', 'scene/attachEntity', 'scene/detachEntity', 'scene/alignEntities',

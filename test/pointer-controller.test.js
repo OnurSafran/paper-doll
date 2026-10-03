@@ -95,3 +95,22 @@ test('pointer release flushes the final preview before commit', () => {
     globalThis.cancelAnimationFrame = previousCancel;
   }
 });
+
+test('a rejected drag keeps selection but releases capture without scheduling preview, commit or cancel', () => {
+  const { root, subject, listeners } = harness();
+  const calls = [];
+  const controller = new PointerController(root, {
+    selector: '.entity', getId: () => 'locked',
+    onSelect: () => calls.push('select'),
+    onStart: () => { calls.push('start'); return false; },
+    onPreview: () => calls.push('preview'), onCommit: () => calls.push('commit'), onCancel: () => calls.push('cancel')
+  });
+  listeners.get('pointerdown')({ target: subject, pointerId: 1, pointerType: 'mouse', button: 0, clientX: 0, clientY: 0 });
+  listeners.get('pointermove')({ pointerId: 1, clientX: 10, clientY: 0, preventDefault() { assert.fail('rejected drag cannot claim movement'); } });
+  assert.equal(controller.session, null);
+  assert.equal(root.captured, false);
+  listeners.get('pointermove')({ pointerId: 1, clientX: 20, clientY: 0 });
+  listeners.get('pointerup')({ type: 'pointerup', pointerId: 1 });
+  assert.deepEqual(calls, ['select', 'start']);
+  controller.destroy();
+});

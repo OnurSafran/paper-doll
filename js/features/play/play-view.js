@@ -15,7 +15,7 @@ import { createCameraController } from './camera-controller.js';
 
 import { assetsByKind, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 
-import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_STAGE_WIDTH, DEFAULT_STATIC_POSE } from '../../domain/vocabulary.js';
+import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_STAGE_WIDTH, DEFAULT_STATIC_POSE, VIEWPORT_WIDTH } from '../../domain/vocabulary.js';
 
 import { appendAsset } from '../designer/designer-view.js';
 import { entityArtworkRevisions } from '../../domain/artwork-revision.js';
@@ -48,9 +48,13 @@ export function nextSpawnPoint(index, cameraX = 0) {
   return { x: cameraX + 650 + (index % 5) * 80, y: 690 + (index % 3) * 45 };
 }
 
-export function getWheelPanDelta(event) {
-  if (event.shiftKey) return event.deltaY || 0;
-  return Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : 0;
+export function getWheelPanDelta(event, pageWidth = VIEWPORT_WIDTH) {
+  if (event.ctrlKey || event.metaKey) return 0;
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? pageWidth : 1;
+  const x = event.deltaX || 0, y = event.deltaY || 0;
+  const delta = event.shiftKey ? (Math.abs(x) > Math.abs(y) ? x : y)
+    : Math.abs(x) > Math.abs(y) ? x : 0;
+  return delta * unit;
 }
 
 export function getContextRingFocusAction(activeElement) {
@@ -92,7 +96,8 @@ export function createPlayView({
 
   async function render(state = store.getState()) {
     const token = ++playRenderToken;
-    const focusedEntityId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('.scene-entity-positioner'))?.dataset.instanceId;
+    const focusedElement = document.activeElement;
+    const focusedEntityId = /** @type {HTMLElement} */ (focusedElement?.closest?.('.scene-entity-positioner'))?.dataset.instanceId;
     const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
 
     syncCamera(state);
@@ -168,6 +173,9 @@ export function createPlayView({
     if (focusedEntityId) {
       requestAnimationFrame(() => {
         if (token !== playRenderToken) return;
+        // Restore a replaced entity, but respect focus moved by the player while rendering.
+        if (document.activeElement !== focusedElement
+          && !(document.activeElement === document.body && !focusedElement.isConnected)) return;
         [...entityRoot.querySelectorAll('.scene-entity-positioner')]
           .find((element) => element.dataset.instanceId === focusedEntityId)
           ?.focus({ preventScroll: true });
@@ -182,7 +190,9 @@ export function createPlayView({
 
   function teardown() {
     bumpToken();
-    cancelPointerController();
+    destroyPointerController();
+    destroyCameraController();
+    destroyInspectorController();
     propSymbols.destroy();
     hitTester.destroy();
     removeContextRing();
@@ -192,7 +202,7 @@ export function createPlayView({
     }
   }
 
-  const { stopEdgePan, startEdgePan, initCameraControls, renderCameraHud, syncCamera } = createCameraController({
+  const { stopEdgePan, startEdgePan, initCameraControls, renderCameraHud, syncCamera, destroy: destroyCameraController } = createCameraController({
     get getWheelPanDelta() { return getWheelPanDelta; },
     askConfirm,
     get cancelPointerController() { return cancelPointerController; },
@@ -205,7 +215,7 @@ export function createPlayView({
     get updateContextRingPosition() { return updateContextRingPosition; }
   });
 
-  const { cancelPointerController, initPointerController, updateDragPreview, stagePointAt } = createStagePointerController({
+  const { cancelPointerController, initPointerController, updateDragPreview, stagePointAt, destroy: destroyPointerController } = createStagePointerController({
     store,
     $,
     getAsset,
@@ -234,7 +244,7 @@ export function createPlayView({
     get render() { return render; }
   });
 
-  const { renderSelectedActions, handleDropdownOutsideClick } = createSelectionInspectorController({
+  const { renderSelectedActions, handleDropdownOutsideClick, destroy: destroyInspectorController } = createSelectionInspectorController({
     store,
     $,
     $$,

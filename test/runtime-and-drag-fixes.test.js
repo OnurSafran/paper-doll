@@ -5,12 +5,15 @@ import { createAppStore } from '../js/core/app-store.js';
 import { createDesignerView } from '../js/features/designer/designer-view.js';
 import { createPlayView, getContextRingFocusAction, sceneEntityRenderKey } from '../js/features/play/play-view.js';
 import { createSceneOutlineView } from '../js/features/play/scene-outline-view.js';
+import { createTraySpawnerView } from '../js/features/play/tray-spawner-view.js';
+import { createSceneEntityView } from '../js/features/play/scene-entity-view.js';
 import { getCurrentLanguage, setLanguage, t } from '../js/core/i18n.js';
 import { assetsByKind, getAsset } from '../js/core/asset-catalog.js';
 
 function createMockElement(tagName = 'div') {
   const el = {
     tagName,
+    className: { baseVal: '' },
     dataset: {},
     style: {
       setProperty: () => {},
@@ -334,6 +337,145 @@ test('Play restores context-ring action focus after a ring rebuild', () => {
   };
   assert.equal(getContextRingFocusAction(activeElement), 'larger');
   assert.equal(getContextRingFocusAction({ dataset: { action: 'larger' }, closest: () => null }), null);
+});
+
+test('cached Play tray clicks use the latest camera and entity count for props, dolls and bubbles', () => {
+  setupMockDom();
+  const store = createAppStore(createDefaultEnvelope(), { getAsset });
+  store.dispatch({ type: 'scene/new' });
+  store.dispatch({ type: 'scene/setPlacementMode', placementMode: 'free' });
+  store.dispatch({ type: 'scene/setStageWidth', stageWidth: 4800 });
+  store.dispatch({ type: 'preset/save', name: 'Tray doll' });
+  const elements = {};
+  const $ = selector => elements[selector] ||= createMockElement();
+  let token = 0;
+  const context = {
+    store, $, getAsset, getAssetsByKind: assetsByKind,
+    nextSpawnPoint: (count, cameraX) => ({ x: cameraX + 650 + count * 10, y: 690 }),
+    renderDollInto: async () => {},
+    get playRenderToken() { return token; },
+    render: () => tray.renderSpawnTray(store.getState(), ++token)
+  };
+  const tray = createTraySpawnerView(context);
+  for (const tab of ['props', 'characters', 'bubbles']) {
+    context.render();
+    $('#spawn-tabs').children.find(button => button.id === `spawn-tab-${tab}`)._listeners.click[0]();
+    const card = $('#spawn-items').children[0];
+    store.dispatch({ type: 'scene/setCameraX', cameraX: tab === 'characters' ? 1600 : 2400 });
+    for (let i = 0; i < 2; i++) {
+      const scene = store.getState().currentScene;
+      const expectedX = context.nextSpawnPoint(scene.entities.length, scene.cameraX).x;
+      context.render();
+      assert.equal($('#spawn-items').children[0], card, 'unrelated scene changes keep cached cards');
+      card._listeners.click[0]();
+      assert.equal(store.getState().currentScene.entities.at(-1).x, expectedX, `${tab} click ${i} uses live scene`);
+    }
+  }
+});
+
+test('pending Play doll thumbnails survive unrelated stage renders', async () => {
+  setupMockDom();
+  const store = createAppStore(createDefaultEnvelope());
+  store.dispatch({ type: 'preset/save', name: 'Loading doll' });
+  const elements = {};
+  const $ = selector => elements[selector] ||= createMockElement();
+  let finish;
+  let token = 0;
+  const context = {
+    store, $, getAsset, getAssetsByKind: assetsByKind,
+    renderDollInto: thumb => new Promise(resolve => { finish = () => { thumb.append(createMockElement('svg')); resolve(); }; }),
+    get playRenderToken() { return token; },
+    render: () => tray.renderSpawnTray(store.getState(), ++token)
+  };
+  const tray = createTraySpawnerView(context);
+  context.render();
+  $('#spawn-tabs').children.find(button => button.id === 'spawn-tab-characters')._listeners.click[0]();
+  const thumb = $('#spawn-items').children[0].children[0];
+  context.render();
+  finish();
+  await Promise.resolve();
+  assert.equal(thumb.children.length, 1, 'cached card retains the completed artwork');
+});
+
+test('Enter on a different focused entity leaves native activation free to select it', () => {
+  setupMockDom();
+  const store = createAppStore(createDefaultEnvelope(), { getAsset });
+  const { instanceId } = store.dispatch({ type: 'scene/spawnBubble', text: 'Selected bubble' });
+  let opened = 0;
+  const dialog = { showModal: () => { opened++; } };
+  const input = { focus() {}, select() {} };
+  const view = createPlayView({ store, $: selector => selector === '#bubble-text-dialog' ? dialog : selector === '#bubble-text-input' ? input : createMockElement(), $$: () => [], renderDollInto: async () => {} });
+  let prevented = false;
+  const event = focusedId => ({
+    key: 'Enter', preventDefault: () => { prevented = true; },
+    target: { matches: () => false, closest: selector => selector === '.scene-entity-positioner' && focusedId ? { dataset: { instanceId: focusedId } } : null }
+  });
+  for (const focusedId of ['another-bubble', 'another-prop']) {
+    view.handleStageKeydown(event(focusedId));
+    assert.equal(opened, 0);
+    assert.equal(prevented, false, 'native Enter activation remains available');
+  }
+  view.handleStageKeydown(event(instanceId));
+  assert.equal(opened, 1);
+  assert.equal(prevented, true);
+});
+
+test('patching pinned props, dolls and bubbles refreshes their accessible labels', () => {
+  setupMockDom();
+  const store = createAppStore(createDefaultEnvelope(), { getAsset });
+  const view = createSceneEntityView({ store, getAsset, sceneEntityRenderKey });
+  for (const entity of [
+    { kind: 'prop', sourceId: 'prop_chair' },
+    { kind: 'character', sourceId: 'demo_emma', characterSnapshot: { baseDollId: 'doll_classic_a', slots: {} } },
+    { kind: 'bubble', sourceId: 'bubble', text: 'Hello', bubbleStyle: 'speech', width: 240 }
+  ]) {
+    const full = { ...entity, instanceId: 'label-test', x: 800, y: 700, scale: 1 };
+    const element = createMockElement();
+    view.patchSceneEntity(element, full, false, false);
+    const label = element.dataset['aria-label'];
+    view.patchSceneEntity(element, { ...full, pinned: true }, false, false);
+    assert.equal(element.dataset['aria-label'], `${t('play.pinned')} ${label}`);
+    view.patchSceneEntity(element, full, false, false);
+    assert.equal(element.dataset['aria-label'], label);
+  }
+});
+
+test('Play rendering restores entity focus without stealing focus moved to another control', async () => {
+  setupMockDom();
+  const queued = [];
+  globalThis.requestAnimationFrame = callback => { queued.push(callback); return queued.length; };
+  const store = createAppStore(createDefaultEnvelope(), { getAsset });
+  store.dispatch({ type: 'scene/spawnProp', assetId: 'prop_chair', x: 800, y: 700 });
+  const entity = store.getState().currentScene.entities[0];
+  const elements = {};
+  const $ = selector => elements[selector] ||= createMockElement();
+  const original = createMockElement('button');
+  original.isConnected = true;
+  original.dataset = { instanceId: entity.instanceId, renderKey: sceneEntityRenderKey(entity, getAsset) };
+  $('#scene-entities').children = [original];
+  $('#scene-background').dataset.renderKey = `${store.getState().currentScene.backgroundId}:1600`;
+  let target = original;
+  let restored = 0;
+  original.focus = () => { restored++; };
+  $('#scene-entities').querySelectorAll = () => [target];
+  const view = createPlayView({ store, $, $$: () => [], getAsset, renderDollInto: async () => {} });
+  document.activeElement = original;
+  await view.render();
+  queued.splice(0).forEach(callback => callback());
+  assert.equal(restored, 1, 'unchanged entity retains focus');
+  await view.render();
+  document.activeElement = createMockElement('button');
+  queued.splice(0).forEach(callback => callback());
+  assert.equal(restored, 1, 'a newly focused control keeps focus');
+  document.activeElement = original;
+  await view.render();
+  original.isConnected = false;
+  document.activeElement = document.body;
+  target = createMockElement('button');
+  target.dataset.instanceId = entity.instanceId;
+  target.focus = () => { restored++; };
+  queued.splice(0).forEach(callback => callback());
+  assert.equal(restored, 2, 'a replaced entity regains focus lost during replacement');
 });
 
 test('Play stage shortcuts ignore browser modifiers and report pinned keyboard moves', () => {

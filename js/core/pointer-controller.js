@@ -71,7 +71,12 @@ export class PointerController {
 
     if (!session.dragging && distance >= threshold) {
       session.dragging = true;
-      this.options.onStart?.(session.id, session.subject, session.startEvent);
+      // A selected subject may be locked. Reject its drag before preview or commit.
+      if (this.options.onStart?.(session.id, session.subject, session.startEvent) === false) {
+        this.session = null;
+        this.releaseCapture(session.pointerId);
+        return;
+      }
     }
     if (!session.dragging) return;
 

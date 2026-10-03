@@ -1,10 +1,12 @@
 /** Selected entity inspector, contextual panels, and dropdown lifecycle. */
-import { DEFAULT_ATTACH_JOINT, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_MOTION_INTENSITY, DEFAULT_PHASE_OFFSET, DEFAULT_PLAYBACK_RATE } from '../../domain/vocabulary.js';
+import { DEFAULT_ATTACH_JOINT, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_MOTION_INTENSITY, DEFAULT_PHASE_OFFSET, DEFAULT_PLAYBACK_RATE, DEFAULT_STATIC_POSE } from '../../domain/vocabulary.js';
 import { MOTION_PROFILES_CONFIG, resolveMotionProfile } from '../../domain/animation-clips.js';
 import { resolveEffectiveMotion } from '../../domain/motion-evaluator.js';
 import { t } from '../../core/i18n.js';
+import { createDisposableRegistry } from '../../core/error-boundary.js';
 
 export function createSelectionInspectorController(context) {
+  const disposables = createDisposableRegistry();
   let activeInspectorTab = 'expressions';
   let railExpanded = true;
 
@@ -75,8 +77,8 @@ export function createSelectionInspectorController(context) {
           const profile = resolveMotionProfile(c);
           return MOTION_PROFILES_CONFIG[profile]?.safePoses || [];
         });
-        const allSamePose = targetCharacters.every((c) => c.pose === targetCharacters[0].pose);
-        const currentPose = allSamePose ? targetCharacters[0].pose : null;
+        const allSamePose = targetCharacters.every((c) => (c.pose || DEFAULT_STATIC_POSE) === (targetCharacters[0].pose || DEFAULT_STATIC_POSE));
+        const currentPose = allSamePose ? targetCharacters[0].pose || DEFAULT_STATIC_POSE : null;
         for (const btn of context.$$('button[data-pose]', poseGroup)) {
           const poseId = btn.dataset.pose;
           const isAllowed = safePosesSets.some((set) => set.includes(poseId));
@@ -281,10 +283,12 @@ export function createSelectionInspectorController(context) {
     const toggle = context.$('#scene-tray-toggle');
     if (toggle && !toggle.dataset.bound) {
       toggle.dataset.bound = 'true';
-      toggle.addEventListener('click', () => {
+      const onToggle = () => {
         railExpanded = !railExpanded;
         renderSelectedActions();
-      });
+      };
+      toggle.addEventListener('click', onToggle);
+      disposables.register(() => { toggle.removeEventListener('click', onToggle); delete toggle.dataset.bound; });
     }
     const railContent = context.$('#play-rail-content');
     const spawnSection = context.$('#spawn-panel-section');
@@ -321,15 +325,19 @@ export function createSelectionInspectorController(context) {
     const tabsList = context.$('#inspector-tabs');
     if (tabsList && !tabsList.dataset.bound) {
       tabsList.dataset.bound = 'true';
-      tabsList.addEventListener('click', (event) => {
+      const onTabClick = (event) => {
         const btn = event.target.closest('button[data-inspector-tab]');
         if (btn && btn.dataset.inspectorTab) {
           activeInspectorTab = btn.dataset.inspectorTab;
           renderSelectedActions(context.store.getState());
         }
-      });
+      };
+      tabsList.addEventListener('click', onTabClick);
+      disposables.register(() => { tabsList.removeEventListener('click', onTabClick); delete tabsList.dataset.bound; });
     }
   }
 
-  return { renderSelectedActions, handleDropdownOutsideClick };
+  function destroy() { disposables.disposeAll(); }
+
+  return { renderSelectedActions, handleDropdownOutsideClick, destroy };
 }

@@ -123,7 +123,8 @@ export function createSelectionHudController(context) {
   }
 
   function renderContextRing(state = context.store.getState()) {
-    const focusedAction = context.getContextRingFocusAction(document.activeElement);
+    const focusedElement = document.activeElement;
+    const focusedAction = context.getContextRingFocusAction(focusedElement);
     const scrollLeft = ring?.scrollLeft || 0;
     removeContextRing();
     if (state.ui.mode !== 'play') return;
@@ -175,7 +176,7 @@ export function createSelectionHudController(context) {
         ['alignCenter', '⇥⇤', t('play.alignCenter')],
         ['alignRight', '⇥', t('play.alignRight')],
         ['alignTop', '⤒', t('play.alignTop')],
-        ['alignMiddle', '⤓', t('play.alignMiddle')],
+        ['alignMiddle', '↕', t('play.alignMiddle')],
         ['alignBottom', '⤓', t('play.alignBottom')],
         ['distributeH', '⋯', t('play.distributeH')],
         ['distributeV', '⋮', t('play.distributeV')],
@@ -241,6 +242,8 @@ export function createSelectionHudController(context) {
     window.visualViewport?.addEventListener('scroll', scheduleLayout);
     if (focusedAction && typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(() => {
+        if (document.activeElement !== focusedElement
+          && !(document.activeElement === document.body && !focusedElement.isConnected)) return;
         if (nextRing.isConnected) /** @type {HTMLButtonElement} */ (nextRing.querySelector(`button[data-action="${escapeCss(focusedAction)}"]`))?.focus?.({ preventScroll: true });
       });
     }
@@ -369,7 +372,10 @@ export function createSelectionHudController(context) {
 
     if (selectedIds.length === 0) return;
 
-    if (selectedIds.length === 1 && entity && (event.key === 'Enter' || event.key.toLowerCase() === 'e') && entity.kind === 'bubble') {
+    const focusedEntityId = event.target?.closest?.('.scene-entity-positioner')?.dataset.instanceId;
+    const editsSelectedBubble = event.key.toLowerCase() === 'e'
+      || (event.key === 'Enter' && (!focusedEntityId || focusedEntityId === id));
+    if (selectedIds.length === 1 && entity && editsSelectedBubble && entity.kind === 'bubble') {
       event.preventDefault();
       openEditBubbleDialog(entity);
       return;
