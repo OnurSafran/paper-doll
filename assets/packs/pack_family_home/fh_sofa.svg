@@ -1,14 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_sofa">
-  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-<g fill="#8b5e34"><path d="M180 750 H240 L228 885 H188 Z"/><path d="M760 750 H820 L812 885 H772 Z"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="91 281 818 619" data-asset-id="fh_sofa">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <g fill="#8b5e34"><path d="M180 750 H240 L228 885 H188 Z"/><path d="M760 750 H820 L812 885 H772 Z"/></g>
     <rect x="145" y="290" width="710" height="455" rx="85" fill="#81b29a"/>
-    <path d="M195 365 Q205 335 250 335 H465 Q485 335 485 370 V555 H195 Z M515 555 V370 Q515 335 535 335 H750 Q795 335 805 365 V555 Z" fill="#a7c9aa" stroke-width="10"/>
+    <path d="M195 365 Q205 335 250 335 H455 Q485 335 485 370 V520 Q485 550 455 550 H225 Q195 550 195 520 Z M515 370 Q515 335 545 335 H750 Q795 335 805 365 V520 Q805 550 775 550 H545 Q515 550 515 520 Z" fill="#a7c9aa" stroke-width="10"/>
     <g fill="#238276" stroke="none"><circle cx="340" cy="430" r="14"/><circle cx="660" cy="430" r="14"/></g>
     <rect x="140" y="690" width="720" height="120" rx="35" fill="#5e927e"/>
-    <g fill="#fff8eb"><rect x="170" y="560" width="325" height="185" rx="45"/><rect x="505" y="560" width="325" height="185" rx="45"/></g>
-    <path d="M210 700 H455 M545 700 H790" fill="none" stroke="#d4bda4" stroke-width="9"/>
-    <g fill="#81b29a"><rect x="100" y="475" width="110" height="315" rx="50"/><rect x="790" y="475" width="110" height="315" rx="50"/></g>
-    <path d="M130 530 V710 M820 530 V710" fill="none" stroke="#a7c9aa" stroke-width="14"/>
+    <!-- A shallow top plane meets a deeper vertical cushion face. -->
+    <path d="M178 611 H492 V687 Q492 724 455 724 H205 Q168 724 168 687 V625 Q168 611 178 611 Z M508 611 H822 Q832 611 832 625 V687 Q832 724 795 724 H545 Q508 724 508 687 Z" fill="#e9d7c1"/>
+    <path d="M225 556 H462 Q477 556 480 568 L492 611 Q492 623 478 623 H182 Q168 623 176 610 L207 570 Q214 556 225 556 Z M538 556 H775 Q786 556 793 570 L824 610 Q832 623 818 623 H522 Q508 623 508 611 L520 568 Q523 556 538 556 Z" fill="#fff8eb"/>
+    <path d="M205 702 H456 M544 702 H795" fill="none" stroke="#c5aa8b" stroke-width="7"/>
+    <!-- Arm tops recede toward the back; front faces stay upright. -->
+    <path d="M100 535 Q100 475 150 475 H160 Q197 475 205 510 L210 540 Z M790 540 L795 510 Q803 475 840 475 H850 Q900 475 900 535 Z" fill="#a7c9aa"/>
+    <path d="M100 543 Q100 515 155 515 Q210 515 210 543 V738 Q210 790 155 790 Q100 790 100 738 Z M790 543 Q790 515 845 515 Q900 515 900 543 V738 Q900 790 845 790 Q790 790 790 738 Z" fill="#81b29a"/>
+    <path d="M130 561 V717 M820 561 V717" fill="none" stroke="#a7c9aa" stroke-width="12"/>
     <path d="M232 455 Q300 430 373 460 L355 585 Q290 605 222 575 Z" fill="#e07a5f"/>
     <path d="M245 477 L353 484 L337 569 L242 559 Z" fill="none" stroke="#f4a98e" stroke-width="9"/>
   </g>

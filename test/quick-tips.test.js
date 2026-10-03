@@ -15,7 +15,7 @@ function setup(ctx, reducedMotion = false) {
   doc.documentElement = {};
   doc.querySelectorAll = () => [];
   doc.querySelector = () => null;
-  const nodes = Object.fromEntries(['quick-tips', 'quick-tip-chip', 'quick-tip-text', 'quick-tip-pause'].map((id) => {
+  const nodes = Object.fromEntries(['quick-tips', 'quick-tip-chip', 'quick-tip-text'].map((id) => {
     const node = new globalThis.EventTarget();
     const classes = new Set();
     node.classList = {
@@ -67,7 +67,7 @@ test('tips rotate, open the guide, and translate immediately during a pending fa
   assert.equal(opened(), 1);
 });
 
-test('hover, focus, hidden tabs, and manual pause hold the current hint', (ctx) => {
+test('hover, focus, and hidden tabs hold the current hint and rotation resumes automatically', (ctx) => {
   const { nodes, doc, tick } = setup(ctx);
   const group = nodes['quick-tips'];
   const text = nodes['quick-tip-text'];
@@ -87,24 +87,14 @@ test('hover, focus, hidden tabs, and manual pause hold the current hint', (ctx) 
   assert.equal(text.textContent, first);
   doc.hidden = false;
   doc.dispatchEvent(new Event('visibilitychange'));
-  nodes['quick-tip-pause'].dispatchEvent(new Event('click'));
-  assert.equal(nodes['quick-tip-pause'].attributes['aria-label'], t('header.tipResume'));
-  tick();
-  assert.equal(text.textContent, first);
-  setLanguage('tr');
-  assert.equal(nodes['quick-tip-pause'].attributes['aria-label'], t('header.tipResume'));
-  nodes['quick-tip-pause'].dispatchEvent(new Event('click'));
   tick();
   assert.equal(text.textContent, t(QUICK_TIP_KEYS[1]));
 });
 
-test('reduced motion starts paused; hidden chips and open dialogs do not advance', (ctx) => {
+test('reduced motion rotates automatically without a fade; hidden chips and open dialogs do not advance', (ctx) => {
   const { nodes, doc, motion, tick } = setup(ctx, true);
   const text = nodes['quick-tip-text'];
   const first = text.textContent;
-  tick();
-  assert.equal(text.textContent, first);
-  nodes['quick-tip-pause'].dispatchEvent(new Event('click'));
   nodes['quick-tips'].getClientRects = () => [];
   tick();
   assert.equal(text.textContent, first);
@@ -115,9 +105,11 @@ test('reduced motion starts paused; hidden chips and open dialogs do not advance
   doc.querySelector = () => null;
   tick();
   assert.equal(text.textContent, t(QUICK_TIP_KEYS[1]));
+  assert.equal(text.classList.contains('tip-fade-out'), false);
+  motion.matches = false;
   motion.dispatchEvent(new Event('change'));
   tick();
-  assert.equal(text.textContent, t(QUICK_TIP_KEYS[1]));
+  assert.equal(text.textContent, t(QUICK_TIP_KEYS[2]));
 });
 
 test('all rotating tips have English and Turkish copy', () => {

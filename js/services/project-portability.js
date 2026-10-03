@@ -4,6 +4,7 @@
  * base64 custom artwork validation, collision rewriting for Merge, and recoverable backup snapshots.
  */
 
+import { hasValidCardboardFinish } from '../domain/cardboard.js';
 import {
   clonePreset,
   cloneScene,
@@ -209,6 +210,15 @@ export async function validateImportPayload(
     return { ok: false, error: 'This project uses an incompatible save version.', warnings: ['Only current-version projects can be imported.'] };
   }
 
+  // Local loads repair unknown finishes; an imported package must be exact.
+  const invalidFinish = [
+    ...(Array.isArray(rawState.customAssets) ? rawState.customAssets : []),
+    ...rawCustomArtwork.map((item) => item?.metadata)
+  ].find((meta) => meta && typeof meta === 'object' && !hasValidCardboardFinish(meta));
+  if (invalidFinish) {
+    return { ok: false, error: 'A custom artwork entry had an invalid cardboard finish.', warnings: ['Artwork cardboard validation failed.'] };
+  }
+
   // Pre-extract custom assets to feed the getAsset resolver
   const incomingCustomMeta = new Map();
   if (Array.isArray(rawState.customAssets)) {
@@ -262,6 +272,7 @@ export async function validateImportPayload(
       return { ok: false, error: 'A custom artwork entry had invalid or duplicate metadata.', warnings: ['Artwork metadata validation failed.'] };
     }
     const metadataMatches = meta.kind === expected.kind && meta.slot === expected.slot &&
+      meta.cardboard === expected.cardboard &&
       meta.name === expected.name &&
       JSON.stringify(meta.placementRules || null) === JSON.stringify(expected.placementRules || null) &&
       JSON.stringify(meta.supportSurfaces || []) === JSON.stringify(expected.supportSurfaces || []) &&

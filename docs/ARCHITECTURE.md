@@ -151,6 +151,8 @@ Scene state stores ground anchor `(x, y)`, scalar `scale`, boolean `flipped`, an
 
 Clamping uses entity dimensions, scale, and catalog ground anchor to keep all items within the `1600 × 900` logical stage.
 
+`domain/character-geometry.js` is the single character mapping for Play, Scene Book, and export. A character's `(x, y)` is its neutral foot contact. The full `300 × 450` canvas renders at a uniform `235 / 300` scale around that contact, and root motion pivots on it. The logical envelope keeps the full width and top of the canvas but ends at the contact, so bounds and shadows meet the feet without cropping hair, hats, or motion overflow.
+
 ## Coordinate and pointer lifecycle
 
 The stage viewport has a fixed 16:9 aspect ratio (`1600 × 900` viewport window), while the inner `#scene-world` supports panoramic widths (`1600`, `3200`, or `4800` logical units). The virtual camera translates `#scene-world` via hardware-accelerated GPU transforms:
@@ -170,6 +172,12 @@ scale = stageRect.width / 1600
 logicalX = (clientX - stageRect.left) * (1600 / stageRect.width) + cameraX
 logicalY = (clientY - stageRect.top) * (900 / stageRect.height)
 ```
+
+Pointer selection has one authority. `PointerController` accepts an optional `resolveSubject(event)` hook, and Play resolves the subject before selection, drag sessions, or capture. `features/play/stage-hit-testing.js` walks positioners front to back (z-index, then DOM order) and maps the point through each candidate's live transforms. It reads the same CSS variables the renderer uses: position, anchor, flip, attachment motion, root motion, and per-channel joint motion. It then samples cached alpha masks at threshold 15 and passes through any number of transparent candidates. Masks are rasterized once per artwork: one per prop viewBox, custom PNG, or bubble, and one per rig channel (body, head, arms, legs) for dolls. They are prepared before an entity element is inserted, released through `retain()`, and never rebuilt during a drag. Missing artwork falls back to its placeholder box. Entity buttons handle only keyboard `click`s (`detail === 0`), so a pointer release on the front button cannot override fall-through and Shift toggles exactly once. Hit testing maps client points through the stage's content box (inside its border), matching the rendered world.
+
+Artwork edges receive a bounded 2.5 CSS-pixel disk tolerance, mapped through those same live transforms; padding and large holes remain transparent. Prepared descriptors retain DOM/style references. Mask keys include custom-art revisions and baked-face state, while recolors and poses reuse their masks. Original doll SVG roots retain their inherited presentation and authoring viewport, and embedded rasters are inlined before channel rasterization to preserve clipping and opacity. A mask failure replaces the visual with the existing explicit placeholder before allowing box selection. Shared prop symbols allow internal viewport overflow so the outer instance clips only once, matching standalone edge strokes. `npm run test:hit-testing-browser` verifies these paths with isolated fixtures and real Chromium pointer events; it requires an available Playwright runtime.
+
+Selection uses a small downward arrow above each selected artwork instead of a rectangular frame. Its neutral anchor comes from the painted extents already collected in the cached alpha masks, including letterbox offsets; it inherits visual flips, attachment transforms, and doll root motion. Keyboard focus uses a blue arrow. The marker has no pointer target. The context toolbar is a fixed overlay under `document.body`, outside the stage's clipping ancestors. It follows cached neutral artwork bounds, including preview positions, flips and attachments, and centers below the visible selection (or visible selected group). Only the window's 12px margin limits horizontal centering; insufficient bottom space flips it above. It avoids the minimap and transport controls, leaves room for the arrow when above, and hides when the artwork leaves the visible stage/window or is clipped by the main scroller. Layout and toolbar dimensions are measured on selection, resize and scroll; drag updates reuse the preview's stage rectangle and read only cached geometry/inline transforms. Camera movement uses the same easing as the world. Narrow toolbars scroll horizontally, retain scroll position and action focus on rebuild, and handle keyboard shortcuts independently of the stage. Observers and listeners are removed when selection or Play ends.
 
 A pointer session records pointer identity, subject, start/latest positions, threshold state, and cancellation. It captures after threshold, previews at animation-frame cadence with edge auto-panning (moving `cameraX` when hovering within 70px of the viewport edge), commits once on pointerup, and cancels on pointercancel, capture loss, route change, resize policy, deletion, visibility loss, or teardown.
 
@@ -327,13 +335,16 @@ Duplicate with contents remaps the entire assembly. Supported-child duplicates
 stay on their original surface. Invalid transforms reject the whole
 operation. Surface-child pinning is relative to its host. Room ordering groups
 furniture and supported props by the host's floor contact, puts rugs below upright
-items, and keeps speech/caption overlays above the scene. Play, Scene Book, direct
+items, and keeps speech/caption overlays above the scene. Front/back commands
+capture the current visible order and switch `layerOrderMode` to `manual`, while
+retaining room placement constraints and support attachments. Subsequent ordering
+uses entity `order`; the override survives saves and undo/redo. Play, Scene Book, direct
 PNG export, and worker export share ordering and contact-shadow geometry.
 
 Paint's `paint-placement-controller.js` owns an SVG metadata overlay outside the
 raster. Rectangle, oval (16 vertices), and trapezoid presets use full-drawing
 normalized coordinates while editing. The save service transforms anchors,
-footprints, and surface vertices through the actual transparent-margin crop;
+footprints, and surface vertices through the actual crop (pixels with alpha `>= 15`, shared with the placement preview);
 invalid geometry prevents saving. Lightweight metadata entries interleave with
 raster snapshots in the same Paint undo sequence. Drafts preserve geometry;
 Edit Copy preserves saved support metadata. Existing unconfigured artwork stays

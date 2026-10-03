@@ -9,11 +9,9 @@ export function wireQuickTips(context, openGuide) {
   const group = context.$('#quick-tips');
   const chip = context.$('#quick-tip-chip');
   const text = context.$('#quick-tip-text');
-  const pause = context.$('#quick-tip-pause');
-  if (!group || !chip || !text || !pause) return;
+  if (!group || !chip || !text) return;
 
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let paused = motion.matches;
   let hovered = false;
   let focused = false;
   let index = 0;
@@ -27,20 +25,16 @@ export function wireQuickTips(context, openGuide) {
     text.textContent = tip;
     // The title exposes the complete hint if the header has to truncate it.
     chip.title = `${tip} — ${t('header.tipTitle')}`;
-    const label = t(paused ? 'header.tipResume' : 'header.tipPause');
-    pause.title = label;
-    pause.setAttribute('aria-label', label);
-    pause.firstElementChild.textContent = paused ? '▶' : '⏸';
-    group.classList.toggle('is-paused', paused || hovered || focused);
+    group.classList.toggle('is-paused', hovered || focused);
   }
 
   function restart() {
     clearInterval(timer);
     render();
-    if (paused || hovered || focused || document.hidden) return;
+    if (hovered || focused || document.hidden) return;
     timer = setInterval(() => {
       if (!group.getClientRects().length || document.querySelector('dialog[open]')) return;
-      text.classList.add('tip-fade-out');
+      if (!motion.matches) text.classList.add('tip-fade-out');
       fade = setTimeout(() => {
         index = (index + 1) % QUICK_TIP_KEYS.length;
         render();
@@ -54,7 +48,6 @@ export function wireQuickTips(context, openGuide) {
     listeners.push(() => target.removeEventListener(name, handler));
   }
   listen(chip, 'click', openGuide);
-  listen(pause, 'click', () => { paused = !paused; restart(); });
   listen(group, 'mouseenter', () => { hovered = true; restart(); });
   listen(group, 'mouseleave', () => { hovered = false; restart(); });
   listen(group, 'focusin', () => { focused = true; restart(); });
@@ -64,10 +57,7 @@ export function wireQuickTips(context, openGuide) {
   });
   listen(window, 'languagechange', restart);
   listen(document, 'visibilitychange', restart);
-  listen(motion, 'change', () => {
-    if (motion.matches) paused = true;
-    restart();
-  });
+  listen(motion, 'change', restart);
   restart();
 
   return () => {

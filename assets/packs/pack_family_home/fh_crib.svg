@@ -1,23 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_crib">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="86 191 828 729" data-asset-id="fh_crib">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-<rect x="115" y="220" width="770" height="75" rx="12" fill="#fff8eb"/>
-    <rect x="140" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="205" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="270" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="335" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="400" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="465" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="530" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="595" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="660" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="725" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="790" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="855" y="290" stroke-width="8" width="22" height="390" rx="4" fill="#fff8eb"/>
-    <rect x="100" y="670" width="800" height="100" rx="25" fill="#a78bc4"/>
+    <rect x="162" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="227" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="292" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="357" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="422" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="487" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="552" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="617" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="682" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="747" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="812" y="270" width="24" height="425" rx="4" fill="#fff8eb" stroke-width="8"/>
+    <rect x="115" y="220" width="770" height="75" rx="12" fill="#fff8eb"/>
+    <!-- The mattress lies horizontally between the rear bars and front edge. -->
+    <path d="M115 685 H885 V744 Q885 770 859 770 H141 Q115 770 115 744 Z" fill="#a78bc4"/>
+    <path d="M168 639 H832 L885 685 Q897 698 878 698 H122 Q103 698 115 685 Z" fill="#cdb9df"/>
     <rect x="95" y="200" width="45" height="685" rx="12" fill="#d4a373"/>
     <rect x="860" y="200" width="45" height="685" rx="12" fill="#d4a373"/>
     <path d="M115 220 V860 M882 220 V860" fill="none" stroke="#e9c46a" stroke-width="10"/>
-<path d="M165 718 H835" fill="none" stroke="#cdb9df" stroke-width="16"/>
+<path d="M165 746 H835" fill="none" stroke="#8067a0" stroke-width="8"/>
 <g fill="#bc8a5f" stroke-width="9"><circle cx="118" cy="235" r="12"/><circle cx="882" cy="235" r="12"/><circle cx="118" cy="750" r="12"/><circle cx="882" cy="750" r="12"/></g>
   </g>
 </svg>

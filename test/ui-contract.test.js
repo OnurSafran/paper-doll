@@ -2,6 +2,7 @@ import { readControllerBundle } from './source-bundle.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { TRANSLATIONS } from '../js/core/i18n.js';
 
 function loadCssBundle(entryPath = '../css/app.css') {
   const entryUrl = new URL(entryPath, import.meta.url);
@@ -245,7 +246,8 @@ test('project and paint copy do not duplicate localized labels on narrow layouts
 test('scene stickiness and pinning expose accessible HUD controls, visual badge, and keyboard shortcuts', () => {
   assert.match(playJs, /'togglePin'/);
   assert.match(playJs, /'detach'/);
-  assert.match(css, /\.scene-entity-positioner\.is-pinned\s*{/);
+  // Cursors come from the stage (stage-hover-cursor.js), so pinned styling is the visual treatment only.
+  assert.match(css, /\.scene-entity-positioner\.is-pinned \.scene-entity-visual\s*{/);
   assert.match(css, /\.pinned-badge\s*{/);
   assert.match(playJs, /action === 'togglePin'/);
   assert.match(playJs, /action === 'detach'/);
@@ -263,7 +265,7 @@ test('speech bubbles and captions expose accessible controls, spawner tabs, dial
   assert.match(html, /id="bubble-text-input"/);
   assert.match(html, /id="bubble-char-count"/);
 
-  assert.match(css, /\.scene-entity-positioner\.is-bubble-entity\s*{/);
+  assert.match(css, /\.scene-entity-positioner\.is-bubble-entity svg\s*{/);
   assert.match(css, /\.bubble-style-buttons\s*{/);
   assert.match(css, /\.bubble-style-buttons button\.is-selected-bubble-style\s*{/);
 
@@ -294,8 +296,9 @@ test('multi-select, alignment controls, scene outline, and templates expose acce
   assert.match(html, /id="scene-templates-grid"/);
   assert.match(html, /id="scene-outline-dialog"/);
   assert.match(html, /id="scene-outline-list"/);
-  assert.match(html, /id="outline-select-all-btn"/);
-  assert.match(css, /\.scene-entity-positioner\.is-multi-selected\s*{/);
+  assert.doesNotMatch(html, /id="outline-(?:select-all|deselect)-btn"/);
+  assert.match(css, /\.scene-entity-positioner:is\(\.is-selected, \.is-multi-selected\) > \.scene-entity-visual::after/);
+  assert.doesNotMatch(css, /\.scene-entity-positioner\.is-(?:multi-)?selected::(?:before|after)/);
   assert.match(css, /\.template-card\s*{/);
   assert.match(css, /\.template-badge\s*{/);
   assert.match(css, /\.outline-dialog\s*{/);
@@ -315,7 +318,7 @@ test('panoramic camera navigation exposes a compact accessible minimap overlay',
   assert.match(html, /id="scene-world"/);
   assert.match(html, /id="camera-hud"/);
   assert.doesNotMatch(html, /id="camera-(?:pan-left|slider|pan-right)"/);
-  assert.match(html, /id="scene-tray-toggle"[^>]*aria-controls="play-rail-content"[^>]*aria-expanded="false"/);
+  assert.match(html, /id="scene-tray-toggle"[^>]*aria-controls="play-rail-content"[^>]*aria-expanded="true"/);
   assert.match(html, /id="stage-minimap"/);
   assert.match(html, /id="minimap-lens"/);
   assert.match(html, /id="minimap-entities"/);
@@ -337,7 +340,8 @@ test('panoramic camera navigation exposes a compact accessible minimap overlay',
   assert.match(playJs, /function syncCamera\(/);
   assert.match(playJs, /entityRoot\.replaceChildren\(\.\.\.nextElements\);/);
   assert.match(playJs, /renderCameraHud\(state\);/);
-  assert.match(js, /clientToLogical\(event\.clientX, event\.clientY, playStage\.getBoundingClientRect\(\), cameraX\)/);
+  // Drops map through the stage content box and rendered camera, like every other pointer input.
+  assert.match(js, /context\.playView\.stagePointAt\(event\)/);
 });
 
 test('static pose and animation clip controls expose accessible multi-channel UI buttons and styling', () => {
@@ -354,7 +358,8 @@ test('static pose and animation clip controls expose accessible multi-channel UI
   assert.match(html, /data-clip-id="none"/);
   assert.match(html, /data-clip-id="idle"/);
   assert.match(html, /data-clip-id="happy_bounce"/);
-  assert.match(html, /data-clip-id="hello"/);
+  assert.doesNotMatch(html, /data-clip-id="(?:hello|wave|point|clap)"/);
+  assert.doesNotMatch(html, /data-pose="(?:wave|point|hands_on_hips|arms_up)"/);
   assert.match(html, /data-clip-id="celebrate"/);
   assert.match(html, /data-clip-id="nod"/);
   assert.match(html, /data-clip-id="sway"/);
@@ -492,4 +497,25 @@ test('wearable drop regex accepts uppercase IDs and bubble drops catch decode er
 test('global tab and shortcut handlers guard non-element event targets with optional chaining', () => {
   assert.match(shortcutsJs, /event\.target\?\.closest\?\.?\(['"]\[role="tab"\]['"]\)/);
   assert.match(shortcutsJs, /event\.target\?\.matches\?\.?\(/);
+});
+
+
+test('tips and animation transport omit manual tip pause, loop, and reset controls', () => {
+  assert.doesNotMatch(html, /id="(?:quick-tip-pause|loop-animation-btn|reset-animation-btn)"/);
+  assert.match(html, /id="play-rail-content" class="play-rail-content">/);
+  assert.match(html, /class="voice-btn-icon" aria-hidden="true">🎙️<\/span>/);
+});
+
+
+test('translated button labels do not repeat icons already supplied by their markup', () => {
+  for (const button of html.matchAll(/<(button|summary)\b[^>]*>[\s\S]*?<\/\1>/g)) {
+    for (const label of button[0].matchAll(/<span\b[^>]*data-i18n="([^"]+)"[^>]*>[\s\S]*?<\/span>/g)) {
+      const surrounding = (button[0].slice(0, label.index) + button[0].slice(label.index + label[0].length)).replace(/<[^>]*>/g, '');
+      if (!/\p{Extended_Pictographic}/u.test(surrounding)) continue;
+      for (const [language, dictionary] of Object.entries(TRANSLATIONS)) {
+        const text = label[1].split('.').reduce((value, key) => value?.[key], dictionary);
+        assert.doesNotMatch(text || '', /\p{Extended_Pictographic}/u, `${language}: ${label[1]}`);
+      }
+    }
+  }
 });

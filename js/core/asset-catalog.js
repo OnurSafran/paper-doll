@@ -8,8 +8,26 @@ const NEW_CORE_ASSET_IDS = new Set([
   'prop_camera', 'prop_flower_pot', 'prop_mailbox', 'prop_picnic_blanket'
 ]);
 const PANORAMIC_CORE_ASSET_IDS = new Set(['bg_moonlit_meadow', 'bg_snowy_village', 'bg_city_sunset', 'bg_candy_land']);
+const PROP_AUDIT_ASSET_IDS = new Set(['prop_watering_can', 'prop_puppy', 'prop_beach_ball', 'prop_paint_palette']);
 const ASSET_CREATOR = 'Paper Doll Studio';
 const NEW_ASSET_CREATOR = '5.6 Luna';
+
+// Measured bottom edge (including strokes) of each shoe's sole, in doll authoring units.
+// Contact is evaluated together with the base doll's own foot contact.
+const SHOE_SOLE_CONTACT_Y = Object.freeze({
+  shoes_sneakers: 413,
+  shoes_sandals: 412,
+  shoes_boots: 413,
+  shoes_loafers: 417.75,
+  shoes_ballet: 412.25,
+  shoes_rainboots: 412.25,
+  shoes_booties_baby: 370,
+  shoes_oxfords_classic: 419,
+  shoes_sneakers_child: 404,
+  shoes_rainboots_child: 401.75,
+  shoes_sandals_baby: 370,
+  shoes_sneakers_baby: 371
+});
 
 export const HEAD_ACCESSORY_IDS = Object.freeze(new Set([
   'accessory_hat', 'accessory_glasses', 'accessory_bow', 'accessory_beret',
@@ -101,7 +119,8 @@ export const ASSETS = Object.freeze([
     shoulderLeftPivot: Object.freeze({ x: 126, y: 120 }),
     shoulderRightPivot: Object.freeze({ x: 174, y: 120 }),
     hipLeftPivot: Object.freeze({ x: 138, y: 230 }),
-    hipRightPivot: Object.freeze({ x: 162, y: 230 })
+    hipRightPivot: Object.freeze({ x: 162, y: 230 }),
+    footContact: Object.freeze({ x: 150, y: 410 })
   },
   {
     id: 'doll_classic_b',
@@ -118,7 +137,8 @@ export const ASSETS = Object.freeze([
     shoulderLeftPivot: Object.freeze({ x: 124, y: 120 }),
     shoulderRightPivot: Object.freeze({ x: 176, y: 120 }),
     hipLeftPivot: Object.freeze({ x: 138, y: 230 }),
-    hipRightPivot: Object.freeze({ x: 162, y: 230 })
+    hipRightPivot: Object.freeze({ x: 162, y: 230 }),
+    footContact: Object.freeze({ x: 150, y: 410 })
   },
   {
     id: 'doll_chibi_a',
@@ -135,7 +155,8 @@ export const ASSETS = Object.freeze([
     shoulderLeftPivot: Object.freeze({ x: 124, y: 120 }),
     shoulderRightPivot: Object.freeze({ x: 176, y: 120 }),
     hipLeftPivot: Object.freeze({ x: 138, y: 230 }),
-    hipRightPivot: Object.freeze({ x: 162, y: 230 })
+    hipRightPivot: Object.freeze({ x: 162, y: 230 }),
+    footContact: Object.freeze({ x: 150, y: 400 })
   },
   {
     id: 'doll_baby_a',
@@ -152,7 +173,8 @@ export const ASSETS = Object.freeze([
     shoulderLeftPivot: Object.freeze({ x: 122, y: 118 }),
     shoulderRightPivot: Object.freeze({ x: 178, y: 118 }),
     hipLeftPivot: Object.freeze({ x: 138, y: 240 }),
-    hipRightPivot: Object.freeze({ x: 162, y: 240 })
+    hipRightPivot: Object.freeze({ x: 162, y: 240 }),
+    footContact: Object.freeze({ x: 150, y: 368 })
   },
   {
     id: 'doll_adult_a',
@@ -169,7 +191,8 @@ export const ASSETS = Object.freeze([
     shoulderLeftPivot: Object.freeze({ x: 121, y: 116 }),
     shoulderRightPivot: Object.freeze({ x: 179, y: 116 }),
     hipLeftPivot: Object.freeze({ x: 138, y: 236 }),
-    hipRightPivot: Object.freeze({ x: 162, y: 236 })
+    hipRightPivot: Object.freeze({ x: 162, y: 236 }),
+    footContact: Object.freeze({ x: 150, y: 414.5 })
   },
   {
     id: 'doll_elder_a',
@@ -186,7 +209,8 @@ export const ASSETS = Object.freeze([
     shoulderLeftPivot: Object.freeze({ x: 124, y: 118 }),
     shoulderRightPivot: Object.freeze({ x: 176, y: 118 }),
     hipLeftPivot: Object.freeze({ x: 138, y: 234 }),
-    hipRightPivot: Object.freeze({ x: 162, y: 234 })
+    hipRightPivot: Object.freeze({ x: 162, y: 234 }),
+    footContact: Object.freeze({ x: 150, y: 411 })
   },
 
   // Face Features - Eyes
@@ -323,35 +347,39 @@ export const ASSETS = Object.freeze([
   { id: 'bg_city_sunset', kind: 'background', name: 'Rooftop sunset', path: 'assets/backgrounds/city-sunset.svg', viewBox: [0, 0, 3200, 900], backgroundWidth: 3200, requiredGroups: ['background'] },
   { id: 'bg_candy_land', kind: 'background', name: 'Candy land', path: 'assets/backgrounds/candy-land.svg', viewBox: [0, 0, 4800, 900], backgroundWidth: 4800, requiredGroups: ['background'] },
 
-  prop('prop_chair', 'Armchair', 'assets/props/chair.svg', 240, 270, ['home']),
-  prop('prop_table', 'Cafe table', 'assets/props/table.svg', 250, 230, ['home']),
-  prop('prop_plant', 'Monstera plant', 'assets/props/plant.svg', 200, 270, ['home']),
-  prop('prop_lamp', 'Floor lamp', 'assets/props/lamp.svg', 160, 360, ['home']),
-  prop('prop_rug', 'Pastel rug', 'assets/props/rug.svg', 380, 140, ['home']),
-  prop('prop_tea_set', 'Tea set', 'assets/props/tea-set.svg', 170, 120, ['home']),
-  prop('prop_easel', 'Art easel', 'assets/props/easel.svg', 220, 290, ['creative']),
-  prop('prop_bookshelf', 'Cozy bookshelf', 'assets/props/bookshelf.svg', 260, 320, ['home']),
-  prop('prop_cat', 'Sleeping cat', 'assets/props/cat.svg', 180, 130, ['home']),
-  prop('prop_picnic_basket', 'Picnic basket', 'assets/props/picnic-basket.svg', 190, 160, ['fun']),
-  prop('prop_umbrella', 'Beach parasol', 'assets/props/umbrella.svg', 260, 340, ['outdoors']),
-  prop('prop_balloons', 'Balloons bunch', 'assets/props/balloons.svg', 210, 310, ['fun']),
-  prop('prop_cake', 'Celebration cake', 'assets/props/cake.svg', 170, 170, ['fun']),
-  prop('prop_guitar', 'Acoustic guitar', 'assets/props/guitar.svg', 180, 300, ['creative']),
-  prop('prop_painting', 'Wall art frame', 'assets/props/painting.svg', 220, 180, ['creative']),
-  prop('prop_bench', 'Garden bench', 'assets/props/bench.svg', 300, 200, ['outdoors']),
-  prop('prop_bicycle', 'Garden bicycle', 'assets/props/bicycle.svg', 300, 220, ['outdoors']),
-  prop('prop_kite', 'Colorful kite', 'assets/props/kite.svg', 200, 260, ['fun']),
-  prop('prop_camera', 'Little camera', 'assets/props/camera.svg', 180, 140, ['creative']),
-  prop('prop_flower_pot', 'Flower pot', 'assets/props/flower-pot.svg', 180, 220, ['outdoors']),
-  prop('prop_mailbox', 'Garden mailbox', 'assets/props/mailbox.svg', 220, 220, ['outdoors']),
-  prop('prop_picnic_blanket', 'Picnic blanket', 'assets/props/picnic-blanket.svg', 360, 160, ['fun'])
+  prop('prop_chair', 'Armchair', 'assets/props/chair.svg', 192, 192.96, ['home'], [100, 150, 800, 804], 'stand'),
+  prop('prop_table', 'Cafe table', 'assets/props/table.svg', 179.4, 155.02, ['home'], [110, 260, 780, 674], 'stand'),
+  prop('prop_plant', 'Monstera plant', 'assets/props/plant.svg', 126.8, 173.8, ['home'], [183, 70, 634, 869], 'stand'),
+  prop('prop_lamp', 'Floor lamp', 'assets/props/lamp.svg', 70.4, 147.84, ['home'], [280, 55, 440, 924], 'stand'),
+  prop('prop_rug', 'Pastel rug', 'assets/props/rug.svg', 125.72, 52.78, ['home'], [51, 511, 898, 377], 'none'),
+  prop('prop_tea_set', 'Tea set', 'assets/props/tea-set.svg', 98.64, 69.36, ['home'], [155, 292, 822, 578], 'edge'),
+  prop('prop_easel', 'Art easel', 'assets/props/easel.svg', 136.4, 189.86, ['creative'], [190, 103, 620, 863], 'stand'),
+  prop('prop_bookshelf', 'Cozy bookshelf', 'assets/props/bookshelf.svg', 172.64, 219.18, ['home'], [168, 108, 664, 843], 'stand'),
+  prop('prop_cat', 'Sleeping cat', 'assets/props/cat.svg', 101.4, 60.97, ['home'], [110, 440, 780, 469], 'edge'),
+  prop('prop_picnic_basket', 'Picnic basket', 'assets/props/picnic-basket.svg', 105.6, 104.32, ['fun'], [170, 237, 660, 652], 'edge'),
+  prop('prop_umbrella', 'Beach parasol', 'assets/props/umbrella.svg', 202.8, 236.34, ['outdoors'], [110, 70, 780, 909], 'stand'),
+  prop('prop_balloons', 'Balloons bunch', 'assets/props/balloons.svg', 126, 198.24, ['fun'], [200, 5, 600, 944], 'none'),
+  prop('prop_cake', 'Celebration cake', 'assets/props/cake.svg', 125.8, 134.13, ['fun'], [130, 200, 740, 789], 'edge'),
+  prop('prop_guitar', 'Acoustic guitar', 'assets/props/guitar.svg', 59.04, 149.22, ['creative'], [336, 70, 328, 829], 'edge'),
+  prop('prop_painting', 'Wall art frame', 'assets/props/painting.svg', 126.72, 132.66, ['creative'], [148, 94, 704, 737], 'none'),
+  prop('prop_bench', 'Garden bench', 'assets/props/bench.svg', 156, 112.6, ['outdoors'], [110, 370, 780, 563], 'stand'),
+  prop('prop_bicycle', 'Garden bicycle', 'assets/props/bicycle.svg', 184.36, 138.38, ['outdoors'], [81, 314, 838, 629], 'stand'),
+  prop('prop_kite', 'Colorful kite', 'assets/props/kite.svg', 120, 179.8, ['fun'], [200, 80, 600, 899], 'none'),
+  prop('prop_camera', 'Little camera', 'assets/props/camera.svg', 103.6, 91.56, ['creative'], [130, 175, 740, 654], 'edge'),
+  prop('prop_flower_pot', 'Flower pot', 'assets/props/flower-pot.svg', 86.4, 146.52, ['outdoors'], [260, 45, 480, 814], 'edge'),
+  prop('prop_mailbox', 'Garden mailbox', 'assets/props/mailbox.svg', 115.5, 152.24, ['outdoors'], [290, 220, 525, 692], 'stand'),
+  prop('prop_picnic_blanket', 'Picnic blanket', 'assets/props/picnic-blanket.svg', 135.68, 93.92, ['fun'], [76, 286, 848, 587], 'none'),
+  prop('prop_watering_can', 'Garden watering can', 'assets/props/watering-can.svg', 109.62, 67.48, ['outdoors'], [135, 326, 783, 482], 'edge'),
+  prop('prop_puppy', 'Cushion puppy', 'assets/props/puppy.svg', 109.12, 103.52, ['home', 'outdoors'], [159, 267, 682, 647], 'edge'),
+  prop('prop_beach_ball', 'Striped beach ball', 'assets/props/beach-ball.svg', 92.4, 92.26, ['outdoors', 'fun'], [170, 190, 660, 659], 'edge'),
+  prop('prop_paint_palette', 'Palette and brush', 'assets/props/paint-palette.svg', 96.6, 85.96, ['creative'], [157, 205, 690, 614], 'edge')
 ].map((asset) => Object.freeze({
   ...asset,
   ...corePlacementMetadata(asset.id),
   metadata: Object.freeze({
-    added_date: PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? '2026-08-19' : NEW_CORE_ASSET_IDS.has(asset.id) ? '2026-08-16' : '2026-08-14',
+    added_date: PROP_AUDIT_ASSET_IDS.has(asset.id) ? '2026-10-02' : PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? '2026-08-19' : NEW_CORE_ASSET_IDS.has(asset.id) ? '2026-08-16' : '2026-08-14',
     creator: PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? ASSET_CREATOR : NEW_CORE_ASSET_IDS.has(asset.id) ? NEW_ASSET_CREATOR : ASSET_CREATOR,
-    concept: PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? 'seamless panorama' : NEW_CORE_ASSET_IDS.has(asset.id) ? 'weekend garden' : 'core',
+    concept: PROP_AUDIT_ASSET_IDS.has(asset.id) ? 'everyday play' : PANORAMIC_CORE_ASSET_IDS.has(asset.id) ? 'seamless panorama' : NEW_CORE_ASSET_IDS.has(asset.id) ? 'weekend garden' : 'core',
     dlc: 'core',
     source: 'project-authored SVG primitives and paths'
   })
@@ -439,13 +467,17 @@ function wearable(id, slot, name, path, color, requiredGroups = ['garment'], sup
     tintable: true, defaultColors: { primary: color }, requiredGroups,
     supportedFitFamilies,
     presentationStyles,
-    poseSupport
+    poseSupport,
+    ...(SHOE_SOLE_CONTACT_Y[id] ? { soleContactY: SHOE_SOLE_CONTACT_Y[id] } : {})
   };
 }
 
-function prop(id, name, path, displayWidth, displayHeight, collections = []) {
+// viewBox is trimmed to the painted extent (strokes included) and the display size keeps
+// the artwork's previous uniform scale, so a bottom-center anchor meets the floor.
+/** @param {'none'|'edge'|'stand'} cardboard */
+function prop(id, name, path, displayWidth, displayHeight, collections = [], viewBox = [0, 0, 1000, 1000], cardboard = 'edge') {
   return {
-    id, kind: 'prop', name, path, viewBox: [0, 0, 1000, 1000], requiredGroups: ['prop'],
+    id, kind: 'prop', name, path, cardboard, viewBox: [...viewBox], requiredGroups: ['prop'],
     displayWidth, displayHeight, collections: Object.freeze([...collections]),
     groundAnchor: { x: 0.5, y: 1.0 }, defaultScale: 1
   };
@@ -458,18 +490,21 @@ function corePlacementMetadata(id) {
     { id: 'floor', kind: 'floor', polygon: [[0, seams[id]], [1600, seams[id]], [1600, 900], [0, 900]] },
     { id: 'wall', kind: 'wall', polygon: [[0, 0], [1600, 0], [1600, seams[id]], [0, seams[id]]] }
   ] } };
-  const floor = ['prop_chair', 'prop_table', 'prop_plant', 'prop_lamp', 'prop_rug', 'prop_easel', 'prop_bookshelf', 'prop_bench', 'prop_picnic_blanket'];
-  const small = ['prop_tea_set', 'prop_flower_pot', 'prop_cake', 'prop_camera'];
+  const floor = ['prop_chair', 'prop_table', 'prop_plant', 'prop_lamp', 'prop_rug', 'prop_easel', 'prop_bookshelf', 'prop_bench', 'prop_picnic_blanket', 'prop_puppy', 'prop_beach_ball'];
+  const small = ['prop_tea_set', 'prop_flower_pot', 'prop_cake', 'prop_camera', 'prop_watering_can', 'prop_paint_palette'];
   if (!floor.includes(id) && !small.includes(id) && id !== 'prop_painting') return {};
   return {
     placementRules: { allowedTargets: id === 'prop_painting' ? ['wall'] : small.includes(id) ? ['floor', 'surface'] : ['floor'], tags: small.includes(id) ? ['small-prop'] : ['furniture'], contactFootprint: { width: small.includes(id) ? .25 : .55, depth: .02 }, renderClass: ['prop_rug', 'prop_picnic_blanket'].includes(id) ? 'ground' : 'upright' },
+    // Normalized to the trimmed viewBox. The wall anchor keeps the frame where the
+    // former 220 × 180 display box centered it.
     ...(id === 'prop_painting' ? {
-      groundAnchor: { x: .5, y: .5 },
-      // Frame bounds in the display rectangle, including the square SVG's side margins.
-      wallShadow: { x: .5, y: .54, width: 180 / 220 * .68, height: .56 }
+      groundAnchor: { x: .5, y: 406 / 737 },
+      // Frame rectangle (x 160–840, y 260–820) within the trimmed 148 94 704 737 artwork.
+      wallShadow: { x: .5, y: 446 / 737, width: 680 / 704, height: 560 / 737 }
     } : {}),
-    ...(id === 'prop_table' ? { supportSurfaces: [{ id: 'tabletop', nameKey: 'placement.tabletop', polygon: [[.24,.32],[.76,.32],[.84,.39],[.76,.46],[.24,.46],[.16,.39]], acceptsTags: ['small-prop'] }] } : {}),
-    ...(id === 'prop_bookshelf' ? { supportSurfaces: [{ id: 'top', nameKey: 'placement.cabinetTop', polygon: [[.2,.115],[.8,.115],[.8,.145],[.2,.145]], acceptsTags: ['small-prop'] }] } : {}),
-    ...(id === 'prop_bench' ? { supportSurfaces: [{ id: 'seat', nameKey: 'placement.benchTop', polygon: [[.16,.62],[.84,.62],[.82,.66],[.18,.66]], acceptsTags: ['small-prop'] }] } : {})
+    // Surfaces were authored against the 1000-unit artwork and are remapped into the trim.
+    ...(id === 'prop_table' ? { supportSurfaces: [{ id: 'tabletop', nameKey: 'placement.tabletop', polygon: [[.1667,.089],[.8333,.089],[.9359,.1929],[.8333,.2967],[.1667,.2967],[.0641,.1929]], acceptsTags: ['small-prop'] }] } : {}),
+    ...(id === 'prop_bookshelf' ? { supportSurfaces: [{ id: 'top', nameKey: 'placement.cabinetTop', polygon: [[.0482,.0083],[.9518,.0083],[.9518,.0439],[.0482,.0439]], acceptsTags: ['small-prop'] }] } : {}),
+    ...(id === 'prop_bench' ? { supportSurfaces: [{ id: 'seat', nameKey: 'placement.benchTop', polygon: [[.0641,.444],[.9359,.444],[.9103,.5151],[.0897,.5151]], acceptsTags: ['small-prop'] }] } : {})
   };
 }

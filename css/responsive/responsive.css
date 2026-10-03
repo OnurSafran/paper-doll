@@ -147,7 +147,8 @@
   .asset-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  .spawn-list {
+  .spawn-list,
+  .tray-pack-filter {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .designer-tools {
@@ -156,7 +157,8 @@
 }
 
 @media (max-width: 920px) {
-  .spawn-list {
+  .spawn-list,
+  .tray-pack-filter {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -201,7 +203,8 @@
   .asset-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .spawn-list {
+  .spawn-list,
+  .tray-pack-filter {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .designer-tools {
@@ -290,7 +293,8 @@ main:has(> #play-screen:not([hidden])) {
   .play-rail .play-inspector-panel {
     flex: 0 0 auto;
   }
-  .spawn-list {
+  .spawn-list,
+  .tray-pack-filter {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -448,7 +452,8 @@ main:has(> #play-screen:not([hidden])) {
   .spawn-panel .eyebrow {
     display: none;
   }
-  .spawn-list {
+  .spawn-list,
+  .tray-pack-filter {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
@@ -641,10 +646,18 @@ main:has(> #play-screen:not([hidden])) {
 }
 
 @media (forced-colors: active) {
-  .scene-entity-positioner.is-selected::after { border: 3px solid Highlight; }
+  .scene-entity-positioner:is(.is-selected, .is-multi-selected, :focus-visible) { --selection-color: Highlight; }
+  .scene-entity-positioner:is(.is-selected, .is-multi-selected) > .scene-entity-visual::after,
+  .scene-entity-positioner:is(.is-selected, .is-multi-selected) .scene-entity-motion::after,
+  .scene-entity-positioner:focus-visible > .scene-entity-visual::after,
+  .scene-entity-positioner:focus-visible .scene-entity-motion::after {
+    forced-color-adjust: none;
+    filter: none;
+  }
   .swatch { forced-color-adjust: none; border: 2px solid CanvasText; }
   .swatch[aria-pressed="true"] { outline: 4px solid Highlight; outline-offset: 2px; }
   .button, button { border: 2px solid ButtonText; }
+  .scene-entity-positioner { border: 0; }
   .button.primary { background: Highlight; color: HighlightText; }
   .expression-buttons button.is-selected-expression { outline: 2px solid Highlight; }
   .context-ring { border: 2px solid CanvasText; background: Canvas; }

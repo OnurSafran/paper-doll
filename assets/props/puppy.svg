@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="159 267 682 647" data-asset-id="prop_puppy">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="500" cy="804" rx="331" ry="101" fill="#81b29a"/>
+    <ellipse cx="500" cy="793" rx="298" ry="73" fill="#c4d9b5" stroke-width="9"/>
+    <path d="M647 681 C827 701 843 487 763 490 C722 492 815 644 650 623" fill="#d4a373"/>
+    <path d="M399 520 C373 620 383 779 500 786 C651 801 739 739 689 621 Q620 530 529 530 Z" fill="#d4a373"/>
+    <path d="M450 545 Q405 641 443 740 L521 739 Q555 643 512 544 Z" fill="#fff8eb" stroke-width="10"/>
+    <path d="M519 666 Q612 639 633 699 Q650 735 603 763 H548" fill="#bc8a5f"/>
+    <path d="M436 671 L420 760 Q393 795 348 766 Q331 742 358 721 L365 651" fill="#d4a373"/>
+    <path d="M500 661 L518 758 Q545 793 588 767 Q607 744 578 723 L570 652" fill="#d4a373"/>
+    <path d="M355 756 L361 772 M378 756 L382 777 M554 756 L552 776 M576 754 L574 772" fill="none" stroke="#8b5e34" stroke-width="7"/>
+    <!-- Floppy ears, cream muzzle and collar keep the pet distinct from the cat. -->
+    <path d="M333 349 C344 259 553 246 590 354 L596 452 Q575 565 460 572 Q339 553 322 455 Z" fill="#d4a373"/>
+    <path d="M340 332 C272 288 235 417 280 481 Q309 512 344 453 L366 359 Z" fill="#8b5e34"/>
+    <path d="M572 331 C645 293 680 419 630 482 Q600 508 568 448 L548 357 Z" fill="#8b5e34"/>
+    <path d="M366 475 C363 402 429 415 459 444 C489 414 553 420 548 474 Q531 537 460 537 Q384 535 366 475 Z" fill="#fff8eb" stroke-width="10"/>
+    <ellipse cx="399" cy="399" rx="13" ry="18" fill="#2d261e" stroke="none"/>
+    <ellipse cx="523" cy="399" rx="13" ry="18" fill="#2d261e" stroke="none"/>
+    <circle cx="403" cy="394" r="4" fill="#fff8eb" stroke="none"/>
+    <circle cx="527" cy="394" r="4" fill="#fff8eb" stroke="none"/>
+    <path d="M434 453 Q460 440 486 453 Q478 477 460 478 Q443 478 434 453 Z" fill="#514039" stroke-width="8"/>
+    <path d="M449 497 Q463 483 480 497 L476 524 Q464 542 451 523 Z" fill="#e07a5f" stroke-width="8"/>
+    <path d="M460 478 V489 Q437 513 419 490 M460 489 Q479 510 499 490" fill="none" stroke-width="8"/>
+    <path d="M373 537 Q459 575 558 535 L562 565 Q461 611 369 565 Z" fill="#e07a5f" stroke-width="10"/>
+    <circle cx="464" cy="587" r="23" fill="#e9c46a" stroke-width="9"/>
+    <circle cx="464" cy="587" r="7" fill="#fff8eb" stroke="none"/>
+  </g>
+</svg>

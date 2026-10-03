@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="157 205 690 614" data-asset-id="prop_paint_palette">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- An open thumb notch avoids a background-colored imitation hole. -->
+    <path d="M663 618 C617 531 699 487 788 532 C855 316 625 226 406 273 C199 316 125 513 191 673 C277 873 629 827 738 702 Q771 654 731 627 Q699 649 663 618 Z" fill="#d4a373"/>
+    <path d="M224 623 Q250 766 424 775 M309 368 Q352 324 401 318" fill="none" stroke="#e9c46a" stroke-width="13"/>
+    <g stroke-width="10">
+      <path d="M279 405 Q251 360 294 348 Q341 330 359 375 Q369 414 329 431 Q292 442 279 405 Z" fill="#e07a5f"/>
+      <path d="M417 340 Q415 292 460 297 Q510 296 518 338 Q517 376 473 380 Q429 382 417 340 Z" fill="#e9c46a"/>
+      <path d="M569 339 Q581 299 624 319 Q674 335 656 372 Q636 405 597 390 Q554 377 569 339 Z" fill="#78add2"/>
+      <path d="M266 540 Q228 508 251 475 Q283 451 317 477 Q348 504 326 537 Q303 567 266 540 Z" fill="#81b29a"/>
+      <path d="M298 673 Q259 654 279 613 Q300 575 340 594 Q379 611 362 651 Q344 691 298 673 Z" fill="#a78bc4"/>
+    </g>
+    <!-- Brush rests diagonally across the palette; ferrule connects to bristles. -->
+    <path d="M451 720 L733 324 Q751 304 768 321 Q780 334 762 355 L487 745 Q464 766 451 745 Z" fill="#457b9d" stroke-width="11"/>
+    <path d="M702 367 L737 394 L783 330 L748 303 Z" fill="#cbe3ef" stroke-width="11"/>
+    <path d="M748 303 C760 267 809 266 837 213 C847 277 815 316 783 330 Z" fill="#8b5e34" stroke-width="11"/>
+    <path d="M763 302 Q799 279 815 255 M750 350 L727 381" fill="none" stroke="#e9c46a" stroke-width="8"/>
+    <path d="M481 698 L692 400" fill="none" stroke="#78add2" stroke-width="9"/>
+  </g>
+</svg>

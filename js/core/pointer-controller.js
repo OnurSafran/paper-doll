@@ -1,3 +1,9 @@
+/**
+ * Drag sessions with one owner for the whole gesture: the root takes pointer
+ * capture on press, so move/release/cancel always reach it, even when the
+ * pointer leaves the stage or the resolved subject differs from the element the
+ * browser targeted (touch captures its target implicitly).
+ */
 export class PointerController {
   constructor(root, options) {
     this.root = root;
@@ -14,19 +20,35 @@ export class PointerController {
     root.addEventListener('lostpointercapture', this.onEnd);
   }
 
+  /**
+   * The optional `resolveSubject(event)` hook replaces the DOM-ancestor lookup, so
+   * a consumer can choose the subject before selection, drag sessions, or capture.
+   */
+  resolveSubject(event) {
+    if (typeof this.options.resolveSubject === 'function') return this.options.resolveSubject(event) || null;
+    return event.target.closest(this.options.selector);
+  }
+
   onDown(event) {
     if (event.isPrimary === false || event.button !== 0) return;
-    const subject = event.target.closest(this.options.selector);
+    if (this.session) {
+      // Another pointer keeps its session. The same pointer pressing again means
+      // the previous release never arrived, so end that session before starting.
+      if (this.session.pointerId !== event.pointerId) return;
+      this.cancel();
+    }
+    if (this.options.shouldHandleEvent?.(event) === false) return;
+    const subject = this.resolveSubject(event);
     if (!subject) {
       if (!event.target.closest?.('.context-ring') && !event.target.closest?.('.scene-picker-group')) {
         this.options.onDeselect?.(event);
       }
       return;
     }
-    if (this.session) return;
     const id = this.options.getId(subject);
     if (!id) return;
     this.options.onSelect?.(id, subject, event);
+    try { this.root.setPointerCapture?.(event.pointerId); } catch { /* the pointer already ended */ }
     this.session = {
       pointerId: event.pointerId,
       pointerType: event.pointerType,
@@ -49,7 +71,6 @@ export class PointerController {
 
     if (!session.dragging && distance >= threshold) {
       session.dragging = true;
-      session.subject.setPointerCapture?.(event.pointerId);
       this.options.onStart?.(session.id, session.subject, session.startEvent);
     }
     if (!session.dragging) return;
@@ -67,6 +88,9 @@ export class PointerController {
   onEnd(event) {
     const session = this.session;
     if (!session || event.pointerId !== session.pointerId) return;
+    // Handing capture to the root makes the element the browser captured implicitly
+    // lose it. Only the root losing capture ends the gesture.
+    if (event.type === 'lostpointercapture' && event.target !== this.root) return;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     const cancelled = event.type !== 'pointerup';
@@ -78,9 +102,13 @@ export class PointerController {
       if (cancelled) this.options.onCancel?.(session.id, session.subject, event);
       else this.options.onCommit?.(session.id, session.subject, event);
     }
-    if (session.subject.hasPointerCapture?.(event.pointerId)) {
-      session.subject.releasePointerCapture(event.pointerId);
-    }
+    this.releaseCapture(session.pointerId);
+  }
+
+  releaseCapture(pointerId) {
+    try {
+      if (this.root.hasPointerCapture?.(pointerId)) this.root.releasePointerCapture(pointerId);
+    } catch { /* the pointer already ended */ }
   }
 
   cancel() {
@@ -90,9 +118,7 @@ export class PointerController {
     this.frame = 0;
     this.session = null;
     if (session.dragging) this.options.onCancel?.(session.id, session.subject);
-    if (session.subject.hasPointerCapture?.(session.pointerId)) {
-      session.subject.releasePointerCapture(session.pointerId);
-    }
+    this.releaseCapture(session.pointerId);
   }
 
   destroy() {

@@ -1,3 +1,4 @@
+import { propCardboardMode } from '../../domain/cardboard.js';
 import { cropPaintPlacement } from './paint-placement-model.js';
 /**
  * Custom Paint Studio — save, draft checkpoint, and draft recovery flows.
@@ -149,21 +150,23 @@ export function createPaintSaveService({
 
       if (session.itemType === 'prop') {
         propBounds = computeNonTransparentBounds(ctx.getImageData(0, 0, canvas.width, canvas.height));
-        if (!propBounds.empty) {
-          const cropCanvas = doc.createElement('canvas');
-          cropCanvas.width = propBounds.width;
-          cropCanvas.height = propBounds.height;
-          const cropCtx = cropCanvas.getContext('2d');
-          cropCtx.drawImage(canvas, propBounds.x, propBounds.y, propBounds.width, propBounds.height, 0, 0, propBounds.width, propBounds.height);
-          blobToSave = await canvasToBlob(cropCanvas);
-          savePixelWidth = propBounds.width;
-          savePixelHeight = propBounds.height;
-          const scaleFactor = canvas.width > 0 && paintSession.logicalWidth > 0 ? (canvas.width / paintSession.logicalWidth) : 2;
-          saveLogicalWidth = Math.max(1, Math.round(propBounds.width / scaleFactor));
-          saveLogicalHeight = Math.max(1, Math.round(propBounds.height / scaleFactor));
-        } else {
-          blobToSave = await canvasToBlob(canvas);
+        if (propBounds.empty) {
+          // Artwork entirely below the alpha threshold has no measurable geometry.
+          await showAlert?.(t('paint.emptyArtwork'));
+          return;
         }
+        // Copy the original pixels inside the crop unchanged.
+        const cropCanvas = doc.createElement('canvas');
+        cropCanvas.width = propBounds.width;
+        cropCanvas.height = propBounds.height;
+        const cropCtx = cropCanvas.getContext('2d');
+        cropCtx.drawImage(canvas, propBounds.x, propBounds.y, propBounds.width, propBounds.height, 0, 0, propBounds.width, propBounds.height);
+        blobToSave = await canvasToBlob(cropCanvas);
+        savePixelWidth = propBounds.width;
+        savePixelHeight = propBounds.height;
+        const scaleFactor = canvas.width > 0 && paintSession.logicalWidth > 0 ? (canvas.width / paintSession.logicalWidth) : 2;
+        saveLogicalWidth = Math.max(1, Math.round(propBounds.width / scaleFactor));
+        saveLogicalHeight = Math.max(1, Math.round(propBounds.height / scaleFactor));
       } else {
         blobToSave = await canvasToBlob(canvas);
       }
@@ -192,16 +195,15 @@ export function createPaintSaveService({
         customMetadata.supportedFitFamilies = [...FIT_FAMILIES];
         customMetadata.presentationStyles = ['neutral'];
       } else {
-        if (session.placementMetadata?.supportSurfaces?.length && propBounds?.empty) throw new Error(t('placement.emptyDrawing'));
-        const placement = cropPaintPlacement(session.placementMetadata, propBounds?.empty ? { x: 0, y: 0, width: canvas.width, height: canvas.height } : propBounds, canvas.width, canvas.height);
-        const bounds = propBounds || { aspectRatio: 1, empty: true };
-        const dims = calculatePropDisplayDimensions(bounds.aspectRatio, session.propSize);
+        const placement = cropPaintPlacement(session.placementMetadata, propBounds, canvas.width, canvas.height);
+        const dims = calculatePropDisplayDimensions(propBounds.aspectRatio, session.propSize);
         customMetadata.displayWidth = dims.displayWidth;
         customMetadata.displayHeight = dims.displayHeight;
         customMetadata.groundAnchor = session.propPlacement === 'surface'
           ? { x: 0.5, y: 1.0 }
           : { x: 0.5, y: 0.5 };
         if (placement) Object.assign(customMetadata, placement);
+        customMetadata.cardboard = session.propPlacement === 'hang' ? 'none' : propCardboardMode(customMetadata);
       }
 
       const binaryResult = await customArtRepo.saveArtwork(assetId, blobToSave, customMetadata);

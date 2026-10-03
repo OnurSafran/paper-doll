@@ -8,13 +8,12 @@ function harness() {
     addEventListener(type, listener) { listeners.set(type, listener); },
     removeEventListener(type) { listeners.delete(type); }
   };
-  const subject = {
-    captured: false,
-    closest: () => subject,
-    setPointerCapture() { subject.captured = true; },
-    hasPointerCapture() { return subject.captured; },
-    releasePointerCapture() { subject.captured = false; }
-  };
+  // The root owns the gesture: it takes capture on press, never the subject.
+  const subject = { closest: () => subject };
+  root.captured = false;
+  root.setPointerCapture = () => { root.captured = true; };
+  root.hasPointerCapture = () => root.captured;
+  root.releasePointerCapture = () => { root.captured = false; };
   return { root, subject, listeners };
 }
 
@@ -54,10 +53,10 @@ test('cancel clears an active drag and releases pointer capture', () => {
     });
     listeners.get('pointerdown')({ target: subject, pointerId: 3, pointerType: 'mouse', button: 0, isPrimary: true, clientX: 10, clientY: 10 });
     listeners.get('pointermove')({ pointerId: 3, clientX: 30, clientY: 10, preventDefault() {} });
-    assert.equal(subject.captured, true);
+    assert.equal(root.captured, true);
     controller.cancel();
     assert.equal(controller.session, null);
-    assert.equal(subject.captured, false);
+    assert.equal(root.captured, false);
     assert.equal(cancelledFrame, 7);
     assert.deepEqual(cancelled, ['item-1']);
     controller.destroy();

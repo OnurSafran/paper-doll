@@ -55,6 +55,7 @@ export const ACTION_PAYLOAD_VALIDATORS = {
   'scene/moveEntity': (action) => typeof action.instanceId === 'string' && Number.isFinite(action.x) && Number.isFinite(action.y),
   'scene/scaleEntity': (action) => typeof action.instanceId === 'string' && Number.isFinite(action.scale),
   'scene/alignEntities': (action) => isAlignmentMode(action.alignment),
+  'scene/setEntityLayer': action => typeof action.instanceId === 'string' && Number.isInteger(action.layerIndex) && action.layerIndex >= 0,
   'scene/setDollExpression': (action) => isExpression(action.expression),
   'scene/setDollExpressionIntensity': (action) => isExpressionIntensity(action.expressionIntensity),
   'scene/setPlaybackRate': (action) => isPlaybackRate(Number(action.playbackRate)),

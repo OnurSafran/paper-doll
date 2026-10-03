@@ -1,15 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_stroller">
-  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-<path d="M335 690 L690 875 M690 690 L340 875 M270 465 L170 300 H90" fill="none" stroke="#8b5e34" stroke-width="28"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="69 144 740 805" data-asset-id="fh_stroller">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Symmetric chassis and shell share a common center at x=520. -->
+    <path d="M330 625 L700 875 M710 625 L340 875 M280 460 L170 300 H90" fill="none" stroke="#8b5e34" stroke-width="28"/>
     <path d="M90 300 H160" fill="none" stroke-width="40"/>
-    <path d="M350 775 H675 L650 830 H380 Z" fill="#d4a373"/>
-    <path d="M210 460 Q180 135 520 155 Q760 165 790 460 Z" fill="#a78bc4"/>
-    <path d="M505 175 Q365 235 355 430 M505 175 Q620 235 655 430" fill="none" stroke="#8067a0" stroke-width="10"/>
-    <path d="M250 440 H790 Q760 740 460 715 Q290 690 250 440 Z" fill="#81b29a"/>
-    <path d="M310 480 Q500 505 730 480" fill="none" stroke="#b9d6bb" stroke-width="14"/>
-    <path d="M240 430 H800 L790 490 H255 Z" fill="#fff8eb"/>
-    <path d="M530 510 Q515 560 540 590 Q580 580 580 550 Q545 560 530 510 Z" fill="#e9c46a" stroke-width="9"/>
-    <g fill="#514039"><circle cx="340" cy="875" r="65"/><circle cx="690" cy="875" r="65"/></g>
-    <g fill="#fff8eb" stroke-width="10"><circle cx="340" cy="875" r="30"/><circle cx="690" cy="875" r="30"/></g>
+    <path d="M350 780 H690 L665 830 H375 Z" fill="#d4a373"/>
+    <path d="M240 455 C240 55 800 55 800 455 Z" fill="#a78bc4"/>
+    <path d="M520 165 C430 222 365 327 370 435 M520 165 C610 222 675 327 670 435" fill="none" stroke="#8067a0" stroke-width="10"/>
+    <path d="M250 450 H790 C760 805 280 805 250 450 Z" fill="#81b29a"/>
+    <path d="M240 430 H800 L790 490 H250 Z" fill="#fff8eb"/>
+    <path d="M532 545 A38 38 0 1 0 578 591 A31 31 0 0 1 532 545 Z" fill="#e9c46a" stroke-width="9"/>
+    <g fill="#514039"><circle cx="340" cy="875" r="65"/><circle cx="700" cy="875" r="65"/></g>
+    <g fill="#fff8eb" stroke-width="10"><circle cx="340" cy="875" r="30"/><circle cx="700" cy="875" r="30"/></g>
   </g>
 </svg>

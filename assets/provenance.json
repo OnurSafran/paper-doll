@@ -85,6 +85,20 @@
       "concept": "modular face expansion",
       "dlc": "core",
       "added_date": "2026-08-17"
+    },
+    {
+      "scope": "everyday play prop expansion",
+      "paths": [
+        "assets/props/watering-can.svg",
+        "assets/props/puppy.svg",
+        "assets/props/beach-ball.svg",
+        "assets/props/paint-palette.svg"
+      ],
+      "method": "project-authored SVG primitives and paths",
+      "creator": "Paper Doll Studio",
+      "concept": "everyday play",
+      "dlc": "core",
+      "added_date": "2026-10-02"
     }
   ]
 }

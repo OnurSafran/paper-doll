@@ -1,13 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_rocking_horse">
-  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-<path d="M180 830 Q500 980 820 830 L795 885 Q500 1030 205 885 Z" fill="#d4a373"/>
-    <path d="M300 560 L310 850 L380 860 L405 590 M620 580 L650 855 L720 850 L700 520" fill="#e9c46a"/>
-    <path d="M240 480 Q400 430 610 480 L600 300 L680 155 L735 225 L820 280 L805 360 L710 365 L735 580 Q510 690 265 580 Z" fill="#d4a373"/>
-    <ellipse cx="728" cy="267" rx="9" ry="9" fill="#2d261e" stroke="none"/>
-    <rect x="360" y="445" width="250" height="65" rx="12" fill="#e07a5f"/>
-    <path d="M606 310 L654 315 L657 435 L680 475" fill="none" stroke="#8b5e34" stroke-width="24"/>
-<path d="M260 480 Q180 470 205 595" fill="none" stroke="#8b5e34" stroke-width="26"/>
-<path d="M745 329 H797 M270 884 Q500 965 735 884" fill="none" stroke="#8b5e34" stroke-width="9"/>
-<path d="M389 478 H575" fill="none" stroke="#f4b39c" stroke-width="10"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="171 146 658 821" data-asset-id="fh_rocking_horse">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M305 545 H385 L375 912 H320 Z M625 545 H705 L700 912 H645 Z" fill="#e9c46a"/>
+    <path d="M265 490 Q179 461 205 575" fill="none" stroke-width="30"/>
+    <path d="M265 490 Q179 461 205 575" fill="none" stroke="#8b5e34" stroke-width="16"/>
+    <path d="M240 490 Q405 450 610 485 L610 327 Q615 278 650 240 L680 155 L712 220 Q745 236 764 265 L815 288 L805 355 H744 Q727 355 720 373 L735 577 Q515 677 270 581 Z" fill="#d4a373"/>
+    <path d="M680 186 L697 223 L663 244 Z" fill="#fff8eb" stroke-width="8"/>
+    <path d="M649 251 Q676 247 688 263 Q649 299 650 337 L650 472 L610 485 L610 327 Q615 278 649 251 Z" fill="#8b5e34" stroke-width="10"/>
+    <path d="M760 291 H813 L805 346 H758 Q739 320 760 291 Z" fill="#e9c46a" stroke-width="9"/>
+    <circle cx="728" cy="275" r="12" fill="#2d261e" stroke="none"/>
+    <circle cx="786" cy="309" r="7" fill="#8b5e34" stroke="none"/>
+    <path d="M773 330 H797" fill="none" stroke="#8b5e34" stroke-width="7"/>
+    <path d="M341 475 Q480 449 619 475 L600 550 Q480 572 360 550 Z" fill="#81b29a" stroke-width="11"/>
+    <rect x="360" y="445" width="250" height="65" rx="20" fill="#e07a5f"/>
+    <path d="M390 479 H580" fill="none" stroke="#f4b39c" stroke-width="10"/>
+    <path d="M180 830 Q500 980 820 830 L795 885 Q500 1030 205 885 Z" fill="#d4a373"/>
+    <path d="M270 884 Q500 965 730 884" fill="none" stroke="#bc8a5f" stroke-width="9"/>
+    <circle cx="348" cy="840" r="11" fill="#8b5e34" stroke="none"/>
+    <circle cx="673" cy="840" r="11" fill="#8b5e34" stroke="none"/>
   </g>
 </svg>

@@ -6,7 +6,7 @@ import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
 import { getLandmarkByBackgroundId } from '../../domain/world-map-catalog.js';
 
 export function createTraySpawnerView(context) {
-  let spawnTab = 'characters';
+  let spawnTab = 'props';
 
   let propCollection = 'home';
 
@@ -61,6 +61,7 @@ export function createTraySpawnerView(context) {
     const tabs = context.$('#spawn-tabs');
     const collectionTabs = context.$('#spawn-collection-tabs');
     const packFilter = context.$('#play-pack-filter');
+    const dollActions = context.$('#play-doll-actions');
     const list = context.$('#spawn-items');
     if (!tabs || !list) return;
 
@@ -79,8 +80,9 @@ export function createTraySpawnerView(context) {
     spawnTraySignature = traySignature;
 
     if (packFilter) packFilter.hidden = spawnTab !== 'props';
+    if (dollActions) dollActions.hidden = spawnTab !== 'characters';
     const focusedTabId = /** @type {HTMLElement} */ (document.activeElement?.closest?.('#spawn-tabs [role="tab"], #spawn-collection-tabs [role="tab"]'))?.id;
-    tabs.replaceChildren(...[['characters', t('play.trayDollsTab')], ['props', t('play.trayPropsTab')], ['bubbles', t('play.trayBubblesTab')]].map(([id, label]) => {
+    tabs.replaceChildren(...[['props', t('play.trayPropsTab')], ['characters', t('play.trayDollsTab')], ['bubbles', t('play.trayBubblesTab')]].map(([id, label]) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.role = 'tab';
@@ -117,7 +119,7 @@ export function createTraySpawnerView(context) {
     if (spawnTab === 'characters' && !state.presets.length) {
       const empty = document.createElement('div');
       empty.className = 'tray-empty';
-      empty.innerHTML = `<p>${t('play.emptySceneCopy')}</p><a class="button secondary" href="#designer">${t('nav.designer')}</a>`;
+      empty.textContent = t('play.emptySceneCopy');
       list.replaceChildren(empty);
       return;
     }
@@ -219,19 +221,19 @@ export function createTraySpawnerView(context) {
     if (spawnTab === 'props') {
       const paintPropCard = document.createElement('button');
       paintPropCard.type = 'button';
-      paintPropCard.className = 'paint-prop-action-card';
+      paintPropCard.className = 'button paint-prop-action-card';
       paintPropCard.setAttribute('aria-label', t('play.paintPropAria'));
-      const plus = document.createElement('span');
-      plus.className = 'paint-prop-action-icon';
-      plus.setAttribute('aria-hidden', 'true');
-      plus.textContent = '+';
+      const icon = document.createElement('span');
+      icon.className = 'paint-prop-action-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m10.5 2.5 3 3M3 10l-1 4 4-1 7.5-7.5a2.1 2.1 0 0 0-3-3Z"/></svg>';
       const copy = document.createElement('span');
       copy.className = 'paint-prop-action-copy';
       const label = document.createElement('strong');
       label.textContent = t('play.paintPropShort');
       paintPropCard.title = t('play.paintPropAria');
       copy.append(label);
-      paintPropCard.append(plus, copy);
+      paintPropCard.append(icon, copy);
       paintPropCard.addEventListener('click', () => {
         if (context.openPaintStudio) {
           context.openPaintStudio({
@@ -244,7 +246,7 @@ export function createTraySpawnerView(context) {
       });
       if (packFilter) {
         packFilter.querySelector('.paint-prop-action-card')?.remove();
-        packFilter.append(paintPropCard);
+        packFilter.prepend(paintPropCard);
       }
       if (!sources.length) {
         const empty = document.createElement('p');

@@ -1,12 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_bunting">
-  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-<path d="M50 220 Q500 460 950 220" fill="none"/>
-    <path d="M70 240 l140 20 -80 170 Z" fill="#e07a5f"/>
-    <path d="M250 310 l140 20 -80 170 Z" fill="#81b29a"/>
-    <path d="M430 340 l140 20 -80 170 Z" fill="#e9c46a"/>
-    <path d="M610 320 l140 20 -80 170 Z" fill="#a78bc4"/>
-    <path d="M790 260 l140 20 -80 170 Z" fill="#78add2"/>
-    <path d="M87 260 L199 276 M267 330 L379 346 M447 360 L559 376 M627 340 L739 356 M807 280 L919 296" fill="none" stroke="#fff8eb" stroke-width="10"/>
-<g fill="#e9c46a" stroke-width="8"><circle cx="235" cy="299" r="16"/><circle cx="414" cy="337" r="16"/><circle cx="593" cy="335" r="16"/><circle cx="773" cy="293" r="16"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="41 211 918 328" data-asset-id="fh_bunting">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 220 Q500 460 950 220" fill="none"/>
+    <path d="M70 230.43 Q140.0 266.20 210 290.16 L140.0 428.30 Z" fill="#e07a5f"/>
+    <path d="M90 253.43 L190 313.16" fill="none" stroke="#fff8eb" stroke-width="8"/>
+    <path d="M250 302.96 Q320.0 323.80 390 332.83 L320.0 485.90 Z" fill="#81b29a"/>
+    <path d="M270 325.96 L370 355.83" fill="none" stroke="#fff8eb" stroke-width="8"/>
+    <path d="M430 337.10 Q500.0 343.00 570 337.10 L500.0 505.10 Z" fill="#e9c46a"/>
+    <path d="M450 360.10 L550 360.10" fill="none" stroke="#fff8eb" stroke-width="8"/>
+    <path d="M610 332.83 Q680.0 323.80 750 302.96 L680.0 485.90 Z" fill="#a78bc4"/>
+    <path d="M630 355.83 L730 325.96" fill="none" stroke="#fff8eb" stroke-width="8"/>
+    <path d="M790 290.16 Q860.0 266.20 930 230.43 L860.0 428.30 Z" fill="#78add2"/>
+    <path d="M810 313.16 L910 253.43" fill="none" stroke="#fff8eb" stroke-width="8"/>
   </g>
 </svg>

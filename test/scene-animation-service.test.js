@@ -104,6 +104,19 @@ test('SceneAnimationService starts, pauses, resets, and writes CSS custom proper
   assert.equal(motionStyles.get('--motion-ty'), '0'); // Restores static pose
   assert.equal(motionStyles.get('--motion-head-ty'), '0');
   assert.equal(motionStyles.get('--motion-head-rot'), '0');
+  assert.equal(service.getElapsedMs(), 0);
+  assert.equal(rafCallback, null);
+
+  // After a pause, the same elapsed time must reproduce the same animation pose.
+  currentTime += 5000;
+  service.play();
+  currentTime += 540;
+  rafCallback();
+  assert.equal(Number(motionStyles.get('--motion-ty')), ty);
+  service.pause();
+  service.pause();
+  assert.equal(service.getElapsedMs(), 0, 'Repeated pauses keep playback reset');
+  service.teardown();
 });
 
 test('SceneAnimationService performs panoramic culling for offscreen entities', () => {
@@ -278,14 +291,14 @@ test('SceneAnimationService: Disabled/None characters do not blink during Play p
   service.teardown();
 });
 
-test('SceneAnimationService: Loop-off playback completes, stops RAF scheduling, and marks store enabled: false', () => {
+test('SceneAnimationService: Playback loops past the clip duration until paused, including legacy loop-off settings', () => {
   const store = createAppStore(createDefaultEnvelope());
   store.dispatch({ type: 'preset/save', name: 'Emma' });
   const presetId = store.getState().presets[0].presetId;
   store.dispatch({ type: 'scene/spawnCharacter', presetId, x: 800, y: 720 });
   const charId = store.getState().currentScene.entities[0].instanceId;
 
-  // Set animation clip to idle (1000ms duration) and loop to false
+  // Load a legacy scene with looping disabled.
   store.dispatch({
     type: 'scene/setDollAnimation',
     instanceId: charId,
@@ -295,6 +308,8 @@ test('SceneAnimationService: Loop-off playback completes, stops RAF scheduling, 
     type: 'scene/setAnimationSettings',
     animationSettings: { enabled: true, loop: false, playbackRate: 1.0 }
   });
+
+  store.getState().currentScene.animationSettings.loop = false;
 
   const { posBtn } = createMockElement(charId, 800);
   let currentTime = 1000;
@@ -315,10 +330,19 @@ test('SceneAnimationService: Loop-off playback completes, stops RAF scheduling, 
   currentTime += 2000;
   rafCallback();
 
-  // Playback must stop
-  assert.equal(service.isPlaying(), false, 'Playback should finish and stop when loop is false');
-  assert.equal(rafCallback, null, 'RAF callback must be cancelled');
-  assert.equal(store.getState().currentScene.animationSettings.enabled, false, 'Store animationSettings.enabled should be set to false');
+  assert.equal(service.isPlaying(), true, 'Playback continues across clip boundaries');
+  assert.equal(typeof rafCallback, 'function', 'RAF keeps scheduling');
+  assert.equal(store.getState().currentScene.animationSettings.enabled, true);
+  assert.ok(service.getElapsedMs() > 0);
+  service.pause();
+  assert.equal(service.getElapsedMs(), 0, 'Pausing resets the animation clock');
+  assert.equal(service.isPlaying(), false);
+  assert.equal(rafCallback, null);
+  currentTime += 5000;
+  service.play();
+  currentTime += 100;
+  rafCallback();
+  assert.equal(service.getElapsedMs(), 100, 'Playing after a pause starts from the beginning');
 
   service.teardown();
 });

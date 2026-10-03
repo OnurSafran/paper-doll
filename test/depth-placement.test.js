@@ -14,10 +14,13 @@ function furnished() {
 }
 test('Floor clamps footprints rather than tall artwork; wall fits whole art', () => {
  let s=furnished(); s=moveEntity(s,'table',800,100,getAsset);
- assert(s.entities[0].y >= 648 && s.entities[0].y < 652);
+ // The footprint (not the tall artwork) meets the 646 floor seam.
+ const table = getAsset('prop_table');
+ assert(Math.abs(s.entities[0].y - (646 + table.displayHeight * table.placementRules.contactFootprint.depth / 2)) < 1e-6);
  s=addEntity(s,{instanceId:'picture',kind:'prop',sourceId:'prop_painting',x:800,y:900},getAsset);
  const picture=s.entities.find(e=>e.instanceId==='picture');
- assert(picture.y + getAsset('prop_painting').displayHeight / 2 <= 646);
+ const painting = getAsset('prop_painting');
+ assert(picture.y + (1 - painting.groundAnchor.y) * painting.displayHeight <= 646 + 1e-9);
 });
 test('Surface follows host move, scale, flip; child nudge stays on support; delete preserves child',()=>{
  let s=furnished();

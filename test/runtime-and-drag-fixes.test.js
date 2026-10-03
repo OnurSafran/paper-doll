@@ -25,6 +25,7 @@ function createMockElement(tagName = 'div') {
     children: [],
     childNodes: [],
     append: (...nodes) => { el.children.push(...nodes); },
+    prepend: (...nodes) => { el.children.unshift(...nodes); },
     appendChild: (node) => { el.children.push(node); return node; },
     replaceChildren: (...nodes) => { el.children = [...nodes]; },
     removeChild: () => {},

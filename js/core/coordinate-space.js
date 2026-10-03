@@ -37,3 +37,34 @@ export function logicalToClient(x, y, stageRect, cameraX = 0) {
     y: stageRect.top + y * (stageRect.height / STAGE_HEIGHT)
   };
 }
+
+/** The stage's content box: logical coordinates map inside its border, like the rendered world. */
+export function stageContentRect(stageEl) {
+  const rect = stageEl.getBoundingClientRect();
+  const style = globalThis.getComputedStyle?.(stageEl);
+  const border = (side) => Number.parseFloat(style?.[`border${side}Width`]) || 0;
+  const left = border('Left');
+  const top = border('Top');
+  return {
+    left: rect.left + left,
+    top: rect.top + top,
+    width: Math.max(1, rect.width - left - border('Right')),
+    height: Math.max(1, rect.height - top - border('Bottom'))
+  };
+}
+
+/**
+ * The camera offset the world is drawn at right now. `scene.cameraX` is where the
+ * camera is going; the world eases there, so pointer input must map through the
+ * rendered offset to land on the artwork the user actually sees. At rest it equals
+ * the stored camera exactly.
+ */
+export function renderedCameraX(stageEl, storedCameraX = 0, stageRect = stageContentRect(stageEl)) {
+  const stored = Number(storedCameraX) || 0;
+  const world = stageEl.querySelector?.('#scene-world');
+  const rect = world?.getBoundingClientRect?.();
+  if (!rect || !(rect.width > 0)) return stored;
+  const rendered = (stageRect.left - rect.left) * (STAGE_WIDTH / stageRect.width);
+  // Sub-pixel layout noise at rest must not perturb committed positions.
+  return Number.isFinite(rendered) && Math.abs(rendered - stored) >= 0.5 ? rendered : stored;
+}

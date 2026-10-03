@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="170 190 660 659" data-asset-id="prop_beach_ball">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Every panel shares the same two seam curves and circular perimeter. -->
+    <circle cx="500" cy="520" r="320" fill="#fff8eb"/>
+    <path d="M500 200 A320 320 0 0 0 500 840 C270 640 270 400 500 200 Z" fill="#e07a5f" stroke-width="10"/>
+    <path d="M500 200 C270 400 270 640 500 840 L500 200 Z" fill="#e9c46a" stroke-width="10"/>
+    <path d="M500 200 V840 C730 640 730 400 500 200 Z" fill="#fff8eb" stroke-width="10"/>
+    <path d="M500 200 C730 400 730 640 500 840 A320 320 0 0 0 500 200 Z" fill="#78add2" stroke-width="10"/>
+    <path d="M283 395 Q305 343 349 316" fill="none" stroke="#f4b39c" stroke-width="20"/>
+    <ellipse cx="500" cy="235" rx="31" ry="16" fill="#fff8eb" stroke-width="9"/>
+    <circle cx="500" cy="520" r="320" fill="none"/>
+  </g>
+</svg>

@@ -1,16 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_mailbox">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="290 220 525 692" data-asset-id="prop_mailbox">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M300 420 Q300 250 500 250 Q700 250 700 420 L700 680 L300 680 Z" fill="#5e9ec9"/>
-    <path d="M500 250 L500 680" fill="none"/>
-    <path d="M500 250 Q700 250 700 420" fill="none"/>
-    <path d="M500 360 L500 500" stroke="#e76f51"/>
-    <path d="M360 680 L360 900 M640 680 L640 900" stroke="#8b5e34"/>
-    <rect x="420" y="510" width="160" height="90" rx="12" fill="#f2aa35"/>
-    <!-- Raised flag and mail slot -->
-    <path d="M700 420 L760 420 L760 260" fill="none" stroke="#ef476f" stroke-width="22"/>
-    <rect x="735" y="230" width="70" height="45" rx="8" fill="#ef476f"/>
-    <rect x="430" y="535" width="140" height="18" rx="8" fill="#fff4d6" stroke="none"/>
-    <circle cx="500" cy="585" r="10" fill="#2d261e" stroke="none"/>
-    <path d="M330 900 L390 900 M610 900 L670 900" stroke="#2d261e" stroke-width="22"/>
+    <!-- A solid timber post supports the box and its mounting shelf. -->
+    <path d="M454 652 H526 L542 900 H438 Z" fill="#d4a373"/>
+    <path d="M477 715 L468 866 M505 744 L511 878" fill="none" stroke="#bc8a5f" stroke-width="8"/>
+    <path d="M395 880 H579 L595 900 H379 Z" fill="#8b5e34"/>
+    <rect x="310" y="639" width="390" height="42" rx="10" fill="#8b5e34"/>
+    <!-- Curved side shell and inset front door. -->
+    <path d="M300 420 C300 194 700 194 700 420 V639 H300 Z" fill="#78add2"/>
+    <path d="M500 420 C500 306 681 306 681 420 V622 H500 Z" fill="#457b9d"/>
+    <path d="M327 399 Q330 286 455 280" fill="none" stroke="#cbe3ef" stroke-width="14"/>
+    <path d="M525 438 H654" fill="none" stroke-width="20"/>
+    <path d="M538 460 H642 V536 H538 Z" fill="#fff8eb" stroke-width="10"/>
+    <path d="M538 460 L590 501 L642 460" fill="none" stroke="#bc8a5f" stroke-width="8"/>
+    <rect x="553" y="571" width="75" height="21" rx="8" fill="#e9c46a" stroke-width="10"/>
+    <!-- Raised flag connects to a visible pivot. -->
+    <path d="M708 420 H760 V244" fill="none" stroke-width="28"/>
+    <path d="M708 420 H760 V244" fill="none" stroke="#e07a5f" stroke-width="12"/>
+    <rect x="735" y="230" width="70" height="45" rx="8" fill="#e07a5f"/>
+    <circle cx="708" cy="420" r="18" fill="#e9c46a" stroke-width="9"/>
   </g>
 </svg>

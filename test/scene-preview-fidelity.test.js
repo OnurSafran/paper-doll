@@ -133,8 +133,10 @@ test('createCompositeSceneThumbnailSvg builds valid composite SVG with backgroun
   const charGroup = svg.children[1];
   assert.ok(charGroup.getAttribute('transform').includes('translate(600, 720)'));
   const charInnerGroup = charGroup.firstChild;
-  assert.ok(charInnerGroup.getAttribute('transform').includes('translate(-117.5, -352.5)'));
-  assert.ok(charInnerGroup.getAttribute('transform').includes('scale('));
+  // The full canvas renders at uniform scale with the neutral foot contact on the entity origin.
+  // This mock doll has no authored contact, so the classic reference applies.
+  assert.ok(charInnerGroup.getAttribute('transform').includes(`scale(${235 / 300}, ${235 / 300})`));
+  assert.ok(charInnerGroup.getAttribute('transform').endsWith('translate(-150, -410)'));
 
   // Verify prop group uses uniform scale and centering (xMidYMid meet)
   const propGroup = svg.children[2];

@@ -7,7 +7,7 @@ import { LIMITS } from '../js/domain/vocabulary.js';
 
 import { createSelectionInspectorController } from '../js/features/play/selection-inspector-controller.js';
 
-import { setLanguage } from '../js/core/i18n.js';
+import { setLanguage, getCurrentLanguage, t, updateDomTranslations } from '../js/core/i18n.js';
 import { APP_VERSION, createDefaultEnvelope, createRuntimeState, persistedProjection, sanitizeEnvelope } from '../js/core/state-schema.js';
 import { serializeProjectPackage } from '../js/services/project-portability.js';
 
@@ -76,7 +76,7 @@ test('Play panels follow the current selection, including direct prop-to-charact
     });
   }
   select('prop');
-  assert.equal(panels['#spawn-panel-section'].hidden, true);
+  assert.equal(panels['#spawn-panel-section'].hidden, false);
   select('character');
   assert.equal(panels['#play-inspector-panel'].hidden, false);
   assert.equal(panels['#spawn-panel-section'].hidden, true);
@@ -85,15 +85,15 @@ test('Play panels follow the current selection, including direct prop-to-charact
   select('bubble');
   assert.equal(panels['#play-inspector-panel'].hidden, false);
   select(null);
-  assert.equal(panels['#spawn-panel-section'].hidden, true);
+  assert.equal(panels['#spawn-panel-section'].hidden, false);
   assert.equal(panels['#play-inspector-panel'].hidden, true);
 });
 
 
-test('Panel handle toggles the tray and a new selection reopens the inspector', () => {
+test('Panel starts expanded and only the handle changes its collapsed state', () => {
   let click;
   let expanded;
-  let state = { ui: { selectedEntityId: null, selectedEntityIds: [] }, currentScene: { entities: [{ instanceId: 'character', kind: 'character' }] } };
+  let state = { ui: { selectedEntityId: null, selectedEntityIds: [] }, currentScene: { entities: [{ instanceId: 'character', kind: 'character' }, { instanceId: 'bubble', kind: 'bubble' }] } };
   const panels = {
     '#play-rail-content': { hidden: true },
     '#spawn-panel-section': { hidden: true },
@@ -102,20 +102,61 @@ test('Panel handle toggles the tray and a new selection reopens the inspector', 
   };
   const controller = createSelectionInspectorController({ $: selector => panels[selector] || null, $$: () => [], store: { getState: () => state } });
   controller.renderSelectedActions();
-  assert.equal(expanded, 'false');
-  click();
-  assert.equal(panels['#spawn-panel-section'].hidden, false);
   assert.equal(expanded, 'true');
+  assert.equal(panels['#spawn-panel-section'].hidden, false);
   click();
-  assert.equal(panels['#play-rail-content'].hidden, true);
+  for (const id of ['character', 'bubble', null]) {
+    state = { ...state, ui: { selectedEntityId: id, selectedEntityIds: id ? [id] : [] } };
+    controller.renderSelectedActions();
+    assert.equal(expanded, 'false');
+    assert.equal(panels['#play-rail-content'].hidden, true);
+    assert.equal(panels['#play-inspector-panel'].hidden, true);
+  }
   state = { ...state, ui: { selectedEntityId: 'character', selectedEntityIds: ['character'] } };
-  controller.renderSelectedActions();
-  assert.equal(panels['#play-inspector-panel'].hidden, false);
   click();
+  assert.equal(expanded, 'true');
+  assert.equal(panels['#play-inspector-panel'].hidden, false, 'Opening restores controls for the selected character');
+  state = { ...state, ui: { selectedEntityId: null, selectedEntityIds: [] } };
   controller.renderSelectedActions();
-  assert.equal(panels['#play-rail-content'].hidden, true, 'same selection does not undo manual close');
-  click();
-  assert.equal(panels['#spawn-panel-section'].hidden, false, 'Handle opens the tray while a character remains selected');
+  assert.equal(expanded, 'true');
+  assert.equal(panels['#spawn-panel-section'].hidden, false, 'Clearing selection keeps the tray expanded');
+});
+
+test('group movement controls require two selected characters, rather than two items', () => {
+  const panels = Object.fromEntries(['#rhythm-sync-section', '#rhythm-sync-controls', '#character-group-motion-hint'].map(id => [id, { hidden: true }]));
+  const controller = createSelectionInspectorController({ $: selector => panels[selector] || null, $$: () => [] });
+  const entities = [{ instanceId: 'a', kind: 'character' }, { instanceId: 'b', kind: 'character' }, { instanceId: 'prop', kind: 'prop' }];
+  for (const ids of [[], ['a'], ['a', 'prop'], ['a', 'b'], ['a', 'b', 'prop'], ['prop']]) {
+    controller.renderSelectedActions({ ui: { selectedEntityId: ids[0], selectedEntityIds: ids }, currentScene: { entities } });
+    const group = ids.includes('a') && ids.includes('b');
+    assert.equal(panels['#rhythm-sync-section'].hidden, !group, ids.join(','));
+    assert.equal(panels['#rhythm-sync-controls'].hidden, !group, ids.join(','));
+    assert.equal(panels['#character-group-motion-hint'].hidden, !ids.includes('a') || group, ids.join(','));
+  }
+});
+
+test('movement guidance reflects playback, language, and reduced motion without changing settings', () => {
+  const language = getCurrentLanguage();
+  const help = { dataset: {}, textContent: '' };
+  const controller = createSelectionInspectorController({ $: selector => selector === '#character-motion-help' ? help : null, $$: () => [] });
+  const state = { ui: {}, settings: { reducedMotion: 'full' }, currentScene: { entities: [], animationSettings: { enabled: true } } };
+  try {
+    for (const lang of ['en', 'tr']) {
+      setLanguage(lang);
+      state.settings.reducedMotion = 'full';
+      state.currentScene.animationSettings.enabled = true;
+      controller.renderSelectedActions(state);
+      assert.equal(help.textContent, t('play.motionHelp'));
+      state.currentScene.animationSettings.enabled = false;
+      controller.renderSelectedActions(state);
+      assert.equal(help.textContent, t('play.motionPausedHelp'));
+      state.settings.reducedMotion = 'reduce';
+      controller.renderSelectedActions(state);
+      assert.equal(help.textContent, t('play.motionReducedHelp'));
+      assert.equal(state.settings.reducedMotion, 'reduce');
+      assert.equal(state.currentScene.animationSettings.enabled, false);
+    }
+  } finally { setLanguage(language); }
 });
 
 
@@ -128,4 +169,31 @@ test('v2.0.0 is recorded consistently in local saves and exported projects', () 
   for (const value of [defaults, state, save, exported, exported.state, sanitizeEnvelope(save).envelope]) {
     assert.equal(value.appVersion, APP_VERSION);
   }
+});
+
+
+test('playback icon and translated label stay synchronized when playback or language changes', () => {
+  const language = getCurrentLanguage();
+  const icon = {};
+  const text = { dataset: {} };
+  const button = {
+    classList: { toggle() {} },
+    setAttribute() {},
+    querySelector: selector => selector === '.play-btn-icon' ? icon : text
+  };
+  const controller = createSelectionInspectorController({ $: selector => selector === '#play-animation-btn' ? button : null, $$: () => [] });
+  const state = { ui: {}, settings: { reducedMotion: 'full' }, currentScene: { entities: [], animationSettings: { enabled: true } } };
+  try {
+    setLanguage('tr');
+    controller.renderSelectedActions(state);
+    assert.equal(icon.textContent, '⏸');
+    assert.equal(text.textContent, t('play.pauseBtn'));
+    setLanguage('en');
+    updateDomTranslations({ querySelectorAll: selector => selector === '[data-i18n]' ? [text] : [] });
+    assert.equal(text.textContent, 'Pause', 'Translation retains the active playback label');
+    state.currentScene.animationSettings.enabled = false;
+    controller.renderSelectedActions(state);
+    assert.equal(icon.textContent, '▶');
+    assert.equal(text.textContent, 'Play');
+  } finally { setLanguage(language); }
 });

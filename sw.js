@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paper-doll-studio-vde421e23';
+const CACHE_NAME = 'paper-doll-studio-ve32dea25';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,15 +7,15 @@ const APP_SHELL = [
   './css/base/base.css?v=971835b3',
   './css/components/buttons.css?v=41443108',
   './css/components/cards.css?v=d1b27b93',
-  './css/components/dialogs.css?v=e1163e7a',
+  './css/components/dialogs.css?v=1f4df2a6',
   './css/components/toasts.css?v=f236a6dc',
   './css/features/designer.css?v=0bf9716a',
-  './css/features/header.css?v=db2c81fa',
+  './css/features/header.css?v=1ccd465c',
   './css/features/paint.css?v=f4ba7d86',
-  './css/features/papercraft.css?v=04aeb653',
-  './css/features/play.css?v=4e05bb2b',
+  './css/features/papercraft.css?v=248785fa',
+  './css/features/play.css?v=d5d28346',
   './css/features/world-map.css?v=bc8392e3',
-  './css/responsive/responsive.css?v=ed991f80',
+  './css/responsive/responsive.css?v=8f9b446e',
   './css/tokens.css?v=c0813b5f',
   './js/app.js',
   './js/app-dialogs.js',
@@ -26,11 +26,13 @@ const APP_SHELL = [
   './js/app-shell-events.js',
   './js/app-shortcuts.js',
   './js/app-state-effects.js',
+  './js/core/alpha-mask.js',
   './js/core/app-store.js',
   './js/core/asset-catalog.js',
   './js/core/asset-registry.js',
   './js/core/background-layout.js',
   './js/core/bubble-svg.js',
+  './js/core/character-measurement.js',
   './js/core/coordinate-space.js',
   './js/core/css-escape.js',
   './js/core/dialog-dismiss.js',
@@ -58,6 +60,9 @@ const APP_SHELL = [
   './js/core/svg-symbols.js',
   './js/core/text.js',
   './js/domain/animation-clips.js',
+  './js/domain/artwork-revision.js',
+  './js/domain/cardboard.js',
+  './js/domain/character-geometry.js',
   './js/domain/motion-evaluator.js',
   './js/domain/outfit-rules.js',
   './js/domain/placement-geometry.js',
@@ -94,6 +99,8 @@ const APP_SHELL = [
   './js/features/play/scene-outline-view.js',
   './js/features/play/selection-hud-controller.js',
   './js/features/play/selection-inspector-controller.js',
+  './js/features/play/stage-hit-testing.js',
+  './js/features/play/stage-hover-cursor.js',
   './js/features/play/stage-pointer-controller.js',
   './js/features/play/tray-spawner-view.js',
   './js/features/quick-tips.js',
@@ -356,6 +363,10 @@ const APP_SHELL = [
   './assets/packs/pack_family_home/fh_wide_linen_elder.svg',
   './assets/packs/pack_family_home/fh_winter_wreath.svg',
   './assets/packs/pack_family_home/fh_wrap_romper_baby.svg',
+  './assets/props/beach-ball.svg',
+  './assets/props/paint-palette.svg',
+  './assets/props/puppy.svg',
+  './assets/props/watering-can.svg',
 ];
 
 self.addEventListener('install', (event) => {
@@ -379,12 +390,13 @@ self.addEventListener('fetch', (event) => {
   const isCodeOrDoc = event.request.mode === 'navigate' ||
                       url.pathname.endsWith('.js') ||
                       url.pathname.endsWith('.css') ||
-                      url.pathname.endsWith('.html');
+                      url.pathname.endsWith('.html') ||
+                      url.pathname.endsWith('.svg');
 
   if (isCodeOrDoc) {
     event.respondWith(
-      // Bypass the browser HTTP cache for the shell. Cache Storage remains the
-      // offline fallback, while online refreshes always see the latest module.
+      // Keep code and authored SVG geometry current together. Cache Storage
+      // remains the offline fallback.
       fetch(event.request, { cache: 'no-store' })
         .then((response) => {
           if (response && response.status === 200) {

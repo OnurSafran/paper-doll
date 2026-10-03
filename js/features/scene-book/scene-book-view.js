@@ -11,7 +11,9 @@ import { loadAssetSvg } from '../../core/svg-loader.js';
 import { createBubbleSvg } from '../../core/bubble-svg.js';
 import { createExportDollSvg } from '../../core/doll-svg.js';
 import { getEntityBounds } from '../../domain/scene-rules.js';
-import { CHARACTER_DIMENSIONS, defaultMakeId, isCustomAssetId } from '../../domain/vocabulary.js';
+import { characterArtworkTransform, getCharacterContact } from '../../domain/character-geometry.js';
+import { measureCharacterContacts } from '../../core/character-measurement.js';
+import { defaultMakeId, isCustomAssetId } from '../../domain/vocabulary.js';
 import { createStarterDraft } from '../../domain/outfit-rules.js';
 import { instantiateSceneTemplate, SCENE_TEMPLATES } from '../../domain/scene-templates.js';
 import { assetName, t } from '../../core/i18n.js';
@@ -27,6 +29,8 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
   const customArtRepo = options.customArtRepo;
   const enforceFit = options.enforceFit ?? false;
   const stageWidth = Number(scene?.stageWidth) || 1600;
+  await Promise.all((scene.entities || []).filter(entity => entity.kind === 'character')
+    .map(entity => measureCharacterContacts(entity.characterSnapshot, { customArtRepo, getAsset: getAssetFn })));
 
   const rootSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   rootSvg.setAttribute('viewBox', `0 0 ${stageWidth} 900`);
@@ -120,12 +124,8 @@ export async function createCompositeSceneThumbnailSvg(scene, options = {}) {
           { loadAssetSvg: loadSvg, customArtRepo, getAsset: getAssetFn, enforceFit, expressionIntensity: pose.expressionIntensity, headTransform: pose.head, pose }
         );
         const dollG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        const scaleX = CHARACTER_DIMENSIONS.BASE_WIDTH / 300;
-        const scaleY = CHARACTER_DIMENSIONS.BASE_HEIGHT / 450;
-        const offsetX = -CHARACTER_DIMENSIONS.BASE_WIDTH * CHARACTER_DIMENSIONS.GROUND_ANCHOR.x;
-        const offsetY = -CHARACTER_DIMENSIONS.BASE_HEIGHT * CHARACTER_DIMENSIONS.GROUND_ANCHOR.y;
-        const transformAttr = `translate(${offsetX + pose.root.x}, ${offsetY + pose.root.y}) rotate(${pose.root.rotate}) scale(${scaleX * pose.root.scaleX}, ${scaleY * pose.root.scaleY})`;
-        dollG.setAttribute('transform', transformAttr);
+        const contact = getCharacterContact(entity.characterSnapshot, getAssetFn);
+        dollG.setAttribute('transform', characterArtworkTransform(contact, pose.root));
         while (dollSvg.firstChild) dollG.appendChild(dollSvg.firstChild);
         entityG.appendChild(dollG);
       } catch {

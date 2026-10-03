@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/">
+  <title>Hit testing regression fixtures</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    body { padding: 8px; }
+    #play-stage { width: calc(100vw - 16px); max-height: none; }
+    .scene-world { transition: none; }
+    #catalog { display: grid; grid-template-columns: repeat(8, 110px); gap: 8px; }
+    #catalog > div { width: 110px; height: 110px; }
+    #catalog svg { width: 100%; height: 100%; display: block; }
+    #stage-control { position: absolute; left: 5px; top: 5px; z-index: 100; }
+  </style>
+</head>
+<body>
+  <div id="play-stage" class="play-stage">
+    <div id="scene-world" class="scene-world">
+      <div id="scene-entities" class="scene-entities"></div>
+    </div>
+    <button id="stage-control">Stage control</button>
+    <div class="camera-hud"><div class="stage-minimap" tabindex="0" aria-label="Camera overview"></div></div>
+  </div>
+  <div id="catalog"></div>
+  <script type="module">
+    import { ASSETS } from '/js/core/asset-catalog.js';
+    import { FAMILY_ASSETS } from '/js/packs/family-home/catalog.js';
+    import { PACK_REGISTRY } from '/js/packs/index.js';
+    import { loadAssetSvg } from '/js/core/svg-loader.js';
+    import { createPropSymbolRegistry } from '/js/core/svg-symbols.js';
+    import { createStageHitTester } from '/js/features/play/stage-hit-testing.js';
+    import { createSceneEntityView } from '/js/features/play/scene-entity-view.js';
+    import { createStagePointerController } from '/js/features/play/stage-pointer-controller.js';
+    import { createSelectionHudController } from '/js/features/play/selection-hud-controller.js';
+    import { renderDollInto } from '/js/features/designer/designer-view.js';
+    import { createEmptyScene } from '/js/domain/scene-rules.js';
+    import { createDefaultFace } from '/js/domain/outfit-rules.js';
+    import { stageContentRect, logicalToClient } from '/js/core/coordinate-space.js';
+    import { rasterizeSources, createAlphaMask, maskHit } from '/js/core/alpha-mask.js';
+    const $ = s => document.querySelector(s);
+    const urls = new Map();
+    const fixtures = new Map();
+    const getAsset = id => fixtures.get(id) || PACK_REGISTRY.getAsset(id);
+    const customArtRepo = { getTrackedObjectUrl: async id => urls.get(id) };
+    const state = { currentScene: createEmptyScene(), ui: { mode: 'play', selectedEntityIds: [] }, settings: {}, presets: [] };
+    const actions = [];
+    let refreshSelection = () => {};
+    const store = {
+      getState: () => state,
+      dispatch(action) {
+        actions.push(action);
+        const ui = state.ui;
+        if (action.type === 'ui/selectEntity') { ui.selectedEntityId = action.instanceId; ui.selectedEntityIds = [action.instanceId]; }
+        if (action.type === 'ui/toggleEntitySelection') {
+          ui.selectedEntityIds = ui.selectedEntityIds.includes(action.instanceId) ? ui.selectedEntityIds.filter(id => id !== action.instanceId) : [...ui.selectedEntityIds, action.instanceId];
+          ui.selectedEntityId = ui.selectedEntityIds.at(-1) || null;
+        }
+        if (action.type === 'ui/clearSelection') { ui.selectedEntityId = null; ui.selectedEntityIds = []; }
+        if (action.type === 'scene/moveEntity') Object.assign(state.currentScene.entities.find(e => e.instanceId === action.instanceId), { x: action.x, y: action.y });
+        if (action.type === 'scene/moveEntities') for (const move of action.moves) Object.assign(state.currentScene.entities.find(e => e.instanceId === move.instanceId), { x: move.x, y: move.y });
+        if (action.type === 'scene/flipEntity') { const entity = state.currentScene.entities.find(e => e.instanceId === action.instanceId); entity.flipped = !entity.flipped; }
+        refreshSelection();
+      }
+    };
+    const hitTester = createStageHitTester({ getAsset, customArtRepo, loadSvg: async id => {
+      const asset = getAsset(id);
+      return asset?.svg ? new DOMParser().parseFromString(asset.svg, 'image/svg+xml').documentElement : loadAssetSvg(id, getAsset);
+    } });
+    const propSymbols = createPropSymbolRegistry({ getHost: () => $('#scene-world'), resolveAsset: getAsset, loadSvg: async id => {
+      const asset = getAsset(id);
+      return asset?.svg ? new DOMParser().parseFromString(asset.svg, 'image/svg+xml').documentElement : loadAssetSvg(id, getAsset);
+    } });
+    const context = { $, store, getAsset, hitTester, propSymbols, customArtRepo, renderDollInto,
+      sceneEntityRenderKey: e => JSON.stringify(e), initCameraControls() {}, stopEdgePan() {}, startEdgePan() {}, render: () => refreshSelection(),
+      openEditBubbleDialog: e => actions.push({ type: 'editBubble', instanceId: e.instanceId }), playRenderToken: 0 };
+    const entityView = createSceneEntityView(context);
+    const hud = createSelectionHudController({ ...context, askConfirm: async () => true,
+      get activeDragInstanceId() { return context.activeDragInstanceId; },
+      getContextRingFocusAction: element => element?.closest('.context-ring button')?.dataset.action || null });
+    context.updateContextRingPosition = hud.updateContextRingPosition;
+    refreshSelection = () => {
+      const ids = state.ui.selectedEntityIds;
+      for (const entity of state.currentScene.entities) {
+        const element = $('#scene-entities').querySelector(`[data-instance-id="${entity.instanceId}"]`);
+        if (element) entityView.patchSceneEntity(element, entity, entity.instanceId === state.ui.selectedEntityId, ids.length > 1 && ids.includes(entity.instanceId));
+      }
+      hud.renderContextRing(state);
+    };
+    $('#play-stage').addEventListener('keydown', hud.handleStageKeydown);
+    const pointer = createStagePointerController(context);
+    pointer.initPointerController();
+    async function raster(id, draw, width = 100, height = 100) {
+      const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+      draw(canvas.getContext('2d'));
+      const blob = await new Promise(resolve => canvas.toBlob(resolve));
+      urls.set(id, URL.createObjectURL(blob));
+      // Real registry descriptors keep the digest under metadata, never flat.
+      fixtures.set(id, { id, kind: 'prop', custom: true, displayWidth: width, displayHeight: height, metadata: { sha256: id }, name: id });
+    }
+    await raster('custom_back', ctx => { ctx.fillStyle = '#278'; ctx.fillRect(0, 0, 100, 100); });
+    await raster('custom_large', ctx => { ctx.fillStyle = '#278'; ctx.fillRect(0, 0, 300, 300); }, 300, 300);
+    await raster('custom_ring', ctx => { ctx.strokeStyle = '#e43'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(50, 50, 30, 0, Math.PI * 2); ctx.stroke(); });
+    await raster('custom_padded', ctx => { ctx.fillStyle = '#e83'; ctx.fillRect(10, 40, 15, 20); });
+    await raster('custom_doll', ctx => { ctx.strokeStyle = '#c63'; ctx.lineWidth = 8; ctx.strokeRect(60, 100, 180, 280); }, 300, 450);
+    const svg = (id, content, attrs = '') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" data-asset-id="${id}" ${attrs}>${content}</svg>`;
+    fixtures.set('doll_fixture', { id: 'doll_fixture', kind: 'doll', footContact: { x: 150, y: 400 }, shoulderRightPivot: { x: 174, y: 120 }, svg: svg('doll_fixture', '<rect x="140" y="260" width="20" height="140"/><g id="pose-arm-right"><rect x="172" y="120" width="8" height="180"/></g>', 'fill="none" stroke="#b64" stroke-width="4"') });
+    const dollSnapshot = { baseDollId: 'doll_classic_a', skinTone: 'peach', slots: { hair: { assetId: 'hair_long' }, top: { assetId: 'top_tshirt' }, shoes: { assetId: 'shoes_sneakers' } }, face: createDefaultFace('doll_classic_a') };
+    function entity(id, sourceId, order, extra = {}) { return { instanceId: id, kind: 'prop', sourceId, x: 800, y: 600, scale: 2, order, ...extra }; }
+    async function scene(entities, cameraX = 0) {
+      pointer.cancelPointerController();
+      state.currentScene = { ...createEmptyScene(), entities, cameraX, stageWidth: cameraX ? 3200 : 1600 };
+      state.ui = { mode: 'play', selectedEntityIds: [] }; actions.length = 0;
+      $('#play-stage').style.setProperty('--stage-width', state.currentScene.stageWidth);
+      $('#play-stage').style.setProperty('--camera-x', cameraX);
+      $('.camera-hud').hidden = !cameraX;
+      const elements = [];
+      for (const e of entities) elements.push(await entityView.createSceneEntity(e, false, false));
+      $('#scene-entities').replaceChildren(...elements);
+      hitTester.retain(entities);
+      refreshSelection();
+    }
+    const rect = () => stageContentRect($('#play-stage'));
+    const at = (x, y) => logicalToClient(x, y, rect(), state.currentScene.cameraX);
+    const resolve = (x, y) => { const p = at(x, y); return hitTester.resolve($('#play-stage'), p.x, p.y, state.currentScene.cameraX)?.dataset.instanceId || null; };
+    const propPoint = (id, ux, uy) => {
+      const node = $('#scene-entities').querySelector(`[data-instance-id="${id}"] svg`);
+      return new DOMPoint(ux, uy).matrixTransform(node.getScreenCTM());
+    };
+    async function catalog() {
+      const props = [...ASSETS, ...FAMILY_ASSETS].filter(a => a.kind === 'prop');
+      for (const asset of props) {
+        const standalone = await loadAssetSvg(asset.id, getAsset);
+        const shared = await propSymbols.create(asset.id);
+        for (const [kind, node] of [['standalone', standalone], ['symbol', shared]]) {
+          const box = document.createElement('div'); box.id = `${kind}-${asset.id}`; box.append(node); $('#catalog').append(box);
+        }
+      }
+      return props.map(a => a.id);
+    }
+    async function renderingChecks() {
+      await scene([entity('doll', 'fixture', 1, { kind: 'character', scale: 1, characterSnapshot: { baseDollId: 'doll_fixture', slots: {} } })]);
+      const element = $('#scene-entities .scene-entity-positioner');
+      if (hitTester.hitTest(element, { x: 800, y: 550 }) || !hitTester.hitTest(element, { x: 792.167, y: 550 })) throw new Error('Inherited SVG root fill/stroke was lost');
+      const svgNode = new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="hole"><path clip-rule="evenodd" d="M0 0H100V100H0Z M30 30H70V70H30Z"/></clipPath></defs><g opacity="0.1" clip-path="url(#hole)"><image href="'+urls.get('custom_back')+'" width="100" height="100"/></g></svg>', 'image/svg+xml').documentElement;
+      const { inlineSvgImages } = await import('/js/core/alpha-mask.js'); await inlineSvgImages(svgNode);
+      const mask = createAlphaMask(await rasterizeSources([{ svg: svgNode }], { x: 0, y: 0, width: 100, height: 100 }, 100, 100), { x: 0, y: 0, width: 100, height: 100 });
+      if (!maskHit(mask, 10, 10) || maskHit(mask, 50, 50) || mask.alpha[10 * 100 + 10] > 30) throw new Error('Raster clipping/opacity mismatch');
+    }
+    window.fixture = { scene, entity, dollSnapshot, state, actions, store, hud, context, hitTester, at, rect, resolve, propPoint, catalog, renderingChecks,
+      async overlap(cameraX = 0) { await scene([entity('back', 'custom_back', 1), entity('middle', 'custom_padded', 2), entity('front', 'custom_ring', 3)], cameraX); },
+      async movingDoll(flipped = false) {
+        await scene([entity('doll', 'fixture', 1, { kind: 'character', scale: 1, flipped, characterSnapshot: { baseDollId: 'doll_fixture', slots: {} } })]);
+        const motion = $('#scene-entities .scene-entity-motion'); motion.style.setProperty('--motion-arm-right-rot', '-90');
+      },
+      async layeredDoll() { await scene([entity('doll', 'demo_emma', 1, { kind: 'character', scale: 1, characterSnapshot: dollSnapshot })]); },
+      async customDoll() { await scene([entity('doll', 'custom_doll', 1, { kind: 'character', scale: 1, characterSnapshot: { kind: 'custom_full', customArtId: 'custom_doll', baseDollId: 'custom_doll', slots: {} } })]); }
+    };
+  </script>
+</body>
+</html>

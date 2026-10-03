@@ -5,6 +5,7 @@ import { createSelectionHudController } from './selection-hud-controller.js';
 import { createSelectionInspectorController } from './selection-inspector-controller.js';
 import { createTraySpawnerView } from './tray-spawner-view.js';
 import { createStagePointerController } from './stage-pointer-controller.js';
+import { createStageHitTester } from './stage-hit-testing.js';
 import { createCameraController } from './camera-controller.js';
 /**
  * Play View Feature Module
@@ -14,27 +15,21 @@ import { createCameraController } from './camera-controller.js';
 
 import { assetsByKind, getAsset as getBuiltinAsset } from '../../core/asset-catalog.js';
 
-import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_STAGE_WIDTH, DEFAULT_STATIC_POSE, VIEWPORT_HEIGHT } from '../../domain/vocabulary.js';
+import { DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, DEFAULT_STAGE_WIDTH, DEFAULT_STATIC_POSE } from '../../domain/vocabulary.js';
 
 import { appendAsset } from '../designer/designer-view.js';
+import { entityArtworkRevisions } from '../../domain/artwork-revision.js';
 import { getBackgroundLayout } from '../../core/background-layout.js';
 
 import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
 
-// Context ring placement, in stage logical units. The ring flips above the
-// selection once the selection reaches the stage's lower band, and is otherwise
-// kept clear of the stage's top and bottom edges.
-const CONTEXT_RING_FLIP_THRESHOLD_Y = VIEWPORT_HEIGHT - 160;
-const CONTEXT_RING_MAX_Y = VIEWPORT_HEIGHT - 60;
-const CONTEXT_RING_MIN_Y = 25;
-const CONTEXT_RING_GAP_ABOVE = 15;
-const CONTEXT_RING_GAP_BELOW = 35;
-
-export function sceneEntityRenderKey(entity) {
+/** Identity of everything that changes an entity's DOM, including custom artwork revisions. */
+export function sceneEntityRenderKey(entity, getAsset = undefined) {
   return JSON.stringify({
     language: getCurrentLanguage(),
     kind: entity.kind,
     sourceId: entity.sourceId,
+    artwork: entityArtworkRevisions(entity, getAsset),
     characterSnapshot: entity.kind === 'character' ? entity.characterSnapshot : null,
     expression: entity.kind === 'character' ? entity.expression || DEFAULT_EXPRESSION : null,
     expressionIntensity: entity.kind === 'character' ? entity.expressionIntensity ?? DEFAULT_EXPRESSION_INTENSITY : null,
@@ -85,7 +80,9 @@ export function createPlayView({
   getAssetsByKind = (kind, options = {}) => assetsByKind(kind, options),
   invalidateAnimationDomCache
 }) {
-  const propSymbols = createPropSymbolRegistry({ getHost: () => $('#play-stage') });
+  const renderKeyOf = (entity) => sceneEntityRenderKey(entity, getAsset);
+  const propSymbols = createPropSymbolRegistry({ getHost: () => $('#play-stage'), resolveAsset: getAsset });
+  const hitTester = createStageHitTester({ getAsset, customArtRepo });
   let playRenderToken = 0;
 
   let activeDragInstanceId = null;
@@ -149,7 +146,7 @@ export function createPlayView({
       const isPrimary = state.ui.selectedEntityId === entity.instanceId;
       const isMulti = isSelected && selectedSet.size > 1;
       const existing = existingEntities.get(entity.instanceId);
-      const element = existing?.dataset.renderKey === sceneEntityRenderKey(entity)
+      const element = existing?.dataset.renderKey === renderKeyOf(entity)
         ? existing
         : await createSceneEntity(entity, isPrimary, isMulti);
       if (token !== playRenderToken) return;
@@ -164,6 +161,7 @@ export function createPlayView({
       invalidateAnimationDomCache?.();
     }
     propSymbols.retain(state.currentScene.entities.filter(entity => entity.kind === 'prop').map(entity => entity.sourceId));
+    hitTester.retain(state.currentScene.entities);
     // The entity root is only replaced when order or membership changes; stable nodes are patched in place.
     renderCameraHud(state);
     renderContextRing(state);
@@ -179,12 +177,15 @@ export function createPlayView({
 
   function bumpToken() {
     playRenderToken += 1;
+    removeContextRing();
   }
 
   function teardown() {
     bumpToken();
     cancelPointerController();
     propSymbols.destroy();
+    hitTester.destroy();
+    removeContextRing();
     if (dropdownsBound && typeof document !== 'undefined' && typeof document.removeEventListener === 'function') {
       document.removeEventListener('click', handleDropdownOutsideClick);
       dropdownsBound = false;
@@ -200,10 +201,11 @@ export function createPlayView({
     getAsset,
     get activeDragInstanceId() { return activeDragInstanceId; }, set activeDragInstanceId(value) { activeDragInstanceId = value; },
     get latestDragPoint() { return latestDragPoint; }, set latestDragPoint(value) { latestDragPoint = value; },
-    get updateDragPreview() { return updateDragPreview; }
+    get updateDragPreview() { return updateDragPreview; },
+    get updateContextRingPosition() { return updateContextRingPosition; }
   });
 
-  const { cancelPointerController, initPointerController, updateDragPreview } = createStagePointerController({
+  const { cancelPointerController, initPointerController, updateDragPreview, stagePointAt } = createStagePointerController({
     store,
     $,
     getAsset,
@@ -213,7 +215,10 @@ export function createPlayView({
     get stopEdgePan() { return stopEdgePan; },
     get startEdgePan() { return startEdgePan; },
     get initCameraControls() { return initCameraControls; },
-    get render() { return render; }
+    get render() { return render; },
+    hitTester,
+    get updateContextRingPosition() { return updateContextRingPosition; },
+    get openEditBubbleDialog() { return openEditBubbleDialog; }
   });
 
   const { renderBackgroundSelect, renderSpawnTray } = createTraySpawnerView({
@@ -236,29 +241,26 @@ export function createPlayView({
     get dropdownsBound() { return dropdownsBound; }, set dropdownsBound(value) { dropdownsBound = value; }
   });
 
-  const { renderContextRing, handleEntityAction, handleStageKeydown, openEditBubbleDialog } = createSelectionHudController({
-    get CONTEXT_RING_FLIP_THRESHOLD_Y() { return CONTEXT_RING_FLIP_THRESHOLD_Y; },
-    get CONTEXT_RING_MAX_Y() { return CONTEXT_RING_MAX_Y; },
-    get CONTEXT_RING_MIN_Y() { return CONTEXT_RING_MIN_Y; },
-    get CONTEXT_RING_GAP_ABOVE() { return CONTEXT_RING_GAP_ABOVE; },
-    get CONTEXT_RING_GAP_BELOW() { return CONTEXT_RING_GAP_BELOW; },
+  const { renderContextRing, updateContextRingPosition, removeContextRing, handleEntityAction, handleStageKeydown, openEditBubbleDialog } = createSelectionHudController({
     get getContextRingFocusAction() { return getContextRingFocusAction; },
     store,
     $,
     askConfirm,
     openSceneOutlineDialog,
     openWorldMapDialog,
-    getAsset
+    getAsset,
+    hitTester,
+    get activeDragInstanceId() { return activeDragInstanceId; }
   });
 
   const { createSceneEntity, patchSceneEntity } = createSceneEntityView({
     propSymbols,
-    get sceneEntityRenderKey() { return sceneEntityRenderKey; },
+    hitTester,
+    sceneEntityRenderKey: renderKeyOf,
     store,
     renderDollInto,
     customArtRepo,
-    getAsset,
-    get openEditBubbleDialog() { return openEditBubbleDialog; }
+    getAsset
   });
 
   return {
@@ -266,8 +268,10 @@ export function createPlayView({
     bumpToken,
     initPointerController,
     cancelPointerController,
+    stagePointAt,
     renderSelectedActions,
     renderContextRing,
+    updateContextRingPosition,
     syncCamera,
     handleEntityAction,
     handleStageKeydown,

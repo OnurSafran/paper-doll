@@ -1,3 +1,4 @@
+import { propCardboardMode } from '../domain/cardboard.js';
 /**
  * Unified Asset Registry
  * Single authority for resolving catalog assets (SVG), official pack assets,
@@ -46,6 +47,7 @@ export function customAssetToDescriptor(asset) {
     return Object.freeze({
       id: asset.assetId,
       kind: 'prop',
+      cardboard: propCardboardMode(asset),
       name: asset.name,
       custom: true,
       format: 'image/png',

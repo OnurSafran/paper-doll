@@ -16,6 +16,13 @@ import {
   isCustomAssetId
 } from '../domain/vocabulary.js';
 
+/** Rig channel a whole layer follows on stage: head-bound, limb-bound, or the body. */
+export function layerPoseChannel(slot, assetId, resolveAsset = getAsset) {
+  if (slot === 'skin') return 'body';
+  if (isHeadBoundLayer(slot, assetId, resolveAsset)) return 'head';
+  return getLimbBoundChannel(slot, assetId, resolveAsset) || 'body';
+}
+
 export function createJointTransformAttr(t, pivot) {
   if (!t || (!t.x && !t.y && !t.rotate && (t.scaleX === undefined || t.scaleX === 1) && (t.scaleY === undefined || t.scaleY === 1))) {
     return '';
@@ -125,6 +132,8 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
           imgEl.setAttribute('width', '300');
           imgEl.setAttribute('height', '450');
           imgEl.setAttribute('preserveAspectRatio', 'none');
+          imgEl.setAttribute('data-layer-channel', layerPoseChannel(slot, id, resolveAsset));
+          imgEl.setAttribute('data-layer-slot', slot);
           svg.appendChild(imgEl);
           continue;
         }
@@ -132,6 +141,8 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
       const assetSvg = await loadSvg(id);
       const clone = assetSvg.cloneNode(true);
       const groupEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      groupEl.setAttribute('data-layer-channel', layerPoseChannel(slot, id, resolveAsset));
+      groupEl.setAttribute('data-layer-slot', slot);
       groupEl.style.setProperty('--skin-color', paletteValue(draft?.skinTone, 'peach'));
       groupEl.style.setProperty('--hair-color', paletteValue(color, 'brown'));
       groupEl.style.setProperty('--asset-color-primary', paletteValue(color, 'coral'));
@@ -199,7 +210,12 @@ export async function createExportDollSvg(draft, expression = DEFAULT_EXPRESSION
           applyMouthExpression(clone, expression, expressionIntensity);
         }
       }
-      while (clone.firstChild) groupEl.appendChild(clone.firstChild);
+      // Keep root presentation attributes, clipping and the original layer viewport.
+      // Stage layers also allow overflow; joint motion must never crop the canvas.
+      clone.setAttribute('width', '300');
+      clone.setAttribute('height', '450');
+      clone.setAttribute('overflow', 'visible');
+      groupEl.appendChild(clone);
       svg.appendChild(groupEl);
     } catch {
       const placeholder = document.createElementNS('http://www.w3.org/2000/svg', 'g');

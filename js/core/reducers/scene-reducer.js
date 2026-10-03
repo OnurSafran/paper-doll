@@ -16,6 +16,7 @@ import {
   moveEntities,
   moveEntity,
   reorderEntity,
+  setEntityLayer,
   scaleEntities,
   scaleEntity,
   setBubbleStyle,
@@ -212,7 +213,7 @@ export function sceneReducer(state, action, context) {
         state: localizedMessage('play.statusBubbleAdded', {}, {
           ...state,
           currentScene: scene,
-          ui: { ...state.ui, selectedEntityId: instanceId }
+          ui: { ...state.ui, selectedEntityId: instanceId, selectedEntityIds: [instanceId] }
         }),
         persist: true,
         result: { ok: true, instanceId }
@@ -263,7 +264,12 @@ export function sceneReducer(state, action, context) {
     }
 
     case 'scene/reorderEntity': {
-      const scene = reorderEntity(state.currentScene, action.instanceId, action.direction);
+      const scene = reorderEntity(state.currentScene, action.instanceId, action.direction, context.getAsset);
+      return scene === state.currentScene ? null : { state: { ...state, currentScene: scene }, persist: true };
+    }
+
+    case 'scene/setEntityLayer': {
+      const scene = setEntityLayer(state.currentScene, action.instanceId, action.layerIndex, context.getAsset);
       return scene === state.currentScene ? null : { state: { ...state, currentScene: scene }, persist: true };
     }
 
@@ -585,7 +591,7 @@ export function sceneReducer(state, action, context) {
       const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
       const animationSettings = {
         enabled: raw.enabled !== undefined ? Boolean(raw.enabled) : current.enabled,
-        loop: raw.loop !== undefined ? Boolean(raw.loop) : current.loop,
+        loop: true,
         playbackRate: isPlaybackRate(raw.playbackRate) ? raw.playbackRate : (current.playbackRate ?? DEFAULT_PLAYBACK_RATE)
       };
       return {
@@ -684,7 +690,8 @@ export function sceneReducer(state, action, context) {
       const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
       const animationSettings = {
         ...current,
-        enabled: !current.enabled
+        enabled: !current.enabled,
+        loop: true
       };
       return {
         state: {
@@ -692,40 +699,6 @@ export function sceneReducer(state, action, context) {
           currentScene: touchScene({ ...state.currentScene, animationSettings }, context.now)
         },
         persist: true
-      };
-    }
-
-    case 'scene/toggleSceneLoop': {
-      const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
-      const animationSettings = {
-        ...current,
-        loop: !current.loop
-      };
-      return {
-        state: {
-          ...state,
-          currentScene: touchScene({ ...state.currentScene, animationSettings }, context.now)
-        },
-        persist: true
-      };
-    }
-
-    case 'scene/playbackFinished': {
-      const current = state.currentScene.animationSettings || DEFAULT_SCENE_ANIMATION_SETTINGS;
-      if (!current.enabled) return null;
-      const animationSettings = {
-        ...current,
-        enabled: false
-      };
-      return {
-        state: {
-          ...state,
-          currentScene: {
-            ...state.currentScene,
-            animationSettings
-          }
-        },
-        persist: false
       };
     }
 

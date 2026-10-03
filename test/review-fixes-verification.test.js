@@ -54,7 +54,7 @@ function createMockElement(instanceId, x = 800) {
   return { posBtn, motionSpan, motionStyles, eyesLayer, eyesStyles };
 }
 
-test('Item 1: Animation completion never pushes undo snapshots or triggers autosaves', () => {
+test('Item 1: Animation loops never push undo snapshots or trigger autosaves', () => {
   let persistCount = 0;
   const store = createAppStore(createDefaultEnvelope(), {
     persistenceScheduler: {
@@ -97,9 +97,9 @@ test('Item 1: Animation completion never pushes undo snapshots or triggers autos
   currentTime += 2000;
   rafCallback();
 
-  assert.equal(service.isPlaying(), false, 'Service should stop playback');
-  assert.equal(store.getState().currentScene.animationSettings.enabled, false, 'Store enabled flag set to false');
-  assert.equal(persistCount, 0, 'Autosave must not be scheduled by animation frame completion');
+  assert.equal(service.isPlaying(), true, 'Service should continue looping');
+  assert.equal(store.getState().currentScene.animationSettings.enabled, true, 'Playback stays enabled across clip boundaries');
+  assert.equal(persistCount, 0, 'Autosave must not be scheduled by animation frames');
 
   // Single undo should restore the state prior to scene/setAnimationSettings directly
   store.dispatch({ type: 'app/undo' });
@@ -152,7 +152,7 @@ test('Item 1b: Zero-animated scene returns 0 duration and does not auto-disable 
   service.teardown();
 });
 
-test('Item 2: Non-looping playback completion applies static pose deterministically', () => {
+test('Item 2: Manually pausing looping playback applies static pose deterministically', () => {
   const store = createAppStore(createDefaultEnvelope());
   store.dispatch({ type: 'preset/save', name: 'Emma' });
   const presetId = store.getState().presets[0].presetId;
@@ -186,12 +186,14 @@ test('Item 2: Non-looping playback completion applies static pose deterministica
   rafCallback();
   assert.ok(motionStyles.has('--motion-ty'));
 
-  // Reach end of clip
+  // Keep looping past the end of the clip, then pause manually
   currentTime += 1500;
   rafCallback();
 
+  assert.equal(service.isPlaying(), true);
+  service.pause();
   assert.equal(service.isPlaying(), false);
-  assert.equal(motionStyles.get('--motion-ty'), '0', 'Static pose translation restored on completion');
+  assert.equal(motionStyles.get('--motion-ty'), '0', 'Static pose translation restored on pause');
   service.teardown();
 });
 

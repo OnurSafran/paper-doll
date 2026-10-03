@@ -6,8 +6,7 @@ import { t } from '../../core/i18n.js';
 
 export function createSelectionInspectorController(context) {
   let activeInspectorTab = 'expressions';
-  let railMode = 'closed';
-  let previousSelection = '';
+  let railExpanded = true;
 
   function renderSelectedActions(state = context.store.getState()) {
     initInspectorTabs();
@@ -22,6 +21,21 @@ export function createSelectionInspectorController(context) {
       ? state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId) && e.kind === 'character')
       : (isCharacter && selected ? [selected] : []);
     const hasCharactersSelected = targetCharacters.length > 0;
+    const hasCharacterGroup = targetCharacters.length >= 2;
+    const animSettings = state.currentScene?.animationSettings || {};
+    const userReducedMotion = state.settings?.reducedMotion || 'system';
+    const systemPrefersReducedMotion = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+    const motionAllowed = resolveEffectiveMotion(userReducedMotion, systemPrefersReducedMotion);
+    const motionHelp = context.$('#character-motion-help');
+    if (motionHelp) {
+      const helpKey = !motionAllowed ? 'play.motionReducedHelp' : animSettings.enabled ? 'play.motionHelp' : 'play.motionPausedHelp';
+      motionHelp.dataset.i18n = helpKey;
+      motionHelp.textContent = t(helpKey);
+    }
+    const groupMotionHint = context.$('#character-group-motion-hint');
+    if (groupMotionHint) groupMotionHint.hidden = !hasCharactersSelected || hasCharacterGroup;
+    const rhythmSection = context.$('#rhythm-sync-section');
+    if (rhythmSection) rhythmSection.hidden = !hasCharacterGroup;
     const isAttached = !isMulti && Boolean(selected?.attachedTo) && selected?.placement?.kind !== 'surface';
 
     const expressionGroup = context.$('#character-expression-controls');
@@ -158,8 +172,8 @@ export function createSelectionInspectorController(context) {
 
     const rhythmGroup = context.$('#rhythm-sync-controls');
     if (rhythmGroup) {
-      rhythmGroup.hidden = !hasCharactersSelected;
-      if (hasCharactersSelected) {
+      rhythmGroup.hidden = !hasCharacterGroup;
+      if (hasCharacterGroup) {
         let activeRhythmMode = null;
         if (targetCharacters.length > 0) {
           let isSync = true;
@@ -188,7 +202,7 @@ export function createSelectionInspectorController(context) {
 
     const hasAnyInspectorControls = hasCharactersSelected || isBubble || (isAttached && attachJointGroup && !attachJointGroup.hidden);
 
-    renderRailPanels(hasSelection && Boolean(hasAnyInspectorControls), selectedIds, state.currentScene.entities.length);
+    renderRailPanels(hasSelection && Boolean(hasAnyInspectorControls));
 
     const tabExpressions = context.$('#inspector-tab-expressions');
     const tabMotion = context.$('#inspector-tab-motion');
@@ -239,26 +253,18 @@ export function createSelectionInspectorController(context) {
     if (secBubble) secBubble.hidden = activeInspectorTab !== 'bubble';
 
     // Transport & speed buttons state sync
-    const animSettings = state.currentScene?.animationSettings || {};
     const playBtn = context.$('#play-animation-btn');
     if (playBtn) {
-      const userReducedMotion = state.settings?.reducedMotion || 'system';
-      const systemPrefersReducedMotion = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
-      const motionAllowed = resolveEffectiveMotion(userReducedMotion, systemPrefersReducedMotion);
       const isPlaying = Boolean(animSettings.enabled) && motionAllowed;
       playBtn.classList.toggle('is-playing', isPlaying);
       playBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
-      const textSpan = playBtn.querySelector('span');
+      const iconSpan = playBtn.querySelector('.play-btn-icon');
+      if (iconSpan) iconSpan.textContent = isPlaying ? '⏸' : '▶';
+      const textSpan = playBtn.querySelector('.play-btn-text');
       if (textSpan) {
-        textSpan.textContent = isPlaying ? t('play.pauseBtn') : t('play.playBtn');
+        textSpan.dataset.i18n = isPlaying ? 'play.pauseBtn' : 'play.playBtn';
+        textSpan.textContent = t(textSpan.dataset.i18n);
       }
-    }
-
-    const loopBtn = context.$('#loop-animation-btn');
-    if (loopBtn) {
-      const isLooping = animSettings.loop !== false;
-      loopBtn.classList.toggle('is-looping', isLooping);
-      loopBtn.setAttribute('aria-pressed', isLooping ? 'true' : 'false');
     }
 
     const currentRate = animSettings.playbackRate ?? DEFAULT_PLAYBACK_RATE;
@@ -270,19 +276,13 @@ export function createSelectionInspectorController(context) {
     }
   }
 
-  function renderRailPanels(showInspector, selectedIds, entityCount) {
+  function renderRailPanels(showInspector) {
     initDropdowns();
-    const selection = selectedIds.join(':');
-    if (selection !== previousSelection) {
-      previousSelection = selection;
-      if (showInspector) railMode = 'inspector';
-      else if (railMode === 'inspector') railMode = 'closed';
-    }
     const toggle = context.$('#scene-tray-toggle');
     if (toggle && !toggle.dataset.bound) {
       toggle.dataset.bound = 'true';
       toggle.addEventListener('click', () => {
-        railMode = railMode === 'closed' ? 'add' : 'closed';
+        railExpanded = !railExpanded;
         renderSelectedActions();
       });
     }
@@ -291,12 +291,12 @@ export function createSelectionInspectorController(context) {
     const inspectorPanel = context.$('#play-inspector-panel');
     const spawnTabs = context.$('#spawn-tabs');
     const inspectorTitle = context.$('#inspector-header-title');
-    if (railContent) railContent.hidden = railMode === 'closed';
-    if (toggle) toggle.setAttribute('aria-expanded', String(railMode !== 'closed'));
-    if (spawnSection) spawnSection.hidden = railMode !== 'add';
-    if (spawnTabs) spawnTabs.hidden = railMode !== 'add';
-    if (inspectorTitle) inspectorTitle.hidden = railMode !== 'inspector';
-    if (inspectorPanel) inspectorPanel.hidden = railMode !== 'inspector' || !showInspector;
+    if (railContent) railContent.hidden = !railExpanded;
+    if (toggle) toggle.setAttribute('aria-expanded', String(railExpanded));
+    if (spawnSection) spawnSection.hidden = !railExpanded || showInspector;
+    if (spawnTabs) spawnTabs.hidden = !railExpanded || showInspector;
+    if (inspectorTitle) inspectorTitle.hidden = !railExpanded || !showInspector;
+    if (inspectorPanel) inspectorPanel.hidden = !railExpanded || !showInspector;
   }
 
   function handleDropdownOutsideClick(event) {

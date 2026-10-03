@@ -1,5 +1,4 @@
 /** Designer actions, shell commands, and native drop targets. */
-import { clientToLogical } from './core/coordinate-space.js';
 import { previewCustomColor } from './features/designer/designer-view.js';
 import { CLEARABLE_OUTFIT_SLOTS } from './domain/vocabulary.js';
 import { setLanguage, getCurrentLanguage, t } from './core/i18n.js';
@@ -242,10 +241,9 @@ export function createAppShellEvents(context) {
       playStage.classList.remove('is-spawn-target');
       const match = event.dataTransfer.getData('text/plain').match(/^paper-doll-spawn:(character|prop|bubble):([a-zA-Z0-9_-]+)(?::(.*))?$/);
       if (!match) return;
-      const cameraX = context.store.getState().currentScene.cameraX || 0;
-      const point = clientToLogical(event.clientX, event.clientY, playStage.getBoundingClientRect(), cameraX);
-      const hostElement = event.target.closest?.('.scene-entity-positioner');
-      const targetEntityId = hostElement?.dataset?.instanceId;
+      // Hosts are the visible artwork under the drop, not whichever transparent box is on top.
+      const { point, element } = context.playView.stagePointAt(event);
+      const targetEntityId = element?.dataset?.instanceId;
 
       if (match[1] === 'character') {
         context.store.dispatch({ type: 'scene/spawnCharacter', presetId: match[2], ...point });

@@ -7,7 +7,6 @@
 import {
   evaluateCharacterPose,
   evaluateProceduralBlink,
-  getSceneActiveAnimationDuration,
   resolveEffectiveMotion,
   resolveEntityAttachmentTransform
 } from '../domain/motion-evaluator.js';
@@ -198,16 +197,7 @@ export function createSceneAnimationService(options = {}) {
     const playbackRate = state.currentScene.animationSettings?.playbackRate ?? DEFAULT_PLAYBACK_RATE;
     accumulatedElapsedMs += delta * playbackRate;
 
-    const isLooping = state.currentScene.animationSettings?.loop !== false;
-    if (!isLooping) {
-      const maxDuration = getSceneActiveAnimationDuration(state.currentScene);
-      if (maxDuration > 0 && accumulatedElapsedMs >= maxDuration) {
-        accumulatedElapsedMs = maxDuration;
-        pause();
-        store?.dispatch({ type: 'scene/playbackFinished' });
-        return;
-      }
-    } else if (accumulatedElapsedMs >= CLIP_DURATION_LCM_MS * 10) {
+    if (accumulatedElapsedMs >= CLIP_DURATION_LCM_MS * 10) {
       // Periodic modulo wrapping at integer multiples of duration LCM to preserve float precision without phase jump
       accumulatedElapsedMs = accumulatedElapsedMs % CLIP_DURATION_LCM_MS;
     }
@@ -223,7 +213,6 @@ export function createSceneAnimationService(options = {}) {
     const isWideStage = stageWidth > stageViewportWidth;
     const viewportLeft = cameraX - 350;
     const viewportRight = cameraX + stageViewportWidth + 350;
-    const isLooping = scene.animationSettings?.loop !== false;
 
     if (!domCacheValid) {
       syncDomCache();
@@ -252,7 +241,7 @@ export function createSceneAnimationService(options = {}) {
       const isOffscreen = isWideStage && (entity.x < viewportLeft || entity.x > viewportRight);
       const pose = evaluateCharacterPose(entity, elapsedMs, {
         playbackEnabled: isPlaying,
-        loop: isLooping,
+        loop: true,
         getAsset: getAssetFn,
         hasRigidWearableForLimb: getRigidWearableForLimbCached
       });
@@ -386,6 +375,7 @@ export function createSceneAnimationService(options = {}) {
   }
 
   function pause() {
+    resetClock();
     if (!isPlaying) return;
     isPlaying = false;
     if (rafId) {
@@ -399,18 +389,6 @@ export function createSceneAnimationService(options = {}) {
   function resetClock() {
     accumulatedElapsedMs = 0;
     lastTickTime = clockNow();
-  }
-
-  function reset() {
-    const wasPlaying = isPlaying;
-    accumulatedElapsedMs = 0;
-    lastTickTime = clockNow();
-    invalidateDomCache();
-    applyStaticPoseToDom();
-    if (!wasPlaying && rafId) {
-      cancelRaf(rafId);
-      rafId = null;
-    }
   }
 
   function toggle() {
@@ -459,7 +437,6 @@ export function createSceneAnimationService(options = {}) {
     getElapsedMs,
     play,
     pause,
-    reset,
     resetClock,
     toggle,
     handleSettingsChange,

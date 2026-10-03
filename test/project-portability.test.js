@@ -723,3 +723,51 @@ test('project export fails closed when referenced custom artwork bytes are missi
     /Export Missing/
   );
 });
+
+test('custom prop cardboard metadata survives import and cannot disagree with the artwork record', async () => {
+  const bytes = new Uint8Array(34);
+  bytes.set([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82]);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(16, 1000); view.setUint32(20, 1000); bytes[24] = 8; bytes[25] = 6;
+  const metadata = { assetId: 'custom_prop_cardboard', name: 'Wall painting', kind: 'prop', format: 'image/png', logicalWidth: 500, logicalHeight: 500, pixelWidth: 1000, pixelHeight: 1000, byteLength: bytes.length, sha256: await computeSha256(bytes), cardboard: 'none' };
+  const pkg = {
+    format: 'paper-doll-project', formatVersion: 1,
+    state: { ...createDefaultEnvelope(), customAssets: [metadata] },
+    customArtwork: [{ metadata: { ...metadata }, encoding: 'base64', data: Buffer.from(bytes).toString('base64') }]
+  };
+  const imported = await validateImportPayload(JSON.stringify(pkg), getAsset);
+  assert.equal(imported.ok, true);
+  assert.equal(imported.customArtwork[0].metadata.cardboard, 'none');
+  pkg.customArtwork[0].metadata.cardboard = 'stand';
+  const mismatch = await validateImportPayload(JSON.stringify(pkg), getAsset);
+  assert.equal(mismatch.ok, false);
+  assert.match(mismatch.error, /did not match its metadata/);
+});
+
+test('import rejects an unknown or misplaced cardboard finish instead of coercing it', async () => {
+  const bytes = new Uint8Array(34);
+  bytes.set([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82]);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(16, 1000); view.setUint32(20, 1000); bytes[24] = 8; bytes[25] = 6;
+  const sha256 = await computeSha256(bytes);
+  const prop = { assetId: 'custom_prop_finish', name: 'Finish', kind: 'prop', format: 'image/png', logicalWidth: 500, logicalHeight: 500, pixelWidth: 1000, pixelHeight: 1000, byteLength: bytes.length, sha256 };
+  const data = Buffer.from(bytes).toString('base64');
+  const build = (stateMeta, artworkMeta) => JSON.stringify({
+    format: 'paper-doll-project', formatVersion: 1,
+    state: { ...createDefaultEnvelope(), customAssets: [stateMeta] },
+    customArtwork: [{ metadata: artworkMeta, encoding: 'base64', data }]
+  });
+  for (const bad of ['glossy', 7, false, {}]) {
+    const inState = await validateImportPayload(build({ ...prop, cardboard: bad }, prop), getAsset);
+    assert.equal(inState.ok, false, `state value ${JSON.stringify(bad)}`);
+    assert.match(inState.error, /invalid cardboard finish/);
+    const inArtwork = await validateImportPayload(build(prop, { ...prop, cardboard: bad }), getAsset);
+    assert.equal(inArtwork.ok, false, `artwork value ${JSON.stringify(bad)}`);
+    assert.match(inArtwork.error, /invalid cardboard finish/);
+  }
+  assert.equal((await validateImportPayload(build(prop, prop), getAsset)).ok, true, 'absent finish still imports');
+  const wearable = { ...prop, assetId: 'custom_wearable_finish', kind: 'wearable', slot: 'top', cardboard: 'edge' };
+  const misplaced = await validateImportPayload(build(wearable, wearable), getAsset);
+  assert.equal(misplaced.ok, false);
+  assert.match(misplaced.error, /invalid cardboard finish/);
+});

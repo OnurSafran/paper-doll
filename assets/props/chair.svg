@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_chair">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="100 150 800 804" data-asset-id="prop_chair">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
     <!-- Wooden Legs -->
-    <line x1="220" y1="780" x2="160" y2="940" stroke="#8b5e34" stroke-width="26"/>
-    <line x1="780" y1="780" x2="840" y2="940" stroke="#8b5e34" stroke-width="26"/>
+    <path d="M210 780 H255 L181 940 H151 Z M745 780 H790 L849 940 H819 Z" fill="#8b5e34"/>
     <!-- Back Cushion -->
     <path d="M220 280 C220 120 780 120 780 280 L780 700 L220 700 Z" fill="#2a9d8f"/>
     <!-- Tufting Buttons -->
@@ -10,7 +9,9 @@
     <circle cx="630" cy="340" r="18" fill="#1b635a" stroke="none"/>
     <circle cx="500" cy="490" r="18" fill="#1b635a" stroke="none"/>
     <!-- Seat Cushion -->
-    <rect x="160" y="640" width="680" height="180" rx="70" fill="#32b5a5"/>
+    <path d="M180 691 H820 V765 Q820 815 770 815 H230 Q180 815 180 765 Z" fill="#238276"/>
+    <path d="M255 626 H745 L816 684 Q836 704 807 704 H193 Q164 704 184 684 Z" fill="#32b5a5"/>
+    <path d="M240 791 H760" fill="none" stroke="#1d685e" stroke-width="8"/>
     <!-- Armrests -->
     <rect x="110" y="460" width="140" height="280" rx="50" fill="#238276"/>
     <rect x="750" y="460" width="140" height="280" rx="50" fill="#238276"/>

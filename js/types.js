@@ -70,6 +70,7 @@
  * @property {number} stageWidth
  * @property {number} cameraX
  * @property {string} [placementMode]
+ * @property {'manual'} [layerOrderMode]
  * @property {SceneEntity[]} entities
  * @property {{ enabled: boolean, loop: boolean, playbackRate: number }} [animationSettings]
  * @property {string} [createdAt]
@@ -101,6 +102,7 @@
  * @property {string[]} [presentationStyles]
  * @property {number} [displayWidth]
  * @property {number} [displayHeight]
+ * @property {'none'|'edge'|'stand'} [cardboard] Optional prop finish; defaults to edge
  * @property {PlacementRules} [placementRules]
  * @property {SupportSurface[]} [supportSurfaces]
  * @property {any} [placementProfile]
@@ -146,6 +148,7 @@
  * @property {number} [y]
  * @property {number} [scale]
  * @property {number} [direction]
+ * @property {number} [layerIndex]
  * @property {string} [alignment]
  * @property {number} [delta]
  * @property {boolean} [pinned]
@@ -209,7 +212,10 @@
  * @property {{x: number, y: number}} [shoulderRightPivot]
  * @property {{x: number, y: number}} [hipLeftPivot]
  * @property {{x: number, y: number}} [hipRightPivot]
+ * @property {{x: number, y: number}} [footContact] Neutral standing contact in doll authoring units
+ * @property {number} [soleContactY] Measured sole bottom edge in doll authoring units
  * @property {{x: number, y: number, width: number, height: number}} [wallShadow]
+ * @property {'none'|'edge'|'stand'} [cardboard] Optional prop finish; defaults to edge
  * @property {PlacementRules} [placementRules]
  * @property {SupportSurface[]} [supportSurfaces]
  * @property {any} [placementProfile]

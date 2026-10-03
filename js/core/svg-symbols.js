@@ -4,6 +4,11 @@ import { loadAssetSvg } from './svg-loader.js';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let nextRegistryId = 0;
 
+function viewBoxParts(value) {
+  const parts = String(value || '').trim().split(/[\s,]+/).map(Number);
+  return parts.length === 4 && parts.every(Number.isFinite) ? parts : [0, 0, 1000, 1000];
+}
+
 /** Stage-local symbols share built-in prop artwork, never mutable dolls or custom art. */
 export function createPropSymbolRegistry({ getHost, loadSvg = loadAssetSvg, resolveAsset = getAsset }) {
   const prefix = `scene-props-${++nextRegistryId}`;
@@ -52,7 +57,17 @@ export function createPropSymbolRegistry({ getHost, loadSvg = loadAssetSvg, reso
         const symbol = document.createElementNS(SVG_NS, 'symbol');
         symbol.setAttribute('id', id);
         symbol.setAttribute('viewBox', svg.getAttribute('viewBox'));
+        // The instance viewport clips once, like a standalone SVG. Repeated
+        // fractional viewport clips otherwise attenuate edge strokes in <use>.
+        symbol.setAttribute('overflow', 'visible');
         // Keeping the SVG root preserves its inherited fills, strokes, and aspect ratio.
+        // Its viewport must cover the viewBox exactly: trimmed viewBoxes do not start at 0, 0.
+        const [vx, vy, vw, vh] = viewBoxParts(svg.getAttribute('viewBox'));
+        svg.setAttribute('x', String(vx));
+        svg.setAttribute('y', String(vy));
+        svg.setAttribute('width', String(vw));
+        svg.setAttribute('height', String(vh));
+        svg.setAttribute('overflow', 'visible');
         symbol.append(svg);
         defs.append(symbol);
         entry.symbol = symbol;
@@ -73,6 +88,12 @@ export function createPropSymbolRegistry({ getHost, loadSvg = loadAssetSvg, reso
     svg.classList.add('asset-svg');
     const use = document.createElementNS(SVG_NS, 'use');
     use.setAttribute('href', `#${entry.id}`);
+    // Place the symbol viewport over the instance's viewBox so both map identically.
+    const [vx, vy, vw, vh] = asset.viewBox;
+    use.setAttribute('x', String(vx));
+    use.setAttribute('y', String(vy));
+    use.setAttribute('width', String(vw));
+    use.setAttribute('height', String(vh));
     svg.append(use);
     return svg;
   }

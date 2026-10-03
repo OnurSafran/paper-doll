@@ -124,6 +124,8 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
   padding: 0.4rem 0.6rem;
   background: var(--paper-warm);
   border: 1px solid var(--line);
@@ -136,14 +138,8 @@ dialog::backdrop {
   color: var(--ink);
 }
 
-.outline-bulk-actions {
-  display: flex;
-  gap: 0.35rem;
-}
-
-.outline-bulk-actions button {
-  min-height: 36px;
-  padding: 0.25rem 0.55rem;
+.outline-reorder-hint {
+  color: var(--muted);
   font-size: 0.76rem;
 }
 
@@ -169,25 +165,58 @@ dialog::backdrop {
   border-color: var(--ink-soft);
 }
 
-.outline-row.is-selected {
-  border-color: var(--coral);
-  background: var(--coral-soft);
-}
-
 .outline-row.is-pinned {
   border-style: dashed;
 }
 
-.outline-select-checkbox {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: var(--coral);
+.outline-row.is-dragging {
+  opacity: 0.55;
+  border-color: var(--coral);
 }
 
-.outline-icon {
-  font-size: 1.2rem;
-  line-height: 1;
+.outline-row.is-drop-before {
+  box-shadow: 0 -3px 0 var(--coral);
+}
+
+.outline-row.is-drop-after {
+  box-shadow: 0 3px 0 var(--coral);
+}
+
+.outline-list.is-reordering .outline-row {
+  transition: none;
+}
+
+.outline-thumbnail {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 56px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.outline-thumbnail > :is(svg, img) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.outline-thumbnail.is-flipped > :is(svg, img) {
+  transform: scaleX(-1);
+}
+
+.outline-drag-handle {
+  flex: 0 0 32px;
+  min-height: 44px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.is-dragging .outline-drag-handle {
+  cursor: grabbing;
 }
 
 .outline-info {
@@ -223,6 +252,27 @@ dialog::backdrop {
   min-height: 38px;
   padding: 0.2rem 0.45rem;
   font-size: 0.82rem;
+}
+
+.outline-delete-button svg {
+  display: block;
+  margin: auto;
+}
+
+@media (max-width: 480px) {
+  .outline-row {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0.5rem;
+  }
+
+  .outline-info {
+    flex-basis: calc(100% - 100px);
+  }
+
+  .outline-actions {
+    margin-left: auto;
+  }
 }
 
 /* Settings Dialog */

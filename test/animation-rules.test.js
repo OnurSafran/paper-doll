@@ -49,7 +49,7 @@ test('animation vocabulary defines expression intensities, static poses, motion 
   assert.equal(isStaticPose('unknown_pose'), false);
 
   assert.equal(DEFAULT_MOTION_CLIP_ID, 'none');
-  assert.deepEqual([...MOTION_CLIP_IDS], ['none', 'idle', 'happy_bounce', 'nod', 'sway', 'curious_tilt', 'look_around', 'wave', 'point', 'clap', 'jump', 'dance', 'hello', 'celebrate']);
+  assert.deepEqual([...MOTION_CLIP_IDS], ['none', 'idle', 'happy_bounce', 'nod', 'sway', 'curious_tilt', 'look_around', 'wave', 'point', 'clap', 'jump', 'dance', 'hello', 'celebrate', 'bow', 'wiggle', 'shake_head']);
   assert.equal(isMotionClipId('idle'), true);
   assert.equal(isMotionClipId('happy_bounce'), true);
   assert.equal(isMotionClipId('curious_tilt'), true);
@@ -75,7 +75,7 @@ test('animation vocabulary defines expression intensities, static poses, motion 
 });
 
 test('motion clips catalog provides frozen, immutable clip definitions with valid durations', () => {
-  for (const id of MOTION_CLIP_IDS) {
+  for (const id of Object.keys(MOTION_CLIPS)) {
     const clip = getMotionClip(id);
     assert.ok(clip, `Clip ${id} should exist`);
     assert.equal(clip.clipId, id);
@@ -87,7 +87,7 @@ test('motion clips catalog provides frozen, immutable clip definitions with vali
   const unknownClip = getMotionClip('unknown_clip');
   assert.equal(unknownClip.clipId, 'none');
 
-  for (const pose of STATIC_POSES) {
+  for (const pose of Object.keys(STATIC_POSE_TRANSFORMS)) {
     const transform = getStaticPoseTransform(pose);
     assert.ok(transform, `Pose ${pose} transform should exist`);
     assert.ok(Number.isFinite(transform.x));

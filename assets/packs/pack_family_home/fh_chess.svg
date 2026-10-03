@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_chess">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="151 201 698 698" data-asset-id="fh_chess">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
 <rect x="160" y="210" width="680" height="680" rx="12" fill="#d4a373"/>
     <rect x="200" y="250" width="75" height="75" stroke="none" fill="#81b29a"/>
@@ -65,9 +65,19 @@
     <rect x="575" y="775" width="75" height="75" stroke="none" fill="#81b29a"/>
     <rect x="650" y="775" width="75" height="75" stroke="none" fill="#fff8eb"/>
     <rect x="725" y="775" width="75" height="75" stroke="none" fill="#81b29a"/>
-    <path d="M480 365 L465 450 L535 450 L520 365 Z" fill="#fff8eb"/>
-    <circle cx="500" cy="345" r="27" fill="#fff8eb"/>
-    <path d="M160 850 H840" fill="none" stroke="#8b5e34" stroke-width="10"/>
-<g stroke-width="11"><path d="M325 695 L310 780 H390 L375 695 Z" fill="#514039"/><circle cx="350" cy="678" r="29" fill="#514039"/><path d="M605 555 L590 640 H670 L655 555 Z" fill="#fff8eb"/><circle cx="630" cy="538" r="29" fill="#fff8eb"/></g>
+    <path d="M160 862 H840" fill="none" stroke="#8b5e34" stroke-width="10"/>
+    <!-- Distinct pieces make the checkerboard recognizable as chess at tray size. -->
+    <g stroke-width="10">
+      <path d="M295 370 L305 345 H325 L330 302 H309 V278 H325 V291 H342 V278 H359 V291 H376 V278 H392 V302 H371 L376 345 H393 L403 370 Z" fill="#514039"/>
+      <path d="M325 348 H377" fill="none" stroke="#a08a7a" stroke-width="7"/>
+      <path d="M571 528 L589 494 L601 425 L624 421 L629 392 H650 V421 H674 V442 H650 L674 493 L691 528 Z" fill="#fff8eb"/>
+      <path d="M593 510 H671" fill="none" stroke="#d4a373" stroke-width="7"/>
+      <path d="M380 736 L395 708 L409 642 L390 642 L397 609 L429 584 L436 561 L466 584 L485 627 L462 642 L446 630 L433 652 L456 707 L474 736 Z" fill="#514039"/>
+      <path d="M416 716 H454" fill="none" stroke="#a08a7a" stroke-width="7"/>
+      <circle cx="451" cy="608" r="7" fill="#fff8eb" stroke="none"/>
+      <path d="M612 786 L624 766 L636 706 H668 L680 766 L692 786 Z" fill="#fff8eb"/>
+      <circle cx="652" cy="686" r="27" fill="#fff8eb"/>
+      <path d="M634 767 H669" fill="none" stroke="#d4a373" stroke-width="7"/>
+    </g>
   </g>
 </svg>

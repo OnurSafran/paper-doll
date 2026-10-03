@@ -35,98 +35,64 @@ test('points clamp inside the reachable logical stage with default fallback boun
   assert.deepEqual(clampPoint(800.4, 440.6), { x: 800, y: 441 });
 });
 
+// Clamping keeps the whole envelope on stage; expectations follow catalog geometry.
+const minPoint = (b) => ({ x: Math.round(b.width * b.anchorX), y: Math.round(b.height * b.anchorY) });
+const maxPoint = (b) => ({ x: Math.round(1600 - b.width * (1 - b.anchorX)), y: Math.round(900 - b.height * (1 - b.anchorY)) });
+
 test('asset-aware clamping keeps characters fully within 1600x900 stage at all scales', () => {
-  // Character base: width 235, height 352.5, anchor: (0.5, 1.0)
-  
-  // Scale 1.0
-  const char1 = charEntity('c1', 800, 700, 1.0);
-  const bounds1 = getEntityBounds(char1, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, bounds1), { x: 118, y: 353 });
+  // The envelope is the full 235-unit width and ends at the measured foot contact (y 410).
+  const bounds1 = getEntityBounds(charEntity('c1', 800, 700, 1.0), getAsset);
+  assert.equal(bounds1.width, 235);
+  assert.equal(bounds1.height, 410 * 235 / 300);
+  assert.deepEqual(clampPoint(-500, -500, bounds1), { x: 118, y: 321 });
   assert.deepEqual(clampPoint(5000, 5000, bounds1), { x: 1483, y: 900 });
-
-  // Min scale 0.5
-  const charHalf = charEntity('c05', 800, 700, 0.5);
-  const boundsHalf = getEntityBounds(charHalf, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, boundsHalf), { x: 59, y: 176 });
-  assert.deepEqual(clampPoint(5000, 5000, boundsHalf), { x: 1541, y: 900 });
-
-  // Max scale 2.0
-  const charMax = charEntity('c2', 800, 700, 2.0);
-  const boundsMax = getEntityBounds(charMax, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, boundsMax), { x: 235, y: 705 });
-  assert.deepEqual(clampPoint(5000, 5000, boundsMax), { x: 1365, y: 900 });
+  for (const scale of [0.5, 1, 2]) {
+    const bounds = getEntityBounds(charEntity(`c${scale}`, 800, 700, scale), getAsset);
+    assert.deepEqual(clampPoint(-500, -500, bounds), minPoint(bounds));
+    assert.deepEqual(clampPoint(5000, 5000, bounds), maxPoint(bounds));
+  }
 });
 
-test('asset-aware clamping for floor lamp (prop_lamp) at all scales', () => {
-  // Floor lamp: displayWidth 160, displayHeight 360, groundAnchor (0.5, 1.0)
-
-  // Scale 1.0
-  const lamp1 = propEntity('lamp1', 'prop_lamp', 800, 700, 1.0);
-  const bounds1 = getEntityBounds(lamp1, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, bounds1), { x: 80, y: 360 });
-  assert.deepEqual(clampPoint(5000, 5000, bounds1), { x: 1520, y: 900 });
-
-  // Scale 0.5 (min scale)
-  const lampHalf = propEntity('lampHalf', 'prop_lamp', 800, 700, 0.5);
-  const boundsHalf = getEntityBounds(lampHalf, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, boundsHalf), { x: 40, y: 180 });
-  assert.deepEqual(clampPoint(5000, 5000, boundsHalf), { x: 1560, y: 900 });
-
-  // Scale 2.0 (max scale)
-  const lampMax = propEntity('lampMax', 'prop_lamp', 800, 700, 2.0);
-  const boundsMax = getEntityBounds(lampMax, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, boundsMax), { x: 160, y: 720 });
-  assert.deepEqual(clampPoint(5000, 5000, boundsMax), { x: 1440, y: 900 });
-});
-
-test('asset-aware clamping for pastel rug (prop_rug) at all scales', () => {
-  // Pastel rug: displayWidth 380, displayHeight 140, groundAnchor (0.5, 1.0)
-
-  // Scale 1.0
-  const rug1 = propEntity('rug1', 'prop_rug', 800, 700, 1.0);
-  const bounds1 = getEntityBounds(rug1, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, bounds1), { x: 190, y: 140 });
-  assert.deepEqual(clampPoint(5000, 5000, bounds1), { x: 1410, y: 900 });
-
-  // Scale 0.5 (min scale)
-  const rugHalf = propEntity('rugHalf', 'prop_rug', 800, 700, 0.5);
-  const boundsHalf = getEntityBounds(rugHalf, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, boundsHalf), { x: 95, y: 70 });
-  assert.deepEqual(clampPoint(5000, 5000, boundsHalf), { x: 1505, y: 900 });
-
-  // Scale 2.0 (max scale)
-  const rugMax = propEntity('rugMax', 'prop_rug', 800, 700, 2.0);
-  const boundsMax = getEntityBounds(rugMax, getAsset);
-  assert.deepEqual(clampPoint(-500, -500, boundsMax), { x: 380, y: 280 });
-  assert.deepEqual(clampPoint(5000, 5000, boundsMax), { x: 1220, y: 900 });
-});
+for (const sourceId of ['prop_lamp', 'prop_rug']) {
+  test(`asset-aware clamping for ${sourceId} at all scales`, () => {
+    const asset = getAsset(sourceId);
+    for (const scale of [0.5, 1, 2]) {
+      const bounds = getEntityBounds(propEntity(`${sourceId}-${scale}`, sourceId, 800, 700, scale), getAsset);
+      assert.equal(bounds.width, asset.displayWidth * scale);
+      assert.equal(bounds.height, asset.displayHeight * scale);
+      assert.deepEqual(clampPoint(-500, -500, bounds), minPoint(bounds));
+      assert.deepEqual(clampPoint(5000, 5000, bounds), maxPoint(bounds));
+    }
+  });
+}
 
 test('scaling up an entity near boundary automatically re-clamps within stage', () => {
-  let scene = addEntity(createEmptyScene('scene-1'), propEntity('rug', 'prop_rug', 200, 200, 1.0), getAsset);
-  
-  // rug at scale 1.0 is at (200, 200) - valid since minX=190, minY=140
-  assert.equal(scene.entities[0].x, 200);
-  assert.equal(scene.entities[0].y, 200);
+  const rug = getAsset('prop_rug');
+  const x = Math.ceil(rug.displayWidth / 2) + 2;
+  const y = Math.ceil(rug.displayHeight) + 2;
+  let scene = addEntity(createEmptyScene('scene-1'), propEntity('rug', 'prop_rug', x, y, 1.0), getAsset);
+  assert.equal(scene.entities[0].x, x);
+  assert.equal(scene.entities[0].y, y);
 
-  // Now scale to 2.0 (minX becomes 380, minY becomes 280)
   scene = scaleEntity(scene, 'rug', 2.0, getAsset);
   const scaledRug = scene.entities[0];
   assert.equal(scaledRug.scale, 2.0);
-  assert.equal(scaledRug.x, 380);
-  assert.equal(scaledRug.y, 280);
+  assert.equal(scaledRug.x, Math.round(rug.displayWidth));
+  assert.equal(scaledRug.y, Math.round(rug.displayHeight * 2));
 });
 
 test('move and scale clamp at asset boundaries', () => {
+  const lamp = getAsset('prop_lamp');
   let scene = addEntity(createEmptyScene('scene-1'), propEntity('lamp', 'prop_lamp', 800, 700), getAsset);
   scene = moveEntity(scene, 'lamp', 5000, -10, getAsset);
-  assert.equal(scene.entities[0].x, 1520);
-  assert.equal(scene.entities[0].y, 360);
+  assert.equal(scene.entities[0].x, Math.round(1600 - lamp.displayWidth / 2));
+  assert.equal(scene.entities[0].y, Math.round(lamp.displayHeight));
 
   scene = scaleEntity(scene, 'lamp', 12, getAsset); // clamps to scale 2
   const item = scene.entities[0];
   assert.equal(item.scale, 2);
-  assert.equal(item.x, 1440);
-  assert.equal(item.y, 720);
+  assert.equal(item.x, Math.round(1600 - lamp.displayWidth));
+  assert.equal(item.y, Math.round(lamp.displayHeight * 2));
 });
 
 test('entities receive stable contiguous order', () => {

@@ -183,7 +183,7 @@ test('sanitizing existing scenes repairs pinned wide-stage coordinates', () => {
   }, getAsset);
 
   assert.equal(scene.updatedAt, '2026-08-01T00:00:00.000Z');
-  assert.ok(scene.entities[0].x <= 1480);
+  assert.ok(scene.entities[0].x <= 1600 - getAsset('prop_chair').displayWidth / 2);
 });
 
 test('addEntity and clampPoint clamp coordinates against dynamic stageWidth', () => {
@@ -258,7 +258,7 @@ test('reclampSceneEntities uses the new panoramic width when narrowing stages', 
   };
 
   const narrowed = reclampSceneEntities(scene, 3200, getAsset);
-  assert.equal(narrowed.entities[0].x, 3080);
+  assert.equal(narrowed.entities[0].x, Math.round(3200 - getAsset('prop_chair').displayWidth / 2));
 });
 
 test('AppStore handles confirmed stage removal and undo/redo', () => {
@@ -373,7 +373,7 @@ test('wide-stage scaling uses the active stage width', () => {
       instanceId: 'wide-chair',
       kind: 'prop',
       sourceId: 'prop_chair',
-      x: 3000,
+      x: 3150,
       y: 770,
       scale: 1,
       pinned: false,
@@ -383,7 +383,7 @@ test('wide-stage scaling uses the active stage width', () => {
 
   const scaled = scaleEntity(scene, 'wide-chair', 2, getAsset);
   assert.ok(scaled.entities[0].x > 1600);
-  assert.equal(scaled.entities[0].x, 2960);
+  assert.equal(scaled.entities[0].x, Math.round(3200 - getAsset('prop_chair').displayWidth));
 });
 
 test('undo and redo preserve the latest camera position without adding camera history', () => {

@@ -25,11 +25,6 @@ export function createAppSceneControls(context) {
     context.$('#close-scene-templates')?.addEventListener('click', () => context.$('#scene-templates-dialog')?.close());
     context.$('#scene-outline-btn')?.addEventListener('click', () => context.sceneOutlineView.openSceneOutlineDialog());
     context.$('#close-scene-outline')?.addEventListener('click', () => context.$('#scene-outline-dialog')?.close());
-    context.$('#outline-select-all-btn')?.addEventListener('click', () => {
-      const allIds = context.store.getState().currentScene.entities.map((e) => e.instanceId);
-      context.store.dispatch({ type: 'ui/selectEntities', instanceIds: allIds });
-    });
-    context.$('#outline-deselect-btn')?.addEventListener('click', () => context.store.dispatch({ type: 'ui/clearSelection' }));
     context.$('#save-scene-copy-btn')?.addEventListener('click', () => context.store.dispatch({ type: 'scene/duplicateCurrentToLibrary' }));
 
     context.$('#scene-library-btn')?.addEventListener('click', () => context.sceneBookView.openSceneLibraryDialog());
@@ -146,12 +141,6 @@ export function createAppSceneControls(context) {
     // Animation Transport Controls wiring
     context.$('#play-animation-btn')?.addEventListener('click', () => {
       context.store.dispatch({ type: 'scene/toggleScenePlayback' });
-    });
-    context.$('#loop-animation-btn')?.addEventListener('click', () => {
-      context.store.dispatch({ type: 'scene/toggleSceneLoop' });
-    });
-    context.$('#reset-animation-btn')?.addEventListener('click', () => {
-      context.sceneAnimationService.reset();
     });
     context.$('#scene-playback-rate-controls')?.addEventListener('click', (event) => {
       const rate = event.target.closest('button')?.dataset.playbackRate;

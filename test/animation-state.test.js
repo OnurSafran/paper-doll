@@ -73,19 +73,15 @@ test('AppStore handles animation, pose, and expression intensity actions with un
     phaseOffset: 0.25
   });
 
-  // 4. Toggle scene playback and loop
+  // 4. Toggle scene playback; looping is always enabled
   assert.equal(store.getState().currentScene.animationSettings.enabled, true, 'Active clip auto-enables scene playback');
   store.dispatch({ type: 'scene/toggleScenePlayback' });
   assert.equal(store.getState().currentScene.animationSettings.enabled, false);
 
-  store.dispatch({ type: 'scene/toggleSceneLoop' });
-  assert.equal(store.getState().currentScene.animationSettings.loop, false);
+  assert.equal(store.getState().currentScene.animationSettings.loop, true);
 
   // Test Undo stack
   assert.ok(store.canUndo());
-  store.dispatch({ type: 'app/undo' }); // undo toggleSceneLoop
-  assert.equal(store.getState().currentScene.animationSettings.loop, true);
-
   store.dispatch({ type: 'app/undo' }); // undo toggleScenePlayback
   assert.equal(store.getState().currentScene.animationSettings.enabled, true);
 
@@ -103,4 +99,20 @@ test('AppStore handles animation, pose, and expression intensity actions with un
   store.dispatch({ type: 'app/redo' }); // redo setDollPose
   char = store.getState().currentScene.entities.find((e) => e.instanceId === spawnedId);
   assert.equal(char.pose, 'lean_left');
+});
+
+
+test('legacy scene loop settings are normalized for loaded and authored scenes', () => {
+  const envelope = persistedProjection(createRuntimeState(createDefaultEnvelope()));
+  envelope.currentScene.animationSettings.loop = false;
+  envelope.scenes = [{ ...envelope.currentScene, sceneId: 'saved-scene' }];
+  const sanitized = sanitizeEnvelope(envelope).envelope;
+  assert.equal(sanitized.currentScene.animationSettings.loop, true);
+  assert.equal(sanitized.scenes[0].animationSettings.loop, true);
+  const store = createAppStore(sanitized);
+  store.dispatch({ type: 'scene/setAnimationSettings', animationSettings: { enabled: true, loop: false } });
+  assert.equal(store.getState().currentScene.animationSettings.loop, true);
+  store.dispatch({ type: 'scene/toggleScenePlayback' });
+  assert.equal(store.getState().currentScene.animationSettings.enabled, false);
+  assert.equal(store.getState().currentScene.animationSettings.loop, true);
 });

@@ -63,6 +63,17 @@ Paper Doll Studio is a calm browser toy for creating paper dolls and arranging s
 - Props are discoverable through the short collections `Home`, `Outdoors`, `Creative`, `Fun`, and the derived `My Art` collection. A prop may appear in multiple thematic collections.
 - Player-created props are always in My Art and can be assigned or reassigned to thematic collections from the My Art library.
 
+### Character controls for story play
+
+- The selection panel uses the story-oriented title **Your Story**, with **Face & Pose** and **Movement** tabs in English and matching Turkish labels.
+- Visible headings explain face, expression size, pose, and movement size. Movement choices are large, labeled cards; selected settings have a filled background, border, checkmark, and `aria-pressed` state.
+- Story moves include **Bow** for greetings or thanks, **Wiggle** for playfulness, and **Shake Head** for saying no. Bow and Wiggle support both modular dolls and full-body painted characters; Shake Head requires a separate head and is hidden for full-body painted characters. These gentle repeating moves keep clothing intact and never alter the doll's saved position or expression.
+- Choosing a move immediately starts scene playback through the existing undoable animation command. **Stay Still** stops movement for the selected doll(s); **Pause** pauses the entire scene. Reduced-motion preferences are respected, with an inline explanation when they prevent playback.
+- **Small / Medium / Big** controls movement amplitude, not speed. The playback speed controls above the stage affect the whole scene.
+- **Together / Take Turns / One After Another** appears only when at least two characters are selected. These apply timing to the selected characters, in scene order, without changing their moves. Matching moves produce matching rhythm; Take Turns alternates two timing groups, and One After Another repeats four timing steps.
+- Individual timing is available in the initially collapsed **More timing options** disclosure. **Step 1–4** represents phase offsets `0`, `0.25`, `0.5`, and `0.75` within a repeating move, not a start delay or speed change. Existing stored animation values are unchanged.
+- Inline hints explain selection-box group selection, playback, and timing. The bilingual Guide explains the same controls with a two-doll Bounce example; children do not need to read it before trying a move.
+
 ### Destructive actions
 
 - Confirm destructive actions only when they discard meaningful work.
@@ -218,7 +229,7 @@ Derived thumbnails, DOM, SVG source, object URLs, pointer events, UI selection, 
 - Marquee and additive selection are transient UI state.
 - Group transforms are one command and one undo entry.
 - Align/distribute and z-order are deterministic.
-- A keyboard scene-outline list provides selection, naming, reorder, visibility, and deletion alternatives.
+- Scene Outline shows artwork and layer order, with mouse/touch drag handles, keyboard reordering, pinning, and deletion controls.
 
 ### Panoramic stages
 

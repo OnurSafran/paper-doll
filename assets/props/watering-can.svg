@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="135 326 783 482" data-asset-id="prop_watering_can">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Open handle and spout attach behind the enamel reservoir. -->
+    <path d="M643 416 C943 196 991 716 682 699" fill="none" stroke-width="48"/>
+    <path d="M643 416 C943 196 991 716 682 699" fill="none" stroke="#81b29a" stroke-width="27"/>
+    <path d="M399 579 L246 380 L183 425 L362 715 Z" fill="#81b29a"/>
+    <path d="M256 425 L367 596" fill="none" stroke="#c4d9b5" stroke-width="11"/>
+    <path d="M161 375 L221 336 L270 391 L191 448 Z" fill="#e9c46a"/>
+    <ellipse cx="181" cy="386" rx="29" ry="53" transform="rotate(-35 181 386)" fill="#d4a373" stroke-width="11"/>
+    <g fill="#514039" stroke="none">
+      <circle cx="161" cy="357" r="6"/><circle cx="179" cy="372" r="6"/><circle cx="199" cy="391" r="6"/>
+      <circle cx="171" cy="391" r="6"/><circle cx="192" cy="411" r="6"/>
+    </g>
+    <path d="M366 469 H708 L739 773 Q559 825 379 773 Z" fill="#2a9d8f"/>
+    <ellipse cx="537" cy="469" rx="171" ry="42" fill="#81b29a"/>
+    <ellipse cx="537" cy="469" rx="114" ry="23" fill="#1d685e" stroke-width="9"/>
+    <path d="M411 522 L422 735" fill="none" stroke="#81b29a" stroke-width="16"/>
+    <path d="M406 769 Q559 800 713 769" fill="none" stroke="#1d685e" stroke-width="10"/>
+    <circle cx="562" cy="635" r="62" fill="#fff8eb" stroke-width="10"/>
+    <path d="M562 672 V604 M562 637 Q511 637 528 600 Q562 598 562 637 M562 650 Q609 640 599 614 Q565 614 562 650" fill="#81b29a" stroke="#1d685e" stroke-width="8"/>
+  </g>
+</svg>

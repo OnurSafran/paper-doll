@@ -18,8 +18,8 @@ export const STATIC_POSE_TRANSFORMS = Object.freeze({
   lean_left: Object.freeze({
     root: Object.freeze({ x: -6, y: 0, rotate: -4, scaleX: 1, scaleY: 1 }),
     head: Object.freeze({ x: -2, y: 0, rotate: -2, scaleX: 1, scaleY: 1 }),
-    armLeft: Object.freeze({ x: -2, y: 0, rotate: -3, scaleX: 1, scaleY: 1 }),
-    armRight: Object.freeze({ x: 2, y: 0, rotate: 3, scaleX: 1, scaleY: 1 }),
+    armLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+    armRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     x: -6, y: 0, rotate: -4, scaleX: 1, scaleY: 1
@@ -27,8 +27,8 @@ export const STATIC_POSE_TRANSFORMS = Object.freeze({
   lean_right: Object.freeze({
     root: Object.freeze({ x: 6, y: 0, rotate: 4, scaleX: 1, scaleY: 1 }),
     head: Object.freeze({ x: 2, y: 0, rotate: 2, scaleX: 1, scaleY: 1 }),
-    armLeft: Object.freeze({ x: -2, y: 0, rotate: -3, scaleX: 1, scaleY: 1 }),
-    armRight: Object.freeze({ x: 2, y: 0, rotate: 3, scaleX: 1, scaleY: 1 }),
+    armLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+    armRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     x: 6, y: 0, rotate: 4, scaleX: 1, scaleY: 1
@@ -36,7 +36,7 @@ export const STATIC_POSE_TRANSFORMS = Object.freeze({
   look_left: Object.freeze({
     root: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     head: Object.freeze({ x: -5, y: 0, rotate: -3, scaleX: 0.96, scaleY: 1 }),
-    armLeft: Object.freeze({ x: 0, y: 0, rotate: 1, scaleX: 1, scaleY: 1 }),
+    armLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     armRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
@@ -46,7 +46,7 @@ export const STATIC_POSE_TRANSFORMS = Object.freeze({
     root: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     head: Object.freeze({ x: 5, y: 0, rotate: 3, scaleX: 0.96, scaleY: 1 }),
     armLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    armRight: Object.freeze({ x: 0, y: 0, rotate: -1, scaleX: 1, scaleY: 1 }),
+    armRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1
@@ -54,7 +54,7 @@ export const STATIC_POSE_TRANSFORMS = Object.freeze({
   tilt_left: Object.freeze({
     root: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     head: Object.freeze({ x: -3, y: 0, rotate: -10, scaleX: 1, scaleY: 1 }),
-    armLeft: Object.freeze({ x: 0, y: 0, rotate: 2, scaleX: 1, scaleY: 1 }),
+    armLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     armRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
@@ -64,47 +64,11 @@ export const STATIC_POSE_TRANSFORMS = Object.freeze({
     root: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     head: Object.freeze({ x: 3, y: 0, rotate: 10, scaleX: 1, scaleY: 1 }),
     armLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    armRight: Object.freeze({ x: 0, y: 0, rotate: -2, scaleX: 1, scaleY: 1 }),
+    armRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
     x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1
   }),
-  wave: Object.freeze({
-    root: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    head: Object.freeze({ x: 2, y: -1, rotate: 5, scaleX: 1, scaleY: 1 }),
-    armLeft: Object.freeze({ x: 0, y: 0, rotate: 4, scaleX: 1, scaleY: 1 }),
-    armRight: Object.freeze({ x: 2, y: -4, rotate: -120, scaleX: 1, scaleY: 1 }),
-    legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1
-  }),
-  point: Object.freeze({
-    root: Object.freeze({ x: 1, y: 0, rotate: 1, scaleX: 1, scaleY: 1 }),
-    head: Object.freeze({ x: 3, y: 0, rotate: 3, scaleX: 0.98, scaleY: 1 }),
-    armLeft: Object.freeze({ x: -1, y: 0, rotate: 3, scaleX: 1, scaleY: 1 }),
-    armRight: Object.freeze({ x: 3, y: -2, rotate: -55, scaleX: 1, scaleY: 1 }),
-    legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    x: 1, y: 0, rotate: 1, scaleX: 1, scaleY: 1
-  }),
-  hands_on_hips: Object.freeze({
-    root: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    head: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    armLeft: Object.freeze({ x: -3, y: -1, rotate: 28, scaleX: 1, scaleY: 1 }),
-    armRight: Object.freeze({ x: 3, y: -1, rotate: -28, scaleX: 1, scaleY: 1 }),
-    legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1
-  }),
-  arms_up: Object.freeze({
-    root: Object.freeze({ x: 0, y: -2, rotate: 0, scaleX: 1, scaleY: 1.01 }),
-    head: Object.freeze({ x: 0, y: -2, rotate: 0, scaleX: 1.02, scaleY: 1.02 }),
-    armLeft: Object.freeze({ x: -2, y: -4, rotate: 135, scaleX: 1, scaleY: 1 }),
-    armRight: Object.freeze({ x: 2, y: -4, rotate: -135, scaleX: 1, scaleY: 1 }),
-    legLeft: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    legRight: Object.freeze({ x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-    x: 0, y: -2, rotate: 0, scaleX: 1, scaleY: 1.01
-  })
 });
 
 export function getStaticPoseTransform(pose) {
@@ -112,6 +76,72 @@ export function getStaticPoseTransform(pose) {
 }
 
 export const MOTION_CLIPS = Object.freeze({
+  bow: Object.freeze({
+    clipId: 'bow',
+    durationMs: 2400,
+    loop: true,
+    channels: Object.freeze({
+      root: Object.freeze([
+        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.3, x: 3, y: 5, rotate: 5, scaleX: 1, scaleY: 0.98 }),
+        Object.freeze({ at: 0.5, x: 3, y: 5, rotate: 5, scaleX: 1, scaleY: 0.98 }),
+        Object.freeze({ at: 0.75, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
+      ]),
+      head: Object.freeze([
+        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.3, x: 0, y: 3, rotate: 7, scaleX: 1, scaleY: 0.98 }),
+        Object.freeze({ at: 0.5, x: 0, y: 3, rotate: 7, scaleX: 1, scaleY: 0.98 }),
+        Object.freeze({ at: 0.75, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
+      ])
+    })
+  }),
+  wiggle: Object.freeze({
+    clipId: 'wiggle',
+    durationMs: 1300,
+    loop: true,
+    channels: Object.freeze({
+      root: Object.freeze([
+        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.15, x: -4, y: -1, rotate: -3, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.3, x: 4, y: -1, rotate: 3, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.45, x: -4, y: -1, rotate: -3, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.6, x: 4, y: -1, rotate: 3, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.8, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
+      ]),
+      head: Object.freeze([
+        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.15, x: 1, y: 0, rotate: 2, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.3, x: -1, y: 0, rotate: -2, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.45, x: 1, y: 0, rotate: 2, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.6, x: -1, y: 0, rotate: -2, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.8, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
+      ])
+    })
+  }),
+  shake_head: Object.freeze({
+    clipId: 'shake_head',
+    durationMs: 1500,
+    loop: true,
+    channels: Object.freeze({
+      root: Object.freeze([
+        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
+      ]),
+      head: Object.freeze([
+        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 0.15, x: -4, y: 0, rotate: -3, scaleX: 0.98, scaleY: 1 }),
+        Object.freeze({ at: 0.3, x: 4, y: 0, rotate: 3, scaleX: 0.98, scaleY: 1 }),
+        Object.freeze({ at: 0.45, x: -4, y: 0, rotate: -3, scaleX: 0.98, scaleY: 1 }),
+        Object.freeze({ at: 0.6, x: 4, y: 0, rotate: 3, scaleX: 0.98, scaleY: 1 }),
+        Object.freeze({ at: 0.8, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
+        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
+      ])
+    })
+  }),
   none: Object.freeze({
     clipId: 'none',
     durationMs: 1000,
@@ -122,14 +152,6 @@ export const MOTION_CLIPS = Object.freeze({
         Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
       ]),
       head: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armRight: Object.freeze([
         Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
         Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
       ]),
@@ -161,18 +183,6 @@ export const MOTION_CLIPS = Object.freeze({
         Object.freeze({ at: 0.25, x: 0, y: -1, rotate: 0.8, scaleX: 1, scaleY: 1 }),
         Object.freeze({ at: 0.5, x: 0, y: -2, rotate: 0, scaleX: 1, scaleY: 1 }),
         Object.freeze({ at: 0.75, x: 0, y: -1, rotate: -0.8, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.35, x: 0, y: 0, rotate: 1.2, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 0, y: 0, rotate: -0.8, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armRight: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.35, x: 0, y: 0, rotate: -1.2, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 0, y: 0, rotate: 0.8, scaleX: 1, scaleY: 1 }),
         Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
       ]),
       expression: Object.freeze([
@@ -210,34 +220,6 @@ export const MOTION_CLIPS = Object.freeze({
     })
   }),
 
-  hello: Object.freeze({
-    clipId: 'hello',
-    durationMs: 1600,
-    loop: true,
-    channels: Object.freeze({
-      root: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -3, y: -2, rotate: -2.5, scaleX: 1.005, scaleY: 1.01 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 3, y: -2, rotate: 2.5, scaleX: 1.005, scaleY: 1.01 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      head: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -2, y: -1, rotate: -4, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 2, y: -1, rotate: 4, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      expression: Object.freeze([
-        Object.freeze({ at: 0, intensityMultiplier: 1.0 }),
-        Object.freeze({ at: 0.25, intensityMultiplier: 1.15 }),
-        Object.freeze({ at: 0.5, intensityMultiplier: 1.05 }),
-        Object.freeze({ at: 0.75, intensityMultiplier: 1.15 }),
-        Object.freeze({ at: 1, intensityMultiplier: 1.0 })
-      ])
-    })
-  }),
 
   celebrate: Object.freeze({
     clipId: 'celebrate',
@@ -379,251 +361,18 @@ export const MOTION_CLIPS = Object.freeze({
     })
   }),
 
-  wave: Object.freeze({
-    clipId: 'wave',
-    durationMs: 1400,
-    loop: true,
-    channels: Object.freeze({
-      root: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: 0, y: -2, rotate: 0.5, scaleX: 1, scaleY: 1.01 }),
-        Object.freeze({ at: 0.5, x: 0, y: -3, rotate: 0, scaleX: 1.005, scaleY: 1.015 }),
-        Object.freeze({ at: 0.75, x: 0, y: -2, rotate: -0.5, scaleX: 1, scaleY: 1.01 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      head: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 2, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: 1, y: -1, rotate: 6, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: -1, rotate: 3, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 1, y: -1, rotate: 6, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 2, scaleX: 1, scaleY: 1 })
-      ]),
-      armRight: Object.freeze([
-        Object.freeze({ at: 0, x: 2, y: -4, rotate: -105, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: 2, y: -4, rotate: -135, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 2, y: -4, rotate: -105, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 2, y: -4, rotate: -135, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 2, y: -4, rotate: -105, scaleX: 1, scaleY: 1 })
-      ]),
-      armLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 2, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: 6, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 2, scaleX: 1, scaleY: 1 })
-      ]),
-      expression: Object.freeze([
-        Object.freeze({ at: 0, intensityMultiplier: 1.0 }),
-        Object.freeze({ at: 0.25, intensityMultiplier: 1.15 }),
-        Object.freeze({ at: 0.5, intensityMultiplier: 1.05 }),
-        Object.freeze({ at: 0.75, intensityMultiplier: 1.15 }),
-        Object.freeze({ at: 1, intensityMultiplier: 1.0 })
-      ])
-    })
-  }),
 
-  point: Object.freeze({
-    clipId: 'point',
-    durationMs: 1600,
-    loop: true,
-    channels: Object.freeze({
-      root: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.3, x: 2, y: -1, rotate: 1, scaleX: 1.005, scaleY: 1.005 }),
-        Object.freeze({ at: 0.5, x: 3, y: -2, rotate: 1.5, scaleX: 1.01, scaleY: 1.01 }),
-        Object.freeze({ at: 0.7, x: 2, y: -1, rotate: 1, scaleX: 1.005, scaleY: 1.005 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      head: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.3, x: 3, y: -1, rotate: 4, scaleX: 0.98, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 4, y: -1, rotate: 5, scaleX: 0.98, scaleY: 1 }),
-        Object.freeze({ at: 0.7, x: 3, y: -1, rotate: 4, scaleX: 0.98, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armRight: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.3, x: 3, y: -2, rotate: -55, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 4, y: -3, rotate: -62, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.7, x: 3, y: -2, rotate: -55, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.35, x: -1, y: 0, rotate: 6, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.7, x: -1, y: 0, rotate: 6, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      expression: Object.freeze([
-        Object.freeze({ at: 0, intensityMultiplier: 1.0 }),
-        Object.freeze({ at: 0.35, intensityMultiplier: 1.2 }),
-        Object.freeze({ at: 0.7, intensityMultiplier: 1.15 }),
-        Object.freeze({ at: 1, intensityMultiplier: 1.0 })
-      ])
-    })
-  }),
 
-  clap: Object.freeze({
-    clipId: 'clap',
-    durationMs: 800,
-    loop: true,
-    channels: Object.freeze({
-      root: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: 0, y: -4, rotate: 0, scaleX: 0.99, scaleY: 1.02 }),
-        Object.freeze({ at: 0.5, x: 0, y: 1, rotate: 0, scaleX: 1.01, scaleY: 0.98 }),
-        Object.freeze({ at: 0.75, x: 0, y: -4, rotate: 0, scaleX: 0.99, scaleY: 1.02 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      head: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: 0, y: -1, rotate: 2, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: 1, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 0, y: -1, rotate: -2, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 30, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: 4, y: -2, rotate: 10, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: 30, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 4, y: -2, rotate: 10, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 30, scaleX: 1, scaleY: 1 })
-      ]),
-      armRight: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: -30, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -4, y: -2, rotate: -10, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: -30, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: -4, y: -2, rotate: -10, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: -30, scaleX: 1, scaleY: 1 })
-      ]),
-      expression: Object.freeze([
-        Object.freeze({ at: 0, intensityMultiplier: 1.05 }),
-        Object.freeze({ at: 0.25, intensityMultiplier: 1.25 }),
-        Object.freeze({ at: 0.5, intensityMultiplier: 1.05 }),
-        Object.freeze({ at: 0.75, intensityMultiplier: 1.25 }),
-        Object.freeze({ at: 1, intensityMultiplier: 1.05 })
-      ])
-    })
-  }),
 
-  jump: Object.freeze({
-    clipId: 'jump',
-    durationMs: 1000,
-    loop: true,
-    channels: Object.freeze({
-      root: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.15, x: 0, y: 8, rotate: 0, scaleX: 1.06, scaleY: 0.92 }),
-        Object.freeze({ at: 0.45, x: 0, y: -28, rotate: 0, scaleX: 0.94, scaleY: 1.08 }),
-        Object.freeze({ at: 0.75, x: 0, y: 5, rotate: 0, scaleX: 1.04, scaleY: 0.95 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      head: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.15, x: 0, y: 4, rotate: 4, scaleX: 1, scaleY: 0.96 }),
-        Object.freeze({ at: 0.45, x: 0, y: -10, rotate: -2, scaleX: 1, scaleY: 1.04 }),
-        Object.freeze({ at: 0.75, x: 0, y: 3, rotate: 2, scaleX: 1, scaleY: 0.97 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.15, x: -2, y: 2, rotate: -20, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.45, x: -3, y: -6, rotate: 125, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: -1, y: 2, rotate: -10, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armRight: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.15, x: 2, y: 2, rotate: 20, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.45, x: 3, y: -6, rotate: -125, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 1, y: 2, rotate: 10, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      legLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.15, x: 0, y: -2, rotate: 3, scaleX: 1.02, scaleY: 0.88 }),
-        Object.freeze({ at: 0.45, x: 0, y: 2, rotate: -2, scaleX: 0.98, scaleY: 1.06 }),
-        Object.freeze({ at: 0.75, x: 0, y: -1, rotate: 2, scaleX: 1.01, scaleY: 0.92 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      legRight: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.15, x: 0, y: -2, rotate: -3, scaleX: 1.02, scaleY: 0.88 }),
-        Object.freeze({ at: 0.45, x: 0, y: 2, rotate: 2, scaleX: 0.98, scaleY: 1.06 }),
-        Object.freeze({ at: 0.75, x: 0, y: -1, rotate: -2, scaleX: 1.01, scaleY: 0.92 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      expression: Object.freeze([
-        Object.freeze({ at: 0, intensityMultiplier: 1.0 }),
-        Object.freeze({ at: 0.15, intensityMultiplier: 0.9 }),
-        Object.freeze({ at: 0.45, intensityMultiplier: 1.35 }),
-        Object.freeze({ at: 0.75, intensityMultiplier: 1.1 }),
-        Object.freeze({ at: 1, intensityMultiplier: 1.0 })
-      ])
-    })
-  }),
 
-  dance: Object.freeze({
-    clipId: 'dance',
-    durationMs: 1600,
-    loop: true,
-    channels: Object.freeze({
-      root: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -8, y: -4, rotate: -4, scaleX: 1.01, scaleY: 1.01 }),
-        Object.freeze({ at: 0.5, x: 0, y: 1, rotate: 0, scaleX: 1, scaleY: 0.99 }),
-        Object.freeze({ at: 0.75, x: 8, y: -4, rotate: 4, scaleX: 1.01, scaleY: 1.01 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      head: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -3, y: -2, rotate: -6, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: 1, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 3, y: -2, rotate: 6, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      armLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 20, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -2, y: -3, rotate: 80, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: 15, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 1, y: 0, rotate: -25, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 20, scaleX: 1, scaleY: 1 })
-      ]),
-      armRight: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: -20, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -1, y: 0, rotate: 25, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: -15, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 2, y: -3, rotate: -80, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: -20, scaleX: 1, scaleY: 1 })
-      ]),
-      legLeft: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -1, y: 0, rotate: -4, scaleX: 1, scaleY: 0.98 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 1, y: -1, rotate: 3, scaleX: 1, scaleY: 1.02 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      legRight: Object.freeze([
-        Object.freeze({ at: 0, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.25, x: -1, y: -1, rotate: -3, scaleX: 1, scaleY: 1.02 }),
-        Object.freeze({ at: 0.5, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }),
-        Object.freeze({ at: 0.75, x: 1, y: 0, rotate: 4, scaleX: 1, scaleY: 0.98 }),
-        Object.freeze({ at: 1, x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 })
-      ]),
-      expression: Object.freeze([
-        Object.freeze({ at: 0, intensityMultiplier: 1.0 }),
-        Object.freeze({ at: 0.25, intensityMultiplier: 1.2 }),
-        Object.freeze({ at: 0.5, intensityMultiplier: 1.05 }),
-        Object.freeze({ at: 0.75, intensityMultiplier: 1.25 }),
-        Object.freeze({ at: 1, intensityMultiplier: 1.0 })
-      ])
-    })
-  })
 });
 
 /**
  * Legacy motion clip fallbacks for rigid-safe migration.
  */
 export const RIGID_CLIP_FALLBACKS = Object.freeze({
-  wave: 'hello',
+  wave: 'nod',
+  hello: 'nod',
   point: 'look_around',
   'look-around': 'look_around',
   clap: 'celebrate',
@@ -648,12 +397,12 @@ export const RIGID_POSE_FALLBACKS = Object.freeze({
 export const MOTION_PROFILES_CONFIG = Object.freeze({
   'root': Object.freeze({
     motionProfile: 'root',
-    safeClips: Object.freeze(['none', 'idle', 'happy_bounce', 'sway', 'hello', 'celebrate']),
+    safeClips: Object.freeze(['none', 'idle', 'happy_bounce', 'sway', 'celebrate', 'bow', 'wiggle']),
     safePoses: Object.freeze(['rest', 'lean_left', 'lean_right'])
   }),
   'root-head': Object.freeze({
     motionProfile: 'root-head',
-    safeClips: Object.freeze(['none', 'idle', 'happy_bounce', 'sway', 'hello', 'celebrate', 'nod', 'look_around']),
+    safeClips: Object.freeze(['none', 'idle', 'happy_bounce', 'sway', 'celebrate', 'nod', 'look_around', 'bow', 'wiggle', 'shake_head']),
     safePoses: Object.freeze(['rest', 'lean_left', 'lean_right', 'look_left', 'look_right', 'tilt_left', 'tilt_right'])
   })
 });
@@ -690,7 +439,7 @@ export function resolveSafeClipId(clipId, profile = 'root-head') {
   if (config.safeClips.includes(mapped)) {
     return mapped;
   }
-  if (profile === 'root' && (mapped === 'nod' || mapped === 'look_around')) {
+  if (profile === 'root' && (mapped === 'nod' || mapped === 'look_around' || mapped === 'shake_head')) {
     return 'idle';
   }
   return config.safeClips.includes(normalizedKey) ? normalizedKey : DEFAULT_MOTION_CLIP_ID;
@@ -713,5 +462,3 @@ export function getMotionClip(clipId) {
   const normalizedId = clipId === 'happy-bounce' ? 'happy_bounce' : clipId === 'look-around' ? 'look_around' : clipId;
   return MOTION_CLIPS[normalizedId] || MOTION_CLIPS[DEFAULT_MOTION_CLIP_ID];
 }
-
-

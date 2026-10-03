@@ -100,10 +100,12 @@ test('Vocabulary defines safe motion clips, safe poses, and motion profiles', ()
     'idle',
     'happy_bounce',
     'sway',
-    'hello',
     'celebrate',
     'nod',
-    'look_around'
+    'look_around',
+    'bow',
+    'wiggle',
+    'shake_head'
   ]);
 
   assert.deepEqual([...SAFE_STATIC_POSES], [
@@ -169,47 +171,59 @@ test('resolveMotionProfile correctly identifies root vs root-head profiles', () 
   assert.equal(resolveMotionProfile(null), 'root-head');
 });
 
-test('Rigid-safe motion clips: hello and celebrate adhere to conservative transform limits and zero limb channels', () => {
-  const helloClip = getMotionClip('hello');
-  assert.ok(helloClip, 'hello clip should exist');
-  assert.equal(helloClip.loop, true);
+test('story moves loop smoothly, stay gentle, and never deform clothing limbs', () => {
+  for (const id of ['bow', 'wiggle', 'shake_head']) {
+    const clip = getMotionClip(id);
+    assert.equal(clip.clipId, id);
+    assert.deepEqual(evaluateClipAtTime(clip, 0), evaluateClipAtTime(clip, clip.durationMs));
+    let moves = false;
+    for (let time = 0; time < clip.durationMs; time += 50) {
+      const pose = evaluateClipAtTime(clip, time, { intensity: 1.5 });
+      assert.ok(Math.abs(pose.root.x) <= 6 && Math.abs(pose.root.y) <= 7.5);
+      assert.ok(Math.abs(pose.root.rotate) <= 7.5);
+      assert.ok(Math.abs(pose.head.x) <= 6 && Math.abs(pose.head.y) <= 4.5);
+      assert.ok(Math.abs(pose.head.rotate) <= 10.5);
+      for (const channel of ['armLeft', 'armRight', 'legLeft', 'legRight']) {
+        assert.deepEqual(pose[channel], { x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 });
+      }
+      moves ||= Math.abs(pose.root.x) + Math.abs(pose.root.y) + Math.abs(pose.root.rotate) + Math.abs(pose.head.x) > 0;
+    }
+    assert.equal(moves, true, `${id} has visible motion`);
+  }
+  const shake = evaluateClipAtTime(getMotionClip('shake_head'), 225);
+  assert.deepEqual(shake.root, { x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }, 'saying no moves only the head');
+  for (const id of ['bow', 'wiggle']) assert.equal(resolveSafeClipId(id, 'root'), id);
+  assert.equal(resolveSafeClipId('shake_head', 'root'), 'idle');
+});
 
+test('story moves survive save reload and undo redo while preserving the story', () => {
+  const store = createAppStore(createDefaultEnvelope());
+  store.dispatch({ type: 'preset/save', name: 'Story doll' });
+  const presetId = store.getState().presets[0].presetId;
+  store.dispatch({ type: 'scene/spawnCharacter', presetId, x: 800, y: 720 });
+  const original = store.getState().currentScene.entities.find(entity => entity.kind === 'character');
+  for (const clipId of ['bow', 'wiggle', 'shake_head']) {
+    const previousClip = store.getState().currentScene.entities[0].animation.clipId;
+    store.dispatch({ type: 'scene/setDollAnimation', instanceId: original.instanceId, animation: { clipId, enabled: true, intensity: 1.5, phaseOffset: 0.25 } });
+    const scene = store.getState().currentScene;
+    const entity = scene.entities.find(entity => entity.instanceId === original.instanceId);
+    assert.equal(entity.animation.clipId, clipId);
+    assert.equal(scene.animationSettings.enabled, true);
+    assert.deepEqual([entity.x, entity.y, entity.expression, entity.characterSnapshot], [original.x, original.y, original.expression, original.characterSnapshot]);
+    const envelope = { ...createDefaultEnvelope(), presets: store.getState().presets, currentScene: scene };
+    const reloaded = sanitizeEnvelope(JSON.parse(JSON.stringify(envelope)), getAsset).envelope.currentScene.entities.find(entity => entity.instanceId === original.instanceId);
+    assert.deepEqual(reloaded.animation, entity.animation);
+    store.dispatch({ type: 'app/undo' });
+    assert.equal(store.getState().currentScene.entities[0].animation.clipId, previousClip);
+    store.dispatch({ type: 'app/redo' });
+    assert.equal(store.getState().currentScene.entities[0].animation.clipId, clipId);
+  }
+});
+
+test('Celebrate adheres to conservative transform limits and zero limb channels', () => {
   const celebrateClip = getMotionClip('celebrate');
   assert.ok(celebrateClip, 'celebrate clip should exist');
   assert.equal(celebrateClip.loop, true);
-
-  // Evaluate hello clip at multiple timestamps
-  for (let t = 0; t <= 1600; t += 200) {
-    const evaluated = evaluateClipAtTime(helloClip, t);
-    // Root bounds from PRD 17.3 (x <= 6, y <= 3 for greeting, rot <= 4, scale 0.98-1.02)
-    assert.ok(Math.abs(evaluated.root.x) <= 6, `hello root.x ${evaluated.root.x} exceeds limit`);
-    assert.ok(Math.abs(evaluated.root.y) <= 3, `hello root.y ${evaluated.root.y} exceeds limit`);
-    assert.ok(Math.abs(evaluated.root.rotate) <= 4, `hello root.rotate ${evaluated.root.rotate} exceeds limit`);
-    assert.ok(evaluated.root.scaleX >= 0.98 && evaluated.root.scaleX <= 1.02);
-    assert.ok(evaluated.root.scaleY >= 0.98 && evaluated.root.scaleY <= 1.02);
-
-    // Head bounds from PRD 17.3 (x/y <= 3, rot <= 6)
-    assert.ok(Math.abs(evaluated.head.x) <= 3, `hello head.x ${evaluated.head.x} exceeds limit`);
-    assert.ok(Math.abs(evaluated.head.y) <= 3, `hello head.y ${evaluated.head.y} exceeds limit`);
-    assert.ok(Math.abs(evaluated.head.rotate) <= 6, `hello head.rotate ${evaluated.head.rotate} exceeds limit`);
-
-    // Expression bounds (1.0 - 1.15)
-    assert.ok(evaluated.expression.intensityMultiplier >= 1.0 && evaluated.expression.intensityMultiplier <= 1.15);
-
-    // Zero limb channels
-    assert.equal(evaluated.armLeft.x, 0);
-    assert.equal(evaluated.armLeft.y, 0);
-    assert.equal(evaluated.armLeft.rotate, 0);
-    assert.equal(evaluated.armRight.x, 0);
-    assert.equal(evaluated.armRight.y, 0);
-    assert.equal(evaluated.armRight.rotate, 0);
-    assert.equal(evaluated.legLeft.x, 0);
-    assert.equal(evaluated.legLeft.y, 0);
-    assert.equal(evaluated.legLeft.rotate, 0);
-    assert.equal(evaluated.legRight.x, 0);
-    assert.equal(evaluated.legRight.y, 0);
-    assert.equal(evaluated.legRight.rotate, 0);
-  }
 
   // Evaluate celebrate clip at multiple timestamps
   for (let t = 0; t <= 1400; t += 200) {
@@ -240,7 +254,9 @@ test('Rigid-safe motion clips: hello and celebrate adhere to conservative transf
 });
 
 test('Legacy migration fallbacks: RIGID_CLIP_FALLBACKS and RIGID_POSE_FALLBACKS', () => {
-  assert.equal(RIGID_CLIP_FALLBACKS.wave, 'hello');
+  assert.equal(RIGID_CLIP_FALLBACKS.wave, 'nod');
+  assert.equal(RIGID_CLIP_FALLBACKS.hello, 'nod');
+  assert.equal(resolveSafeClipId('hello', 'root-head'), 'nod');
   assert.equal(RIGID_CLIP_FALLBACKS.point, 'look_around');
   assert.equal(RIGID_CLIP_FALLBACKS.clap, 'celebrate');
   assert.equal(RIGID_CLIP_FALLBACKS.dance, 'sway');
@@ -252,7 +268,7 @@ test('Legacy migration fallbacks: RIGID_CLIP_FALLBACKS and RIGID_POSE_FALLBACKS'
   assert.equal(RIGID_POSE_FALLBACKS.arms_up, 'rest');
 
   // resolveSafeClipId
-  assert.equal(resolveSafeClipId('wave', 'root-head'), 'hello');
+  assert.equal(resolveSafeClipId('wave', 'root-head'), 'nod');
   assert.equal(resolveSafeClipId('jump', 'root-head'), 'happy_bounce');
   assert.equal(resolveSafeClipId('dance', 'root-head'), 'sway');
   assert.equal(resolveSafeClipId('clap', 'root-head'), 'celebrate');
@@ -263,7 +279,7 @@ test('Legacy migration fallbacks: RIGID_CLIP_FALLBACKS and RIGID_POSE_FALLBACKS'
   // Root profile restricts head-only clips
   assert.equal(resolveSafeClipId('nod', 'root'), 'idle');
   assert.equal(resolveSafeClipId('look_around', 'root'), 'idle');
-  assert.equal(resolveSafeClipId('hello', 'root'), 'hello');
+  assert.equal(resolveSafeClipId('hello', 'root'), 'idle');
 
   // resolveSafePoseId
   assert.equal(resolveSafePoseId('wave', 'root-head'), 'lean_left');
@@ -349,7 +365,7 @@ test('State schema sanitizes legacy clips and poses into rigid-safe catalog at t
 
   const char1 = sanitized.envelope.currentScene.entities.find((e) => e.instanceId === 'char-legacy-1');
   assert.equal(char1.pose, 'lean_left', 'Legacy wave pose should sanitize to lean_left');
-  assert.equal(char1.animation.clipId, 'hello', 'Legacy wave clip should sanitize to hello');
+  assert.equal(char1.animation.clipId, 'nod', 'Legacy wave clip should sanitize to nod');
 
   const char2 = sanitized.envelope.currentScene.entities.find((e) => e.instanceId === 'char-legacy-2');
   assert.equal(char2.pose, 'rest', 'Legacy hands_on_hips pose should sanitize to rest');
@@ -413,17 +429,18 @@ test('UI Contract: index.html exposes only safe poses and safe clips without lim
   assert.ok(!indexHtml.includes('data-clip-id="dance"'));
   assert.ok(!indexHtml.includes('data-clip-id="jump"'));
   assert.ok(!indexHtml.includes('data-clip-id="clap"'));
+  assert.ok(!indexHtml.includes('data-clip-id="hello"'));
+  assert.ok(!indexHtml.includes('data-clip-id="wave"'));
+  assert.ok(!indexHtml.includes('data-clip-id="point"'));
+  assert.ok(!indexHtml.includes('data-pose="wave"'));
+  assert.ok(!indexHtml.includes('data-pose="point"'));
 });
 
 test('i18n contains Turkish and English strings for new rigid-safe clips and legacy notice', () => {
-  assert.equal(TRANSLATIONS.tr.play.clipHello, 'Selam / Karşılama');
-  assert.equal(TRANSLATIONS.tr.play.clipHelloShort, '👋 Selam');
   assert.equal(TRANSLATIONS.tr.play.clipCelebrate, 'Neşeli kutlama');
   assert.equal(TRANSLATIONS.tr.play.clipCelebrateShort, '🎉 Kutla');
   assert.ok(TRANSLATIONS.tr.play.legacyAnimationNotice);
 
-  assert.equal(TRANSLATIONS.en.play.clipHello, 'Hello / Greeting');
-  assert.equal(TRANSLATIONS.en.play.clipHelloShort, '👋 Hello');
   assert.equal(TRANSLATIONS.en.play.clipCelebrate, 'Bouncy celebration');
   assert.equal(TRANSLATIONS.en.play.clipCelebrateShort, '🎉 Celebrate');
   assert.ok(TRANSLATIONS.en.play.legacyAnimationNotice);
@@ -453,7 +470,16 @@ test('AppStore runtime reducers sanitize legacy clip, pose, and attachJoint disp
     animation: { clipId: 'wave', enabled: true, intensity: 1.0 }
   });
   char = store.getState().currentScene.entities.find((e) => e.instanceId === charId);
-  assert.equal(char.animation.clipId, 'hello', 'Runtime setDollAnimation with wave must resolve to hello');
+  assert.equal(char.animation.clipId, 'nod', 'Runtime setDollAnimation with wave must resolve to nod');
+
+  store.dispatch({
+    type: 'scene/setDollAnimation', instanceId: charId,
+    animation: { clipId: 'hello', enabled: true, intensity: 1.0 }
+  });
+  char = store.getState().currentScene.entities.find((e) => e.instanceId === charId);
+  assert.equal(char.animation.clipId, 'nod', 'Retired greeting must resolve to head nod');
+  const reloaded = sanitizeEnvelope(JSON.parse(JSON.stringify(store.getState())), getAsset).envelope;
+  assert.equal(reloaded.currentScene.entities.find((e) => e.instanceId === charId).animation.clipId, 'nod');
 
   // Dispatch legacy clap clip
   store.dispatch({
@@ -509,8 +535,8 @@ test('evaluateCharacterPose enforces defense-in-depth safe fallback for legacy I
     }
   };
   const evaluatedWavePose = evaluateCharacterPose(legacyWavePoseEntity, 0, { playbackEnabled: false });
-  // Wave pose falls back to lean_left (where root leans -4 and arm compensates 3, not -120 gesture)
-  assert.equal(evaluatedWavePose.armRight.rotate, 3);
+  // Wave pose falls back to lean_left without independent arm motion.
+  assert.equal(evaluatedWavePose.armRight.rotate, 0);
   assert.equal(evaluatedWavePose.root.rotate, -4);
 });
 

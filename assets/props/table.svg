@@ -1,13 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_table">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="110 260 780 674" data-asset-id="prop_table">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
     <!-- Table Legs -->
-    <line x1="280" y1="440" x2="200" y2="920" stroke="#8b5e34" stroke-width="26"/>
-    <line x1="720" y1="440" x2="800" y2="920" stroke="#8b5e34" stroke-width="26"/>
-    <line x1="500" y1="440" x2="500" y2="920" stroke="#684524" stroke-width="26"/>
+    <path d="M483 440 H517 V860 H483 Z" fill="#8b5e34"/>
+    <path d="M265 440 H300 L216 920 H186 Z M700 440 H735 L814 920 H784 Z" fill="#a47148"/>
     <!-- Table Top -->
-    <ellipse cx="500" cy="420" rx="380" ry="120" fill="#e9c46a"/>
+    <!-- Only the front half of the tabletop thickness is visible. -->
+    <path d="M120 390 H880 V420 C880 486 710 540 500 540 C290 540 120 486 120 420 Z" fill="#e9c46a"/>
     <ellipse cx="500" cy="390" rx="380" ry="120" fill="#f4d07d"/>
-    <path d="M220 430 Q500 540 780 430" fill="none" stroke="#bc8a5f" stroke-width="20"/>
-    <circle cx="500" cy="390" r="34" fill="#ffd166" stroke="#d4a373" stroke-width="10"/>
+    <path d="M220 438 Q500 540 780 438" fill="none" stroke="#bc8a5f" stroke-width="10"/>
   </g>
 </svg>

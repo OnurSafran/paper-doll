@@ -9,6 +9,8 @@ import { GARMENT_COLORS, HAIR_COLORS, IRIS_COLORS, PALETTE, paletteValue, custom
 import { loadAssetSvg, makeAssetPlaceholder } from '../../core/svg-loader.js';
 import { DEFAULT_BASE_DOLL_ID, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, FACE_GROUPS, FIT_FAMILIES, PRESENTATION_STYLES, isCustomAssetId } from '../../domain/vocabulary.js';
 import { isDefaultFace, isFaceCompatible, isWearableCompatible } from '../../domain/outfit-rules.js';
+import { measureCharacterContacts } from '../../core/character-measurement.js';
+import { characterStandStyle, getCharacterContact } from '../../domain/character-geometry.js';
 import { customAssetToDescriptor } from '../../core/asset-registry.js';
 import { applyMouthExpression } from '../../core/mouth-expression.js';
 import { assetName, getCurrentLanguage, t } from '../../core/i18n.js';
@@ -141,11 +143,18 @@ function createClothingTabs(assetId) {
   return svg;
 }
 
+/** Contact plane and measured stand span for the folded-cardboard base. */
+function applyStandGeometry(element, draft, getAsset) {
+  element.style?.setProperty('--contact-y-pct', `${getCharacterContact(draft, getAsset).y / 450 * 100}%`);
+  for (const [name, value] of Object.entries(characterStandStyle(draft, getAsset))) element.style?.setProperty(name, value);
+}
+
 export async function renderDollInto(container, draft, options = {}) {
   const loadSvg = options.loadAssetSvg ?? loadAssetSvg;
   const getAsset = options.getAsset ?? getBuiltinAsset;
   const customArtRepo = options.customArtRepo;
   const enforceFit = options.enforceFit !== false;
+  await measureCharacterContacts(draft, { customArtRepo, getAsset });
   const layers = [];
   const hair = draft?.slots?.hair;
   const expression = options.expression ?? draft.expression ?? DEFAULT_EXPRESSION;
@@ -225,7 +234,7 @@ export async function renderDollInto(container, draft, options = {}) {
             : '';
     layer.className = `doll-layer${isHead ? ' doll-layer-head' : ''}${limbClass}`;
     layer.dataset.slot = slot;
-    if (slot === 'skin' && draft.baseDollId === 'doll_classic_a') layer.dataset.paperDoll = 'classic-a';
+    if (slot === 'skin') layer.dataset.cardboard = 'stand';
     layer.style.zIndex = String(order);
     layer.style.setProperty('--skin-color', paletteValue(draft.skinTone, 'peach'));
     layer.style.setProperty('--hair-color', paletteValue(color, 'brown'));
@@ -285,6 +294,7 @@ export async function renderDollInto(container, draft, options = {}) {
     }
     return layer;
   })));
+  applyStandGeometry(container, draft, getAsset);
   container.replaceChildren(...nodes);
   if (enforceFit && fitWarningNames.length && typeof container.append === 'function') {
     const details = document.createElement('details');
@@ -836,6 +846,7 @@ export function createDesignerView({
     const stagedDoll = document.createElement('div');
     await renderDollInto(stagedDoll, draft, { customArtRepo, getAsset });
     if (token !== designerRenderToken) return;
+    applyStandGeometry(stage, draft, getAsset);
     stage.replaceChildren(...stagedDoll.childNodes);
     lastRenderedDraft = draft;
     lastRenderedLanguage = language;

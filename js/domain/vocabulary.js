@@ -43,6 +43,7 @@ export function isPoseSupportLevel(value) {
   return typeof value === 'string' && POSE_SUPPORT_LEVELS.includes(value);
 }
 
+// Includes retired IDs so older projects and actions can migrate to safe poses.
 export const STATIC_POSES = Object.freeze([
   'rest',
   'lean_left',
@@ -77,6 +78,7 @@ export function isSafeStaticPose(value) {
   return typeof value === 'string' && SAFE_STATIC_POSES.includes(value);
 }
 
+// Includes retired IDs so older projects and actions can migrate to safe clips.
 export const MOTION_CLIP_IDS = Object.freeze([
   'none',
   'idle',
@@ -91,7 +93,10 @@ export const MOTION_CLIP_IDS = Object.freeze([
   'jump',
   'dance',
   'hello',
-  'celebrate'
+  'celebrate',
+  'bow',
+  'wiggle',
+  'shake_head'
 ]);
 
 export const SAFE_MOTION_CLIP_IDS = Object.freeze([
@@ -99,10 +104,12 @@ export const SAFE_MOTION_CLIP_IDS = Object.freeze([
   'idle',
   'happy_bounce',
   'sway',
-  'hello',
   'celebrate',
   'nod',
-  'look_around'
+  'look_around',
+  'bow',
+  'wiggle',
+  'shake_head'
 ]);
 
 export const DEFAULT_MOTION_CLIP_ID = 'none';

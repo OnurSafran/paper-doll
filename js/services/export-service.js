@@ -10,6 +10,8 @@ import { getAsset } from '../core/asset-catalog.js';
 import { loadAssetSvg } from '../core/svg-loader.js';
 import { cloneScene } from '../core/state-schema.js';
 import { getEntityBounds } from '../domain/scene-rules.js';
+import { CHARACTER_ARTWORK_SCALE, getCharacterContact } from '../domain/character-geometry.js';
+import { measureCharacterContacts } from '../core/character-measurement.js';
 import { getBackgroundLayout } from '../core/background-layout.js';
 import { createExportDollSvg } from '../core/doll-svg.js';
 import { createBubbleSvg } from '../core/bubble-svg.js';
@@ -34,6 +36,30 @@ export function loadImageFromUrl(url) {
 }
 
 /**
+ * An SVG decoded as an image cannot load object URLs, so custom raster layers
+ * would silently disappear from exports. Inline them as data URLs in place,
+ * which keeps their layer order.
+ */
+async function inlineObjectUrlImages(svg) {
+  const images = [...(svg.querySelectorAll?.('image') || [])]
+    .filter((image) => (image.getAttribute('href') || '').startsWith('blob:'));
+  await Promise.all(images.map(async (image) => {
+    try {
+      const blob = await (await fetch(image.getAttribute('href'))).blob();
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+      image.setAttribute('href', String(dataUrl));
+    } catch {
+      // A revoked URL leaves the layer out, as before.
+    }
+  }));
+}
+
+/**
  * Converts an SVG DOM element to an ImageBitmap or fallback Image for canvas drawing.
  * Callers own returned ImageBitmaps and must close them after drawing.
  */
@@ -42,6 +68,7 @@ export async function svgElementToImage(svgElement, width, height) {
   clone.setAttribute('width', String(width));
   clone.setAttribute('height', String(height));
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  await inlineObjectUrlImages(clone);
   const serializer = new XMLSerializer();
   const svgString = serializer.serializeToString(clone);
   const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
@@ -101,6 +128,8 @@ export function createExportService(options = {}) {
     const isAnimatedExport = animTimeMs > 0 || Boolean(effectiveOptions.playbackEnabled);
 
     const snapshot = cloneScene(sceneSnapshot);
+    await Promise.all(snapshot.entities.filter(entity => entity.kind === 'character')
+      .map(entity => measureCharacterContacts(entity.characterSnapshot, { customArtRepo, getAsset: getAssetFn })));
     const stageWidth = snapshot.stageWidth || LIMITS.STAGE_WIDTH;
     canvas.width = stageWidth;
     canvas.height = LIMITS.STAGE_HEIGHT;
@@ -135,7 +164,6 @@ export function createExportService(options = {}) {
         ctx.fillRect(0, 0, stageWidth, LIMITS.STAGE_HEIGHT);
       }
 
-      const isLooping = snapshot.animationSettings?.loop !== false;
       const allEntitiesMap = new Map(snapshot.entities.map((e) => [e.instanceId, e]));
       const attachedTransformMemo = new Map();
       const characterEntities = new Map();
@@ -143,7 +171,7 @@ export function createExportService(options = {}) {
       for (const ent of snapshot.entities) {
         if (ent.kind === 'character') {
           characterEntities.set(ent.instanceId, ent);
-          characterPoses.set(ent.instanceId, evaluateCharacterPose(ent, animTimeMs, { playbackEnabled: isAnimatedExport, loop: isLooping, getAsset: getAssetFn }));
+          characterPoses.set(ent.instanceId, evaluateCharacterPose(ent, animTimeMs, { playbackEnabled: isAnimatedExport, loop: true, getAsset: getAssetFn }));
         }
       }
 
@@ -179,7 +207,7 @@ export function createExportService(options = {}) {
         ctx.scale(flipSign * entity.scale, entity.scale);
 
         if (entity.kind === 'character') {
-          const pose = characterPoses.get(entity.instanceId) || evaluateCharacterPose(entity, animTimeMs, { playbackEnabled: isAnimatedExport, loop: isLooping, getAsset: getAssetFn });
+          const pose = characterPoses.get(entity.instanceId) || evaluateCharacterPose(entity, animTimeMs, { playbackEnabled: isAnimatedExport, loop: true, getAsset: getAssetFn });
           ctx.translate(pose.root.x, pose.root.y);
           if (pose.root.rotate) ctx.rotate(pose.root.rotate * Math.PI / 180);
           ctx.scale(pose.root.scaleX, pose.root.scaleY);
@@ -199,10 +227,12 @@ export function createExportService(options = {}) {
             pose
           });
           const dollImg = await decodeImage(dollSvg, 300, 450);
+          // The neutral contact sits on the entity origin; root motion already pivots there.
+          const contact = getCharacterContact(entity.characterSnapshot, getAssetFn);
           ctx.drawImage(
             dollImg,
-            -CHARACTER_DIMENSIONS.BASE_WIDTH * CHARACTER_DIMENSIONS.GROUND_ANCHOR.x,
-            -CHARACTER_DIMENSIONS.BASE_HEIGHT * CHARACTER_DIMENSIONS.GROUND_ANCHOR.y,
+            -contact.x * CHARACTER_ARTWORK_SCALE,
+            -contact.y * CHARACTER_ARTWORK_SCALE,
             CHARACTER_DIMENSIONS.BASE_WIDTH,
             CHARACTER_DIMENSIONS.BASE_HEIGHT
           );

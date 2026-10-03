@@ -53,8 +53,8 @@ function familyManifest() {
 
 test('the bundled core manifest covers the existing catalog and cache resources', () => {
   assert.deepEqual(PACK_REGISTRY.getPackIds(), [CORE_PACK_ID, 'pack_family_home']);
-  assert.equal(PACK_REGISTRY.getPack('core').assets.length, 145);
-  assert.equal(PACK_REGISTRY.getResourceFiles([CORE_PACK_ID]).length, 146);
+  assert.equal(PACK_REGISTRY.getPack('core').assets.length, 149);
+  assert.equal(PACK_REGISTRY.getResourceFiles([CORE_PACK_ID]).length, 150);
   assert.equal(PACK_REGISTRY.getAsset('prop_cake').packId, CORE_PACK_ID);
   assert.equal(PACK_REGISTRY.getAssetPack('prop_cake'), CORE_PACK_ID);
 });
@@ -134,4 +134,16 @@ test('store mutations record the first referenced non-core pack', async () => {
   const result = store.dispatch({ type: 'designer/equip', assetId: packAsset.id });
   assert.equal(result.ok, true);
   assert.deepEqual(store.getState().packRequirements, [{ id: packId, version: '1.0.0' }]);
+});
+
+test('pack manifests reject invalid or misplaced cardboard metadata', () => {
+  const manifest = familyManifest();
+  const prop = { ...packAsset, kind: 'prop' };
+  for (const cardboard of [undefined, 'none', 'edge', 'stand']) {
+    assert.equal(validatePackManifest({ ...manifest, assets: [{ ...prop, cardboard }] }).valid, true);
+  }
+  for (const cardboard of [false, 'on', {}]) {
+    assert.equal(validatePackManifest({ ...manifest, assets: [{ ...prop, cardboard }] }).valid, false);
+  }
+  assert.equal(validatePackManifest({ ...manifest, assets: [{ ...packAsset, cardboard: 'edge' }] }).valid, false);
 });

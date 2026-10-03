@@ -1,22 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_bench">
-  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-    <!-- Cast Iron Bench Leg Frames -->
-    <!-- Left Leg Frame -->
-    <path d="M220 540 C180 640 180 780 200 920 M200 700 C240 780 260 840 280 920" fill="none" stroke="#3c342d" stroke-width="24"/>
-    <!-- Right Leg Frame -->
-    <path d="M780 540 C820 640 820 780 800 920 M800 700 C760 780 740 840 720 920" fill="none" stroke="#3c342d" stroke-width="24"/>
-
-    <!-- Slatted Wooden Backrest -->
-    <rect x="140" y="380" width="720" height="40" rx="12" fill="#d4a373" stroke="#2d261e" stroke-width="16"/>
-    <rect x="140" y="445" width="720" height="40" rx="12" fill="#d4a373" stroke="#2d261e" stroke-width="16"/>
-    <rect x="140" y="510" width="720" height="40" rx="12" fill="#d4a373" stroke="#2d261e" stroke-width="16"/>
-
-    <!-- Wooden Seat Slats -->
-    <polygon points="120,620 880,620 860,670 140,670" fill="#bc8a5f" stroke="#2d261e" stroke-width="16"/>
-    <polygon points="135,670 865,670 845,710 155,710" fill="#a47148" stroke="#2d261e" stroke-width="16"/>
-
-    <!-- Cast Iron Armrests -->
-    <path d="M150 630 C120 520 180 480 220 540" fill="none" stroke="#3c342d" stroke-width="24"/>
-    <path d="M850 630 C880 520 820 480 780 540" fill="none" stroke="#3c342d" stroke-width="24"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="110 370 780 563" data-asset-id="prop_bench">
+  <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Mirrored iron frames support the seat and all three back slats. -->
+    <path d="M184 410 H216 V675 L204 920 H176 L188 675 Z M784 410 H816 L812 675 L824 920 H796 L784 675 Z" fill="#514039"/>
+    <path d="M215 685 L288 920 H260 L190 685 Z M785 685 L810 685 L740 920 H712 Z" fill="#514039"/>
+    <rect x="140" y="380" width="720" height="40" rx="10" fill="#d4a373"/>
+    <rect x="140" y="445" width="720" height="40" rx="10" fill="#d4a373"/>
+    <rect x="140" y="510" width="720" height="40" rx="10" fill="#d4a373"/>
+    <path d="M150 620 H850 L880 675 H120 Z" fill="#d4a373"/>
+    <path d="M120 675 H880 L865 708 H135 Z" fill="#a47148"/>
+    <path d="M136 648 H864" fill="none" stroke="#a47148" stroke-width="9"/>
+    <path d="M150 620 V571 Q150 520 200 520 Q225 520 225 551 V610 M850 620 V571 Q850 520 800 520 Q775 520 775 551 V610" fill="none" stroke-width="24"/>
   </g>
 </svg>

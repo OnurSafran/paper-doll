@@ -70,21 +70,28 @@ export function createSvgElement(tag) {
 }
 
 /**
- * Creates an SVG Element representing a speech, thought, shout, or caption bubble.
+ * The bubble's own geometry, in unscaled stage units. The rendered SVG, hit
+ * masks and entity bounds all read it, so the box an entity occupies is the
+ * artwork it draws.
  */
-export function createBubbleSvg(entity) {
+export function measureBubble(entity) {
   const width = Math.round(Number(entity?.width) || LIMITS.DEFAULT_BUBBLE_WIDTH);
   const text = typeof entity?.text === 'string' ? entity.text : 'Hello!';
   const style = entity?.bubbleStyle || 'speech';
-
-  const charsPerLine = Math.max(10, Math.floor(width / 11));
-  const lines = wrapBubbleText(text, charsPerLine);
+  const lines = wrapBubbleText(text, Math.max(10, Math.floor(width / 11)));
   const lineHeight = 20;
   const paddingY = 16;
   const textBlockHeight = lines.length * lineHeight;
   const tailHeight = style === 'caption' ? 0 : 18;
   const bubbleBodyHeight = Math.max(48, textBlockHeight + paddingY * 2);
-  const totalHeight = bubbleBodyHeight + tailHeight;
+  return { width, text, style, lines, lineHeight, textBlockHeight, bubbleBodyHeight, totalHeight: bubbleBodyHeight + tailHeight };
+}
+
+/**
+ * Creates an SVG Element representing a speech, thought, shout, or caption bubble.
+ */
+export function createBubbleSvg(entity) {
+  const { width, text, style, lines, lineHeight, textBlockHeight, bubbleBodyHeight, totalHeight } = measureBubble(entity);
 
   const svg = createSvgElement('svg');
   svg.setAttribute('viewBox', `0 0 ${width} ${totalHeight}`);

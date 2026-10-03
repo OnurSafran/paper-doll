@@ -15,6 +15,7 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 
 - Wearables use a `300 × 450` logical canvas and a `600 × 900` transparent PNG bitmap.
 - Props use a `500 × 500` logical canvas and a `1000 × 1000` transparent PNG bitmap.
+- Saved props are cropped to pixels with alpha `>= 15` (`ALPHA_THRESHOLD` in `js/core/alpha-mask.js`); bounds include the last qualifying pixel. Pixels inside the crop are copied unchanged, so faint strokes survive even though they do not extend it. Artwork entirely below the threshold is treated as empty and the save is rejected with the drawing left editable. An opaque stray dot still extends the crop.
 - PNG bytes are player-created, same-origin, and stored in IndexedDB; they never enter the SVG catalog or service-worker cache.
 - Custom metadata keeps logical dimensions, pixel dimensions, digest, display bounds, and anchor. Derived thumbnails and object URLs are runtime-only.
 - Project import validates PNG signature, dimensions, byte limit, digest, and browser decode before metadata is committed.
@@ -28,6 +29,7 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 - Ordinary wearables require `#garment` and declare `supportedFitFamilies` and `presentationStyles`.
 - Built-in hair requires `#hairBack` and `#hairFront`. Single-layer custom hair renders as transparent PNG at Layer 70.
 - Geometry is authored in doll coordinates; equip selects a slot and never guesses anchors.
+- Base dolls declare `footContact: { x, y }`: the lowest visible (stroke-inclusive) edge of the neutral feet, centered at `x = 150`. Shoes declare `soleContactY`, the measured bottom of the sole. A doll's neutral contact is the lower of the two; clothing and accessories never define it. Re-measure with a rendered-alpha scan (threshold 15) whenever feet or soles change. Custom full-doll rasters use their bottommost qualifying pixel at runtime.
 - Garments normally use the slot's layer order. Dungaree overalls declare `layerOrder: 42` so their bib and straps cover the top in both Designer and export.
 - Wardrobe framing comes from `wearablePreviewViewBox`: body accessories, baby footwear, long hair, and overalls have crops matching their artwork instead of the slot's default crop.
 
@@ -45,9 +47,10 @@ Flat paper-craft cutouts with warm outlines, soft solid colors, slight physical 
 
 ### Props
 
-- Default `viewBox="0 0 1000 1000"`
-- Catalog defines `displayWidth`, `displayHeight`, `groundAnchor`, and `defaultScale`.
-- Transparent padding is trimmed.
+- Author on a `1000 × 1000` canvas, then trim the `viewBox` to the painted extent, strokes included (rendered-alpha scan at threshold 15 plus a 2-unit margin, 1 unit at the base). The catalog `viewBox` must match the file exactly; pack props may keep the full canvas.
+- Catalog defines `displayWidth`, `displayHeight`, `groundAnchor`, and `defaultScale`. Display dimensions keep the artwork's previous uniform scale (`displayWidth / viewBox width`) and the trimmed aspect ratio, so the bottom-center default anchor meets the floor.
+- Authored anchors, wall shadows, and support-surface polygons are normalized to the trimmed viewBox. Remap them whenever the trim changes; never clamp them silently.
+- Family & Home prop crops also remap authored contact footprints and retain the previous uniform meet-fit scale. Their authored placement coordinates are converted from the original 1000 × 1000 canvas; expand crops where needed to keep that geometry valid.
 - Scene clamping uses this metadata to keep props bounded within the stage.
 - Match the core plant's dark, rounded 16-unit silhouette outline on the
   `1000 × 1000` canvas. Use lighter interior strokes for folds, stitching and
@@ -116,10 +119,10 @@ Internal referenced IDs require per-clone scoping before pattern/definition feat
   id: 'prop_chair',
   kind: 'prop',
   path: 'assets/props/chair.svg',
-  viewBox: [0, 0, 1000, 1000],
+  viewBox: [100, 150, 800, 804],
   collections: ['home'],
-  displayWidth: 240,
-  displayHeight: 270,
+  displayWidth: 192,
+  displayHeight: 192.96,
   groundAnchor: { x: 0.5, y: 1.0 },
   defaultScale: 1
 }
@@ -159,9 +162,9 @@ Catalog IDs are persisted identifiers. Labels/files may change without changing 
 - 6 base dolls: classic, joy, chibi, baby, adult, and elder
 - 15 tops, 13 bottoms, 14 dresses, 12 shoe pairs, 15 hairstyles, 18 accessories
 - 11 backgrounds: bedroom, park, atelier, beach, cafe, forest, and library as seamless `1600 × 900` tiles, plus the moonlit meadow, snowy village, and rooftop sunset `3200` panoramas and the `4800` candy land panorama
-- 22 props: chair, table, plant, lamp, rug, tea set, easel, bookshelf, cat, picnic basket, umbrella, balloons, cake, guitar, painting, bench, bicycle, kite, camera, flower pot, mailbox, picnic blanket
+- 26 props: chair, table, plant, lamp, rug, tea set, easel, bookshelf, cat, picnic basket, umbrella, balloons, cake, guitar, painting, bench, bicycle, kite, camera, flower pot, mailbox, picnic blanket, watering can, puppy, beach ball, paint palette
 
-Total: 145 cataloged SVG files, including 87 wearable/hair/accessory assets, 6 base dolls, 19 face assets, 11 backgrounds, and 22 props.
+Total: 149 cataloged SVG files, including 87 wearable/hair/accessory assets, 6 base dolls, 19 face assets, 11 backgrounds, and 26 props.
 
 ## Production and acceptance
 
@@ -183,3 +186,19 @@ Wall placement may declare a cosmetic `wallShadow` rectangle with normalized cen
 shadows inside authored frame bounds rather than shading transparent SVG margins.
 Unspecified silhouettes use a small central ellipse. Play, Scene Book, and PNG export
 share these shadow coordinates; the field does not affect contact or placement fit.
+
+### Cardboard finish
+
+Props declare `cardboard: 'none' | 'edge' | 'stand'` on their asset descriptor.
+`edge` adds a cut border and thickness; `stand` also adds a folded foot.
+Use `none` for rugs, floor mats, wall decorations, and hanging artwork.
+Omitted metadata defaults to `edge`, including custom PNG paintings. Ground
+props and wall/hanging artwork default to `none` from their placement metadata;
+legacy custom hanging paintings are recognized by their center anchor. Explicit
+metadata takes precedence. Paint Studio saves hanging paintings as `none`. Custom
+prop metadata survives project save/load and export/import.
+
+All doll models, including custom dolls, receive the finish around their
+composed artwork in the Designer and Play stages. Transparent pixels determine
+the edge; opaque backgrounds produce a rectangular edge. The global Cardboard
+finish setting controls these decorations without changing saved artwork.

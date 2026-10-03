@@ -1,13 +1,25 @@
 import { placeEntity, orderedSceneEntities, getPlacementGuides, usesPlacementDrag } from '../../domain/scene-placement.js';
 /** Stage drag selection and compound entity previews. */
-import { clientToLogical } from '../../core/coordinate-space.js';
+import { clientToLogical, renderedCameraX, stageContentRect } from '../../core/coordinate-space.js';
 import { clampCompoundEntityPoint, getAttachedDescendants, moveEntities } from '../../domain/scene-rules.js';
 import { PointerController } from '../../core/pointer-controller.js?v=2';
 import { escapeCss } from '../../core/css-escape.js';
+import { createStageHoverCursor } from './stage-hover-cursor.js';
 import { CAMERA_CONSTANTS, DEFAULT_STAGE_WIDTH, VIEWPORT_WIDTH } from '../../domain/vocabulary.js';
+
+/** UI controls above the stage must neither resolve artwork nor clear selection. */
+export function isStageArtworkEvent(stageEl, event) {
+  const target = event?.target;
+  if (!target?.closest) return false;
+  if (target !== stageEl && !target.closest('#scene-world')) return false;
+  if (target.closest('.context-ring, .scene-picker-group')) return false;
+  const control = target.closest('button, a, input, select, textarea, [role="button"], [role="slider"]');
+  return !control || control.classList.contains('scene-entity-positioner');
+}
 
 export function createStagePointerController(context) {
   let pointerController = null;
+  let hoverCursor = null;
 
   const previewPoints = new Map();
   let previewTarget = null;
@@ -58,20 +70,72 @@ export function createStagePointerController(context) {
   const grabOffsets = new Map();
 
   function cancelPointerController() {
+    hoverCursor?.setDragging(false);
+    hoverCursor?.clear();
     clearGuide();
     context.stopEdgePan();
     const cancel = pointerController?.cancel;
     if (typeof cancel === 'function') cancel.call(pointerController);
   }
 
+  /**
+   * One selection authority: the foremost entity whose visible artwork is under
+   * the pointer, passing through transparent artwork. Stage UI never resolves.
+   */
+  function resolveEntityAt(stageEl, event) {
+    const target = event?.target;
+    if (!target?.closest || !context.hitTester) return target?.closest?.('.scene-entity-positioner') || null;
+    if (!isStageArtworkEvent(stageEl, event)) return null;
+    const cameraX = renderedCameraX(stageEl, context.store.getState().currentScene.cameraX);
+    return context.hitTester.resolve(stageEl, event.clientX, event.clientY, cameraX);
+  }
+
+  /**
+   * Where a client point lands on the stage: its logical point, and the foremost
+   * entity whose visible artwork is there (null over stage UI or empty space).
+   * Used by non-pointer-session inputs such as palette drops.
+   */
+  function stagePointAt(event) {
+    const stageEl = context.$('#play-stage');
+    const rect = stageContentRect(stageEl);
+    const cameraX = renderedCameraX(stageEl, context.store.getState().currentScene.cameraX, rect);
+    return {
+      point: clientToLogical(event.clientX, event.clientY, rect, cameraX),
+      element: isStageArtworkEvent(stageEl, event) ? context.hitTester?.resolve(stageEl, event.clientX, event.clientY, cameraX) ?? null : null
+    };
+  }
+
   function initPointerController() {
     const stageEl = context.$('#play-stage');
     if (!stageEl) return;
     context.initCameraControls();
+    hoverCursor = createStageHoverCursor({
+      stageEl,
+      isArtworkEvent: (event) => isStageArtworkEvent(stageEl, event),
+      resolve: (event) => resolveEntityAt(stageEl, event)
+    });
+    stageEl.addEventListener('pointermove', (event) => hoverCursor.onMove(event));
+    stageEl.addEventListener('pointerleave', () => hoverCursor.clear());
+    stageEl.addEventListener('dblclick', (event) => {
+      const element = resolveEntityAt(stageEl, event);
+      if (!element?.classList.contains('is-bubble-entity')) return;
+      const entity = context.store.getState().currentScene.entities.find((e) => e.instanceId === element.dataset.instanceId);
+      if (!entity) return;
+      event.stopPropagation();
+      context.openEditBubbleDialog?.(entity);
+    });
     pointerController = new PointerController(stageEl, {
       selector: '.scene-entity-positioner',
+      shouldHandleEvent: (event) => !context.hitTester || isStageArtworkEvent(stageEl, event),
       getId: (element) => element.dataset.instanceId,
+      resolveSubject: (event) => resolveEntityAt(stageEl, event),
       onSelect(instanceId, element, event) {
+        // The native focus follows the front button; hand it to the resolved entity.
+        const pressed = event?.target?.closest?.('.scene-entity-positioner');
+        if (pressed !== element) setTimeout(() => {
+          if (element.isConnected && context.store.getState().ui.selectedEntityId === instanceId
+            && !globalThis.document?.activeElement?.closest?.('.context-ring')) element.focus({ preventScroll: true });
+        }, 0);
         const state = context.store.getState();
         const selectedIds = state.ui.selectedEntityIds || [];
         if (event?.shiftKey) {
@@ -96,6 +160,7 @@ export function createStagePointerController(context) {
         const entitiesToDrag = state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId) && !e.pinned);
         if (entitiesToDrag.length === 0) return;
 
+        hoverCursor?.setDragging(true);
         context.playRenderToken += 1;
         previewTarget = null;
         clearGuide();
@@ -104,11 +169,11 @@ export function createStagePointerController(context) {
         grabOffsets.clear();
         context.activeDragInstanceId = instanceId;
         context.latestDragPoint = event ? { clientX: event.clientX, clientY: event.clientY } : null;
-        context.$('#scene-entities .context-ring')?.remove();
+        context.updateContextRingPosition?.();
 
         if (event) {
-          const stageRect = stageEl.getBoundingClientRect();
-          const currentCameraX = state.currentScene.cameraX || 0;
+          const stageRect = stageContentRect(stageEl);
+          const currentCameraX = renderedCameraX(stageEl, state.currentScene.cameraX, stageRect);
           const pointerLogical = clientToLogical(event.clientX, event.clientY, stageRect, currentCameraX);
 
           for (const ent of entitiesToDrag) {
@@ -133,7 +198,7 @@ export function createStagePointerController(context) {
       },
       onPreview(instanceId, element, event) {
         context.latestDragPoint = { clientX: event.clientX, clientY: event.clientY };
-        const stageRect = stageEl.getBoundingClientRect();
+        const stageRect = stageContentRect(stageEl);
         const state = context.store.getState();
         const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
         if (stageWidth > VIEWPORT_WIDTH) {
@@ -146,10 +211,11 @@ export function createStagePointerController(context) {
             context.stopEdgePan();
           }
         }
-        updateDragPreview(instanceId, event);
+        updateDragPreview(instanceId, event, stageRect);
       },
       onCommit(instanceId, element, event) {
         element?.classList?.remove('is-dragging');
+        hoverCursor?.setDragging(false);
         void event;
         context.stopEdgePan();
         for (const [id] of grabOffsets) {
@@ -175,6 +241,8 @@ export function createStagePointerController(context) {
         context.activeDragInstanceId = null;
         context.latestDragPoint = null;
 
+        context.updateContextRingPosition?.();
+
         if (moves.length > 1) {
           context.store.dispatch({ type: 'scene/moveEntities', moves });
         } else if (moves.length === 1) {
@@ -186,6 +254,7 @@ export function createStagePointerController(context) {
       },
       onCancel(instanceId, element) {
         element?.classList?.remove('is-dragging');
+        hoverCursor?.setDragging(false);
         context.stopEdgePan();
         for (const [id] of grabOffsets) {
           const el = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(id)}"]`);
@@ -214,12 +283,12 @@ export function createStagePointerController(context) {
     return { placement: usesPlacementDrag(scene, entity, context.getAsset) };
   }
 
-  function updateDragPreview(instanceId, event) {
+  function updateDragPreview(instanceId, event, previewStageRect = null) {
     const stageEl = context.$('#play-stage');
     if (!stageEl || !event) return;
     const state = context.store.getState();
-    const stageRect = stageEl.getBoundingClientRect();
-    const currentCameraX = state.currentScene.cameraX || 0;
+    const stageRect = previewStageRect || stageContentRect(stageEl);
+    const currentCameraX = renderedCameraX(stageEl, state.currentScene.cameraX, stageRect);
     const pointerLogical = clientToLogical(event.clientX, event.clientY, stageRect, currentCameraX);
     const primaryOffset = grabOffsets.get(instanceId);
     if (!primaryOffset) return;
@@ -236,6 +305,7 @@ export function createStagePointerController(context) {
         if (element) { element.style.setProperty('--x', String(e.x)); element.style.setProperty('--y', String(e.y)); element.style.zIndex = String(index + 1); }
       }
       showGuide(next, entity, stageEl);
+      context.updateContextRingPosition?.(stageRect);
       return;
     }
     if (grabOffsets.size > 1 && (state.currentScene.placementMode === 'room' || state.currentScene.entities.some(e => grabOffsets.has(e.instanceId) && e.placement?.kind === 'surface'))) {
@@ -246,6 +316,7 @@ export function createStagePointerController(context) {
         const element = stageEl.querySelector(`.scene-entity-positioner[data-instance-id="${escapeCss(entity.instanceId)}"]`);
         if (element) { element.style.setProperty('--x', String(entity.x)); element.style.setProperty('--y', String(entity.y)); element.style.zIndex = String(index + 1); }
       }
+      context.updateContextRingPosition?.(stageRect);
       return;
     }
     const primaryClamped = clampCompoundEntityPoint(primaryRawX, primaryRawY, state.currentScene, instanceId, context.getAsset);
@@ -276,7 +347,8 @@ export function createStagePointerController(context) {
         }
       }
     }
+    context.updateContextRingPosition?.(stageRect);
   }
 
-  return { cancelPointerController, initPointerController, updateDragPreview };
+  return { cancelPointerController, initPointerController, updateDragPreview, stagePointAt };
 }

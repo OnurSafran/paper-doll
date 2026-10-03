@@ -37,7 +37,6 @@
             <span class="quick-tip-bulb" aria-hidden="true">💡</span>
             <span id="quick-tip-text" class="quick-tip-text">Oyna: Shift ile tıklayıp çoklu seçim yap</span>
           </button>
-          <button id="quick-tip-pause" class="quick-tip-pause" type="button" aria-label="İpuçlarını duraklat" title="İpuçlarını duraklat"><span aria-hidden="true">⏸</span></button>
         </div>
         <div id="save-status" class="visually-hidden" aria-live="polite" data-i18n-title="header.savedDevice" title="Bu cihaza kaydedildi" data-i18n="header.statusSaved">Kaydedildi</div>
       </div>
@@ -150,7 +149,7 @@
             <button id="scene-templates-btn" class="button secondary compact-action" type="button" data-i18n-title="play.templatesTitle" title="Hikaye anlatım sahne şablonlarına göz atın" data-i18n="play.templatesBtn">✦ Şablonlar</button>
             <button id="save-scene-btn" class="button primary compact-action" type="button" data-i18n-title="play.saveSceneTitle" title="Bu sahneyi Sahne Kitabına kaydet" data-i18n="play.saveSceneBtn">💾 Sahneyi Kaydet</button>
             <details id="play-scene-dropdown" class="menu-dropdown">
-              <summary class="button secondary compact-action dropdown-summary" data-i18n-title="play.scenesTitle" title="Sahne Kitabı ve Sahne İşlemleri">📚 <span data-i18n="play.sceneMenuBtn">Sahne</span> ▾</summary>
+              <summary class="button secondary compact-action dropdown-summary" data-i18n-title="play.scenesTitle" title="Sahne Kitabı Kütüphanesini Aç">📚 <span data-i18n="play.sceneMenuBtn">Sahne</span> ▾</summary>
               <div class="menu-dropdown-panel" role="menu">
                 <button id="scene-library-btn" class="button secondary compact-action dropdown-item" type="button" data-i18n-title="play.scenesTitle" title="Sahne Kitabı Kütüphanesini Aç">📚 <span data-i18n="play.trayEyebrow">Sahneler</span> (<span id="scene-library-count">0</span>)</button>
                 <button id="save-scene-copy-btn" class="button secondary compact-action dropdown-item" type="button" data-i18n-title="play.saveCopyTitle" title="Bu sahnenin bir kopyasını Sahne Kitabına kaydet" data-i18n="play.saveCopyBtn">⧉ Kopyasını Kaydet</button>
@@ -158,7 +157,7 @@
               </div>
             </details>
             <details id="play-export-dropdown" class="menu-dropdown">
-              <summary class="button secondary compact-action dropdown-summary" data-i18n-title="play.exportPngTitle" title="Dışa aktarma seçenekleri">📸 <span data-i18n="play.exportMenuBtn">Dışa Aktar</span> ▾</summary>
+              <summary class="button secondary compact-action dropdown-summary" data-i18n-title="play.exportPngTitle" title="Geçerli sahneyi PNG resmi olarak indir">📸 <span data-i18n="play.exportMenuBtn">Dışa Aktar</span> ▾</summary>
               <div class="menu-dropdown-panel" role="menu">
                 <button id="export-scene-png" class="button secondary compact-action dropdown-item" type="button" data-i18n-title="play.exportPngTitle" title="Geçerli sahneyi PNG resmi olarak indir" data-i18n="play.exportPngBtn">📸 Sahneyi PNG İndir</button>
                 <button id="export-frame-btn" class="button secondary compact-action dropdown-item" type="button" data-i18n-title="play.exportFrameTitle" title="Mevcut animasyon karesini PNG olarak dışa aktar" data-i18n="play.exportFrameBtn">🎬 Kareyi Aktar</button>
@@ -193,16 +192,14 @@
             <div class="play-stage-controls">
               <button id="scene-outline-btn" class="button secondary compact-action" type="button" data-i18n-title="play.outlineTitle" title="Erişilebilir sahne katman listesini aç (Kısayol: O)"><span class="outline-btn-icon" aria-hidden="true">📋</span> <span class="outline-btn-text" data-i18n="play.outlineBtn">Katmanlar</span></button>
               <div id="scene-animation-transport" class="play-animation-transport" role="toolbar" data-i18n-aria-label="play.transportControls" aria-label="Animasyon oynatma kontrolleri">
-                <button id="play-animation-btn" class="button primary compact-action animation-transport-btn" type="button" data-action="togglePlayback" data-i18n-title="play.playAnimationTitle" title="Animasyonu başlat veya duraklat" data-i18n-aria-label="play.playAnimationTitle" aria-label="Animasyonu başlat veya duraklat" aria-pressed="false">▶ <span class="play-btn-text" data-i18n="play.playBtn">Oynat</span></button>
-                <button id="loop-animation-btn" class="button secondary compact-action animation-transport-btn is-looping" type="button" data-action="toggleLoop" data-i18n-title="play.loopAnimationTitle" title="Döngüsel animasyonu aç/kapat" data-i18n-aria-label="play.loopAnimationTitle" aria-label="Döngüsel animasyon" aria-pressed="true">🔁</button>
-                <button id="reset-animation-btn" class="button secondary compact-action animation-transport-btn" type="button" data-action="resetAnimation" data-i18n-title="play.resetAnimationTitle" title="Animasyonu başa sar" data-i18n-aria-label="play.resetAnimationTitle" aria-label="Başa sar">⏮</button>
+                <button id="play-animation-btn" class="button primary compact-action animation-transport-btn" type="button" data-action="togglePlayback" data-i18n-title="play.playAnimationTitle" title="Animasyonu başlat veya duraklat" data-i18n-aria-label="play.playAnimationTitle" aria-label="Animasyonu başlat veya duraklat" aria-pressed="false"><span class="play-btn-icon" aria-hidden="true">▶</span> <span class="play-btn-text" data-i18n="play.playBtn">Oynat</span></button>
                 <div id="scene-playback-rate-controls" class="segmented-control speed-buttons" role="group" data-i18n-aria-label="play.speedGroup" aria-label="Oynatma hızı">
                   <button data-playback-rate="0.5" type="button" data-i18n-title="play.speedSlow" title="0.5x Hız" data-i18n-aria-label="play.speedSlow" aria-label="0.5x Hız">0.5x</button>
                   <button data-playback-rate="1.0" type="button" class="is-selected-rate" data-i18n-title="play.speedNormal" title="1.0x Normal" data-i18n-aria-label="play.speedNormal" aria-label="1.0x Normal" aria-pressed="true">1x</button>
                   <button data-playback-rate="1.5" type="button" data-i18n-title="play.speedFast" title="1.5x Hızlı" data-i18n-aria-label="play.speedFast" aria-label="1.5x Hızlı">1.5x</button>
                   <button data-playback-rate="2.0" type="button" data-i18n-title="play.speedTurbo" title="2.0x Çok Hızlı" data-i18n-aria-label="play.speedTurbo" aria-label="2.0x Çok Hızlı">2x</button>
                 </div>
-                <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" aria-pressed="false" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir">🎙️ <span class="voice-btn-text" data-i18n="play.voiceBtn">Seslendir</span></button>
+                <button id="voice-puppetry-btn" class="button secondary compact-action" type="button" aria-pressed="false" data-i18n-title="play.voiceTitle" title="Mikrofonla sesi etkinleştir"><span class="voice-btn-icon" aria-hidden="true">🎙️</span> <span class="voice-btn-text" data-i18n="play.voiceBtn">Seslendir</span></button>
                 <div class="segmented-control history-buttons transport-history-controls" role="group" data-i18n-aria-label="header.historyGroup" aria-label="Geçmiş işlemleri">
                   <button id="undo-button" class="history-btn" type="button" data-i18n-title="header.undoTitle" title="Geri Al (Ctrl+Z veya ⌘Z)" data-i18n-aria-label="header.undoAria" aria-label="Geri Al" disabled>↺</button>
                   <button id="redo-button" class="history-btn" type="button" data-i18n-title="header.redoTitle" title="Yinele (Ctrl+Shift+Z, ⌘⇧Z veya Ctrl+Y)" data-i18n-aria-label="header.redoAria" aria-label="Yinele" disabled>↻</button>
@@ -222,29 +219,37 @@
             <div class="play-panel-header">
               <div id="spawn-tabs" class="tab-list spawn-tabs" role="tablist" data-i18n-aria-label="play.trayCategoriesAria" aria-label="Sahne tepsisi kategorileri"></div>
               <div id="inspector-header-title" class="inspector-header-title" hidden>
-                <span class="eyebrow" data-i18n="play.characterInspectorTitle">Karakter & Öğe Ayarları</span>
+                <span class="eyebrow" data-i18n="play.characterInspectorTitle">Senin Hikâyen</span>
               </div>
-              <button id="scene-tray-toggle" class="button primary compact-action scene-tray-toggle" type="button" aria-controls="play-rail-content" aria-expanded="false" data-i18n-aria-label="play.togglePanel" aria-label="Sahne panelini aç veya kapat" data-i18n-title="play.togglePanel" title="Sahne panelini aç veya kapat"><svg class="scene-panel-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5.5 3.5L10.5 8L5.5 12.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
+              <button id="scene-tray-toggle" class="button primary compact-action scene-tray-toggle" type="button" aria-controls="play-rail-content" aria-expanded="true" data-i18n-aria-label="play.togglePanel" aria-label="Sahne panelini aç veya kapat" data-i18n-title="play.togglePanel" title="Sahne panelini aç veya kapat"><svg class="scene-panel-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5.5 3.5L10.5 8L5.5 12.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
             </div>
-            <div id="play-rail-content" class="play-rail-content" hidden>
+            <div id="play-rail-content" class="play-rail-content">
             <section id="spawn-panel-section" class="paper-panel spawn-panel" aria-labelledby="tray-title">
               <h2 id="tray-title" class="visually-hidden" data-i18n="play.trayTitle">Sahneye ekleyici</h2>
-              <div id="spawn-collection-tabs" class="tab-list prop-collection-tabs" role="tablist" data-i18n-aria-label="play.propCollectionsAria" aria-label="Eşya koleksiyonları" hidden></div>
-              <div id="play-pack-filter" class="tray-pack-filter" hidden>
-                <label for="play-pack-picker" class="visually-hidden" data-i18n="pack_family_home.libraryPack">İçerik paketi</label>
-                <select id="play-pack-picker" data-pack-picker></select>
+              <div class="spawn-tray-controls">
+                <div id="play-doll-actions" class="tray-pack-filter" hidden>
+                  <a class="button paint-prop-action-card" href="#designer" data-i18n-aria-label="play.createDollAria" aria-label="Tasarımcıda bir bebek oluştur" data-i18n-title="play.createDollAria" title="Tasarımcıda bir bebek oluştur">
+                    <span class="paint-prop-action-icon" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m10.5 2.5 3 3M3 10l-1 4 4-1 7.5-7.5a2.1 2.1 0 0 0-3-3Z"/></svg></span>
+                    <span class="paint-prop-action-copy"><strong data-i18n="play.createDollShort">Oluştur</strong></span>
+                  </a>
+                </div>
+                <div id="spawn-collection-tabs" class="tab-list prop-collection-tabs" role="tablist" data-i18n-aria-label="play.propCollectionsAria" aria-label="Eşya koleksiyonları" hidden></div>
+                <div id="play-pack-filter" class="tray-pack-filter" hidden>
+                  <label for="play-pack-picker" class="visually-hidden" data-i18n="pack_family_home.libraryPack">İçerik paketi</label>
+                  <select id="play-pack-picker" data-pack-picker></select>
+                </div>
               </div>
               <div id="spawn-items" class="spawn-list"></div>
             </section>
 
-            <section id="play-inspector-panel" class="paper-panel play-inspector-panel" aria-labelledby="inspector-title" data-i18n-aria-label="play.characterInspectorAria" aria-label="Karakter ve sahne öğesi kontrolleri" hidden>
+            <section id="play-inspector-panel" class="paper-panel play-inspector-panel" aria-labelledby="inspector-title" data-i18n-aria-label="play.characterInspectorAria" aria-label="Seçili karakter veya hikâye öğesi araçları" hidden>
               <div class="inspector-header">
                 <div id="inspector-panel-heading" class="inspector-title-wrap panel-heading play-panel-heading visually-hidden">
-                  <span id="inspector-title" class="eyebrow" data-i18n="play.characterInspectorTitle">Karakter & Öğe Ayarları</span>
+                  <span id="inspector-title" class="eyebrow" data-i18n="play.characterInspectorTitle">Senin Hikâyen</span>
                 </div>
                 <div id="inspector-tabs" class="tab-list inspector-tabs" role="tablist">
-                  <button id="inspector-tab-expressions" class="tab-btn active" role="tab" aria-selected="true" aria-controls="inspector-section-expressions" tabindex="0" data-inspector-tab="expressions" type="button" data-i18n="play.expressionsTab">😊 İfade & Duruş</button>
-                  <button id="inspector-tab-motion" class="tab-btn" role="tab" aria-selected="false" aria-controls="inspector-section-motion" tabindex="-1" data-inspector-tab="motion" type="button" data-i18n="play.motionTab">🎬 Hareket & Animasyon</button>
+                  <button id="inspector-tab-expressions" class="tab-btn active" role="tab" aria-selected="true" aria-controls="inspector-section-expressions" tabindex="0" data-inspector-tab="expressions" type="button" data-i18n="play.expressionsTab">😊 Yüz & Duruş</button>
+                  <button id="inspector-tab-motion" class="tab-btn" role="tab" aria-selected="false" aria-controls="inspector-section-motion" tabindex="-1" data-inspector-tab="motion" type="button" data-i18n="play.motionTab">🎬 Hareket</button>
                   <button id="inspector-tab-joints" class="tab-btn" role="tab" aria-selected="false" aria-controls="inspector-section-joints" tabindex="-1" data-inspector-tab="joints" type="button" data-i18n="play.jointsTab" hidden>🔗 Ekleme Noktası</button>
                   <button id="inspector-tab-bubble" class="tab-btn" role="tab" aria-selected="false" aria-controls="inspector-section-bubble" tabindex="-1" data-inspector-tab="bubble" type="button" data-i18n="play.bubbleTab" hidden>💬 Konuşma Balonu</button>
                 </div>
@@ -252,23 +257,31 @@
 
               <div id="inspector-section-expressions" class="inspector-section" role="tabpanel" aria-labelledby="inspector-tab-expressions" tabindex="0">
                 <div class="inspector-group">
+                  <fieldset class="inspector-field">
+                    <legend data-i18n="play.faceLabel">Yüzü nasıl olsun?</legend>
                   <div id="character-expression-controls" class="expression-buttons" role="group" data-i18n-aria-label="play.dollExpression" aria-label="Bebek ifadesi" hidden>
                     <button data-expression="neutral" type="button" data-i18n-title="play.neutralFace" title="Nötr yüz" data-i18n-aria-label="play.neutralFace" aria-label="Nötr yüz" aria-pressed="false">😐</button>
                     <button data-expression="smile" type="button" data-i18n-title="play.gentleSmile" title="Hafif tebessüm" data-i18n-aria-label="play.gentleSmile" aria-label="Hafif tebessüm" aria-pressed="false">😊</button>
                     <button data-expression="happy" type="button" data-i18n-title="play.happyLaugh" title="Neşeli kahkaha" data-i18n-aria-label="play.happyLaugh" aria-label="Neşeli kahkaha" aria-pressed="false">😄</button>
                     <button data-expression="surprised" type="button" data-i18n-title="play.surprisedFace" title="Şaşkın" data-i18n-aria-label="play.surprisedFace" aria-label="Şaşkın" aria-pressed="false">😲</button>
-                    <button data-expression="o_mouth" type="button" data-i18n-title="play.oMouthFace" title="O-şekilli ağız (O / U sesleri)" data-i18n-aria-label="play.oMouthFace" aria-label="O-şekilli ağız" aria-pressed="false">😮</button>
-                    <button data-expression="talking" type="button" data-i18n-title="play.talkingMouthFace" title="Konuşan ağız (A / E sesleri)" data-i18n-aria-label="play.talkingMouthFace" aria-label="Konuşan ağız" aria-pressed="false">🗣️</button>
+                    <button data-expression="o_mouth" type="button" data-i18n-title="play.oMouthFace" title="O-şekilli ağız (O / U sesleri)" data-i18n-aria-label="play.oMouthFace" aria-label="O-şekilli ağız (O / U sesleri)" aria-pressed="false">😮</button>
+                    <button data-expression="talking" type="button" data-i18n-title="play.talkingMouthFace" title="Konuşan ağız (A / E sesleri)" data-i18n-aria-label="play.talkingMouthFace" aria-label="Konuşan ağız (A / E sesleri)" aria-pressed="false">🗣️</button>
                     <button data-expression="wide_open" type="button" data-i18n-title="play.wideOpenFace" title="Açık ağız bağırma/şarkı" data-i18n-aria-label="play.wideOpenFace" aria-label="Açık ağız bağırma/şarkı" aria-pressed="false">📢</button>
                   </div>
-                  <div id="character-expression-intensity-controls" class="segmented-control intensity-buttons" role="group" data-i18n-aria-label="play.expressionIntensityGroup" aria-label="İfade yoğunluğu" hidden>
-                    <button data-expression-intensity="0.35" type="button" data-i18n-title="play.intensitySubtle" title="Hafif ifade" data-i18n-aria-label="play.intensitySubtle" aria-label="Hafif ifade" data-i18n="play.subtle">Hafif</button>
-                    <button data-expression-intensity="0.65" type="button" data-i18n-title="play.intensityNormal" title="Normal ifade" data-i18n-aria-label="play.intensityNormal" aria-label="Normal ifade" data-i18n="play.normal">Normal</button>
-                    <button data-expression-intensity="1.0" type="button" data-i18n-title="play.intensityAmplified" title="Belirgin ifade" data-i18n-aria-label="play.intensityAmplified" aria-label="Belirgin ifade" data-i18n="play.amplified">Belirgin</button>
+                  </fieldset>
+                  <fieldset class="inspector-field">
+                    <legend data-i18n="play.expressionIntensityGroup">İfade ne kadar belirgin olsun?</legend>
+                  <div id="character-expression-intensity-controls" class="segmented-control intensity-buttons" role="group" data-i18n-aria-label="play.expressionIntensityGroup" aria-label="İfade ne kadar belirgin olsun?" hidden>
+                    <button data-expression-intensity="0.35" type="button" data-i18n-title="play.intensitySubtle" title="Hafif ifade" data-i18n-aria-label="play.intensitySubtle" aria-label="Hafif ifade" data-i18n="play.subtle">Küçük</button>
+                    <button data-expression-intensity="0.65" type="button" data-i18n-title="play.intensityNormal" title="Normal ifade" data-i18n-aria-label="play.intensityNormal" aria-label="Normal ifade" data-i18n="play.normal">Orta</button>
+                    <button data-expression-intensity="1.0" type="button" data-i18n-title="play.intensityAmplified" title="Belirgin ifade" data-i18n-aria-label="play.intensityAmplified" aria-label="Belirgin ifade" data-i18n="play.amplified">Büyük</button>
                   </div>
+                  </fieldset>
                 </div>
                 <div class="inspector-group">
-                  <div id="character-pose-controls" class="segmented-control pose-buttons" role="group" data-i18n-aria-label="play.poseGroup" aria-label="Duruş seçimi" hidden>
+                  <fieldset class="inspector-field">
+                    <legend data-i18n="play.poseGroup">Nasıl dursun?</legend>
+                  <div id="character-pose-controls" class="segmented-control pose-buttons" role="group" data-i18n-aria-label="play.poseGroup" aria-label="Nasıl dursun?" hidden>
                     <button data-pose="rest" type="button" data-i18n-title="play.poseRest" title="Düz duruş" data-i18n-aria-label="play.poseRest" aria-label="Düz duruş" data-i18n="play.poseRestShort">🧍 Düz</button>
                     <button data-pose="lean_left" type="button" data-i18n-title="play.poseLeanLeft" title="Sola eğil" data-i18n-aria-label="play.poseLeanLeft" aria-label="Sola eğil" data-i18n="play.poseLeanLeftShort">⤹ Sol</button>
                     <button data-pose="lean_right" type="button" data-i18n-title="play.poseLeanRight" title="Sağa eğil" data-i18n-aria-label="play.poseLeanRight" aria-label="Sağa eğil" data-i18n="play.poseLeanRightShort">⤸ Sağ</button>
@@ -277,40 +290,58 @@
                     <button data-pose="tilt_left" type="button" data-i18n-title="play.poseTiltLeft" title="Sola baş eğ" data-i18n-aria-label="play.poseTiltLeft" aria-label="Sola baş eğ" data-i18n="play.poseTiltLeftShort">🤔 Sol Eğ</button>
                     <button data-pose="tilt_right" type="button" data-i18n-title="play.poseTiltRight" title="Sağa baş eğ" data-i18n-aria-label="play.poseTiltRight" aria-label="Sağa baş eğ" data-i18n="play.poseTiltRightShort">🤔 Sağ Eğ</button>
                   </div>
+                  </fieldset>
                 </div>
               </div>
 
               <div id="inspector-section-motion" class="inspector-section" role="tabpanel" aria-labelledby="inspector-tab-motion" tabindex="0" hidden>
-                <div class="inspector-group">
-                  <div id="character-animation-clip-controls" class="segmented-control clip-buttons" role="group" data-i18n-aria-label="play.clipGroup" aria-label="Hareket seçimi" hidden>
-                    <button data-clip-id="none" type="button" data-i18n-title="play.clipNone" title="Hareketsiz" data-i18n-aria-label="play.clipNone" aria-label="Hareketsiz" data-i18n="play.clipNoneShort">⏹ Yok</button>
-                    <button data-clip-id="idle" type="button" data-i18n-title="play.clipIdle" title="Nefes alma / Sakin" data-i18n-aria-label="play.clipIdle" aria-label="Nefes alma" data-i18n="play.clipIdleShort">🍃 Sakin</button>
+                <fieldset class="inspector-field">
+                  <legend data-i18n="play.chooseMove">Bir hareket seç</legend>
+                  <p id="character-motion-help" class="inspector-help" data-i18n="play.motionHelp">Bir harekete dokun ve bebeğini sahnede izle. Duraklat tüm sahneyi durdurur.</p>
+                  <div id="character-animation-clip-controls" class="segmented-control clip-buttons" role="group" data-i18n-aria-label="play.clipGroup" aria-label="Bir hareket seç" aria-describedby="character-motion-help" hidden>
+                    <button data-clip-id="none" type="button" data-i18n-title="play.clipNone" title="Bu bebeğin hareketini durdur" data-i18n-aria-label="play.clipNone" aria-label="Bu bebeğin hareketini durdur" data-i18n="play.clipNoneShort">⏹ Hareketsiz</button>
+                    <button data-clip-id="idle" type="button" data-i18n-title="play.clipIdle" title="Nefes alma / Sakin" data-i18n-aria-label="play.clipIdle" aria-label="Nefes alma / Sakin" data-i18n="play.clipIdleShort">🍃 Nefes Al</button>
                     <button data-clip-id="happy_bounce" type="button" data-i18n-title="play.clipBounce" title="Neşeli zıplama" data-i18n-aria-label="play.clipBounce" aria-label="Neşeli zıplama" data-i18n="play.clipBounceShort">🦘 Zıpla</button>
-                    <button data-clip-id="sway" type="button" data-i18n-title="play.clipSway" title="Hafif sallanma" data-i18n-aria-label="play.clipSway" aria-label="Sallanma" data-i18n="play.clipSwayShort">🌊 Sallan</button>
-                    <button data-clip-id="hello" type="button" data-i18n-title="play.clipHello" title="Selam / Karşılama" data-i18n-aria-label="play.clipHello" aria-label="Selam / Karşılama" data-i18n="play.clipHelloShort">👋 Selam</button>
+                    <button data-clip-id="sway" type="button" data-i18n-title="play.clipSway" title="Hafif sallanma" data-i18n-aria-label="play.clipSway" aria-label="Hafif sallanma" data-i18n="play.clipSwayShort">🌊 Sallan</button>
                     <button data-clip-id="celebrate" type="button" data-i18n-title="play.clipCelebrate" title="Neşeli kutlama" data-i18n-aria-label="play.clipCelebrate" aria-label="Neşeli kutlama" data-i18n="play.clipCelebrateShort">🎉 Kutla</button>
-                    <button data-clip-id="nod" type="button" data-i18n-title="play.clipNod" title="Baş eğme" data-i18n-aria-label="play.clipNod" aria-label="Baş eğme" data-i18n="play.clipNodShort">🙆 Baş</button>
-                    <button data-clip-id="look_around" type="button" data-i18n-title="play.clipLookAround" title="Etrafa bakınma" data-i18n-aria-label="play.clipLookAround" aria-label="Etrafa bakınma" data-i18n="play.clipLookAroundShort">👀 Bakın</button>
+                    <button data-clip-id="nod" type="button" data-i18n-title="play.clipNod" title="Başını salla" data-i18n-aria-label="play.clipNod" aria-label="Başını salla" data-i18n="play.clipNodShort">🙆 Başını Salla</button>
+                    <button data-clip-id="look_around" type="button" data-i18n-title="play.clipLookAround" title="Etrafa bakınma" data-i18n-aria-label="play.clipLookAround" aria-label="Etrafa bakınma" data-i18n="play.clipLookAroundShort">👀 Etrafa Bak</button>
+                    <button data-clip-id="bow" type="button" data-i18n-title="play.clipBow" title="Selam vermek veya teşekkür etmek için eğil" data-i18n-aria-label="play.clipBow" aria-label="Selam vermek veya teşekkür etmek için eğil" data-i18n="play.clipBowShort">🙇 Eğil</button>
+                    <button data-clip-id="wiggle" type="button" data-i18n-title="play.clipWiggle" title="Neşeyle kıpırda" data-i18n-aria-label="play.clipWiggle" aria-label="Neşeyle kıpırda" data-i18n="play.clipWiggleShort">〰️ Kıpırda</button>
+                    <button data-clip-id="shake_head" type="button" data-i18n-title="play.clipShakeHead" title="Hayır demek için başını iki yana salla" data-i18n-aria-label="play.clipShakeHead" aria-label="Hayır demek için başını iki yana salla" data-i18n="play.clipShakeHeadShort">↔️ Hayır De</button>
                   </div>
-                </div>
-                <div class="inspector-group">
-                  <div id="character-motion-intensity-controls" class="segmented-control motion-intensity-buttons" role="group" data-i18n-aria-label="play.motionIntensityGroup" aria-label="Hareket hızı ve şiddeti" hidden>
-                    <button data-motion-intensity="0.5" type="button" data-i18n-title="play.motionSubtle" title="Yavaş ve hafif hareket" data-i18n-aria-label="play.motionSubtle" aria-label="Hafif hareket" data-i18n="play.motionSubtleShort">Sakin</button>
-                    <button data-motion-intensity="1.0" type="button" data-i18n-title="play.motionNormal" title="Normal hareket" data-i18n-aria-label="play.motionNormal" aria-label="Normal hareket" data-i18n="play.motionNormalShort">Normal</button>
-                    <button data-motion-intensity="1.5" type="button" data-i18n-title="play.motionStrong" title="Güçlü ve canlı hareket" data-i18n-aria-label="play.motionStrong" aria-label="Güçlü hareket" data-i18n="play.motionStrongShort">Canlı</button>
+                </fieldset>
+                <fieldset class="inspector-field">
+                  <legend data-i18n="play.motionIntensityGroup">Hareketler ne kadar büyük olsun?</legend>
+                  <div id="character-motion-intensity-controls" class="segmented-control motion-intensity-buttons" role="group" data-i18n-aria-label="play.motionIntensityGroup" aria-label="Hareketler ne kadar büyük olsun?" hidden>
+                    <button data-motion-intensity="0.5" type="button" data-i18n-title="play.motionSubtle" title="Küçük ve hafif hareketler" data-i18n-aria-label="play.motionSubtle" aria-label="Küçük ve hafif hareketler" data-i18n="play.motionSubtleShort">Küçük</button>
+                    <button data-motion-intensity="1.0" type="button" data-i18n-title="play.motionNormal" title="Orta büyüklükte hareketler" data-i18n-aria-label="play.motionNormal" aria-label="Orta büyüklükte hareketler" data-i18n="play.motionNormalShort">Orta</button>
+                    <button data-motion-intensity="1.5" type="button" data-i18n-title="play.motionStrong" title="Büyük hareketler" data-i18n-aria-label="play.motionStrong" aria-label="Büyük hareketler" data-i18n="play.motionStrongShort">Büyük</button>
                   </div>
-                  <div id="character-phase-offset-controls" class="segmented-control phase-offset-buttons" role="group" data-i18n-aria-label="play.phaseOffsetGroup" aria-label="Faz / Zamanlama" hidden>
-                    <button data-phase-offset="0" type="button" data-i18n-title="play.phase0" title="Faz %0" data-i18n-aria-label="play.phase0" aria-label="Faz %0" data-i18n="play.phase0Short">%0</button>
-                    <button data-phase-offset="0.25" type="button" data-i18n-title="play.phase25" title="Faz %25" data-i18n-aria-label="play.phase25" aria-label="Faz %25" data-i18n="play.phase25Short">%25</button>
-                    <button data-phase-offset="0.5" type="button" data-i18n-title="play.phase50" title="Faz %50" data-i18n-aria-label="play.phase50" aria-label="Faz %50" data-i18n="play.phase50Short">%50</button>
-                    <button data-phase-offset="0.75" type="button" data-i18n-title="play.phase75" title="Faz %75" data-i18n-aria-label="play.phase75" aria-label="Faz %75" data-i18n="play.phase75Short">%75</button>
+                </fieldset>
+                <fieldset id="rhythm-sync-section" class="inspector-field" hidden>
+                  <legend data-i18n="play.rhythmGroup">Birlikte nasıl hareket etsinler?</legend>
+                  <p class="inspector-help" data-i18n="play.rhythmHelp">Seçtiğin bebeklere aynı hareketi ver, sonra birlikte veya sırayla hareket ettir.</p>
+                  <div id="rhythm-sync-controls" class="segmented-control rhythm-buttons" role="group" data-i18n-aria-label="play.rhythmGroup" aria-label="Birlikte nasıl hareket etsinler?" hidden>
+                    <button data-rhythm-mode="sync" type="button" data-i18n-title="play.rhythmSync" title="Birlikte" data-i18n="play.rhythmSync">Birlikte</button>
+                    <button data-rhythm-mode="alternate" type="button" data-i18n-title="play.rhythmAlternate" title="Sırayla" data-i18n="play.rhythmAlternate">Sırayla</button>
+                    <button data-rhythm-mode="wave" type="button" data-i18n-title="play.rhythmWave" title="Birbiri Ardına" data-i18n="play.rhythmWave">Birbiri Ardına</button>
                   </div>
-                  <div id="rhythm-sync-controls" class="segmented-control rhythm-buttons" role="group" data-i18n-aria-label="play.rhythmGroup" aria-label="Ritim" hidden>
-                    <button data-rhythm-mode="sync" type="button" data-i18n-title="play.rhythmSync" title="Senkron Vuruş" data-i18n="play.rhythmSync">⚡ Senkron</button>
-                    <button data-rhythm-mode="alternate" type="button" data-i18n-title="play.rhythmAlternate" title="Dönüşümlü Ritim" data-i18n="play.rhythmAlternate">🔀 Dönüşümlü</button>
-                    <button data-rhythm-mode="wave" type="button" data-i18n-title="play.rhythmWave" title="Dalga / Kanon" data-i18n="play.rhythmWave">🌊 Dalga</button>
+                </fieldset>
+                <p id="character-group-motion-hint" class="inspector-help" data-i18n="play.groupMotionHint">Grup dansı için iki veya daha fazla bebek seç. Boş bir yerden sürükleyerek etraflarına bir seçim kutusu çiz.</p>
+                <details class="inspector-timing-options">
+                  <summary data-i18n="play.moreTimingOptions">Diğer zamanlama seçenekleri</summary>
+                  <fieldset class="inspector-field">
+                    <legend data-i18n="play.phaseOffsetGroup">Hareketin hangi kısmı?</legend>
+                    <p class="inspector-help" data-i18n="play.phaseHelp">Her hareket tekrar eder. Bunlar hareketin eşit aralıklı dört anıdır. Aynı hareketi yapan bebeklere farklı adımlar vererek sırayla hareket ettir.</p>
+                  <div id="character-phase-offset-controls" class="segmented-control phase-offset-buttons" role="group" data-i18n-aria-label="play.phaseOffsetGroup" aria-label="Hareketin hangi kısmı?" hidden>
+                    <button data-phase-offset="0" type="button" data-i18n-title="play.phase0" title="Adım 1: tekrarlanan hareketin başlangıcı" data-i18n-aria-label="play.phase0" aria-label="Adım 1: tekrarlanan hareketin başlangıcı" data-i18n="play.phase0Short">Adım 1</button>
+                    <button data-phase-offset="0.25" type="button" data-i18n-title="play.phase25" title="Adım 2: tekrarlanan hareketin dörtte biri" data-i18n-aria-label="play.phase25" aria-label="Adım 2: tekrarlanan hareketin dörtte biri" data-i18n="play.phase25Short">Adım 2</button>
+                    <button data-phase-offset="0.5" type="button" data-i18n-title="play.phase50" title="Adım 3: tekrarlanan hareketin yarısı" data-i18n-aria-label="play.phase50" aria-label="Adım 3: tekrarlanan hareketin yarısı" data-i18n="play.phase50Short">Adım 3</button>
+                    <button data-phase-offset="0.75" type="button" data-i18n-title="play.phase75" title="Adım 4: tekrarlanan hareketin dörtte üçü" data-i18n-aria-label="play.phase75" aria-label="Adım 4: tekrarlanan hareketin dörtte üçü" data-i18n="play.phase75Short">Adım 4</button>
                   </div>
-                </div>
+                  </fieldset>
+                </details>
               </div>
 
               <div id="inspector-section-joints" class="inspector-section" role="tabpanel" aria-labelledby="inspector-tab-joints" tabindex="0" hidden>
@@ -835,9 +866,10 @@
 
             <article class="guide-feature-card">
               <h4 data-i18n="guideDialog.featAnimationTitle">🎬 Canlandırma, Dans ve Sesli Kukla</h4>
-              <p data-i18n="guideDialog.featAnimationP1"><strong>Duruşlar ve İfadeler:</strong> Bebeğe sevinç, şaşkınlık, kahkaha ifadeleri ver; sola veya sağa eğilmesini sağla.</p>
-              <p data-i18n="guideDialog.featAnimationP2"><strong>Dans ve Hareket:</strong> Zıplama, sallanma, el sallama ve kutlama dansı kliplerini başlat. Ritim ve faz ayarlarıyla grup dansları yap!</p>
-              <p data-i18n="guideDialog.featAnimationP3"><strong>🎙️ Canlı Sesli Kukla:</strong> Mikrofona konuştuğunda veya şarkı söylediğinde bebeğin ağzı sesinle canlı olarak hareket eder. Kendi sesli tiyatronu yap!</p>
+              <p data-i18n="guideDialog.featAnimationP1"><strong>Yüz & Duruş:</strong> Bir bebeğe dokun, sonra bir yüz ifadesi veya duruş seç. Küçük, Orta ve Büyük, ifadenin ne kadar belirgin olacağını değiştirir.</p>
+              <p data-i18n="guideDialog.featAnimationP2"><strong>Hareket:</strong> Bir bebeğe dokun, <strong>Hareket</strong> bölümünü aç ve Zıpla, Sallan, Selam Ver veya başka bir hareket seç. Bebeğini sahnede izle! <strong>Küçük / Orta / Büyük</strong> hareketin büyüklüğünü, sahnenin üstündeki hız düğmeleri ise tüm sahnenin hızını değiştirir. <strong>Hareketsiz</strong> seçili bebeği, <strong>Duraklat</strong> tüm sahneyi durdurur. Ayarlar’da veya cihazında hareket kapalıysa bebek hareket etmez.</p>
+              <p data-i18n="guideDialog.featAnimationMoves"><strong>Hikâye hareketleri:</strong> Teşekkür etmek için <strong>Eğil</strong>, neşeli bir an için <strong>Kıpırda</strong>, hayır demek için <strong>Hayır De</strong> seç. Eğil ve Kıpırda, çizdiğin karakterlerde de çalışır. Hayır De, başı ayrı hareket edebilen bebeklerde görünür.</p>
+              <p data-i18n="guideDialog.featAnimationP3"><strong>🎙️ Canlı Sesli Kukla:</strong> Mikrofona konuş veya şarkı söyle; bebeğin ağzı sesinle birlikte hareket eder. Sesin kaydedilmez veya yüklenmez.</p>
             </article>
 
             <article class="guide-feature-card">
@@ -864,8 +896,8 @@
 
             <article class="guide-pro-card">
               <div class="pro-tag">⭐ PRO</div>
-              <h4 data-i18n="guideDialog.tipRhythmTitle">💃 K-Pop & Dans Grubu Senkronu (Faz & Dalga)</h4>
-              <p data-i18n="guideDialog.tipRhythmDesc">Sahnede birden fazla bebek varken birine <strong>Faz %0</strong>, diğerine <strong>Faz %50</strong> verirsen sırayla zıplarlar! <strong>🌊 Dalga</strong> ritim modunu seçerek Meksika dalgası gibi muhteşem bir grup koreografisi yapabilirsin.</p>
+              <h4 data-i18n="guideDialog.tipRhythmTitle">💃 Bebekleri Birlikte Dans Ettir</h4>
+              <p data-i18n="guideDialog.tipRhythmDesc">Boş bir yerden sürükleyerek iki veya daha fazla bebeğin etrafına seçim kutusu çiz ya da <strong>Shift</strong> tuşuyla bebeklere tıkla. <strong>Hareket</strong> bölümünde hepsine aynı hareketi ver. Aynı anda hareket etmeleri için <strong>Birlikte</strong>, iki grubun sırayla hareket etmesi için <strong>Sırayla</strong>, dört adımlı bir dalga için <strong>Birbiri Ardına</strong> seç. <strong>Diğer zamanlama seçenekleri</strong> içindeki Adım 1–4, bebeğin tekrarlanan hareketin hangi anında olduğunu seçer; hızı değiştirmez. İki bebeğe Zıpla hareketini ver, birine Adım 1, diğerine Adım 3 seç.</p>
             </article>
 
             <article class="guide-pro-card">
@@ -1661,10 +1693,7 @@
       <div class="outline-dialog-body">
         <div class="outline-header-row">
           <span id="scene-outline-summary" class="outline-summary">0 öğe</span>
-          <div class="outline-bulk-actions">
-            <button id="outline-select-all-btn" class="button secondary compact-action" type="button" data-i18n="outline.selectAll">Tümünü Seç</button>
-            <button id="outline-deselect-btn" class="button secondary compact-action" type="button" data-i18n="outline.clear">Temizle</button>
-          </div>
+          <span class="outline-reorder-hint" data-i18n="sceneOutlineDialog.dragHint">Sıralamak için tutamacı sürükleyin</span>
         </div>
         <div id="scene-outline-list" class="outline-list" role="list"></div>
       </div>

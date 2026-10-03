@@ -10,7 +10,7 @@ test('expanded catalog has unique IDs and the complete planned inventory', () =>
   assert.equal(ASSETS.filter((asset) => asset.kind === 'wearable').length, 87);
   assert.equal(ASSETS.filter((asset) => asset.kind === 'face').length, 19);
   assert.equal(ASSETS.filter((asset) => asset.kind === 'background').length, 11);
-  assert.equal(ASSETS.filter((asset) => asset.kind === 'prop').length, 22);
+  assert.equal(ASSETS.filter((asset) => asset.kind === 'prop').length, 26);
   assert.ok(ASSETS.filter((asset) => asset.kind === 'background').every((asset) => [1600, 3200, 4800].includes(asset.backgroundWidth)));
   assert.equal(getAsset('bg_moonlit_meadow').backgroundWidth, 3200);
   assert.equal(getAsset('bg_candy_land').backgroundWidth, 4800);
@@ -29,9 +29,9 @@ test('wearable slot counts match the expanded product contract', () => {
 test('catalog assets carry core DLC provenance metadata', () => {
   for (const asset of ASSETS) {
     assert.deepEqual(Object.keys(asset.metadata).sort(), ['added_date', 'concept', 'creator', 'dlc', 'source']);
-    assert.match(asset.metadata.added_date, /^2026-08-(14|16|17|19)$/);
+    assert.match(asset.metadata.added_date, /^2026-(08-(14|16|17|19)|10-02)$/);
     assert.ok(['Paper Doll Studio', '5.6 Luna'].includes(asset.metadata.creator));
-    assert.ok(['core', 'weekend garden', 'seamless panorama'].includes(asset.metadata.concept));
+    assert.ok(['core', 'weekend garden', 'seamless panorama', 'everyday play'].includes(asset.metadata.concept));
     assert.equal(asset.metadata.dlc, 'core');
   }
   assert.equal(getAsset('top_raincoat').metadata.added_date, '2026-08-16');

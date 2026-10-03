@@ -173,6 +173,7 @@ export function createCameraController(context) {
       stageEl.style.setProperty('--camera-x', String(state.currentScene.cameraX || 0));
     }
     renderCameraHud(state, false);
+    context.updateContextRingPosition?.(undefined, true);
   }
 
   return { stopEdgePan, startEdgePan, initCameraControls, renderCameraHud, syncCamera };

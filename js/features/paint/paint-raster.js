@@ -4,6 +4,8 @@
  * shapes, eyedropper, rectangular selection, mirror drawing, and PNG encoding.
  */
 
+import { ALPHA_THRESHOLD, computeAlphaBounds } from '../../core/alpha-mask.js';
+
 export const BRUSH_SIZES = Object.freeze([4, 10, 20, 40]);
 
 /**
@@ -320,47 +322,12 @@ export function samplePixel(ctx, x, y) {
 /**
  * Scans an ImageData to find the tight bounding box of all non-transparent pixels.
  */
-export function computeNonTransparentBounds(imageData) {
-  const { width, height, data } = imageData;
-  let minX = width;
-  let minY = height;
-  let maxX = -1;
-  let maxY = -1;
-
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const idx = (y * width + x) * 4;
-      if (data[idx + 3] > 0) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-    }
-  }
-
-  if (maxX === -1) {
-    // Empty canvas
-    return {
-      empty: true,
-      x: 0,
-      y: 0,
-      width: width,
-      height: height,
-      aspectRatio: 1
-    };
-  }
-
-  const trimW = maxX - minX + 1;
-  const trimH = maxY - minY + 1;
-  return {
-    empty: false,
-    x: minX,
-    y: minY,
-    width: trimW,
-    height: trimH,
-    aspectRatio: trimW / trimH
-  };
+/**
+ * Crop bounds of pixels at or above the shared alpha threshold. Low-alpha pixels
+ * inside the crop are kept; they only stop counting toward its extent.
+ */
+export function computeNonTransparentBounds(imageData, threshold = ALPHA_THRESHOLD) {
+  return computeAlphaBounds(imageData, threshold);
 }
 
 /**

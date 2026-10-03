@@ -75,14 +75,15 @@ test('POSE_CHANNELS defines root, head, and 4 articulated limb channels plus exp
   assert.deepEqual([...POSE_CHANNELS], ['root', 'head', 'armLeft', 'armRight', 'legLeft', 'legRight', 'expression']);
 });
 
-test('STATIC_POSES catalog includes all 11 poses and valid keyframes', () => {
+test('Static pose catalog contains body and head poses and accepts retired IDs for migration', () => {
   const expectedPoses = [
     'rest', 'lean_left', 'lean_right', 'look_left', 'look_right', 'tilt_left', 'tilt_right',
     'wave', 'point', 'hands_on_hips', 'arms_up'
   ];
   assert.deepEqual([...STATIC_POSES], expectedPoses);
 
-  for (const poseId of STATIC_POSES) {
+  assert.deepEqual(Object.keys(STATIC_POSE_TRANSFORMS), [...SAFE_STATIC_POSES]);
+  for (const poseId of SAFE_STATIC_POSES) {
     assert.equal(isStaticPose(poseId), true, `isStaticPose should return true for ${poseId}`);
     const poseDef = STATIC_POSE_TRANSFORMS[poseId];
     assert.ok(poseDef, `STATIC_POSE_TRANSFORMS must include ${poseId}`);
@@ -94,27 +95,20 @@ test('STATIC_POSES catalog includes all 11 poses and valid keyframes', () => {
     assert.ok(poseDef.legRight, `Pose ${poseId} must have legRight channel`);
   }
 
-  // Verify specific Phase 3 static gestures
-  const wavePose = STATIC_POSE_TRANSFORMS.wave;
-  assert.ok(wavePose.armRight.rotate < -70, 'Wave static pose should raise and rotate right arm');
-
-  const handsOnHipsPose = STATIC_POSE_TRANSFORMS.hands_on_hips;
-  assert.ok(handsOnHipsPose.armLeft.rotate > 25, 'Hands on hips should angle left arm');
-  assert.ok(handsOnHipsPose.armRight.rotate < -25, 'Hands on hips should angle right arm');
-
-  const armsUpPose = STATIC_POSE_TRANSFORMS.arms_up;
-  assert.ok(armsUpPose.armLeft.rotate > 120, 'Arms up should raise left arm high');
-  assert.ok(armsUpPose.armRight.rotate < -120, 'Arms up should raise right arm high');
+  for (const poseId of ['wave', 'point', 'hands_on_hips', 'arms_up']) {
+    assert.equal(STATIC_POSE_TRANSFORMS[poseId], undefined);
+    assert.deepEqual(getStaticPoseTransform(poseId), STATIC_POSE_TRANSFORMS.rest);
+  }
 });
 
-test('MOTION_CLIP_IDS catalog includes all 14 clips with valid channel structures', () => {
+test('Motion clip catalog contains no retired gestures and accepts their IDs for migration', () => {
   const expectedClips = [
     'none', 'idle', 'happy_bounce', 'nod', 'sway', 'curious_tilt', 'look_around',
-    'wave', 'point', 'clap', 'jump', 'dance', 'hello', 'celebrate'
+    'wave', 'point', 'clap', 'jump', 'dance', 'hello', 'celebrate', 'bow', 'wiggle', 'shake_head'
   ];
   assert.deepEqual([...MOTION_CLIP_IDS], expectedClips);
 
-  for (const clipId of MOTION_CLIP_IDS) {
+  for (const clipId of Object.keys(MOTION_CLIPS)) {
     assert.equal(isMotionClipId(clipId), true, `isMotionClipId should return true for ${clipId}`);
     const clipDef = MOTION_CLIPS[clipId];
     assert.ok(clipDef, `MOTION_CLIPS must include ${clipId}`);
@@ -137,18 +131,13 @@ test('MOTION_CLIP_IDS catalog includes all 14 clips with valid channel structure
     }
   }
 
-  // Verify Phase 3 new gestures have active limb keyframes
-  const waveClip = MOTION_CLIPS.wave;
-  assert.ok(waveClip.channels.armRight && waveClip.channels.armRight.length > 2, 'Wave clip should animate right arm');
-
-  const clapClip = MOTION_CLIPS.clap;
-  assert.ok(clapClip.channels.armLeft && clapClip.channels.armRight, 'Clap clip should animate both arms');
-
-  const danceClip = MOTION_CLIPS.dance;
-  assert.ok(danceClip.channels.armLeft && danceClip.channels.armRight && danceClip.channels.legLeft && danceClip.channels.legRight, 'Dance clip should animate all 4 limbs');
+  for (const clipId of ['wave', 'point', 'clap', 'jump', 'dance', 'hello']) {
+    assert.equal(MOTION_CLIPS[clipId], undefined);
+    assert.equal(getMotionClip(clipId).clipId, 'none');
+  }
 });
 
-test('evaluateCharacterPose evaluates and blends static pose and motion clip across all 4 limbs', () => {
+test('evaluateCharacterPose migrates gestures to head motion while keeping arms at rest', () => {
   const entity = {
     instanceId: 'char_test_1',
     kind: 'character',
@@ -166,13 +155,13 @@ test('evaluateCharacterPose evaluates and blends static pose and motion clip acr
   };
 
   // Static evaluation (playback disabled)
-  const staticResult = evaluateCharacterPose(entity, 0, { playbackEnabled: false, fallbackLegacy: false });
+  const staticResult = evaluateCharacterPose(entity, 0, { playbackEnabled: false });
   assert.equal(staticResult.isAnimated, false);
-  assert.ok(staticResult.armRight.rotate < -70);
+  assert.equal(staticResult.armRight.rotate, 0);
   assert.equal(staticResult.expression, 'happy');
 
   // Animated evaluation (playback enabled at 300ms)
-  const animatedResult = evaluateCharacterPose(entity, 300, { playbackEnabled: true, fallbackLegacy: false });
+  const animatedResult = evaluateCharacterPose(entity, 300, { playbackEnabled: true });
   assert.equal(animatedResult.isAnimated, true);
   assert.ok(Number.isFinite(animatedResult.armRight.rotate));
   assert.ok(Number.isFinite(animatedResult.armLeft.rotate));
@@ -186,7 +175,30 @@ test('evaluateCharacterPose evaluates and blends static pose and motion clip acr
     ...entity,
     animation: { ...entity.animation, intensity: 0.5 }
   }, 300, { playbackEnabled: true });
-  assert.ok(Math.abs(subtleResult.armRight.rotate) < Math.abs(animatedResult.armRight.rotate) + 20);
+  assert.equal(subtleResult.head.rotate - staticResult.head.rotate, (animatedResult.head.rotate - staticResult.head.rotate) * 0.5);
+  assert.equal(animatedResult.armRight.rotate, 0);
+  assert.equal(animatedResult.armLeft.rotate, 0);
+});
+
+test('Remaining poses and clips keep both arms at rest across outfits, times and intensities', () => {
+  const rest = { x: 0, y: 0, rotate: 0, scaleX: 1, scaleY: 1 };
+  for (const slots of [{}, { top: { assetId: 'top_tshirt' } }, { dress: { assetId: 'dress_sundress' } }]) {
+    for (const pose of SAFE_STATIC_POSES) {
+      for (const clipId of SAFE_MOTION_CLIP_IDS) {
+        for (const intensity of [0.5, 1, 3]) {
+          for (const time of [0, 350, 1200]) {
+            const evaluated = evaluateCharacterPose({
+              kind: 'character', pose,
+              characterSnapshot: { baseDollId: 'doll_classic_a', slots },
+              animation: { clipId, enabled: true, intensity }
+            }, time, { playbackEnabled: true });
+            assert.deepEqual(evaluated.armLeft, rest, `${pose}/${clipId} left arm`);
+            assert.deepEqual(evaluated.armRight, rest, `${pose}/${clipId} right arm`);
+          }
+        }
+      }
+    }
+  }
 });
 
 test('all 6 catalog dolls declare poseSupport: full, joint pivots, and match SVG group structure', () => {
@@ -296,10 +308,6 @@ test('i18n dictionary contains all static poses and motion clips in Turkish and 
     look_right: ['poseLookRight', 'poseLookRightShort'],
     tilt_left: ['poseTiltLeft', 'poseTiltLeftShort'],
     tilt_right: ['poseTiltRight', 'poseTiltRightShort'],
-    wave: ['poseWave', 'poseWaveShort'],
-    point: ['posePoint', 'posePointShort'],
-    hands_on_hips: ['poseHandsOnHips', 'poseHandsOnHipsShort'],
-    arms_up: ['poseArmsUp', 'poseArmsUpShort']
   };
 
   for (const [poseId, [titleKey, shortKey]] of Object.entries(poseKeyMap)) {
@@ -313,17 +321,11 @@ test('i18n dictionary contains all static poses and motion clips in Turkish and 
     none: ['clipNone', 'clipNoneShort'],
     idle: ['clipIdle', 'clipIdleShort'],
     happy_bounce: ['clipBounce', 'clipBounceShort'],
-    hello: ['clipHello', 'clipHelloShort'],
     celebrate: ['clipCelebrate', 'clipCelebrateShort'],
     nod: ['clipNod', 'clipNodShort'],
     sway: ['clipSway', 'clipSwayShort'],
     curious_tilt: ['clipCuriousTilt', 'clipCuriousTiltShort'],
     look_around: ['clipLookAround', 'clipLookAroundShort'],
-    wave: ['clipWave', 'clipWaveShort'],
-    point: ['clipPoint', 'clipPointShort'],
-    clap: ['clipClap', 'clipClapShort'],
-    jump: ['clipJump', 'clipJumpShort'],
-    dance: ['clipDance', 'clipDanceShort']
   };
 
   for (const [clipId, [titleKey, shortKey]] of Object.entries(clipKeyMap)) {

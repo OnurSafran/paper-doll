@@ -12,11 +12,11 @@ function furnished(backgroundId = 'bg_park', x = 125, y = 780) {
   let scene = changePlacementBackground(createEmptyScene('test'), backgroundId, getAsset);
   scene = addEntity(scene, { instanceId: 'table', kind: 'prop', sourceId: 'prop_table', x, y }, getAsset);
   scene = addEntity(scene, { instanceId: 'tea', kind: 'prop', sourceId: 'prop_tea_set', x: 500, y: 780 }, getAsset);
-  return placeEntity(scene, 'tea', projectLocal(item(scene, 'table'), { x: .5, y: .39 }, getAsset), getAsset, { transfer: true });
+  return placeEntity(scene, 'tea', projectLocal(item(scene, 'table'), { x: .5, y: .1929 }, getAsset), getAsset, { transfer: true });
 }
 
 test('Free furnished transforms reject stage overflow and accepted transforms survive reload', () => {
-  for (const [x, y] of [[125, 780], [1475, 780], [800, 300]]) {
+  for (const [x, y] of [[125, 780], [1475, 780], [800, 220]]) {
     const scene = furnished('bg_park', x, y);
     assert.equal(item(scene, 'tea').placement.kind, 'surface');
     assert.equal(scaleEntity(scene, 'table', 1.5, getAsset), scene, `${x},${y}`);
@@ -24,7 +24,7 @@ test('Free furnished transforms reject stage overflow and accepted transforms su
   const lookup = id => id === 'prop_table' ? { ...getAsset(id), groundAnchor: { x: .5, y: .8 } } : getAsset(id);
   let bottom = addEntity(createEmptyScene('bottom'), { instanceId: 'table', kind: 'prop', sourceId: 'prop_table', x: 800, y: 854 }, lookup);
   bottom = addEntity(bottom, { instanceId: 'tea', kind: 'prop', sourceId: 'prop_tea_set', x: 500, y: 780 }, lookup);
-  bottom = placeEntity(bottom, 'tea', projectLocal(item(bottom, 'table'), { x: .5, y: .39 }, lookup), lookup, { transfer: true });
+  bottom = placeEntity(bottom, 'tea', projectLocal(item(bottom, 'table'), { x: .5, y: .1929 }, lookup), lookup, { transfer: true });
   assert.equal(item(bottom, 'tea').placement.kind, 'surface');
   assert.equal(scaleEntity(bottom, 'table', 1.5, lookup), bottom, 'bottom overflow');
   let scene = furnished('bg_park', 800);
@@ -58,15 +58,15 @@ test('Generic descendants are included in free assembly transform bounds', () =>
 test('Surface siblings follow contact depth while generic attachments retain their slots', () => {
   let scene = furnished('bg_bedroom', 800);
   scene = scaleEntity(scene, 'table', 2, getAsset);
-  scene = placeEntity(scene, 'tea', projectLocal(item(scene, 'table'), { x: .5, y: .43 }, getAsset), getAsset);
+  scene = placeEntity(scene, 'tea', projectLocal(item(scene, 'table'), { x: .5, y: .2522 }, getAsset), getAsset);
   scene = addEntity(scene, { instanceId: 'generic', kind: 'prop', sourceId: 'prop_camera', attachedTo: 'table', x: 900, y: 650 }, getAsset);
   scene = addEntity(scene, { instanceId: 'rear', kind: 'prop', sourceId: 'prop_tea_set', x: 1000, y: 800 }, getAsset);
-  scene = placeEntity(scene, 'rear', projectLocal(item(scene, 'table'), { x: .5, y: .35 }, getAsset), getAsset, { target: { kind: 'surface', hostId: 'table', surfaceId: 'tabletop' } });
+  scene = placeEntity(scene, 'rear', projectLocal(item(scene, 'table'), { x: .5, y: .1335 }, getAsset), getAsset, { target: { kind: 'surface', hostId: 'table', surfaceId: 'tabletop' } });
   const ids = s => orderedSceneEntities(s, getAsset).map(e => e.instanceId);
   assert.deepEqual(ids(scene), ['table', 'rear', 'generic', 'tea']);
   assert.deepEqual(ids(flipEntity(scene, 'table', getAsset)), ids(scene));
   assert.deepEqual(ids(sanitizeScene(scene, getAsset)), ids(scene));
-  const sameDepth = { ...scene, entities: scene.entities.map(e => e.instanceId === 'rear' ? { ...e, placement: { ...e.placement, localPoint: { ...e.placement.localPoint, y: .43 } } } : e) };
+  const sameDepth = { ...scene, entities: scene.entities.map(e => e.instanceId === 'rear' ? { ...e, placement: { ...e.placement, localPoint: { ...e.placement.localPoint, y: item(scene, 'tea').placement.localPoint.y } } } : e) };
   assert.deepEqual(ids(sameDepth), ['table', 'tea', 'generic', 'rear']);
   assert.deepEqual(ids({ ...scene, placementMode: 'free' }), ['table', 'tea', 'generic', 'rear']);
 });

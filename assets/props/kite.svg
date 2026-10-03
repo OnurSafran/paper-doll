@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_kite">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="200 80 600 899" data-asset-id="prop_kite">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
     <path d="M500 90 L790 390 L500 690 L210 390 Z" fill="#f06c5c"/>
     <path d="M500 90 L500 390 L210 390 Z" fill="#ffd166" stroke="none"/>

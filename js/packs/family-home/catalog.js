@@ -138,6 +138,7 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 418.5,
     "slot": "shoes"
   },
   {
@@ -315,6 +316,7 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 399.5,
     "slot": "shoes"
   },
   {
@@ -702,6 +704,7 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 367.25,
     "slot": "shoes"
   },
   {
@@ -737,6 +740,7 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 367.25,
     "slot": "shoes"
   },
   {
@@ -1122,6 +1126,7 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 418.5,
     "slot": "shoes"
   },
   {
@@ -1157,6 +1162,7 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 418.5,
     "slot": "shoes"
   },
   {
@@ -1334,6 +1340,7 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 399.5,
     "slot": "shoes"
   },
   {
@@ -1474,6 +1481,7 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 412.5,
     "slot": "shoes"
   },
   {
@@ -1684,20 +1692,17 @@ export const FAMILY_ASSETS = [
       "neutral"
     ],
     "poseSupport": "rigid",
+    "soleContactY": 412.5,
     "slot": "shoes"
   },
   {
     "id": "fh_laundry",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Laundry basket",
     "nameKey": "pack_family_home.assets.fh_laundry",
     "path": "assets/packs/pack_family_home/fh_laundry.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [216, 215, 568, 702],
     "requiredGroups": [
       "prop"
     ],
@@ -1708,8 +1713,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 290,
-    "displayHeight": 270,
+    "displayWidth": 153.36,
+    "displayHeight": 189.54,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1722,15 +1727,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_cushions",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Patchwork cushions",
     "nameKey": "pack_family_home.assets.fh_cushions",
     "path": "assets/packs/pack_family_home/fh_cushions.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [131, 441, 718, 448],
     "requiredGroups": [
       "prop"
     ],
@@ -1741,8 +1742,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 300,
-    "displayHeight": 155,
+    "displayWidth": 111.29,
+    "displayHeight": 69.44,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1755,15 +1756,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_family_frame",
     "kind": "prop",
+    "cardboard": "none",
     "name": "Family portrait frame",
     "nameKey": "pack_family_home.assets.fh_family_frame",
     "path": "assets/packs/pack_family_home/fh_family_frame.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [201, 161, 598, 728],
     "requiredGroups": [
       "prop"
     ],
@@ -1774,8 +1771,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 150,
-    "displayHeight": 180,
+    "displayWidth": 89.7,
+    "displayHeight": 109.2,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1788,15 +1785,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_sofa",
     "kind": "prop",
+    "cardboard": "stand",
     "name": "Two-seat sofa",
     "nameKey": "pack_family_home.assets.fh_sofa",
     "path": "assets/packs/pack_family_home/fh_sofa.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [91, 281, 818, 619],
     "requiredGroups": [
       "prop"
     ],
@@ -1807,8 +1800,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 500,
-    "displayHeight": 300,
+    "displayWidth": 245.4,
+    "displayHeight": 185.7,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1821,15 +1814,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_storage",
     "kind": "prop",
+    "cardboard": "stand",
     "name": "Toy storage cubbies",
     "nameKey": "pack_family_home.assets.fh_storage",
     "path": "assets/packs/pack_family_home/fh_storage.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [131, 201, 738, 679],
     "requiredGroups": [
       "prop"
     ],
@@ -1840,8 +1829,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 360,
-    "displayHeight": 330,
+    "displayWidth": 243.54,
+    "displayHeight": 224.07,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1854,15 +1843,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_crib",
     "kind": "prop",
+    "cardboard": "stand",
     "name": "Open-front crib backdrop",
     "nameKey": "pack_family_home.assets.fh_crib",
     "path": "assets/packs/pack_family_home/fh_crib.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [86, 191, 828, 729],
     "requiredGroups": [
       "prop"
     ],
@@ -1873,8 +1858,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 380,
-    "displayHeight": 300,
+    "displayWidth": 248.4,
+    "displayHeight": 218.7,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1887,15 +1872,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_high_chair",
     "kind": "prop",
+    "cardboard": "stand",
     "name": "High chair",
     "nameKey": "pack_family_home.assets.fh_high_chair",
     "path": "assets/packs/pack_family_home/fh_high_chair.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [201, 101, 598, 819],
     "requiredGroups": [
       "prop"
     ],
@@ -1906,8 +1887,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 220,
-    "displayHeight": 330,
+    "displayWidth": 131.56,
+    "displayHeight": 180.18,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1920,15 +1901,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_stroller",
     "kind": "prop",
+    "cardboard": "stand",
     "name": "Pram",
     "nameKey": "pack_family_home.assets.fh_stroller",
     "path": "assets/packs/pack_family_home/fh_stroller.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [69, 144, 740, 805],
     "requiredGroups": [
       "prop"
     ],
@@ -1939,8 +1916,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 350,
-    "displayHeight": 325,
+    "displayWidth": 240.5,
+    "displayHeight": 261.625,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1953,15 +1930,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_rocking_horse",
     "kind": "prop",
+    "cardboard": "stand",
     "name": "Rocking horse",
     "nameKey": "pack_family_home.assets.fh_rocking_horse",
     "path": "assets/packs/pack_family_home/fh_rocking_horse.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [171, 146, 658, 821],
     "requiredGroups": [
       "prop"
     ],
@@ -1972,8 +1945,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 300,
-    "displayHeight": 280,
+    "displayWidth": 184.24,
+    "displayHeight": 229.88,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -1986,15 +1959,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_blocks",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Wooden building blocks",
     "nameKey": "pack_family_home.assets.fh_blocks",
     "path": "assets/packs/pack_family_home/fh_blocks.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [181, 251, 638, 638],
     "requiredGroups": [
       "prop"
     ],
@@ -2005,8 +1974,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 210,
-    "displayHeight": 170,
+    "displayWidth": 108.46,
+    "displayHeight": 108.46,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2019,15 +1988,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_play_mat",
     "kind": "prop",
+    "cardboard": "none",
     "name": "Leaf play mat",
     "nameKey": "pack_family_home.assets.fh_play_mat",
     "path": "assets/packs/pack_family_home/fh_play_mat.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [51, 501, 898, 418],
     "requiredGroups": [
       "prop"
     ],
@@ -2038,8 +2003,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 380,
-    "displayHeight": 140,
+    "displayWidth": 125.72,
+    "displayHeight": 58.52,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2052,15 +2017,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_teddy",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Patchwork teddy",
     "nameKey": "pack_family_home.assets.fh_teddy",
     "path": "assets/packs/pack_family_home/fh_teddy.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [174, 136, 652, 793],
     "requiredGroups": [
       "prop"
     ],
@@ -2071,8 +2032,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 150,
-    "displayHeight": 180,
+    "displayWidth": 97.8,
+    "displayHeight": 118.95,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2085,15 +2046,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_bottle",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Milk bottle",
     "nameKey": "pack_family_home.assets.fh_bottle",
     "path": "assets/packs/pack_family_home/fh_bottle.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [356, 116, 288, 784],
     "requiredGroups": [
       "prop"
     ],
@@ -2104,8 +2061,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 50,
-    "displayHeight": 100,
+    "displayWidth": 14.4,
+    "displayHeight": 39.2,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2118,15 +2075,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_mobile",
     "kind": "prop",
+    "cardboard": "none",
     "name": "Moon and stars mobile",
     "nameKey": "pack_family_home.assets.fh_mobile",
     "path": "assets/packs/pack_family_home/fh_mobile.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [156, 39, 688, 817],
     "requiredGroups": [
       "prop"
     ],
@@ -2137,8 +2090,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 260,
-    "displayHeight": 180,
+    "displayWidth": 123.84,
+    "displayHeight": 147.06,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2151,15 +2104,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_knitting",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Knitting basket",
     "nameKey": "pack_family_home.assets.fh_knitting",
     "path": "assets/packs/pack_family_home/fh_knitting.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [216, 114, 568, 803],
     "requiredGroups": [
       "prop"
     ],
@@ -2170,8 +2119,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 190,
-    "displayHeight": 170,
+    "displayWidth": 96.56,
+    "displayHeight": 136.51,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2184,15 +2133,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_dominoes",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Domino tiles",
     "nameKey": "pack_family_home.assets.fh_dominoes",
     "path": "assets/packs/pack_family_home/fh_dominoes.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [171, 411, 643, 448],
     "requiredGroups": [
       "prop"
     ],
@@ -2203,8 +2148,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 210,
-    "displayHeight": 125,
+    "displayWidth": 80.375,
+    "displayHeight": 56.0,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2217,15 +2162,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_album",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Family photo album",
     "nameKey": "pack_family_home.assets.fh_album",
     "path": "assets/packs/pack_family_home/fh_album.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [141, 291, 718, 538],
     "requiredGroups": [
       "prop"
     ],
@@ -2236,8 +2177,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 190,
-    "displayHeight": 145,
+    "displayWidth": 104.11,
+    "displayHeight": 78.01,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2249,17 +2190,13 @@ export const FAMILY_ASSETS = [
   },
   {
     "id": "fh_reading_lamp",
+    "cardboard": "edge",
     "placementRules": { "allowedTargets": ["floor", "surface"], "tags": ["small-prop"], "contactFootprint": { "width": 0.25, "depth": 0.02 }, "renderClass": "upright" },
     "kind": "prop",
     "name": "Reading lamp",
     "nameKey": "pack_family_home.assets.fh_reading_lamp",
     "path": "assets/packs/pack_family_home/fh_reading_lamp.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [231, 146, 538, 783],
     "requiredGroups": [
       "prop"
     ],
@@ -2270,8 +2207,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 175,
-    "displayHeight": 300,
+    "displayWidth": 94.15,
+    "displayHeight": 137.025,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2284,15 +2221,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_books",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Book stack",
     "nameKey": "pack_family_home.assets.fh_books",
     "path": "assets/packs/pack_family_home/fh_books.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [131, 351, 708, 528],
     "requiredGroups": [
       "prop"
     ],
@@ -2303,8 +2236,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 210,
-    "displayHeight": 160,
+    "displayWidth": 113.28,
+    "displayHeight": 84.48,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2317,15 +2250,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_chess",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Chess board",
     "nameKey": "pack_family_home.assets.fh_chess",
     "path": "assets/packs/pack_family_home/fh_chess.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [151, 201, 698, 698],
     "requiredGroups": [
       "prop"
     ],
@@ -2336,8 +2265,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 230,
-    "displayHeight": 160,
+    "displayWidth": 111.68,
+    "displayHeight": 111.68,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2350,15 +2279,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_sewing",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Sewing box",
     "nameKey": "pack_family_home.assets.fh_sewing",
     "path": "assets/packs/pack_family_home/fh_sewing.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [151, 284, 698, 580],
     "requiredGroups": [
       "prop"
     ],
@@ -2369,8 +2294,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 190,
-    "displayHeight": 170,
+    "displayWidth": 118.66,
+    "displayHeight": 98.6,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2383,15 +2308,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_sleeping_bag",
     "kind": "prop",
+    "cardboard": "none",
     "name": "Star sleeping bag",
     "nameKey": "pack_family_home.assets.fh_sleeping_bag",
     "path": "assets/packs/pack_family_home/fh_sleeping_bag.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [201, 141, 598, 778],
     "requiredGroups": [
       "prop"
     ],
@@ -2402,8 +2323,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 240,
-    "displayHeight": 270,
+    "displayWidth": 143.52,
+    "displayHeight": 186.72,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2416,15 +2337,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_popcorn",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Popcorn tub",
     "nameKey": "pack_family_home.assets.fh_popcorn",
     "path": "assets/packs/pack_family_home/fh_popcorn.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [222, 254, 591, 655],
     "requiredGroups": [
       "prop"
     ],
@@ -2435,8 +2352,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 140,
-    "displayHeight": 160,
+    "displayWidth": 82.74,
+    "displayHeight": 91.7,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2449,15 +2366,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_board_game",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Family board game",
     "nameKey": "pack_family_home.assets.fh_board_game",
     "path": "assets/packs/pack_family_home/fh_board_game.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [121, 381, 758, 498],
     "requiredGroups": [
       "prop"
     ],
@@ -2468,8 +2381,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 230,
-    "displayHeight": 130,
+    "displayWidth": 98.54,
+    "displayHeight": 64.74,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2482,15 +2395,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_blanket_fort",
     "kind": "prop",
+    "cardboard": "stand",
     "name": "Blanket fort",
     "nameKey": "pack_family_home.assets.fh_blanket_fort",
     "path": "assets/packs/pack_family_home/fh_blanket_fort.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [71, 111, 858, 798],
     "requiredGroups": [
       "prop"
     ],
@@ -2501,8 +2410,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 520,
-    "displayHeight": 350,
+    "displayWidth": 300.3,
+    "displayHeight": 279.3,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2515,15 +2424,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_cocoa",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Cocoa mugs",
     "nameKey": "pack_family_home.assets.fh_cocoa",
     "path": "assets/packs/pack_family_home/fh_cocoa.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [60, 279, 868, 606],
     "requiredGroups": [
       "prop"
     ],
@@ -2534,8 +2439,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 170,
-    "displayHeight": 110,
+    "displayWidth": 95.48,
+    "displayHeight": 66.66,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2548,15 +2453,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_pillow",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Moon pillow",
     "nameKey": "pack_family_home.assets.fh_pillow",
     "path": "assets/packs/pack_family_home/fh_pillow.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [176, 107, 583, 778],
     "requiredGroups": [
       "prop"
     ],
@@ -2567,8 +2468,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 170,
-    "displayHeight": 155,
+    "displayWidth": 90.365,
+    "displayHeight": 120.59,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2581,15 +2482,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_lantern",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Paper lantern",
     "nameKey": "pack_family_home.assets.fh_lantern",
     "path": "assets/packs/pack_family_home/fh_lantern.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [251, 148, 498, 769],
     "requiredGroups": [
       "prop"
     ],
@@ -2600,8 +2497,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 150,
-    "displayHeight": 200,
+    "displayWidth": 74.7,
+    "displayHeight": 115.35,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2614,15 +2511,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_slumber_banner",
     "kind": "prop",
+    "cardboard": "none",
     "name": "Sleepover pennants",
     "nameKey": "pack_family_home.assets.fh_slumber_banner",
     "path": "assets/packs/pack_family_home/fh_slumber_banner.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [71, 241, 858, 313],
     "requiredGroups": [
       "prop"
     ],
@@ -2633,8 +2526,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 380,
-    "displayHeight": 120,
+    "displayWidth": 102.96,
+    "displayHeight": 37.56,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2647,15 +2540,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_gifts",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Wrapped gifts",
     "nameKey": "pack_family_home.assets.fh_gifts",
     "path": "assets/packs/pack_family_home/fh_gifts.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [91, 215, 808, 669],
     "requiredGroups": [
       "prop"
     ],
@@ -2666,8 +2555,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 240,
-    "displayHeight": 200,
+    "displayWidth": 161.6,
+    "displayHeight": 133.8,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2680,15 +2569,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_bunting",
     "kind": "prop",
+    "cardboard": "none",
     "name": "Celebration bunting",
     "nameKey": "pack_family_home.assets.fh_bunting",
     "path": "assets/packs/pack_family_home/fh_bunting.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [41, 211, 918, 328],
     "requiredGroups": [
       "prop"
     ],
@@ -2699,8 +2584,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 460,
-    "displayHeight": 130,
+    "displayWidth": 119.34,
+    "displayHeight": 42.64,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2713,15 +2598,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_candy",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Candy bowl",
     "nameKey": "pack_family_home.assets.fh_candy",
     "path": "assets/packs/pack_family_home/fh_candy.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [151, 414, 698, 480],
     "requiredGroups": [
       "prop"
     ],
@@ -2732,8 +2613,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 150,
-    "displayHeight": 120,
+    "displayWidth": 83.76,
+    "displayHeight": 57.6,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2746,15 +2627,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_cologne",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Cologne bottle",
     "nameKey": "pack_family_home.assets.fh_cologne",
     "path": "assets/packs/pack_family_home/fh_cologne.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [321, 146, 358, 748],
     "requiredGroups": [
       "prop"
     ],
@@ -2765,8 +2642,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 55,
-    "displayHeight": 110,
+    "displayWidth": 19.69,
+    "displayHeight": 41.14,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2779,15 +2656,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_tray",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Serving tray",
     "nameKey": "pack_family_home.assets.fh_tray",
     "path": "assets/packs/pack_family_home/fh_tray.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [33, 431, 934, 423],
     "requiredGroups": [
       "prop"
     ],
@@ -2798,8 +2671,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 260,
-    "displayHeight": 120,
+    "displayWidth": 112.08,
+    "displayHeight": 50.76,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2812,15 +2685,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_winter_wreath",
     "kind": "prop",
+    "cardboard": "none",
     "name": "Winter wreath",
     "nameKey": "pack_family_home.assets.fh_winter_wreath",
     "path": "assets/packs/pack_family_home/fh_winter_wreath.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [111, 106, 777, 833],
     "requiredGroups": [
       "prop"
     ],
@@ -2831,8 +2700,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 210,
-    "displayHeight": 210,
+    "displayWidth": 163.17,
+    "displayHeight": 174.93,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2845,15 +2714,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_snow_globe",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Snow globe",
     "nameKey": "pack_family_home.assets.fh_snow_globe",
     "path": "assets/packs/pack_family_home/fh_snow_globe.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [191, 121, 618, 784],
     "requiredGroups": [
       "prop"
     ],
@@ -2864,8 +2729,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 135,
-    "displayHeight": 175,
+    "displayWidth": 83.43,
+    "displayHeight": 105.84,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2878,15 +2743,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_cards",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Greeting cards",
     "nameKey": "pack_family_home.assets.fh_cards",
     "path": "assets/packs/pack_family_home/fh_cards.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [171, 271, 678, 648],
     "requiredGroups": [
       "prop"
     ],
@@ -2897,8 +2758,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 160,
-    "displayHeight": 160,
+    "displayWidth": 108.48,
+    "displayHeight": 103.68,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2911,15 +2772,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_paper_flowers",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Paper flower bouquet",
     "nameKey": "pack_family_home.assets.fh_paper_flowers",
     "path": "assets/packs/pack_family_home/fh_paper_flowers.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [143, 62, 724, 862],
     "requiredGroups": [
       "prop"
     ],
@@ -2930,8 +2787,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 190,
-    "displayHeight": 230,
+    "displayWidth": 137.56,
+    "displayHeight": 163.78,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2944,15 +2801,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_calendar",
     "kind": "prop",
+    "cardboard": "none",
     "name": "Family celebration calendar",
     "nameKey": "pack_family_home.assets.fh_calendar",
     "path": "assets/packs/pack_family_home/fh_calendar.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [171, 116, 658, 783],
     "requiredGroups": [
       "prop"
     ],
@@ -2963,8 +2816,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 175,
-    "displayHeight": 195,
+    "displayWidth": 115.15,
+    "displayHeight": 137.025,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -2977,15 +2830,11 @@ export const FAMILY_ASSETS = [
   {
     "id": "fh_cookies",
     "kind": "prop",
+    "cardboard": "edge",
     "name": "Celebration cookies",
     "nameKey": "pack_family_home.assets.fh_cookies",
     "path": "assets/packs/pack_family_home/fh_cookies.svg",
-    "viewBox": [
-      0,
-      0,
-      1000,
-      1000
-    ],
+    "viewBox": [111, 521, 778, 358],
     "requiredGroups": [
       "prop"
     ],
@@ -2996,8 +2845,8 @@ export const FAMILY_ASSETS = [
       "dlc": "pack_family_home",
       "source": "project-authored SVG primitives and paths"
     },
-    "displayWidth": 180,
-    "displayHeight": 100,
+    "displayWidth": 77.8,
+    "displayHeight": 35.8,
     "groundAnchor": {
       "x": 0.5,
       "y": 0.92
@@ -3103,7 +2952,28 @@ export const FAMILY_ASSETS = [
     },
     "backgroundWidth": 3200
   }
-].map(asset => ({ ...asset, ...familyPlacementMetadata(asset.id) }));
+].map(asset => normalizePropPlacement({ ...asset, ...familyPlacementMetadata(asset.id) }));
+
+// Prop crops retain the former meet-fit artwork scale. Placement metadata was
+// authored in the original 1000 × 1000 canvas, so remap it with the crop.
+function normalizePropPlacement(asset) {
+  if (asset.kind !== 'prop') return asset;
+  const [x, y, width, height] = asset.viewBox;
+  const point = (u, v) => [(u * 1000 - x) / width, (v * 1000 - y) / height];
+  const anchor = asset.placementRules ? point(asset.groundAnchor.x, asset.groundAnchor.y) : [.5, 1];
+  const footprint = asset.placementRules?.contactFootprint;
+  return {
+    ...asset,
+    groundAnchor: { x: anchor[0], y: anchor[1] },
+    ...(footprint ? { placementRules: {
+      ...asset.placementRules,
+      contactFootprint: { width: footprint.width * 1000 / width, depth: footprint.depth * 1000 / height }
+    } } : {}),
+    ...(asset.supportSurfaces ? { supportSurfaces: asset.supportSurfaces.map(surface => ({
+      ...surface, polygon: surface.polygon.map(([u, v]) => point(u, v))
+    })) } : {})
+  };
+}
 
 // Explicit rules and contact areas authored against each SVG; collections do not imply behavior.
 function familyPlacementMetadata(id) {
@@ -3120,7 +2990,8 @@ function familyPlacementMetadata(id) {
   if (!furniture[id]) return {};
   const surfaces = {
     fh_storage: [{ id: 'top', nameKey: 'placement.cabinetTop', polygon: [[.17,.205],[.83,.205],[.83,.235],[.17,.235]], acceptsTags: ['small-prop'] }],
-    fh_high_chair: [{ id: 'tray', nameKey: 'placement.trayTop', polygon: [[.25,.385],[.75,.385],[.75,.42],[.25,.42]], acceptsTags: ['small-prop'] }]
+    // The shallow tray top spans authoring y=380–429; keep support inside its inset.
+    fh_high_chair: [{ id: 'tray', nameKey: 'placement.trayTop', polygon: [[.25,.365],[.75,.365],[.75,.38],[.25,.38]], acceptsTags: ['small-prop'] }]
   };
   return {
     groundAnchor: { x: .5, y: furniture[id] },

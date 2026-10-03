@@ -1,3 +1,4 @@
+import { propCardboardMode } from '../domain/cardboard.js';
 import { sanitizePlacementRules, sanitizeSurfaces, sanitizePlacement } from '../domain/placement-geometry.js';
 import { recoverSurfacePlacements } from '../domain/scene-placement.js';
 import { isColorValue, isIrisColor, isPaletteToken, normalizeColorValue } from './palette.js';
@@ -287,7 +288,7 @@ export function sanitizeCustomAsset(candidate) {
     status,
     collections,
     ...(kind === 'wearable' ? { supportedFitFamilies, presentationStyles } : {}),
-    ...(kind === 'prop' ? { displayWidth, displayHeight, groundAnchor, ...(placementRules ? { placementRules, supportSurfaces } : {}) } : {})
+    ...(kind === 'prop' ? { displayWidth, displayHeight, groundAnchor, cardboard: propCardboardMode(candidate), ...(placementRules ? { placementRules, supportSurfaces } : {}) } : {})
   };
 }
 
@@ -530,7 +531,7 @@ export function sanitizeScene(candidate, getAsset = (_id) => undefined, warnings
   const animationSettings = rawAnimationSettings && typeof rawAnimationSettings === 'object'
     ? {
         enabled: Boolean(rawAnimationSettings.enabled),
-        loop: rawAnimationSettings.loop !== false,
+        loop: true,
         playbackRate: isPlaybackRate(rawAnimationSettings.playbackRate) ? rawAnimationSettings.playbackRate : DEFAULT_PLAYBACK_RATE
       }
     : { ...DEFAULT_SCENE_ANIMATION_SETTINGS };
@@ -539,6 +540,7 @@ export function sanitizeScene(candidate, getAsset = (_id) => undefined, warnings
     sceneId: candidate.sceneId,
     title: validName(candidate.title) ? normalizeDisplayName(candidate.title, LIMITS.MAX_SCENE_TITLE_LENGTH) : 'Current Scene',
     placementMode: candidate.placementMode === 'room' ? 'room' : 'free',
+    ...(candidate.layerOrderMode === 'manual' ? { layerOrderMode: 'manual' } : {}),
     backgroundId: getAsset(candidate.backgroundId)?.kind === 'background' ? candidate.backgroundId : DEFAULT_BACKGROUND_ID,
     stageWidth,
     cameraX,

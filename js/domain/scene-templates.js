@@ -443,7 +443,7 @@ export function instantiateSceneTemplate(templateId, makeId = defaultMakeId, def
     cameraX: 0,
     animationSettings: template.animationSettings ? {
       enabled: Boolean(template.animationSettings.enabled),
-      loop: template.animationSettings.loop !== false,
+      loop: true,
       playbackRate: template.animationSettings.playbackRate ?? DEFAULT_PLAYBACK_RATE
     } : { ...DEFAULT_SCENE_ANIMATION_SETTINGS },
     entities

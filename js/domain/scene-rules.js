@@ -1,5 +1,7 @@
-import { placeEntity, recoverSurfacePlacements, getPlacementTargets, sameTarget, legalContactPolygon } from './scene-placement.js';
+import { placeEntity, recoverSurfacePlacements, getPlacementTargets, sameTarget, legalContactPolygon, orderedSceneEntities } from './scene-placement.js';
 import { nearestPoint } from './placement-geometry.js';
+import { getCharacterContact, getCharacterStageBounds } from './character-geometry.js';
+import { measureBubble } from '../core/bubble-svg.js';
 import {
   CAMERA_CONSTANTS,
   CHARACTER_DIMENSIONS,
@@ -45,15 +47,21 @@ const MAX_BOUNDS_CACHE_ENTRIES = 256;
 export function getEntityBounds(entity, getAsset = (_id) => undefined) {
   const asset = entity?.kind === 'character' || entity?.kind === 'bubble'
     ? undefined : (typeof getAsset === 'function' ? getAsset(entity?.sourceId) : undefined);
+  // Character envelopes depend on the doll, its footwear, and measured custom art.
+  const contact = entity?.kind === 'character' ? getCharacterContact(entity.characterSnapshot, getAsset) : undefined;
   const inputs = [entity?.kind, entity?.scale, entity?.width,
-    typeof entity?.text === 'string' ? entity.text.length : 10, entity?.bubbleStyle,
-    asset?.displayWidth, asset?.displayHeight, asset?.groundAnchor?.x, asset?.groundAnchor?.y];
+    // Wrapped height depends on the words, not just the length.
+    entity?.kind === 'bubble' ? measureBubble(entity).totalHeight : null, entity?.bubbleStyle,
+    asset?.displayWidth, asset?.displayHeight, asset?.groundAnchor?.x, asset?.groundAnchor?.y,
+    contact?.x, contact?.y];
   const key = entity?.instanceId ?? entity;
   const cached = entityBoundsCache.get(key);
   if (cached && inputs.every((value, index) => Object.is(value, cached.inputs[index]))) {
     return { ...cached.bounds };
   }
-  const bounds = calculateEntityBounds(entity, () => asset);
+  const bounds = entity?.kind === 'character'
+    ? getCharacterStageBounds(entity.characterSnapshot, clampScale(entity?.scale ?? 1), getAsset)
+    : calculateEntityBounds(entity, () => asset);
   if (entityBoundsCache.size >= MAX_BOUNDS_CACHE_ENTRIES) {
     entityBoundsCache.delete(entityBoundsCache.keys().next().value);
   }
@@ -63,23 +71,11 @@ export function getEntityBounds(entity, getAsset = (_id) => undefined) {
 
 function calculateEntityBounds(entity, getAsset) {
   const scale = clampScale(entity?.scale ?? 1);
-  if (entity?.kind === 'character') {
-    return {
-      width: CHARACTER_BASE_WIDTH * scale,
-      height: CHARACTER_BASE_HEIGHT * scale,
-      anchorX: CHARACTER_GROUND_ANCHOR.x,
-      anchorY: CHARACTER_GROUND_ANCHOR.y
-    };
-  }
   if (entity?.kind === 'bubble') {
-    const bubbleWidth = Number(entity?.width) || LIMITS.DEFAULT_BUBBLE_WIDTH;
-    const textLen = typeof entity?.text === 'string' ? entity.text.length : 10;
-    const charsPerLine = Math.max(12, Math.floor(bubbleWidth / 11));
-    const lines = Math.max(1, Math.ceil(textLen / charsPerLine));
-    const baseHeight = Math.max(70, 36 + lines * 22 + (entity?.bubbleStyle === 'caption' ? 14 : 26));
+    const { width, totalHeight } = measureBubble(entity);
     return {
-      width: bubbleWidth * scale,
-      height: baseHeight * scale,
+      width: width * scale,
+      height: totalHeight * scale,
       anchorX: 0.5,
       anchorY: 1.0
     };
@@ -470,16 +466,25 @@ export function flipEntity(scene, instanceId, getAsset = (_id) => undefined) {
   return transformPlacedEntity(scene, instanceId, { flipped: !target.flipped }, getAsset);
 }
 
-export function reorderEntity(scene, instanceId, direction) {
-  if (scene.placementMode === 'room') return scene;
-  const ordered = [...scene.entities].sort((a, b) => a.order - b.order);
+export function reorderEntity(scene, instanceId, direction, getAsset = (_id) => undefined) {
+  if (!Number.isFinite(direction) || direction === 0) return scene;
+  const ordered = orderedSceneEntities(scene, getAsset);
   const index = ordered.findIndex((entity) => entity.instanceId === instanceId);
   const target = clamp(index + Math.sign(direction), 0, ordered.length - 1);
+  return setEntityLayer(scene, instanceId, target, getAsset);
+}
+
+/** Move one entity to a visible layer in a single undoable command. */
+export function setEntityLayer(scene, instanceId, target, getAsset = (_id) => undefined) {
+  const ordered = orderedSceneEntities(scene, getAsset);
+  const index = ordered.findIndex((entity) => entity.instanceId === instanceId);
+  if (!Number.isInteger(target) || target < 0 || target >= ordered.length) return scene;
   if (index < 0 || target === index) return scene;
-  [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+  ordered.splice(target, 0, ordered.splice(index, 1)[0]);
   const orderMap = new Map(ordered.map((entity, position) => [entity.instanceId, position + 1]));
   return touchScene({
     ...scene,
+    layerOrderMode: 'manual',
     entities: scene.entities.map((entity) => ({ ...entity, order: orderMap.get(entity.instanceId) }))
   });
 }
@@ -595,15 +600,15 @@ export function getEntityVisualBox(entity, getAsset = (_id) => undefined) {
 }
 
 export function alignEntities(scene, instanceIds, alignmentMode, getAsset = (_id) => undefined) {
-  const placementAware = scene.placementMode === 'room' || scene.entities.some(e => instanceIds.includes(e.instanceId) && e.placement?.kind === 'surface');
-  if (placementAware) {
-    const supports = scene.entities.filter(e => instanceIds.includes(e.instanceId)).map(e => JSON.stringify([e.placement?.kind, e.placement?.regionId, e.attachedTo, e.placement?.surfaceId]));
-    if (new Set(supports).size > 1) return scene;
-  }
   if (!isAlignmentMode(alignmentMode) || !Array.isArray(instanceIds) || instanceIds.length < 2) return scene;
   const idSet = new Set(instanceIds);
   const targets = scene.entities.filter((e) => idSet.has(e.instanceId) && !e.pinned);
   if (targets.length < 2) return scene;
+  const placementAware = scene.placementMode === 'room' || targets.some(e => e.placement?.kind === 'surface');
+  if (placementAware) {
+    const supports = targets.map(e => JSON.stringify([e.placement?.kind, e.placement?.regionId, e.attachedTo, e.placement?.surfaceId]));
+    if (new Set(supports).size > 1) return scene;
+  }
 
   const boxes = targets.map((entity) => ({
     entity,

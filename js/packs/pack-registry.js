@@ -6,6 +6,7 @@
  * validation boundary.
  */
 
+import { hasValidCardboardFinish } from '../domain/cardboard.js';
 import { sanitizePlacementRules, sanitizeSurfaces, validPolygon } from '../domain/placement-geometry.js';
 
 export const PACK_MANIFEST_SCHEMA_VERSION = 1;
@@ -223,6 +224,9 @@ export function createPackRegistry(manifests = [], {
 }
 
 function validatePlacementMetadata(asset, errors) {
+  if (!hasValidCardboardFinish(asset)) {
+    errors.push('asset ' + asset.id + ' has invalid cardboard finish');
+  }
   const rules = asset.placementRules == null ? null : sanitizePlacementRules(asset.placementRules);
   const surfaces = sanitizeSurfaces(asset.supportSurfaces);
   if (asset.placementRules != null && (asset.kind !== 'prop' || !rules)) errors.push('asset ' + asset.id + ' has invalid placement rules');

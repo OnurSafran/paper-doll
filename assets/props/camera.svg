@@ -1,11 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_camera">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="130 175 740 654" data-asset-id="prop_camera">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="715" y="264" width="70" height="42" rx="12" fill="#e9c46a" stroke-width="12"/>
     <path d="M140 300 L300 300 L370 235 L630 235 L700 300 L860 300 L860 820 L140 820 Z" fill="#9e82c7"/>
     <path d="M370 235 L390 185 L610 185 L630 235" fill="#7e67a9"/>
+    <path d="M148 464 H852 V697 H148 Z" fill="#7e67a9" stroke="none"/>
+    <rect x="746" y="452" width="72" height="269" rx="26" fill="#514039" stroke-width="12"/>
+    <path d="M770 486 V679 M793 486 V679" fill="none" stroke="#79665d" stroke-width="7"/>
     <rect x="210" y="350" width="110" height="55" rx="10" fill="#cbe3ef" stroke="#2d261e" stroke-width="10"/>
     <circle cx="500" cy="565" r="175" fill="#cbe3ef"/>
     <circle cx="500" cy="565" r="105" fill="#457b9d"/>
     <circle cx="500" cy="565" r="45" fill="#2d526d" stroke="#cbe3ef" stroke-width="12"/>
+    <path d="M386 547 A117 117 0 0 1 461 454" fill="none" stroke="#fff8eb" stroke-width="14"/>
+    <circle cx="478" cy="545" r="16" fill="#fff8eb" stroke="none"/>
     <circle cx="730" cy="390" r="24" fill="#f2aa35" stroke="none"/>
     <circle cx="770" cy="390" r="12" fill="#ef476f" stroke="none"/>
     <path d="M190 770 Q500 800 810 770" fill="none" stroke="#c8b7df" stroke-width="10"/>

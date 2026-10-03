@@ -129,7 +129,7 @@ test('P1 Fix: Blink geometry applies scale around head pivot without shifting ey
   assert.ok(transform.includes('scale(1, 0.1)'), 'Transform must include blink scale');
 });
 
-test('P1 Fix: Rigid wearable fallback prevents limb detachment when dressed in rigid clothing', () => {
+test('Retired gestures leave arms at rest with or without rigid clothing', () => {
   const nakedDoll = {
     instanceId: 'char-1',
     kind: 'character',
@@ -153,8 +153,7 @@ test('P1 Fix: Rigid wearable fallback prevents limb detachment when dressed in r
   };
 
   const nakedPose = evaluateCharacterPose(nakedDoll, 500, { playbackEnabled: true, fallbackLegacy: false });
-  // In naked doll with raw legacy wave clip, arm rotates during wave
-  assert.notEqual(nakedPose.armRight.rotate, 0, 'Naked doll arm moves during raw wave');
+  assert.equal(nakedPose.armRight.rotate, 0, 'Retired wave cannot move an uncovered arm');
 
   const dressedPose = evaluateCharacterPose(dressedDoll, 500, { playbackEnabled: true, fallbackLegacy: false });
   // In rigid dressed doll, arm is held rigid to avoid disconnecting from static clothing

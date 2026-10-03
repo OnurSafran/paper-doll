@@ -34,6 +34,8 @@ test('duplicate props share one symbol, scope local references, and prune unused
     assert.equal(loads, 1);
     const symbol = host.children[0].children[0].children[0];
     assert.equal(symbol.localName, 'symbol');
+    assert.equal(symbol.getAttribute('overflow'), 'visible', 'only the instance viewport clips stroke edges');
+    assert.equal(symbol.children[0].getAttribute('overflow'), 'visible');
     const [shape, use] = symbol.children[0].children;
     assert.notEqual(shape.getAttribute('id'), 'shape');
     assert.equal(use.getAttribute('href'), `#${shape.getAttribute('id')}`);

@@ -209,6 +209,7 @@ const sceneOutlineView = createSceneOutlineView({
   $$,
   askConfirm,
   miniButton,
+  customArtRepo,
   getAsset: getEffectiveAsset
 });
 

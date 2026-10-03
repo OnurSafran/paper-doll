@@ -11,7 +11,7 @@
 
 **Decision:** Lock **Family & Home Stories** (`pack_family_home`) as the first expansion. The remaining four expansions stay in the proposed order: **Neighborhood Life**, **Nature & Animal Adventures**, **School, City & Creative Life**, and **Enchanted Worlds**. Each expansion is planned as a complete wardrobe, prop collection, four settings, and several connected storytelling chapters.
 
-The first expansion scope is approved and its development build is implemented. The [exact ledger and verification status](FAMILY-HOME-IMPLEMENTATION.md) are available; its hosted release date is not assigned. [ROADMAP.md](ROADMAP.md) remains authoritative for implementation status and delivery order. “DLC” means optional content here; purchases, accounts, storefronts, and online community hosting are outside this proposal. Priorities are design judgments based on the local catalog and implementation, not player-research findings.
+The first expansion scope is approved and its development build is implemented. Its hosted release date is not assigned. [ROADMAP.md](ROADMAP.md) remains authoritative for implementation status and delivery order. “DLC” means optional content here; purchases, accounts, storefronts, and online community hosting are outside this proposal. Priorities are design judgments based on the local catalog and implementation, not player-research findings.
 
 ### Packaging decisions
 
@@ -34,7 +34,7 @@ The locked first expansion is **Family & Home Stories**:
 - **Scope boundary:** static scene-based pretend play; no caregiving meters, economy, simulation, or required new animation system
 - **Core reuse:** cake, balloons, tea set, armchair, and sleeping cat remain core assets and are not counted again
 
-This locks the product scope and production budget. The exact ledger, fit assignments and authored files are now available in [FAMILY-HOME-IMPLEMENTATION.md](FAMILY-HOME-IMPLEMENTATION.md).
+This locks the product scope and production budget. The fit assignments and authored files live in `assets/packs/pack_family_home/` and `js/packs/family-home/`.
 
 
 Paper Doll Studio is a zero-dependency, offline-first, client-side paper doll storytelling studio. The shipped core catalog (`v1.20.0`) provides **145 cataloged SVG assets** across 6 base dolls, 19 modular facial features, 87 wearables/hair/accessories, 11 backgrounds, and 22 props.

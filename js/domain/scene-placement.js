@@ -172,7 +172,7 @@ export function setPlacementMode(scene, mode, getAsset) {
   return { ...next, updatedAt: new Date().toISOString() };
 }
 export function orderedSceneEntities(scene, getAsset) {
-  if (scene.placementMode !== 'room') return [...scene.entities].sort((a, b) => a.order - b.order);
+  if (scene.placementMode !== 'room' || scene.layerOrderMode === 'manual') return [...scene.entities].sort((a, b) => a.order - b.order);
   const roots = scene.entities.filter(e => !e.attachedTo && e.kind !== 'bubble');
   const band = e => e.kind === 'bubble' || e.placement?.kind === 'free' || !e.placement ? 3 : e.placement.kind === 'wall' ? 0 : placementRules(e, getAsset)?.renderClass === 'ground' ? 1 : 2;
   roots.sort((a, b) => band(a) - band(b) || (band(a) === 2 ? a.y - b.y : 0) || a.order - b.order || a.instanceId.localeCompare(b.instanceId));

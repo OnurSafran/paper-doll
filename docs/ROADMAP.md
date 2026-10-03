@@ -162,7 +162,7 @@ Gate F is closed. The hosted iPad smoke test is the last item before family rele
 
 **Family & Home Stories** (`pack_family_home`) is the locked first content expansion. Its product scope is fixed at 48 wearables, 40 props, 4 backgrounds, 6 starter scenes, 12 bilingual story prompts, and 8 compatible outfit recipes. It must work with core content alone, cover all five life stages, and stay within the static scene-based scope defined in [DLC-AND-STUFF-PACKS.md](DLC-AND-STUFF-PACKS.md).
 
-The full 92-asset development build, exact ledger, eight outfit recipes and six bilingual starter scenes are implemented. See [FAMILY-HOME-IMPLEMENTATION.md](FAMILY-HOME-IMPLEMENTATION.md) for evidence and [FAMILY-HOME-QA-PROMPT.md](FAMILY-HOME-QA-PROMPT.md) for the remaining independent fit/export/device checks. Hosted release remains gated on those checks.
+The full 92-asset development build, exact ledger, eight outfit recipes and six bilingual starter scenes are implemented. Independent fit, export and physical-device checks remain open, and hosted release stays gated on them.
 
 Pack infrastructure baseline is implemented: trusted manifests, pack-aware registry filtering, missing-pack descriptors, pack reference persistence, and service-worker resource validation. The full package manifest, pack browsing controls, recipe loading, localization and template registration are now implemented.
 

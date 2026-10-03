@@ -169,12 +169,7 @@
   box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.4);
 }
 
-.animation-transport-btn.is-looping {
-  background: var(--paper-card);
-  border-color: var(--coral);
-  color: var(--coral-dark);
-  font-weight: 800;
-}
+
 
 /* Play Selection Toolbar Segmented Controls */
 .segmented-control {
@@ -775,7 +770,7 @@ main:has(> #play-screen:not([hidden])) {
 }
 
 .inspector-tabs .tab-btn {
-  min-height: 38px;
+  min-height: 44px;
   padding: 0.35rem 0.75rem;
   font-size: 0.82rem;
   font-weight: 750;
@@ -818,6 +813,95 @@ main:has(> #play-screen:not([hidden])) {
   flex-wrap: wrap;
 }
 
+.inspector-field {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.inspector-field legend {
+  margin-bottom: 0.45rem;
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.inspector-help {
+  margin: 0 0 0.5rem;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.play-inspector-panel .clip-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.play-inspector-panel .clip-buttons button {
+  min-height: 56px;
+  border: 1px solid var(--line);
+  background: var(--paper-card);
+  text-align: left;
+}
+
+.play-inspector-panel .segmented-control button {
+  position: relative;
+  padding: 0.55rem 1.5rem 0.55rem 0.6rem;
+  font-size: 0.85rem;
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.play-inspector-panel .segmented-control button[aria-pressed="true"] {
+  background: var(--paper-warm);
+  border: 2px solid var(--coral-dark);
+  color: var(--coral-dark);
+}
+
+.play-inspector-panel .segmented-control button[aria-pressed="true"]::after {
+  content: '✓';
+  position: absolute;
+  top: 0.3rem;
+  right: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.play-inspector-panel .motion-intensity-buttons,
+.play-inspector-panel .phase-offset-buttons,
+.play-inspector-panel .rhythm-buttons {
+  display: flex;
+  width: 100%;
+}
+
+.play-inspector-panel .motion-intensity-buttons button,
+.play-inspector-panel .phase-offset-buttons button,
+.play-inspector-panel .rhythm-buttons button {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.inspector-timing-options {
+  border-top: 1px dashed var(--line);
+}
+
+.inspector-timing-options summary {
+  display: list-item;
+  min-height: 44px;
+  padding: 0.7rem 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
 .play-stage {
   position: relative;
   width: 100%;
@@ -833,6 +917,10 @@ main:has(> #play-screen:not([hidden])) {
   touch-action: none;
   isolation: isolate;
 }
+
+/* Set by stage-hover-cursor.js: only over visible artwork, and for the whole drag. */
+.play-stage[data-cursor="grab"] { cursor: grab; }
+.play-stage[data-cursor="grabbing"] { cursor: grabbing; }
 
 .scene-world {
   position: absolute;
@@ -913,7 +1001,8 @@ main:has(> #play-screen:not([hidden])) {
   transform: translate(calc(-100% * var(--anchor-x, 0.5)), calc(-100% * var(--anchor-y, 1)));
   pointer-events: auto;
   touch-action: none;
-  cursor: grab;
+  /* Buttons are rectangles. The stage sets the cursor from the visible artwork under the pointer. */
+  cursor: inherit;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1001,45 +1090,54 @@ main:has(> #play-screen:not([hidden])) {
   font-weight: 800;
 }
 
-.scene-entity-positioner.is-selected::after {
+.scene-entity-positioner.is-multi-selected {
+  --selection-color: var(--sage);
+}
+
+.scene-entity-positioner.is-selected {
+  --selection-color: var(--coral);
+}
+
+/* Keyboard focus uses the same marker rather than the old rectangular box. */
+.scene-entity-positioner:focus-visible {
+  outline: none;
+  --selection-color: var(--sky);
+}
+
+/* Cached painted bounds place a small marker above the art, without boxing it
+ * in. The visual/motion parent also carries flips, attachments and animation. */
+.scene-entity-positioner:is(.is-selected, .is-multi-selected) > .scene-entity-visual::after,
+.scene-entity-positioner:is(.is-selected, .is-multi-selected) .scene-entity-motion::after,
+.scene-entity-positioner:focus-visible > .scene-entity-visual::after,
+.scene-entity-positioner:focus-visible .scene-entity-motion::after {
   content: '';
   position: absolute;
-  inset: -6px;
-  border: 3px dashed white;
-  border-radius: 14px;
-  filter: drop-shadow(0 0 3px var(--ink));
+  left: calc(var(--selection-center-x, 0.5) * 100%);
+  top: max(calc(var(--selection-top, 0) * 100%),
+    calc(24px - (var(--y) - var(--entity-height) * var(--anchor-y, 1)) /
+      (var(--entity-height) * var(--canvas-height-ratio, 1)) * 100%));
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 14px solid var(--selection-color);
+  transform: translate(-50%, calc(-100% - 6px));
+  filter: drop-shadow(0 -1px 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 2px 2px rgba(46, 38, 31, 0.5));
   pointer-events: none;
-  animation: selection-breathe 1.5s ease-in-out infinite alternate;
+  z-index: 20;
 }
 
-@keyframes selection-breathe {
-  to { filter: drop-shadow(0 0 5px var(--coral)); }
-}
-
-.scene-entity-positioner.is-multi-selected {
-  outline: 2px dashed var(--coral) !important;
-  outline-offset: 4px;
-  background: rgba(240, 108, 92, 0.08);
-  border-radius: 8px;
+.scene-entity-positioner > .scene-entity-visual:has(> .scene-entity-motion)::after {
+  content: none;
 }
 
 .scene-entity-positioner.is-dragging {
-  cursor: grabbing;
   z-index: 999 !important;
   filter: drop-shadow(12px 18px 12px rgba(46, 38, 31, 0.28));
 }
 
-.scene-entity-positioner.is-pinned {
-  cursor: default;
-}
-
 .scene-entity-positioner.is-pinned .scene-entity-visual {
   filter: drop-shadow(0 2px 4px rgba(46, 38, 31, 0.1));
-}
-
-.scene-entity-positioner.is-selected.is-pinned::after {
-  border-color: var(--sage);
-  animation: none;
 }
 
 .pinned-badge {
@@ -1058,14 +1156,6 @@ main:has(> #play-screen:not([hidden])) {
   box-shadow: var(--shadow-sm);
   pointer-events: none;
   z-index: 10;
-}
-
-.scene-entity-positioner.is-bubble-entity {
-  cursor: grab;
-}
-
-.scene-entity-positioner.is-bubble-entity.is-dragging {
-  cursor: grabbing;
 }
 
 .scene-entity-positioner.is-bubble-entity svg {
@@ -1107,15 +1197,22 @@ main:has(> #play-screen:not([hidden])) {
   will-change: transform;
 }
 
+/*
+ * The positioner is the selection envelope, ending at the neutral foot contact.
+ * The motion box is the full 300 × 450 authoring canvas at uniform scale, so it
+ * overflows below the envelope; root motion pivots on the contact.
+ */
 .scene-entity-motion {
-  position: relative;
+  position: absolute;
   display: block;
+  left: 0;
+  top: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% * var(--canvas-height-ratio, 1));
   transform: translate(calc(var(--motion-tx, 0) / var(--char-width, 235) * 100%), calc(var(--motion-ty, 0) / var(--char-height, 352.5) * 100%))
              rotate(calc(var(--motion-rot, 0) * 1deg))
              scale(var(--motion-scale-x, 1), var(--motion-scale-y, 1));
-  transform-origin: 50% 100%;
+  transform-origin: var(--contact-x-pct, 50%) var(--contact-y-pct, 100%);
   will-change: transform;
 }
 
@@ -1219,6 +1316,16 @@ main:has(> #play-screen:not([hidden])) {
   height: 100%;
 }
 
+/* Unavailable artwork shows a placeholder that fills the box it can be selected by. */
+.scene-entity-visual > .asset-placeholder,
+.scene-character-canvas > .scene-character-placeholder {
+  inset: 0;
+  transform: none;
+  max-width: none;
+  display: grid;
+  place-items: center;
+}
+
 .scene-hud {
   position: absolute;
   z-index: 5;
@@ -1271,19 +1378,18 @@ main:has(> #play-screen:not([hidden])) {
   display: none;
 }
 
-/* Floating Context Ring */
+/* A window overlay follows selected art and may cross the clipped stage edge. */
 .context-ring {
-  position: absolute;
+  position: fixed;
   z-index: 1100;
-  left: calc(var(--ring-x) / var(--stage-width, 1600) * 100%);
-  top: calc(var(--ring-y) / 900 * 100%);
+  left: 12px;
+  top: 12px;
   min-width: 0;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 2px;
   padding: 3px 4px;
-  transform: translate(-50%, -100%);
   pointer-events: auto;
   background: rgba(255, 253, 249, 0.96);
   backdrop-filter: blur(14px);
@@ -1291,31 +1397,20 @@ main:has(> #play-screen:not([hidden])) {
   border: 1.5px solid var(--line-strong);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-float);
-  max-width: calc(100% - 24px);
+  max-width: calc(100vw - 24px);
   overflow-x: auto;
   scrollbar-width: thin;
   flex-wrap: nowrap;
   white-space: nowrap;
 }
 
-.context-ring.is-below {
-  transform: translate(-50%, 15%);
+.context-ring.is-camera-panning {
+  transition: left 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
-.context-ring.align-left {
-  transform: translate(0, -100%);
-}
-
-.context-ring.align-right {
-  transform: translate(-100%, -100%);
-}
-
-.context-ring.is-below.align-left {
-  transform: translate(0, 15%);
-}
-
-.context-ring.is-below.align-right {
-  transform: translate(-100%, 15%);
+.context-ring.is-dragging {
+  pointer-events: none;
+  transition: none;
 }
 
 .context-ring .selection-pill {
@@ -1398,33 +1493,12 @@ main:has(> #play-screen:not([hidden])) {
   }
 }
 
-/* On narrow stages, center the panel in the visible camera viewport. */
-@container (max-width: 600px) {
-  .context-ring,
-  .context-ring.align-left,
-  .context-ring.align-right {
-    left: calc((var(--camera-x, 0) + 800) / var(--stage-width, 1600) * 100%);
-    max-width: calc(100cqw - 24px);
-    transform: translate(-50%, -100%);
-  }
-  .context-ring.is-below,
-  .context-ring.is-below.align-left,
-  .context-ring.is-below.align-right {
-    transform: translate(-50%, 15%);
-  }
-}
-
-.context-ring.is-multi {
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-
 /* Scene Spawner Panel */
 .spawn-panel {
   flex: 1 1 auto;
   min-height: 0;
   padding: 0.85rem;
-  overflow-y: auto;
+  overflow: visible;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
@@ -1441,6 +1515,22 @@ main:has(> #play-screen:not([hidden])) {
   color: var(--muted);
   font-size: 0.8rem;
   line-height: 1.5;
+}
+
+.spawn-tray-controls {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-bottom: 8px;
+  background: var(--paper-grain), var(--paper-card);
+}
+
+.spawn-tray-controls:not(:has(> :not([hidden]))) {
+  display: none;
+}
+
+.spawn-tray-controls .tray-pack-filter {
+  margin-bottom: 0;
 }
 
 .spawn-panel .panel-heading {
@@ -1497,9 +1587,9 @@ main:has(> #play-screen:not([hidden])) {
 
 .tray-pack-filter {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: 6px;
+  gap: 0.65rem;
   margin-bottom: 8px;
 }
 
@@ -1508,9 +1598,10 @@ main:has(> #play-screen:not([hidden])) {
 }
 
 .tray-pack-filter select {
+  grid-column: -2 / -1;
   width: 100%;
   min-width: 0;
-  min-height: 36px;
+  min-height: 32px;
   padding: 0.35rem 1.6rem 0.35rem 0.5rem;
   appearance: none;
   color: var(--ink);
@@ -1552,28 +1643,43 @@ main:has(> #play-screen:not([hidden])) {
 
 /* Creation shares the filter row but never looks like a prop preview. */
 .paint-prop-action-card {
-  display: flex;
+  display: inline-flex;
+  grid-column: 1;
+  justify-self: stretch;
+  width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 4px;
-  min-height: 36px;
-  padding: 0.25rem 0.35rem;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
+  min-height: 32px;
+  padding: 0.2rem 0.45rem;
+  border-color: var(--coral-dark);
+  border-radius: var(--radius-pill);
+  background: var(--coral-soft);
   color: var(--coral-dark);
+  box-shadow: 0 2px 0 var(--coral);
   text-align: left;
-  box-shadow: none;
 }
 
 .paint-prop-action-icon {
-  font-size: 1.8rem;
-  line-height: 1;
-  font-weight: 500;
+  display: inline-flex;
+  flex: 0 0 14px;
 }
 
 .paint-prop-action-copy strong {
   font-size: 0.75rem;
   white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .paint-prop-action-card:hover:not(:disabled) {
+    background: var(--paper-grain), var(--coral-soft);
+    border-color: var(--coral-dark);
+    box-shadow: 0 3px 0 var(--coral);
+  }
+}
+
+.paint-prop-action-card:active:not(:disabled) {
+  box-shadow: 0 1px 0 var(--coral);
 }
 
 @media (pointer: coarse), (max-width: 600px) {
@@ -1583,13 +1689,6 @@ main:has(> #play-screen:not([hidden])) {
   .tray-pack-filter select,
   .paint-prop-action-card {
     min-height: 44px;
-  }
-}
-
-@media (hover: hover) {
-  .paint-prop-action-card:hover {
-    color: var(--ink);
-    background: var(--sage-soft);
   }
 }
 

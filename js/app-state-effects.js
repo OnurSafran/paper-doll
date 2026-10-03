@@ -53,13 +53,8 @@ export function createAppStateEffects(context) {
       context.playView.renderSelectedActions(state);
       return;
     }
-    if (action.type === 'scene/setAnimationSettings' || action.type === 'scene/toggleScenePlayback' || action.type === 'scene/playbackFinished') {
+    if (action.type === 'scene/setAnimationSettings' || action.type === 'scene/toggleScenePlayback') {
       context.playView.renderSelectedActions(state);
-      if (action.type === 'scene/playbackFinished') return;
-    }
-    if (action.type === 'scene/toggleSceneLoop') {
-      context.playView.renderSelectedActions(state);
-      return;
     }
     if (action.type === 'scene/setDollExpressionIntensity' || action.type === 'scene/setDollPose' || action.type === 'scene/setDollAnimation') {
       context.playView.renderSelectedActions(state);

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_plant">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="183 70 634 869" data-asset-id="prop_plant">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
     <!-- Stems connect the leaves to the soil behind the pot rim. -->
     <path d="M500 660 V210 M500 620 Q400 410 300 340 M500 620 Q600 410 700 340 M500 650 L260 510 M500 650 L740 510" fill="none" stroke="#1d685e" stroke-width="18"/>

@@ -1,11 +1,115 @@
 /** Selection context ring and keyboard/batch actions. */
-import { getEntityBounds } from '../../domain/scene-rules.js';
 import { escapeCss } from '../../core/css-escape.js';
 import { CAMERA_CONSTANTS, DEFAULT_STAGE_WIDTH, VIEWPORT_WIDTH, bubbleStyleLabelKey } from '../../domain/vocabulary.js';
 import { assetName, t } from '../../core/i18n.js';
 import { getPlacementChoices, openPlacementActions } from './placement-controls.js';
+import { logicalToClient, stageContentRect } from '../../core/coordinate-space.js';
+
+const TOOLBAR_GAP = 12;
+const WINDOW_MARGIN = 12;
+const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+export function sceneControlDisabledReason(scene, selectedIds, action) {
+  const movable = scene.entities.filter(e => selectedIds.includes(e.instanceId) && !e.pinned);
+  if (['flip', 'smaller', 'larger'].includes(action) && !movable.length) return 'play.pinnedMoveBlocked';
+  if (!action.startsWith('align') && !['distributeH', 'distributeV'].includes(action)) return null;
+  if (movable.length < 2) return 'placement.alignmentUnavailable';
+  if (['distributeH', 'distributeV'].includes(action) && movable.length < 3) return 'placement.distributionUnavailable';
+  if (scene.placementMode === 'room' || movable.some(e => e.placement?.kind === 'surface')) {
+    const supports = movable.map(e => JSON.stringify([e.placement?.kind, e.placement?.regionId, e.attachedTo, e.placement?.surfaceId]));
+    if (new Set(supports).size > 1) return 'placement.alignmentUnavailable';
+  }
+  return null;
+}
+
+/** Stay centered on art until the window, rather than the stage, limits space. */
+export function contextToolbarPosition(art, size, viewport, avoid = null) {
+  const minX = viewport.left + WINDOW_MARGIN, maxX = viewport.left + viewport.width - WINDOW_MARGIN - size.width;
+  const minY = viewport.top + WINDOW_MARGIN, maxY = viewport.top + viewport.height - WINDOW_MARGIN - size.height;
+  const left = Math.max(minX, Math.min(maxX, (art.left + art.right - size.width) / 2));
+  // Leave room for the selection arrow when placing actions above the art.
+  const below = art.bottom + TOOLBAR_GAP, above = art.top - 32 - size.height;
+  const obstacles = avoid ? (Array.isArray(avoid) ? avoid : [avoid]) : [];
+  const collisions = obstacles.filter(rect => overlaps({ left, right: left + size.width, top: below, bottom: below + size.height }, rect));
+  const collision = collisions.length > 0;
+  const isAbove = (below > maxY || collision) && (above >= minY || art.top - viewport.top > viewport.top + viewport.height - art.bottom);
+  const preferredTop = isAbove ? above : collision ? Math.max(below, ...collisions.map(rect => rect.bottom + TOOLBAR_GAP)) : below;
+  return { left, top: Math.max(minY, Math.min(maxY, preferredTop)), isAbove: Boolean(isAbove) };
+}
 
 export function createSelectionHudController(context) {
+  let ring = null;
+  let anchors = [];
+  let layout = null;
+  let resizeObserver = null;
+  let layoutFrame = null;
+
+  function removeContextRing() {
+    if (!ring) return;
+    ring?.remove();
+    ring = null;
+    anchors = [];
+    layout = null;
+    resizeObserver?.disconnect();
+    resizeObserver = null;
+    if (layoutFrame !== null) cancelAnimationFrame(layoutFrame);
+    layoutFrame = null;
+    globalThis.window?.removeEventListener('resize', scheduleLayout);
+    globalThis.window?.removeEventListener('scroll', onScroll, true);
+    globalThis.window?.visualViewport?.removeEventListener('resize', scheduleLayout);
+    globalThis.window?.visualViewport?.removeEventListener('scroll', scheduleLayout);
+  }
+
+  function measureLayout() {
+    layoutFrame = null;
+    const stage = context.$('#play-stage');
+    if (!ring || !stage) return;
+    const rect = stageContentRect(stage);
+    const obstacles = [stage.querySelector('.camera-hud:not([hidden])'), context.$('.play-stage-controls')]
+      .filter(element => element && !element.hidden).map(element => element.getBoundingClientRect()).filter(box => box.width > 0);
+    ring.style.maxWidth = `${Math.max(1, (window.visualViewport?.width || document.documentElement.clientWidth) - 2 * WINDOW_MARGIN)}px`;
+    layout = { stage: rect, width: ring.offsetWidth || layout?.width, height: ring.offsetHeight || layout?.height,
+      clip: stage.closest('main')?.getBoundingClientRect(),
+      avoid: obstacles.map(box => ({ left: box.left - rect.left, top: box.top - rect.top, width: box.width, height: box.height })) };
+    updateContextRingPosition();
+  }
+
+  function scheduleLayout() {
+    if (ring && layoutFrame === null) layoutFrame = requestAnimationFrame(measureLayout);
+  }
+
+  function onScroll(event) {
+    if (!ring?.contains(event.target)) scheduleLayout();
+  }
+
+  // Drag previews already know the stage rectangle. All other layout reads are
+  // confined to selection/layout changes; pointer movement reuses this cache.
+  function updateContextRingPosition(stageRect = layout?.stage, cameraTransition = false) {
+    if (!ring || !layout || !stageRect) return;
+    const state = context.store.getState();
+    const vv = globalThis.window?.visualViewport;
+    const viewport = { left: vv?.offsetLeft || 0, top: vv?.offsetTop || 0,
+      width: vv?.width || document.documentElement.clientWidth, height: vv?.height || window.innerHeight };
+    const stageBox = { left: stageRect.left, top: stageRect.top, right: stageRect.left + stageRect.width, bottom: stageRect.top + stageRect.height };
+    const visibleWindow = { left: viewport.left, top: viewport.top, right: viewport.left + viewport.width, bottom: viewport.top + viewport.height };
+    const visible = anchors.map(element => context.hitTester.artworkBounds(element)).filter(Boolean).map(bounds => {
+      const topLeft = logicalToClient(bounds.left, bounds.top, stageRect, state.currentScene.cameraX);
+      const bottomRight = logicalToClient(bounds.right, bounds.bottom, stageRect, state.currentScene.cameraX);
+      return { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y };
+    }).filter(bounds => overlaps(bounds, stageBox) && overlaps(bounds, visibleWindow) && (!layout.clip || overlaps(bounds, layout.clip)));
+    ring.hidden = state.ui.mode !== 'play' || !visible.length;
+    if (ring.hidden) return;
+    const art = { left: Math.min(...visible.map(b => b.left)), right: Math.max(...visible.map(b => b.right)),
+      top: Math.min(...visible.map(b => b.top)), bottom: Math.max(...visible.map(b => b.bottom)) };
+    const avoid = layout.avoid.map(box => ({ left: stageRect.left + box.left, top: stageRect.top + box.top,
+      right: stageRect.left + box.left + box.width, bottom: stageRect.top + box.top + box.height }));
+    const position = contextToolbarPosition(art, layout, viewport, avoid);
+    ring.classList.toggle('is-above', position.isAbove);
+    ring.classList.toggle('is-dragging', Boolean(context.activeDragInstanceId));
+    ring.classList.toggle('is-camera-panning', cameraTransition && !context.activeDragInstanceId);
+    ring.style.left = `${position.left}px`;
+    ring.style.top = `${position.top}px`;
+  }
   function openEditBubbleDialog(entity) {
     const dialog = context.$('#bubble-text-dialog');
     const input = context.$('#bubble-text-input');
@@ -20,7 +124,8 @@ export function createSelectionHudController(context) {
 
   function renderContextRing(state = context.store.getState()) {
     const focusedAction = context.getContextRingFocusAction(document.activeElement);
-    context.$('#scene-entities .context-ring')?.remove();
+    const scrollLeft = ring?.scrollLeft || 0;
+    removeContextRing();
     if (state.ui.mode !== 'play') return;
 
     const selectedIds = state.ui.selectedEntityIds || (state.ui.selectedEntityId ? [state.ui.selectedEntityId] : []);
@@ -28,36 +133,12 @@ export function createSelectionHudController(context) {
 
     const isMulti = selectedIds.length > 1;
     let label;
-    let ringX;
-    let ringY;
-    let placeBelow;
     let selected = null;
 
     if (isMulti) {
       label = t('play.itemCount', { count: selectedIds.length });
       const selectedEntities = state.currentScene.entities.filter((e) => selectedIds.includes(e.instanceId));
       if (selectedEntities.length === 0) return;
-      let minX = Infinity;
-      let maxX = -Infinity;
-      let minY = Infinity;
-      let maxY = -Infinity;
-      for (const ent of selectedEntities) {
-        const bounds = getEntityBounds(ent, context.getAsset);
-        const top = ent.y - bounds.height * (bounds.anchorY ?? 1.0);
-        const bottom = ent.y + bounds.height * (1.0 - (bounds.anchorY ?? 1.0));
-        minX = Math.min(minX, ent.x);
-        maxX = Math.max(maxX, ent.x);
-        minY = Math.min(minY, top);
-        maxY = Math.max(maxY, bottom);
-      }
-      ringX = (minX + maxX) / 2;
-      if (maxY > context.CONTEXT_RING_FLIP_THRESHOLD_Y) {
-        placeBelow = false;
-        ringY = Math.max(context.CONTEXT_RING_MIN_Y, minY - context.CONTEXT_RING_GAP_ABOVE);
-      } else {
-        placeBelow = true;
-        ringY = Math.min(context.CONTEXT_RING_MAX_Y, maxY + context.CONTEXT_RING_GAP_BELOW);
-      }
     } else {
       selected = state.currentScene.entities.find((entity) => entity.instanceId === selectedIds[0]);
       if (!selected) return;
@@ -66,26 +147,11 @@ export function createSelectionHudController(context) {
       label = selected.kind === 'bubble'
         ? t(bubbleStyleLabelKey(selected.bubbleStyle))
         : (selected.sourceId === 'demo_emma' ? 'Emma' : preset?.name ?? assetName(asset, t('play.sceneProp')));
-      ringX = selected.x;
-      const bounds = getEntityBounds(selected, context.getAsset);
-      const top = selected.y - bounds.height * (bounds.anchorY ?? 1.0);
-      const bottom = selected.y + bounds.height * (1.0 - (bounds.anchorY ?? 1.0));
-      if (bottom > context.CONTEXT_RING_FLIP_THRESHOLD_Y || selected.y > context.CONTEXT_RING_FLIP_THRESHOLD_Y) {
-        placeBelow = false;
-        ringY = Math.max(context.CONTEXT_RING_MIN_Y, top - context.CONTEXT_RING_GAP_ABOVE);
-      } else {
-        placeBelow = true;
-        ringY = Math.min(context.CONTEXT_RING_MAX_Y, bottom + context.CONTEXT_RING_GAP_BELOW);
-      }
     }
 
-    const stageWidth = state.currentScene.stageWidth || DEFAULT_STAGE_WIDTH;
-    ringX = Math.max(50, Math.min(stageWidth - 50, ringX));
-    const horizontalClass = ringX < 250 ? ' align-left' : ringX > stageWidth - 250 ? ' align-right' : '';
-    const ring = document.createElement('div');
-    ring.className = `context-ring${placeBelow ? ' is-below' : ''}${horizontalClass}${isMulti ? ' is-multi' : ''}`;
-    ring.style.setProperty('--ring-x', String(ringX));
-    ring.style.setProperty('--ring-y', String(ringY));
+    ring = document.createElement('div');
+    const nextRing = ring;
+    ring.className = `context-ring${isMulti ? ' is-multi' : ''}`;
     ring.setAttribute('role', 'toolbar');
     ring.setAttribute('aria-label', t('play.contextRingAria'));
 
@@ -142,7 +208,8 @@ export function createSelectionHudController(context) {
       button.dataset.action = action;
       button.textContent = symbol;
       button.title = labelText;
-      if (state.currentScene.placementMode === 'room' && ['back','front'].includes(action)) { button.disabled = true; button.title = t('placement.depthAuto'); }
+      const disabledReason = sceneControlDisabledReason(state.currentScene, selectedIds, action);
+      if (disabledReason) { button.disabled = true; button.title = t(disabledReason); }
       button.setAttribute('aria-label', labelText);
       if (action === 'delete') {
         button.className = 'danger';
@@ -155,10 +222,26 @@ export function createSelectionHudController(context) {
       return button;
     }));
 
-    context.$('#scene-entities')?.append(ring);
+    // A body-level fixed overlay can cross the stage and its clipped ancestors.
+    // The scene itself keeps its existing panorama/artwork clipping behavior.
+    document.body.append(ring);
+    ring.addEventListener('keydown', handleStageKeydown);
+    ring.scrollLeft = scrollLeft;
+    const entities = new Map([...context.$('#scene-entities').children].map(element => [element.dataset.instanceId, element]));
+    anchors = selectedIds.map(id => entities.get(id)).filter(Boolean);
+    measureLayout();
+    if (typeof ResizeObserver === 'function') {
+      resizeObserver = new ResizeObserver(scheduleLayout);
+      resizeObserver.observe(context.$('#play-stage'));
+      resizeObserver.observe(ring);
+    }
+    window.addEventListener('resize', scheduleLayout);
+    window.addEventListener('scroll', onScroll, true);
+    window.visualViewport?.addEventListener('resize', scheduleLayout);
+    window.visualViewport?.addEventListener('scroll', scheduleLayout);
     if (focusedAction && typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(() => {
-        /** @type {HTMLButtonElement} */ (ring.querySelector(`button[data-action="${escapeCss(focusedAction)}"]`))?.focus?.({ preventScroll: true });
+        if (nextRing.isConnected) /** @type {HTMLButtonElement} */ (nextRing.querySelector(`button[data-action="${escapeCss(focusedAction)}"]`))?.focus?.({ preventScroll: true });
       });
     }
   }
@@ -169,6 +252,11 @@ export function createSelectionHudController(context) {
     const id = state.ui.selectedEntityId;
     const entity = state.currentScene.entities.find((item) => item.instanceId === id);
     if (!action || selectedIds.length === 0) return;
+    const disabledReason = sceneControlDisabledReason(state.currentScene, selectedIds, action);
+    if (disabledReason) {
+      context.store.dispatch({ type: 'ui/message', message: t(disabledReason) });
+      return;
+    }
 
     if (action.startsWith('align') || action === 'distributeH' || action === 'distributeV') {
       const modeMap = {
@@ -222,6 +310,7 @@ export function createSelectionHudController(context) {
   }
 
   function handleStageKeydown(event) {
+    if (event.target?.closest?.('.context-ring') && (event.key === 'Enter' || event.key === ' ')) return;
     const isSlider = Boolean(event.target?.matches?.('#camera-slider'));
     if (!isSlider && event.target?.matches?.('input, select, textarea, [contenteditable]')) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
@@ -319,5 +408,5 @@ export function createSelectionHudController(context) {
     }
   }
 
-  return { renderContextRing, handleEntityAction, handleStageKeydown, openEditBubbleDialog };
+  return { renderContextRing, updateContextRingPosition, removeContextRing, handleEntityAction, handleStageKeydown, openEditBubbleDialog };
 }

@@ -39,7 +39,8 @@ test('getEntityVisualBox computes accurate bounding boxes for characters, props,
   const charBox = getEntityVisualBox(character, mockGetAsset);
   assert.equal(charBox.centerX, 500);
   assert.equal(charBox.bottom, 700);
-  assert.equal(charBox.top, 700 - 352.5);
+  // The envelope ends at the neutral contact (classic reference without authored metadata).
+  assert.equal(charBox.top, 700 - 410 * 235 / 300);
   assert.equal(charBox.left, 500 - 235 / 2);
   assert.equal(charBox.right, 500 + 235 / 2);
 

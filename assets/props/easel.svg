@@ -1,11 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="prop_easel">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="190 103 620 863" data-asset-id="prop_easel">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
     <!-- Back Leg of Easel -->
-    <line x1="500" y1="180" x2="500" y2="940" stroke="#8b5e34" stroke-width="28"/>
+    <path d="M483 180 H517 V940 H483 Z" fill="#8b5e34"/>
 
     <!-- Left & Right Front Legs -->
-    <line x1="500" y1="120" x2="220" y2="950" stroke="#a06d3b" stroke-width="30"/>
-    <line x1="500" y1="120" x2="780" y2="950" stroke="#a06d3b" stroke-width="30"/>
+    <path d="M488 120 H512 L795 950 H765 L500 185 L235 950 H205 Z" fill="#a06d3b"/>
 
     <!-- Horizontal Canvas Shelf Bar -->
     <rect x="200" y="600" width="600" height="40" rx="10" fill="#a06d3b" stroke="#2d261e" stroke-width="16"/>

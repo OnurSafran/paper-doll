@@ -13,7 +13,7 @@ function styledNode() {
 }
 
 test('bounds stay current across moves, text edits, styles, scales and asset changes', () => {
-  const bubble = { instanceId: 'memo-bubble', kind: 'bubble', scale: 1, width: 200, text: 'a'.repeat(100) };
+  const bubble = { instanceId: 'memo-bubble', kind: 'bubble', scale: 1, width: 200, text: Array(30).fill('word').join(' ') };
   const initial = getEntityBounds(bubble);
   assert.deepEqual(getEntityBounds({ ...bubble, x: 123 }), initial);
   initial.width = 1;

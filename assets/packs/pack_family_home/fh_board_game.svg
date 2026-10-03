@@ -1,26 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_board_game">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="121 381 758 498" data-asset-id="fh_board_game">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-<rect x="130" y="390" width="740" height="480" rx="15" fill="#e9c46a"/>
-    <rect x="190" y="450" width="100" height="90" rx="5" fill="#e07a5f"/>
-    <rect x="190" y="560" width="100" height="90" rx="5" fill="#81b29a"/>
-    <rect x="190" y="670" width="100" height="90" rx="5" fill="#e9c46a"/>
-    <rect x="310" y="450" width="100" height="90" rx="5" fill="#81b29a"/>
-    <rect x="310" y="560" width="100" height="90" rx="5" fill="#e9c46a"/>
-    <rect x="310" y="670" width="100" height="90" rx="5" fill="#a78bc4"/>
-    <rect x="430" y="450" width="100" height="90" rx="5" fill="#e9c46a"/>
-    <rect x="430" y="560" width="100" height="90" rx="5" fill="#a78bc4"/>
-    <rect x="430" y="670" width="100" height="90" rx="5" fill="#78add2"/>
-    <rect x="550" y="450" width="100" height="90" rx="5" fill="#a78bc4"/>
-    <rect x="550" y="560" width="100" height="90" rx="5" fill="#78add2"/>
-    <rect x="550" y="670" width="100" height="90" rx="5" fill="#e07a5f"/>
-    <rect x="670" y="450" width="100" height="90" rx="5" fill="#78add2"/>
-    <rect x="670" y="560" width="100" height="90" rx="5" fill="#e07a5f"/>
-    <rect x="670" y="670" width="100" height="90" rx="5" fill="#81b29a"/>
-    <ellipse cx="480" cy="540" rx="30" ry="35" fill="#fff8eb"/>
-    <path d="M150 830 H850" fill="none" stroke="#bc8a5f" stroke-width="12"/>
-<path d="M240 495 H720 V605 H240 V715 H720" fill="none" stroke="#fff8eb" stroke-width="12"/>
-<path d="M455 560 L445 600 H515 L505 560 Z" fill="#fff8eb" stroke-width="10"/>
-<rect x="720" y="700" width="90" height="90" rx="14" fill="#fff8eb" stroke-width="10"/>
-<g fill="#2d261e" stroke="none"><circle cx="742" cy="722" r="8"/><circle cx="788" cy="722" r="8"/><circle cx="765" cy="745" r="8"/><circle cx="742" cy="768" r="8"/><circle cx="788" cy="768" r="8"/></g>
+    <rect x="130" y="390" width="740" height="480" rx="22" fill="#e9c46a"/>
+    <rect x="157" y="417" width="686" height="417" rx="17" fill="#fff8eb" stroke-width="9"/>
+    <path d="M240 480 H720 Q770 480 770 550 Q770 620 720 620 H240 Q190 620 190 690 Q190 760 240 760 H560" fill="none" stroke="#8b5e34" stroke-width="26"/>
+    <path d="M240 480 H720 Q770 480 770 550 Q770 620 720 620 H240 Q190 620 190 690 Q190 760 240 760 H560" fill="none" stroke="#e9c46a" stroke-width="12"/>
+    <circle cx="240" cy="480" r="40" fill="#e07a5f" stroke-width="9"/>
+    <circle cx="400" cy="480" r="40" fill="#81b29a" stroke-width="9"/>
+    <circle cx="560" cy="480" r="40" fill="#a78bc4" stroke-width="9"/>
+    <circle cx="720" cy="480" r="40" fill="#78add2" stroke-width="9"/>
+    <circle cx="720" cy="620" r="40" fill="#e9c46a" stroke-width="9"/>
+    <circle cx="560" cy="620" r="40" fill="#e07a5f" stroke-width="9"/>
+    <circle cx="400" cy="620" r="40" fill="#81b29a" stroke-width="9"/>
+    <circle cx="240" cy="620" r="40" fill="#a78bc4" stroke-width="9"/>
+    <circle cx="240" cy="760" r="40" fill="#78add2" stroke-width="9"/>
+    <circle cx="400" cy="760" r="40" fill="#e9c46a" stroke-width="9"/>
+    <circle cx="560" cy="760" r="40" fill="#e07a5f" stroke-width="9"/>
+    <path d="M240 451 L247 470 L267 470 L251 483 L257 503 L240 491 L223 503 L229 483 L213 470 H233 Z" fill="#fff8eb" stroke-width="6"/>
+    <path d="M546 787 V729 L579 739 L546 752" fill="#e07a5f" stroke-width="7"/>
+    <!-- Two wooden tokens sit on the route, with a separate readable die. -->
+    <g stroke-width="10">
+      <path d="M369 485 L381 455 H419 L431 485 Z" fill="#457b9d"/>
+      <circle cx="400" cy="435" r="25" fill="#78add2"/>
+      <path d="M528 625 L541 595 H579 L592 625 Z" fill="#b56576"/>
+      <circle cx="560" cy="575" r="25" fill="#e07a5f"/>
+      <rect x="706" y="704" width="91" height="91" rx="15" fill="#fff8eb"/>
+    </g>
+    <g fill="#2d261e" stroke="none">
+      <circle cx="728" cy="726" r="8"/><circle cx="775" cy="726" r="8"/>
+      <circle cx="751" cy="750" r="8"/><circle cx="728" cy="773" r="8"/><circle cx="775" cy="773" r="8"/>
+    </g>
+    <path d="M164 851 H834" fill="none" stroke="#bc8a5f" stroke-width="9"/>
   </g>
 </svg>

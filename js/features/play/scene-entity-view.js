@@ -1,8 +1,11 @@
+import { propCardboardMode } from '../../domain/cardboard.js';
 import { placementShadow } from '../../domain/placement-shadows.js';
 /** Stable scene entity DOM composition and patches. */
 import { getEntityBounds } from '../../domain/scene-rules.js';
 import { CHARACTER_DIMENSIONS, DEFAULT_EXPRESSION, DEFAULT_EXPRESSION_INTENSITY, bubbleStyleLabelKey, isCustomAssetId } from '../../domain/vocabulary.js';
 import { evaluateCharacterPose } from '../../domain/motion-evaluator.js';
+import { characterCanvasStyle, characterStandStyle, customFullArtId, getCharacterContact } from '../../domain/character-geometry.js';
+import { makeAssetPlaceholder } from '../../core/svg-loader.js';
 import { appendAsset } from '../designer/designer-view.js';
 import { createBubbleSvg } from '../../core/bubble-svg.js';
 import { assetName, t } from '../../core/i18n.js';
@@ -25,27 +28,46 @@ export function createSceneEntityView(context) {
     node.style.background = shadow.fill;
   }
 
+  function positionerClassName(entity, isPrimarySelected, isMultiSelected) {
+    return `scene-entity-positioner${isPrimarySelected ? ' is-selected' : ''}${isMultiSelected ? ' is-multi-selected' : ''}${entity.pinned ? ' is-pinned' : ''}${entity.kind === 'bubble' ? ' is-bubble-entity' : ''}${entity.kind === 'character' ? ' is-character-entity' : ''}`;
+  }
+
+  /** Geometry shared by create and patch; the envelope ratio is derived, never assumed. */
+  function applyPositionerGeometry(element, entity) {
+    const asset = context.getAsset(entity.sourceId);
+    const bounds = getEntityBounds(entity, context.getAsset);
+    element.style.setProperty('--x', String(entity.x));
+    element.style.setProperty('--y', String(entity.y));
+    element.style.zIndex = String(entity.order);
+    element.style.setProperty('--entity-width', String(bounds.width));
+    element.style.setProperty('--entity-height', String(bounds.height));
+    element.style.setProperty('--anchor-x', String(bounds.anchorX ?? 0.5));
+    element.style.setProperty('--anchor-y', String(bounds.anchorY ?? 1.0));
+    element.style.setProperty('--char-width', String(CHARACTER_DIMENSIONS.BASE_WIDTH));
+    element.style.setProperty('--char-height', String(CHARACTER_DIMENSIONS.BASE_HEIGHT));
+    if (entity.kind === 'character') {
+      const contact = { x: bounds.contactX, y: bounds.contactY };
+      const geometry = { ...characterCanvasStyle(contact), ...characterStandStyle(entity.characterSnapshot, context.getAsset) };
+      for (const [name, value] of Object.entries(geometry)) element.style.setProperty(name, value);
+    }
+    element.style.aspectRatio = entity.kind === 'prop'
+      ? `${asset?.displayWidth ?? 200} / ${asset?.displayHeight ?? 200}`
+      : `${bounds.width} / ${bounds.height}`;
+  }
+
   async function createSceneEntity(entity, isPrimarySelected, isMultiSelected) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `scene-entity-positioner${isPrimarySelected ? ' is-selected' : ''}${isMultiSelected ? ' is-multi-selected' : ''}${entity.pinned ? ' is-pinned' : ''}${entity.kind === 'bubble' ? ' is-bubble-entity' : ''}`;
+    button.className = positionerClassName(entity, isPrimarySelected, isMultiSelected);
     button.dataset.instanceId = entity.instanceId;
-    button.style.setProperty('--x', String(entity.x));
-    button.style.setProperty('--y', String(entity.y));
-    button.style.zIndex = String(entity.order);
     const asset = context.getAsset(entity.sourceId);
-    const bounds = getEntityBounds(entity, context.getAsset);
-    button.style.setProperty('--entity-width', String(bounds.width));
-    button.style.setProperty('--entity-height', String(bounds.height));
-    button.style.setProperty('--anchor-x', String(bounds.anchorX ?? 0.5));
-    button.style.setProperty('--anchor-y', String(bounds.anchorY ?? 1.0));
-    button.style.setProperty('--char-width', String(CHARACTER_DIMENSIONS.BASE_WIDTH));
-    button.style.setProperty('--char-height', String(CHARACTER_DIMENSIONS.BASE_HEIGHT));
-    button.style.aspectRatio = entity.kind === 'character'
-      ? '2 / 3'
-      : (entity.kind === 'bubble' ? `${bounds.width} / ${bounds.height}` : `${asset?.displayWidth ?? 200} / ${asset?.displayHeight ?? 200}`);
+    if (entity.kind === 'character') await context.hitTester?.measureCharacter?.(entity.characterSnapshot);
+    applyPositionerGeometry(button, entity);
 
+    // Pointer selection is resolved by the stage hit tester on pointerdown; this
+    // handler only serves keyboard activation (Enter/Space report detail 0).
     button.addEventListener('click', (e) => {
+      if (e.detail > 0) return;
       if (e.shiftKey) {
         context.store.dispatch({ type: 'ui/toggleEntitySelection', instanceId: entity.instanceId });
       } else {
@@ -55,9 +77,7 @@ export function createSceneEntityView(context) {
 
     const visual = document.createElement('span');
     visual.className = 'scene-entity-visual';
-    if (entity.kind === 'prop' && ['prop_chair', 'prop_table'].includes(entity.sourceId)) {
-      visual.dataset.paperProp = entity.sourceId;
-    }
+    if (entity.kind === 'prop') visual.dataset.cardboard = propCardboardMode(asset);
     visual.style.setProperty('--flip', entity.flipped ? '-1' : '1');
 
     if (entity.kind === 'character') {
@@ -113,6 +133,12 @@ export function createSceneEntityView(context) {
         getAsset: context.getAsset,
         enforceFit: false
       });
+      // Custom art with no qualifying pixel has no contact; show the unavailable-artwork placeholder.
+      if (customFullArtId(entity.characterSnapshot) && getCharacterContact(entity.characterSnapshot, context.getAsset).source === 'unavailable') {
+        const placeholder = makeAssetPlaceholder(assetName(context.getAsset(customFullArtId(entity.characterSnapshot)), t('play.savedDoll')));
+        placeholder.classList.add('scene-character-placeholder');
+        canvas.replaceChildren(placeholder);
+      }
       motion.append(canvas);
       visual.append(motion);
       const preset = context.store.getState().presets.find((item) => item.presetId === entity.sourceId);
@@ -121,10 +147,6 @@ export function createSceneEntityView(context) {
       const bubbleSvg = createBubbleSvg(entity);
       visual.append(bubbleSvg);
       button.setAttribute('aria-label', `${entity.pinned ? `${t('play.pinned')} ` : ''}${t(bubbleStyleLabelKey(entity.bubbleStyle))}: ${entity.text}`);
-      button.addEventListener('dblclick', (event) => {
-        event.stopPropagation();
-        context.openEditBubbleDialog(entity);
-      });
     } else {
       if (isCustomAssetId(entity.sourceId)) {
         const url = await context.customArtRepo?.getTrackedObjectUrl?.(entity.sourceId);
@@ -156,25 +178,18 @@ export function createSceneEntityView(context) {
       button.append(badge);
     }
     button.dataset.renderKey = context.sceneEntityRenderKey(entity);
+    // Masks are ready before the element is interactive, so transparent corners never select it.
+    await context.hitTester?.prepare?.(entity, button);
     return button;
   }
 
   function patchSceneEntity(element, entity, isPrimarySelected, isMultiSelected) {
-    const asset = context.getAsset(entity.sourceId);
-    const bounds = getEntityBounds(entity, context.getAsset);
-    element.className = `scene-entity-positioner${isPrimarySelected ? ' is-selected' : ''}${isMultiSelected ? ' is-multi-selected' : ''}${entity.pinned ? ' is-pinned' : ''}${entity.kind === 'bubble' ? ' is-bubble-entity' : ''}`;
-    element.style.setProperty('--x', String(entity.x));
-    element.style.setProperty('--y', String(entity.y));
-    element.style.zIndex = String(entity.order);
-    element.style.setProperty('--entity-width', String(bounds.width));
-    element.style.setProperty('--entity-height', String(bounds.height));
-    element.style.setProperty('--anchor-x', String(bounds.anchorX ?? 0.5));
-    element.style.setProperty('--anchor-y', String(bounds.anchorY ?? 1.0));
-    element.style.setProperty('--char-width', String(CHARACTER_DIMENSIONS.BASE_WIDTH));
-    element.style.setProperty('--char-height', String(CHARACTER_DIMENSIONS.BASE_HEIGHT));
-    element.style.aspectRatio = entity.kind === 'character'
-      ? '2 / 3'
-      : (entity.kind === 'bubble' ? `${bounds.width} / ${bounds.height}` : `${asset?.displayWidth ?? 200} / ${asset?.displayHeight ?? 200}`);
+    element.className = positionerClassName(entity, isPrimarySelected, isMultiSelected);
+    applyPositionerGeometry(element, entity);
+    if (entity.kind === 'prop') {
+      const visual = element.querySelector('.scene-entity-visual');
+      if (visual) visual.dataset.cardboard = propCardboardMode(context.getAsset(entity.sourceId));
+    }
     element.querySelector('.scene-entity-visual')?.style.setProperty('--flip', entity.flipped ? '-1' : '1');
 
     updateShadow(element, entity);

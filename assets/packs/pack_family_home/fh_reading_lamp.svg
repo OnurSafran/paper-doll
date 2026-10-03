@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" data-asset-id="fh_reading_lamp">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="231 146 538 783" data-asset-id="fh_reading_lamp">
   <g id="prop" stroke="#2d261e" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
 <ellipse cx="500" cy="875" rx="230" ry="45" fill="#bc8a5f"/>
-    <path d="M310 860 Q500 750 690 860 Q500 905 310 860 Z" fill="#e9c46a"/>
+    <ellipse cx="500" cy="861" rx="210" ry="39" fill="#e9c46a"/>
     <path d="M483 845 V350 H517 V845 Z" fill="#e9c46a"/>
     <path d="M350 155 H650 L760 430 H240 Z" fill="#e9c46a"/>
     <path d="M405 205 L345 390 M595 205 L655 390" fill="none" stroke="#bc8a5f" stroke-width="10"/>

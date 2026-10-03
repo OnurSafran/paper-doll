@@ -114,7 +114,7 @@ const inventory = {
   prop: ASSETS.filter((asset) => asset.kind === 'prop').length,
   face: ASSETS.filter((asset) => asset.kind === 'face').length
 };
-const expected = { doll: 6, wearable: 87, background: 11, prop: 22, face: 19 };
+const expected = { doll: 6, wearable: 87, background: 11, prop: 26, face: 19 };
 for (const [kind, count] of Object.entries(expected)) {
   if (inventory[kind] !== count) failures.push(`catalog: expected ${count} ${kind} assets, found ${inventory[kind]}`);
 }
