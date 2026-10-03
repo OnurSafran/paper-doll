@@ -180,7 +180,6 @@ export function createTraySpawnerView(context) {
       const card = document.createElement('button');
       card.type = 'button';
       card.className = `spawn-item${source.custom ? ' is-custom-spawn-item' : ''}`;
-      card.draggable = true;
       const thumb = document.createElement('span');
       thumb.className = 'spawn-thumb';
       thumb.setAttribute('aria-hidden', 'true');
@@ -196,6 +195,10 @@ export function createTraySpawnerView(context) {
       card.append(thumb, kindLabel, label);
       card.setAttribute('aria-label', t('play.traySpawnAria', { name: sourceName, custom: source.custom ? t('play.customArtSuffix') : '' }));
 
+      // Props are held with the pointer (floating piece, stage preview, edge scroll), dolls use native drag.
+      card.draggable = kind === 'character';
+      if (kind === 'prop') context.trayPointerDrag?.attach(card, sourceId);
+
       card.addEventListener('click', () => {
         const scene = context.store.getState().currentScene;
         const point = context.nextSpawnPoint(scene.entities.length, scene.cameraX);
@@ -210,13 +213,8 @@ export function createTraySpawnerView(context) {
         event.dataTransfer.effectAllowed = 'copy';
         event.dataTransfer.setData('text/plain', `paper-doll-spawn:${kind}:${sourceId}`);
         card.classList.add('is-dragging');
-        // Props preview their real artwork and placement targets over the stage; dolls keep the card image.
-        if (kind === 'prop') context.trayDragPreview?.begin(sourceId, event.dataTransfer);
       });
-      card.addEventListener('dragend', () => {
-        card.classList.remove('is-dragging');
-        context.trayDragPreview?.end();
-      });
+      card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
 
       if (spawnTab === 'characters') {
         // Each card owns its thumbnail; scene renders can reuse it while artwork loads.

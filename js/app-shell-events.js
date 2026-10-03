@@ -236,22 +236,13 @@ export function createAppShellEvents(context) {
       event.preventDefault();
       event.dataTransfer.dropEffect = 'copy';
       playStage.classList.add('is-spawn-target');
-      context.playView.trayDragPreview?.over(event);
     });
     playStage.addEventListener('dragleave', (event) => {
-      if (playStage.contains(event.relatedTarget)) return;
-      // Safari reports no relatedTarget on dragleave, so child-to-child moves look like leaving: check the pointer too.
-      const box = playStage.getBoundingClientRect();
-      if (event.clientX > box.left && event.clientX < box.right && event.clientY > box.top && event.clientY < box.bottom) return;
-      playStage.classList.remove('is-spawn-target');
-      context.playView.trayDragPreview?.leave();
+      if (!playStage.contains(event.relatedTarget)) playStage.classList.remove('is-spawn-target');
     });
     playStage.addEventListener('drop', (event) => {
       event.preventDefault();
       playStage.classList.remove('is-spawn-target');
-      // The tray card may be re-rendered by the spawn, so dragend is not guaranteed: read the preview, then end it.
-      const previewed = context.playView.trayDragPreview?.finish();
-      context.playView.trayDragPreview?.end();
       const match = event.dataTransfer.getData('text/plain').match(/^paper-doll-spawn:(character|prop|bubble):([a-zA-Z0-9_-]+)(?::(.*))?$/);
       if (!match) return;
       // Hosts are the visible artwork under the drop, not whichever transparent box is on top.
@@ -271,8 +262,7 @@ export function createAppShellEvents(context) {
         }
         context.store.dispatch({ type: 'scene/spawnBubble', bubbleStyle: match[2], text, targetEntityId, ...point });
       } else {
-        // A previewed drop commits exactly the previewed position and target; a drop on a doll stays a held prop.
-        context.store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, transfer: true, ...(previewed ? { x: previewed.x, y: previewed.y, placementTarget: previewed.placementTarget } : point) });
+        context.store.dispatch({ type: 'scene/spawnProp', assetId: match[2], targetEntityId, transfer: true, ...point });
       }
     });
 

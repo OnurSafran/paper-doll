@@ -346,7 +346,7 @@ The guide layer already accepts any entity: `getPlacementGuides` and `resolvePla
 
 ### 12.6 Implementation notes — tray drag preview
 
-- `js/features/play/tray-drag-preview.js` holds the session. `begin` runs on a prop card's `dragstart` and swaps the browser drag image for a transparent pixel; `over` runs on stage `dragover`; `leave` on `dragleave`; `finish` and `end` on `drop`; `end` again on `dragend` (the card can be re-rendered by the spawn, so `dragend` alone is not reliable).
+- `js/features/play/tray-drag-preview.js` holds the session: `begin`, `over` (per pointer move over the stage), `leave`, `drop` (commit at a client point, one dispatch) and `end`. It was first driven by native drag and drop; phone testing replaced that (see "Phone-test revision" below).
 - The held piece is built once with `addEntity` (same normalization as the real spawn) on a copy of the committed scene, rebuilt only when the committed entities change. Per event it runs the same `placeEntity` resolution as a stage drag, including the 16/24 px acquire/release distances.
 - The guide session gained a `virtual` start option (rebuilds use the held piece, which is not in the scene) and a text-only `showNote`, used for the "Held by {name}" chip over a doll. Over a doll no targets are drawn and the drop keeps the existing held-prop path.
 - The ghost is the real scene entity view (`createSceneEntity`) appended to `#scene-world`, not `#scene-entities`, so it is never hit-tested; it is `pointer-events: none`, `aria-hidden`, not focusable, and carries no instance id.
@@ -355,3 +355,15 @@ The guide layer already accepts any entity: `getPlacementGuides` and `resolvePla
 - Characters, bubbles and a full scene (40 pieces) keep the browser's own drag image and the previous drop behavior.
 - Verified in the real browser with synthetic drag events: the real artwork follows the snapped position with guides, marker and chip; a drop onto a tabletop created a piece attached to that table's `tabletop` surface at the previewed position; a cancelled drag left no ghost, guide, marker or `body` attribute.
 - Not yet measured: per-`dragover` cost on the target iPad, and native drag and drop on touch (the §12.5 risks stand).
+
+#### Phone-test revision (2026-10-03)
+
+First phone test of the native-drag version: nothing visibly followed the finger (the drag image was blanked and the ghost only exists over the stage), and the page could not scroll during the drag, so a piece picked up in the tray could not be carried up to the stage. Native drag and drop cannot fix either, so prop cards no longer use it.
+
+- `js/features/play/tray-pointer-drag.js` drives prop cards with pointer events. Mouse: a 5 px move picks the piece up. Touch: a 220 ms press picks it up; moving earlier than that is a swipe and the tray scrolls as usual; a tap still adds the prop (the click after a drag is swallowed).
+- A floating copy of the card art follows the pointer, lifted 64 px above a finger so the hand does not hide it, kept inside the viewport. Over the stage the real ghost, guides and chip take over and the copy hides. The stage gets `is-spawn-target` while the piece is over it. A light haptic tick marks the pick-up where supported.
+- While held, the page scrolls when the pointer rests within 80 px of the top or bottom edge (up to 12 px per frame), and the preview refreshes as the stage moves under the pointer. A held touch blocks page panning (`touchmove` `preventDefault`).
+- Fail-safe: one `finish()` tears down everything and runs from `pointerup`, `pointercancel`, Escape, window blur, a hidden tab, teardown of the play view, and the start of the next drag. `end()` also sweeps any stray `.is-held-ghost` from the world. With pointer events there is no `dragend` to lose.
+- Over a spot with no valid target the ghost now follows the pointer unsnapped (it used to freeze at the last valid spot); a drop there lands the piece free, as before.
+- Dolls and bubbles still use native drag and drop. Same-session browser check at 375 px width: hold, auto-scroll from the tray to the stage, ghost snapped to the floor with guides and chip, drop added the piece; Escape, `pointercancel` and releasing off the stage left nothing behind. Mouse path and tap-to-add checked at desktop size.
+- Not verified: a real finger on a real phone or iPad after this revision (synthetic pointer events only), and per-move cost on the iPad.

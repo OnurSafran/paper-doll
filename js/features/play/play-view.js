@@ -6,6 +6,7 @@ import { createSelectionInspectorController } from './selection-inspector-contro
 import { createTraySpawnerView } from './tray-spawner-view.js';
 import { createStagePointerController } from './stage-pointer-controller.js';
 import { createTrayDragPreview } from './tray-drag-preview.js';
+import { createTrayPointerDrag } from './tray-pointer-drag.js';
 import { createStageHitTester } from './stage-hit-testing.js';
 import { createCameraController } from './camera-controller.js';
 /**
@@ -191,6 +192,7 @@ export function createPlayView({
 
   function teardown() {
     bumpToken();
+    trayPointerDrag.cancel();
     trayDragPreview.end();
     destroyPointerController();
     destroyCameraController();
@@ -241,9 +243,11 @@ export function createPlayView({
     get createSceneEntity() { return createSceneEntity; }
   });
 
+  const trayPointerDrag = createTrayPointerDrag({ $, preview: trayDragPreview });
+
   const { renderBackgroundSelect, renderSpawnTray } = createTraySpawnerView({
     get nextSpawnPoint() { return nextSpawnPoint; },
-    trayDragPreview,
+    trayPointerDrag,
     store,
     $,
     renderDollInto,

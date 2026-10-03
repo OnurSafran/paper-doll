@@ -104,7 +104,13 @@ export function createTrayDragPreview(context) {
     // `next === withHeld` just means the piece already rests where the pointer resolves; only an
     // explicit "no valid target" marks a spot that cannot take it.
     const entity = next.entities.find(e => e.instanceId === HELD_ID);
-    if (!entity || (entity.placement?.kind === 'free' && entity.placement.reason === 'no-valid-target')) { s.last = null; return; }
+    if (!entity || (entity.placement?.kind === 'free' && entity.placement.reason === 'no-valid-target')) {
+      // Nothing here can take it: the piece follows the pointer unsnapped, and a drop lands it free right there.
+      s.last = { x: point.x, y: point.y, target: null, committed: false };
+      s.previewTarget = null;
+      positionGhost();
+      return;
+    }
     s.previewTarget = entity.placement?.kind === 'surface' ? { kind: 'surface', hostId: entity.attachedTo, surfaceId: entity.placement.surfaceId }
       : entity.placement?.regionId ? { kind: entity.placement.kind, regionId: entity.placement.regionId } : null;
     s.last = { x: entity.x, y: entity.y, target: s.previewTarget, committed: true };
@@ -136,11 +142,29 @@ export function createTrayDragPreview(context) {
     return at?.committed ? { x: at.x, y: at.y, placementTarget: at.target } : null;
   }
 
+  /** Commits a drop at a client point: the previewed position and target, or the raw point over a doll. */
+  function drop(event) {
+    const s = session;
+    if (!s) return;
+    const previewed = finish();
+    end();
+    const { point, element } = context.stagePointAt(event);
+    context.store.dispatch({
+      type: 'scene/spawnProp', assetId: s.assetId, targetEntityId: element?.dataset?.instanceId, transfer: true,
+      ...(previewed ? { x: previewed.x, y: previewed.y, placementTarget: previewed.placementTarget } : point)
+    });
+  }
+
+  /** Fail-safe: also sweeps ghosts a lost session could have left in the world. */
   function end() {
-    if (!session) return;
-    session.ghost?.remove();
+    session?.ghost?.remove();
+    for (const stray of context.$('#scene-world')?.querySelectorAll?.('.is-held-ghost') ?? []) stray.remove();
     guide.clear();
     session = null;
+  }
+
+  function ghostShown() {
+    return Boolean(session?.ghost && !session.ghost.hidden && session.last);
   }
 
   function dollName(doll) {
@@ -148,5 +172,5 @@ export function createTrayDragPreview(context) {
     return preset?.name ?? (doll.sourceId === 'demo_emma' ? 'Emma' : t('play.savedDoll'));
   }
 
-  return { begin, over, leave, finish, end, get active() { return Boolean(session); } };
+  return { begin, over, leave, finish, drop, end, ghostShown, get active() { return Boolean(session); } };
 }

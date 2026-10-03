@@ -1751,6 +1751,29 @@ main:has(> #play-screen:not([hidden])) {
 
 .spawn-item[draggable="true"] { cursor: grab; }
 .spawn-item.is-dragging { opacity: 0.5; cursor: grabbing; }
+.spawn-item { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.spawn-item img, .spawn-item svg { -webkit-user-drag: none; }
+
+/* A prop held with the pointer: a floating copy of the card art until the real piece is over the stage. */
+body.is-tray-dragging { cursor: grabbing; -webkit-user-select: none; user-select: none; }
+.tray-drag-floater {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1200;
+  width: 76px;
+  height: 76px;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--coral);
+  border-radius: 18px;
+  background: rgba(255, 253, 249, 0.94);
+  box-shadow: var(--shadow-float);
+  will-change: transform;
+}
+.tray-drag-floater[hidden] { display: none; }
+.tray-drag-floater .spawn-thumb { width: 100%; height: 100%; padding: 6px; background: none; }
 
 .spawn-thumb {
   position: relative;

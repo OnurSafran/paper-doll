@@ -414,6 +414,11 @@ entity on a copy of the scene, resolved with the same placement rules as a stage
 real artwork with the shared guides, marker and chip. The scene, store and history are untouched until
 the drop, which commits the previewed position and target through `scene/spawnProp`
 (`placementTarget`), as one undo entry. Over a doll the prop stays a held item and the chip says who
-holds it. Dolls, bubbles and full scenes keep the old behavior. Native drag and drop on touch devices
-and the iPad frame cost are still unverified.
+holds it. Dolls, bubbles and full scenes keep the old behavior.
+
+Revised after the first phone test: native drag and drop showed nothing under the finger and froze page
+scrolling, so tray props are held with pointer events instead (touch needs a short press, so the tray
+still scrolls; a tap still adds). A floating copy follows the pointer until the real ghost is over the
+stage, the page scrolls near the screen edges, and a single teardown runs from every exit path.
+Dolls and bubbles still use native drag and drop. The iPad frame cost is still unmeasured.
 

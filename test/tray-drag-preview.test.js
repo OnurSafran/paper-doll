@@ -153,3 +153,23 @@ test('Cards that cannot preview keep the browser drag image', (tc) => {
   const full = harness(tc, scene);
   assert.equal(full.preview.begin('prop_tea_set', transfer), false, 'a full scene cannot take a piece');
 });
+
+test('drop() commits the previewed piece in one step and ends the session', async (tc) => {
+  const h = harness(tc);
+  const top = projectLocal(item(roomWithTable(), 'table'), { x: .5, y: .1929 }, getAsset);
+  h.preview.begin('prop_tea_set');
+  h.at(top.x, top.y);
+  h.preview.over({});
+  await h.tick();
+  h.preview.over({});
+  assert.equal(h.preview.ghostShown(), true);
+  const before = h.store.getState().currentScene.entities.length;
+  h.preview.drop({});
+  const scene = h.store.getState().currentScene;
+  assert.equal(scene.entities.length, before + 1);
+  assert.equal(scene.entities.at(-1).placement.kind, 'surface', 'landed on the previewed tabletop');
+  assert.equal(h.preview.active, false);
+  assert.equal(h.preview.ghostShown(), false);
+  h.preview.drop({});
+  assert.equal(h.store.getState().currentScene.entities.length, before + 1, 'a second drop with no session adds nothing');
+});
